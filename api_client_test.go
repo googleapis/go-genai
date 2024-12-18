@@ -103,8 +103,10 @@ func TestSendRequest(t *testing.T) {
 			// Create a test client with the test server's URL
 			ac := &apiClient{
 				ClientConfig: ClientConfig{
-					baseURL:    ts.URL,
-					HTTPClient: ts.Client(),
+					HTTPOptions: &HTTPOptions{
+						BaseURL:    ts.URL,
+						HTTPClient: ts.Client(),
+					},
 				},
 			}
 

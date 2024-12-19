@@ -839,12 +839,14 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
 	}
 
-	if getValueByPath(fromObject, []string{"responseLogprobs"}) != nil {
-		return nil, fmt.Errorf("response_logprobs parameter is not supported in Google AI")
+	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
+	if fromResponseLogprobs != nil {
+		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
 	}
 
-	if getValueByPath(fromObject, []string{"logprobs"}) != nil {
-		return nil, fmt.Errorf("logprobs parameter is not supported in Google AI")
+	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
+	if fromLogprobs != nil {
+		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
 	}
 
 	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})

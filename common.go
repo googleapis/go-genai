@@ -52,6 +52,9 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 }
 
 func getValueByPath(data map[string]any, keys []string) any {
+	if len(keys) == 1 && keys[0] == "_self" {
+		return data
+	}
 	var current any = data
 	for _, key := range keys {
 		switch v := current.(type) {

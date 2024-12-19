@@ -27,8 +27,9 @@ import (
 
 // Client is the GenAI client.
 type Client struct {
-	ClientConfig *ClientConfig
+	clientConfig *ClientConfig
 	Models       *Models
+	Live         *Live
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -152,10 +153,15 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		}
 	}
 
-	ac := &apiClient{ClientConfig: *cc}
+	ac := &apiClient{clientConfig: *cc}
 	c := &Client{
-		ClientConfig: cc,
+		clientConfig: cc,
 		Models:       &Models{apiClient: ac},
+		Live:         &Live{apiClient: ac},
 	}
 	return c, nil
+}
+
+func (c Client) ClientConfig() ClientConfig {
+	return *c.clientConfig
 }

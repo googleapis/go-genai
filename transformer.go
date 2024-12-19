@@ -21,15 +21,15 @@ import (
 
 // TODO(b/376323000): align with python resource name implementation.
 func tResourceName(ac *apiClient, resourceName string, resourcePrefix string) string {
-	if ac.ClientConfig.Backend == BackendVertexAI {
+	if ac.clientConfig.Backend == BackendVertexAI {
 		if strings.HasPrefix(resourceName, "projects/") {
 			return resourceName
 		} else if strings.HasPrefix(resourceName, "locations/") {
-			return fmt.Sprintf("projects/%s/%s", ac.ClientConfig.Project, resourceName)
+			return fmt.Sprintf("projects/%s/%s", ac.clientConfig.Project, resourceName)
 		} else if strings.HasPrefix(resourceName, fmt.Sprintf("%s/", resourcePrefix)) {
-			return fmt.Sprintf("projects/%s/locations/%s/%s", ac.ClientConfig.Project, ac.ClientConfig.Location, resourceName)
+			return fmt.Sprintf("projects/%s/locations/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, resourceName)
 		} else {
-			return fmt.Sprintf("projects/%s/locations/%s/%s/%s", ac.ClientConfig.Project, ac.ClientConfig.Location, resourcePrefix, resourceName)
+			return fmt.Sprintf("projects/%s/locations/%s/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, resourcePrefix, resourceName)
 		}
 	} else {
 		if strings.HasPrefix(resourceName, fmt.Sprintf("%s/", resourcePrefix)) {
@@ -50,7 +50,7 @@ func tModel(ac *apiClient, origin any) (string, error) {
 		if model == "" {
 			return "", fmt.Errorf("tModel: model is empty")
 		}
-		if ac.ClientConfig.Backend == BackendVertexAI {
+		if ac.clientConfig.Backend == BackendVertexAI {
 			if strings.HasPrefix(model, "projects/") || strings.HasPrefix(model, "models/") || strings.HasPrefix(model, "publishers/") {
 				return model, nil
 			} else if strings.Contains(model, "/") {
@@ -68,6 +68,25 @@ func tModel(ac *apiClient, origin any) (string, error) {
 		}
 	default:
 		return "", fmt.Errorf("tModel: model is not a string")
+	}
+}
+
+func tModelFullName(ac *apiClient, origin any) (string, error) {
+	switch model := origin.(type) {
+	case string:
+		name, err := tModel(ac, model)
+		if err != nil {
+			return "", fmt.Errorf("tModelFullName: %w", err)
+		}
+		if strings.HasPrefix(name, "publishers/") && ac.clientConfig.Backend == BackendVertexAI {
+			return fmt.Sprintf("projects/%s/locations/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, name), nil
+		} else if strings.HasPrefix(name, "models/") && ac.clientConfig.Backend == BackendVertexAI {
+			return fmt.Sprintf("projects/%s/locations/%s/publishers/google/%s", ac.clientConfig.Project, ac.clientConfig.Location, name), nil
+		} else {
+			return name, nil
+		}
+	default:
+		return "", fmt.Errorf("tModelFullName: model is not a string")
 	}
 }
 

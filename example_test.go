@@ -52,7 +52,7 @@ func ExampleNewClient_vertexai() {
 	if err != nil {
 		log.Fatalf("failed to create client: %v", err)
 	}
-	fmt.Println(client.ClientConfig.Backend)
+	fmt.Println(client.ClientConfig().Backend)
 }
 
 // This example shows how to create a new client for Gemini API.
@@ -65,7 +65,7 @@ func ExampleNewClient_geminiapi() {
 	if err != nil {
 		log.Fatalf("failed to create client: %v", err)
 	}
-	fmt.Println(client.ClientConfig.APIKey)
+	fmt.Println(client.ClientConfig().APIKey)
 }
 
 // This example shows how to call the GenerateContent method with a simple text to Vertex AI.

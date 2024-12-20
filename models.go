@@ -1576,7 +1576,7 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 	var responseMap map[string]any
 	var fromConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.ClientConfig.Backend == BackendVertexAI {
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = generateContentParametersToVertex
 		fromConverter = generateContentResponseFromVertex
 	} else {
@@ -1626,7 +1626,7 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 			}
 		}
 	}
-	if m.apiClient.ClientConfig.Backend == BackendVertexAI {
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = generateContentParametersToVertex
 		fromConverter = generateContentResponseFromVertex
 	} else {

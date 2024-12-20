@@ -20,6 +20,21 @@ var (
 		// TODO(b/380108306): bytes related tests are not supported in replay tests.
 		"vertex/models/generate_content_part/test_image_base64",
 		"mldev/models/generate_content_part/test_image_base64",
+		// TODO(b/372730941): httpOptions related tests are not supported in golang.
+		"vertex/models/delete/test_delete_model_with_http_options_in_method",
+		"mldev/models/delete/test_delete_model_with_http_options_in_method",
+		"vertex/models/generate_content/test_http_options_in_method",
+		"mldev/models/generate_content/test_http_options_in_method",
+		"vertex/models/get/test_get_vertex_tuned_model_with_http_options_in_method",
+		"mldev/models/get/test_get_vertex_tuned_model_with_http_options_in_method",
+		"vertex/models/get/test_get_mldev_base_model_with_http_options_in_method",
+		"mldev/models/get/test_get_mldev_base_model_with_http_options_in_method",
+		"vertex/models/list/test_list_models_with_http_options_in_method",
+		"mldev/models/list/test_list_models_with_http_options_in_method",
+		"vertex/models/update/test_mldev_tuned_models_update_with_http_options_in_method",
+		"mldev/models/update/test_mldev_tuned_models_update_with_http_options_in_method",
+		"vertex/models/update/test_vertex_tuned_models_update_with_http_options_in_method",
+		"mldev/models/update/test_vertex_tuned_models_update_with_http_options_in_method",
 	}
 	disabledTestsByMode = map[string][]string{
 		apiMode: []string{

@@ -794,6 +794,11 @@ func speechConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject
 func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromHttpOptions := getValueByPath(fromObject, []string{"httpOptions"})
+	if fromHttpOptions != nil {
+		setValueByPath(toObject, []string{"httpOptions"}, fromHttpOptions)
+	}
+
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(ac, fromSystemInstruction)
@@ -964,6 +969,11 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 
 func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromHttpOptions := getValueByPath(fromObject, []string{"httpOptions"})
+	if fromHttpOptions != nil {
+		setValueByPath(toObject, []string{"httpOptions"}, fromHttpOptions)
+	}
 
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {

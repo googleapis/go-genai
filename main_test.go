@@ -18,13 +18,12 @@ const (
 var (
 	disabledTestsForAll = []string{
 		// TODO(b/380108306): bytes related tests are not supported in replay tests.
-		"vertex/models/generate_content_part/test_image_base64",
-		"mldev/models/generate_content_part/test_image_base64",
+		"models/generate_content_part/test_image_base64",
 	}
 	disabledTestsByMode = map[string][]string{
 		apiMode: []string{
 			"TestTable/",
-			"TestModelsGenerateContentStream/mldev/models/generate_content/test_simple_shared_generation_config",
+			"TestModelsGenerateContentStream/mldev/v1beta/models/generate_content/test_simple_shared_generation_config",
 			"TestModelsGenerateContentStream/mldev/models/generate_content_cached_content/",
 			"TestModelsGenerateContentStream/mldev/models/generate_content_part/",
 			"TestModelsGenerateContentStream/vertex/models/generate_content/test_2_candidates_gemini_1_5_flash",
@@ -48,16 +47,19 @@ var (
 	}
 	mode     = flag.String("mode", replayMode, "Test mode")
 	backends = []struct {
-		name    string
-		Backend Backend
+		name       string
+		apiVersion string
+		backend    Backend
 	}{
 		{
-			name:    "mldev",
-			Backend: BackendGoogleAI,
+			name:       "mldev",
+			apiVersion: "v1beta",
+			backend:    BackendGoogleAI,
 		},
 		{
-			name:    "vertex",
-			Backend: BackendVertexAI,
+			name:       "vertex",
+			apiVersion: "v1beta1",
+			backend:    BackendVertexAI,
 		},
 	}
 )

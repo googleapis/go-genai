@@ -66,10 +66,15 @@ type ClientConfig struct {
 	Project     string              // GCP Project ID for Vertex AI. Required for BackendVertexAI.
 	Location    string              // GCP Location/Region for Vertex AI. Required for BackendVertexAI. See https://cloud.google.com/vertex-ai/docs/general/locations
 	Credentials *google.Credentials // Optional. Google credentials.  If not specified, application default credentials will be used.
-	HTTPClient  *http.Client        // Optional HTTP client to use. If nil, a default client will be created. For Vertex AI, this client must handle authentication appropriately.
+	HTTPOptions *HTTPOptions        // Optional HTTP configuration.
+}
 
-	// TODO(b/368630327): finalize Go custom HTTP design.
-	baseURL string // The base URL for the API. Should not typically be set by users.
+// HTTPOptions is the HTTP configuration for the GenAI client.
+type HTTPOptions struct {
+	BaseURL    string            // The base URL for the AI platform service endpoint.
+	APIVersion string            // Specifies the version of the API to use.
+	Headers    map[string]string // Additional HTTP headers to be sent with the request.
+	HTTPClient *http.Client      // Optional HTTP client to use. If nil, a default client will be created. For Vertex AI, this client must handle authentication appropriately.
 }
 
 // NewClient creates a new GenAI client.
@@ -78,6 +83,9 @@ type ClientConfig struct {
 func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 	if cc == nil {
 		cc = &ClientConfig{}
+	}
+	if cc.HTTPOptions == nil {
+		cc.HTTPOptions = &HTTPOptions{}
 	}
 
 	if cc.Project != "" && cc.APIKey != "" {
@@ -136,19 +144,25 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		cc.Credentials = cred
 	}
 
-	if cc.baseURL == "" {
+	if cc.HTTPOptions.BaseURL == "" {
 		if cc.Backend == BackendVertexAI {
-			cc.baseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", cc.Location)
+			cc.HTTPOptions.BaseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", cc.Location)
 		} else {
-			cc.baseURL = "https://generativelanguage.googleapis.com/"
+			cc.HTTPOptions.BaseURL = "https://generativelanguage.googleapis.com/"
 		}
 	}
 
-	if cc.HTTPClient == nil {
+	if cc.Backend == BackendVertexAI && cc.HTTPOptions.APIVersion == "" {
+		cc.HTTPOptions.APIVersion = "v1beta1"
+	} else if cc.Backend == BackendGoogleAI && cc.HTTPOptions.APIVersion == "" {
+		cc.HTTPOptions.APIVersion = "v1beta"
+	}
+
+	if cc.HTTPOptions.HTTPClient == nil {
 		if cc.Backend == BackendVertexAI {
-			cc.HTTPClient = oauth2.NewClient(ctx, oauth2.ReuseTokenSource(nil, cc.Credentials.TokenSource))
+			cc.HTTPOptions.HTTPClient = oauth2.NewClient(ctx, oauth2.ReuseTokenSource(nil, cc.Credentials.TokenSource))
 		} else {
-			cc.HTTPClient = &http.Client{}
+			cc.HTTPOptions.HTTPClient = &http.Client{}
 		}
 	}
 

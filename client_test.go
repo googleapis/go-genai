@@ -150,12 +150,25 @@ func TestNewClient(t *testing.T) {
 			os.Setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
 			t.Cleanup(func() { os.Unsetenv("GOOGLE_GENAI_USE_VERTEXAI") })
 
-			client, err := NewClient(ctx, &ClientConfig{Project: "test-project", Location: "test-location"})
+			client, err := NewClient(ctx, &ClientConfig{Project: "test-project", Location: "us-central1"})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Backend != BackendVertexAI {
-				t.Errorf("Expected location %s, got %s", BackendVertexAI, client.ClientConfig.Backend)
+			want := ClientConfig{
+				Backend:  BackendVertexAI,
+				Project:  "test-project",
+				Location: "us-central1",
+				HTTPOptions: &HTTPOptions{
+					BaseURL:    "https://us-central1-aiplatform.googleapis.com/",
+					APIVersion: "v1beta1",
+				},
+			}
+			opts := []cmp.Option{
+				cmpopts.IgnoreFields(HTTPOptions{}, "HTTPClient"),
+				cmpopts.IgnoreFields(ClientConfig{}, "Credentials"),
+			}
+			if diff := cmp.Diff(want, client.Models.apiClient.ClientConfig, opts...); diff != "" {
+				t.Errorf("Models.apiClient.ClientConfig mismatch (-want +got):\n%s", diff)
 			}
 		})
 
@@ -278,22 +291,41 @@ func TestNewClient(t *testing.T) {
 
 	t.Run("HTTPClient is read from passed config", func(t *testing.T) {
 		httpClient := &http.Client{}
-		client, err := NewClient(ctx, &ClientConfig{Backend: BackendGoogleAI, APIKey: "test-api-key", HTTPClient: httpClient})
+		client, err := NewClient(ctx, &ClientConfig{
+			Backend: BackendGoogleAI,
+			APIKey:  "test-api-key",
+			HTTPOptions: &HTTPOptions{
+				HTTPClient: httpClient,
+			},
+		})
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
-		if client.Models.apiClient.ClientConfig.HTTPClient != httpClient {
-			t.Errorf("HTTPClient want %#v, got %#v", httpClient, client.Models.apiClient.ClientConfig.HTTPClient)
+		want := ClientConfig{
+			Backend: BackendGoogleAI,
+			APIKey:  "test-api-key",
+			HTTPOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com/",
+				APIVersion: "v1beta",
+				HTTPClient: httpClient,
+			},
+		}
+		if diff := cmp.Diff(want, client.Models.apiClient.ClientConfig); diff != "" {
+			t.Errorf("Models.apiClient.ClientConfig mismatch (-want +got):\n%s", diff)
 		}
 	})
 
 	t.Run("Pass nil config to NewClient", func(t *testing.T) {
 		want := ClientConfig{
-			Backend:    BackendGoogleAI,
-			Project:    "test-project-env",
-			Location:   "test-location",
-			APIKey:     "test-api-key",
-			HTTPClient: &http.Client{},
+			Backend:  BackendGoogleAI,
+			Project:  "test-project-env",
+			Location: "test-location",
+			APIKey:   "test-api-key",
+			HTTPOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com/",
+				APIVersion: "v1beta",
+				HTTPClient: &http.Client{},
+			},
 		}
 		os.Setenv("GOOGLE_CLOUD_PROJECT", want.Project)
 		t.Cleanup(func() { os.Unsetenv("GOOGLE_CLOUD_PROJECT") })

@@ -106,9 +106,11 @@ func setupTestServer(t *testing.T, backend Backend) *httptest.Server {
 func fakeClient(ctx context.Context, t *testing.T, server *httptest.Server, backend Backend) *Client {
 	t.Helper()
 	client, err := NewClient(ctx, &ClientConfig{
-		baseURL:    server.URL,
-		HTTPClient: server.Client(),
-		Backend:    backend,
+		Backend: backend,
+		HTTPOptions: &HTTPOptions{
+			BaseURL:    server.URL,
+			HTTPClient: server.Client(),
+		},
 	})
 	if err != nil {
 		t.Fatalf("NewClient failed: %v", err)
@@ -278,13 +280,13 @@ func TestModelsGenerateContentStream(t *testing.T) {
 				t.Run(testName, func(t *testing.T) {
 					for _, testTableItem := range testTableFile.TestTable {
 						t.Logf("testTableItem: %v", t.Name())
-						if isDisabledTest(t) || testTableItem.HasUnion || extractWantException(testTableItem, backend.Backend) != "" {
+						if isDisabledTest(t) || testTableItem.HasUnion || extractWantException(testTableItem, backend.backend) != "" {
 							// Avoid skipping get a less noisy logs in the stream tests
 							return
 						}
 						t.Run(testTableItem.Name, func(t *testing.T) {
 							t.Parallel()
-							client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+							client, err := NewClient(ctx, &ClientConfig{Backend: backend.backend})
 							if err != nil {
 								t.Fatalf("Error creating client: %v", err)
 							}
@@ -332,7 +334,7 @@ func TestModelsGenerateContentAudio(t *testing.T) {
 			if isDisabledTest(t) {
 				t.Skip("Skip: disabled test")
 			}
-			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.backend})
 			if err != nil {
 				t.Fatal(err)
 			}

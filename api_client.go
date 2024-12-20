@@ -79,17 +79,19 @@ func mapToStruct[R any](input map[string]any, output *R) error {
 }
 
 func (ac *apiClient) createAPIURL(suffix string) (*url.URL, error) {
+	baseURL := ac.ClientConfig.HTTPOptions.BaseURL
+	apiVersion := ac.ClientConfig.HTTPOptions.APIVersion
 	if ac.ClientConfig.Backend == BackendVertexAI {
 		if !strings.HasPrefix(suffix, "projects/") {
 			suffix = fmt.Sprintf("projects/%s/locations/%s/%s", ac.ClientConfig.Project, ac.ClientConfig.Location, suffix)
 		}
-		u, err := url.Parse(fmt.Sprintf("%s/v1beta1/%s", ac.ClientConfig.baseURL, suffix))
+		u, err := url.Parse(fmt.Sprintf("%s/%s/%s", baseURL, apiVersion, suffix))
 		if err != nil {
 			return nil, fmt.Errorf("createAPIURL: error parsing Vertex AI URL: %w", err)
 		}
 		return u, nil
 	} else {
-		u, err := url.Parse(fmt.Sprintf("%s/v1beta/%s", ac.ClientConfig.baseURL, suffix))
+		u, err := url.Parse(fmt.Sprintf("%s/%s/%s", baseURL, apiVersion, suffix))
 		if err != nil {
 			return nil, fmt.Errorf("createAPIURL: error parsing ML Dev URL: %w", err)
 		}
@@ -137,7 +139,7 @@ func buildRequest(ac *apiClient, path string, body any, method string) (*http.Re
 
 func doRequest(ctx context.Context, ac *apiClient, req *http.Request) (*http.Response, error) {
 	// Create a new HTTP client and send the request
-	client := ac.ClientConfig.HTTPClient
+	client := ac.ClientConfig.HTTPOptions.HTTPClient
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("doRequest: error sending request: %w", err)

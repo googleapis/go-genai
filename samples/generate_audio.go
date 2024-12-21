@@ -60,7 +60,7 @@ func generateAudio(ctx context.Context) {
 		},
 	}
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, *model, genai.Text("say something nice to me"), config)
+	result, err := client.Models.GenerateContent(ctx, *model, genai.Text("Say this in an upbeat tone: Welcome to Gemini 2.0!"), config)
 	if err != nil {
 		log.Fatal(err)
 	}

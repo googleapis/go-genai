@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -41,7 +40,7 @@ func snakeToPascal(s string) string {
 
 func readTestTableFile(t *testing.T, dir string) *testTableFile {
 	t.Helper()
-	data, err := ioutil.ReadFile(dir)
+	data, err := os.ReadFile(dir)
 	if err != nil {
 		t.Error("Error reading file:", err)
 	}

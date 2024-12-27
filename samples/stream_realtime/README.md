@@ -149,3 +149,7 @@ Refer to the Gemini API documentation for the available tools and their configur
 ## Contributing
 
 Contributions are welcome! Please feel free to submit pull requests with improvements or bug fixes.
+
+## Ported from
+
+A Go-based implementation inspired by the functionality of [live_api_starter.ipynb](https://github.com/google-gemini/cookbook/blob/main/gemini-2/websockets/live_api_starter.ipynb) from [https://github.com/google-gemini/cookbook](https://github.com/google-gemini/cookbook).

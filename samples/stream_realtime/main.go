@@ -63,7 +63,6 @@ type Client struct {
 	videoOutQueue    chan map[string]interface{}
 	mu               sync.Mutex
 	audioInQueue     chan []byte
-	audioOutQueue    chan []byte
 	reconnectMutex   sync.Mutex // Mutex for reconnect logic
 	reconnecting     bool       // Flag to indicate if a reconnect is in progress
 	closeOnce        sync.Once
@@ -87,7 +86,6 @@ func NewClient(model string, tools []map[string]interface{}) *Client {
 		intBuf:           intBuf,
 		videoOutQueue:    make(chan map[string]interface{}),
 		audioInQueue:     make(chan []byte, 1000),
-		audioOutQueue:    make(chan []byte, 1000),
 		doneChan:         doneChan,
 		wg:               sync.WaitGroup{},
 	}
@@ -124,7 +122,7 @@ func (c *Client) Setup() error {
 		"setup": map[string]interface{}{
 			"model": "models/gemini-2.0-flash-exp",
 			"generationConfig": map[string]interface{}{
-				"responseModalities": []string{"TEXT"},
+				"responseModalities": []string{"AUDIO"}, // "TEXT", "AUDIO"
 			},
 		},
 	}
@@ -573,7 +571,6 @@ func (c *Client) Close() {
 				}
 			}
 			close(c.videoOutQueue)
-			// close(c.audioOutQueue)
 			c.paMutex.Lock()
 			if c.stream != nil {
 				err := c.stream.Stop()

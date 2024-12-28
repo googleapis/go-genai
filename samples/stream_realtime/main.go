@@ -299,7 +299,7 @@ func (c *Client) _getScreen() (map[string]interface{}, error) {
 
 // _getFrame captures a frame from the camera and returns the image as a map
 func (c *Client) _getFrame() (map[string]interface{}, error) {
-	cap, err := c.openVideoCapture()
+	cap, stderr, err := c.openVideoCapture()
 	if err != nil {
 		return nil, fmt.Errorf("failed to open video capture %w", err)
 	}
@@ -310,7 +310,7 @@ func (c *Client) _getFrame() (map[string]interface{}, error) {
 	}()
 	data, err := cap.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read frame %w", err)
+		return nil, fmt.Errorf("failed to read frame %w, %s", err, stderr.String())
 	}
 	frame_rgb := c.convertToRGB(data)
 	img, err := c.createImageFromBytes(frame_rgb)
@@ -328,9 +328,11 @@ func (c *Client) _getFrame() (map[string]interface{}, error) {
 	}, nil
 }
 
-func (c *Client) openVideoCapture() (*exec.Cmd, error) {
+func (c *Client) openVideoCapture() (*exec.Cmd, *bytes.Buffer, error) {
 	cap := exec.Command("ffmpeg", "-f", "v4l2", "-i", "/dev/video1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-vframes", "1", "-")
-	return cap, nil
+	var stderr bytes.Buffer
+	cap.Stderr = &stderr
+	return cap, &stderr, nil
 }
 
 func (c *Client) convertToRGB(frame []byte) []byte {
@@ -382,7 +384,7 @@ func (c *Client) processCameraFrames() error {
 			frame, err := c._getFrame()
 			if err != nil {
 				logrus.Errorln("Failed to process camera frame:", err)
-				continue
+				return err
 			}
 			select {
 			case <-c.doneChan:
@@ -427,7 +429,12 @@ func (c *Client) ProcessAudioInput() error {
 				return fmt.Errorf("failed to read audio: %w", err)
 			}
 			if err := c.SendAudio(c.int16ToLittleEndianByte(c.intBuf)); err != nil {
-				return fmt.Errorf("failed to send audio: %w", err)
+				// return fmt.Errorf("failed to send audio: %w", err)
+				// I am not returning here because if if there is error to send to websocket
+				// I will return and stop the input microphone processing
+				// so i will just log the error and continue
+				logrus.Infof("failed to send audio: %v", err)
+				continue
 			}
 		}
 	}
@@ -673,6 +680,7 @@ func main() {
 			logrus.Infoln("camera is selected")
 			if err := client.processCameraFrames(); err != nil {
 				logrus.Errorln("Camera processing error:", err)
+				client.Close()
 			}
 		} else if os.Getenv("MODE") == "screen" {
 			logrus.Infoln("screen is selected")

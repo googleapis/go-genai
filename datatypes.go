@@ -1016,8 +1016,6 @@ type UploadFileConfig struct {
 type UpscaleImageConfig struct {
 	// Used to override HTTP request options.
 	HTTPOptions map[string]any `json:"httpOptions,omitempty"`
-	// The factor to which the image will be upscaled.
-	UpscaleFactor string `json:"upscaleFactor,omitempty"`
 	// Whether to include a reason for filtered-out images in the
 	// response.
 	// If IncludeRAIReason is zero value, then no RAI reason will applied in the generation.
@@ -1045,6 +1043,8 @@ type UpscaleImageParameters struct {
 	Model string `json:"model,omitempty"`
 	// The input image to upscale.
 	Image *Image `json:"image,omitempty"`
+	// The factor to upscale the image (x2 or x4).
+	UpscaleFactor string `json:"upscaleFactor,omitempty"`
 	// Configuration for upscaling.
 	Config *UpscaleImageConfig `json:"config,omitempty"`
 }

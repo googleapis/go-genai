@@ -54,11 +54,11 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Project != projectID {
-				t.Errorf("Expected project %q, got %q", projectID, client.ClientConfig.Project)
+			if client.clientConfig.Project != projectID {
+				t.Errorf("Expected project %q, got %q", projectID, client.clientConfig.Project)
 			}
-			if client.ClientConfig.Location != location {
-				t.Errorf("Expected location %q, got %q", location, client.ClientConfig.Location)
+			if client.clientConfig.Location != location {
+				t.Errorf("Expected location %q, got %q", location, client.clientConfig.Location)
 			}
 		})
 
@@ -85,8 +85,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.Models.apiClient.ClientConfig.Credentials != creds {
-				t.Errorf("Credentials want %#v, got %#v", creds, client.Models.apiClient.ClientConfig.Credentials)
+			if client.Models.apiClient.clientConfig.Credentials != creds {
+				t.Errorf("Credentials want %#v, got %#v", creds, client.Models.apiClient.clientConfig.Credentials)
 			}
 		})
 
@@ -98,8 +98,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.APIKey != "" {
-				t.Errorf("Expected API ignored, got %q", client.ClientConfig.APIKey)
+			if client.clientConfig.APIKey != "" {
+				t.Errorf("Expected API ignored, got %q", client.clientConfig.APIKey)
 			}
 		})
 
@@ -111,8 +111,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Project != projectID {
-				t.Errorf("Expected project %q, got %q", projectID, client.ClientConfig.Project)
+			if client.clientConfig.Project != projectID {
+				t.Errorf("Expected project %q, got %q", projectID, client.clientConfig.Project)
 			}
 		})
 
@@ -128,8 +128,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Location != location {
-				t.Errorf("Expected location %q, got %q", location, client.ClientConfig.Location)
+			if client.clientConfig.Location != location {
+				t.Errorf("Expected location %q, got %q", location, client.clientConfig.Location)
 			}
 		})
 
@@ -141,8 +141,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Location != location {
-				t.Errorf("Expected location %q, got %q", location, client.ClientConfig.Location)
+			if client.clientConfig.Location != location {
+				t.Errorf("Expected location %q, got %q", location, client.clientConfig.Location)
 			}
 		})
 
@@ -154,8 +154,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Backend != BackendVertexAI {
-				t.Errorf("Expected location %s, got %s", BackendVertexAI, client.ClientConfig.Backend)
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected location %s, got %s", BackendVertexAI, client.clientConfig.Backend)
 			}
 		})
 
@@ -167,8 +167,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Backend != BackendGoogleAI {
-				t.Errorf("Expected location %s, got %s", BackendGoogleAI, client.ClientConfig.Backend)
+			if client.clientConfig.Backend != BackendGoogleAI {
+				t.Errorf("Expected location %s, got %s", BackendGoogleAI, client.clientConfig.Backend)
 			}
 		})
 
@@ -180,8 +180,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Backend != BackendVertexAI {
-				t.Errorf("Expected Backend %s, got %s", BackendVertexAI, client.ClientConfig.Backend)
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected Backend %s, got %s", BackendVertexAI, client.clientConfig.Backend)
 			}
 		})
 
@@ -193,8 +193,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Backend != BackendGoogleAI {
-				t.Errorf("Expected Backend %s, got %s", BackendGoogleAI, client.ClientConfig.Backend)
+			if client.clientConfig.Backend != BackendGoogleAI {
+				t.Errorf("Expected Backend %s, got %s", BackendGoogleAI, client.clientConfig.Backend)
 			}
 		})
 
@@ -206,8 +206,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.Backend != BackendGoogleAI {
-				t.Errorf("Expected Backend %s, got %s", BackendGoogleAI, client.ClientConfig.Backend)
+			if client.clientConfig.Backend != BackendGoogleAI {
+				t.Errorf("Expected Backend %s, got %s", BackendGoogleAI, client.clientConfig.Backend)
 			}
 		})
 	})
@@ -219,8 +219,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.APIKey != apiKey {
-				t.Errorf("Expected API key %q, got %q", apiKey, client.ClientConfig.APIKey)
+			if client.clientConfig.APIKey != apiKey {
+				t.Errorf("Expected API key %q, got %q", apiKey, client.clientConfig.APIKey)
 			}
 		})
 
@@ -240,8 +240,8 @@ func TestNewClient(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
-			if client.ClientConfig.APIKey != apiKey {
-				t.Errorf("Expected API key %q, got %q", apiKey, client.ClientConfig.APIKey)
+			if client.clientConfig.APIKey != apiKey {
+				t.Errorf("Expected API key %q, got %q", apiKey, client.clientConfig.APIKey)
 			}
 		})
 	})
@@ -271,8 +271,8 @@ func TestNewClient(t *testing.T) {
 		opts := []cmp.Option{
 			cmpopts.IgnoreUnexported(ClientConfig{}),
 		}
-		if diff := cmp.Diff(client.Models.apiClient.ClientConfig, *client.ClientConfig, opts...); diff != "" {
-			t.Errorf("Models.apiClient.ClientConfig mismatch (-want +got):\n%s", diff)
+		if diff := cmp.Diff(*client.Models.apiClient.clientConfig, client.clientConfig, opts...); diff != "" {
+			t.Errorf("Models.apiClient.clientConfig mismatch (-want +got):\n%s", diff)
 		}
 	})
 
@@ -282,8 +282,8 @@ func TestNewClient(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
-		if client.Models.apiClient.ClientConfig.HTTPClient != httpClient {
-			t.Errorf("HTTPClient want %#v, got %#v", httpClient, client.Models.apiClient.ClientConfig.HTTPClient)
+		if client.Models.apiClient.clientConfig.HTTPClient != httpClient {
+			t.Errorf("HTTPClient want %#v, got %#v", httpClient, client.Models.apiClient.clientConfig.HTTPClient)
 		}
 	})
 
@@ -314,8 +314,8 @@ func TestNewClient(t *testing.T) {
 		opts := []cmp.Option{
 			cmpopts.IgnoreUnexported(ClientConfig{}),
 		}
-		if diff := cmp.Diff(want, client.Models.apiClient.ClientConfig, opts...); diff != "" {
-			t.Errorf("Models.apiClient.ClientConfig mismatch (-want +got):\n%s", diff)
+		if diff := cmp.Diff(want, *client.Models.apiClient.clientConfig, opts...); diff != "" {
+			t.Errorf("Models.apiClient.clientConfig mismatch (-want +got):\n%s", diff)
 		}
 	})
 

@@ -30,7 +30,7 @@ import (
 )
 
 type apiClient struct {
-	ClientConfig ClientConfig
+	clientConfig *ClientConfig
 }
 
 // sendStreamRequest issues an server streaming API request and returns a map of the response contents.
@@ -79,17 +79,17 @@ func mapToStruct[R any](input map[string]any, output *R) error {
 }
 
 func (ac *apiClient) createAPIURL(suffix string) (*url.URL, error) {
-	if ac.ClientConfig.Backend == BackendVertexAI {
+	if ac.clientConfig.Backend == BackendVertexAI {
 		if !strings.HasPrefix(suffix, "projects/") {
-			suffix = fmt.Sprintf("projects/%s/locations/%s/%s", ac.ClientConfig.Project, ac.ClientConfig.Location, suffix)
+			suffix = fmt.Sprintf("projects/%s/locations/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, suffix)
 		}
-		u, err := url.Parse(fmt.Sprintf("%s/v1beta1/%s", ac.ClientConfig.baseURL, suffix))
+		u, err := url.Parse(fmt.Sprintf("%s/v1beta1/%s", ac.clientConfig.baseURL, suffix))
 		if err != nil {
 			return nil, fmt.Errorf("createAPIURL: error parsing Vertex AI URL: %w", err)
 		}
 		return u, nil
 	} else {
-		u, err := url.Parse(fmt.Sprintf("%s/v1beta/%s", ac.ClientConfig.baseURL, suffix))
+		u, err := url.Parse(fmt.Sprintf("%s/v1beta/%s", ac.clientConfig.baseURL, suffix))
 		if err != nil {
 			return nil, fmt.Errorf("createAPIURL: error parsing ML Dev URL: %w", err)
 		}
@@ -113,8 +113,8 @@ func buildRequest(ac *apiClient, path string, body any, method string) (*http.Re
 	}
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
-	if ac.ClientConfig.APIKey != "" {
-		req.Header.Set("x-goog-api-key", ac.ClientConfig.APIKey)
+	if ac.clientConfig.APIKey != "" {
+		req.Header.Set("x-goog-api-key", ac.clientConfig.APIKey)
 	}
 	// TODO(b/381108714): Automate revisions to the SDK library version.
 	libraryLabel := "google-genai-sdk/0.0.1"
@@ -137,7 +137,7 @@ func buildRequest(ac *apiClient, path string, body any, method string) (*http.Re
 
 func doRequest(ctx context.Context, ac *apiClient, req *http.Request) (*http.Response, error) {
 	// Create a new HTTP client and send the request
-	client := ac.ClientConfig.HTTPClient
+	client := ac.clientConfig.HTTPClient
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("doRequest: error sending request: %w", err)

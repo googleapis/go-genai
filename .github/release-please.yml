@@ -1,0 +1,11 @@
+handleGHRelease: true
+manifest: true
+releaseType: go
+
+branches:
+  - branch: main
+    releaseType: go
+    handleGHRelease: true
+    manifest: true
+    manifestFile: .release-please-manifest.json
+    manifestConfig: release-please-config.json

@@ -374,7 +374,7 @@ type Content struct {
 // Represents a select subset of an OpenAPI 3.0 schema object.
 type Schema struct {
 	// Optional. Minimum number of the elements for Type.ARRAY.
-	MinItems string `json:"minItems,omitempty"`
+	MinItems int64 `json:"minItems,omitempty"`
 	// Optional. Example of the object. Will only populated when the object is the root.
 	Example any `json:"example,omitempty"`
 	// Optional. The order of the properties. Not a standard field in open API spec. Only
@@ -391,21 +391,21 @@ type Schema struct {
 	// in the list.
 	AnyOf []*Schema `json:"anyOf,omitempty"`
 	// Optional. Maximum length of the Type.STRING
-	MaxLength string `json:"maxLength,omitempty"`
+	MaxLength int64 `json:"maxLength,omitempty"`
 	// Optional. The title of the Schema.
 	Title string `json:"title,omitempty"`
 	// Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING
-	MinLength string `json:"minLength,omitempty"`
+	MinLength int64 `json:"minLength,omitempty"`
 	// Optional. Minimum number of the properties for Type.OBJECT.
-	MinProperties string `json:"minProperties,omitempty"`
+	MinProperties int64 `json:"minProperties,omitempty"`
 	// Optional. Maximum number of the elements for Type.ARRAY.
-	MaxItems string `json:"maxItems,omitempty"`
+	MaxItems int64 `json:"maxItems,omitempty"`
 	// Optional. Maximum value of the Type.INTEGER and Type.NUMBER
 	Maximum *float64 `json:"maximum,omitempty"`
 	// Optional. Indicates if the value may be null.
 	Nullable *bool `json:"nullable,omitempty"`
 	// Optional. Maximum number of the properties for Type.OBJECT.
-	MaxProperties string `json:"maxProperties,omitempty"`
+	MaxProperties int64 `json:"maxProperties,omitempty"`
 	// Optional. The type of the data.
 	Type Type `json:"type,omitempty"`
 	// Optional. The description of the data.

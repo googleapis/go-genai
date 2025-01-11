@@ -1219,6 +1219,227 @@ func generateContentParametersToVertex(ac *apiClient, fromObject map[string]any,
 	return toObject, nil
 }
 
+func generateImageConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromHttpOptions := getValueByPath(fromObject, []string{"httpOptions"})
+	if fromHttpOptions != nil {
+		setValueByPath(toObject, []string{"httpOptions"}, fromHttpOptions)
+	}
+
+	if getValueByPath(fromObject, []string{"outputGcsUri"}) != nil {
+		return nil, fmt.Errorf("output_gcs_uri parameter is not supported in Google AI")
+	}
+
+	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	if fromNegativePrompt != nil {
+		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+	}
+
+	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	if fromNumberOfImages != nil {
+		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+	}
+
+	fromGuidanceScale := getValueByPath(fromObject, []string{"guidanceScale"})
+	if fromGuidanceScale != nil {
+		setValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
+	}
+
+	if getValueByPath(fromObject, []string{"seed"}) != nil {
+		return nil, fmt.Errorf("seed parameter is not supported in Google AI")
+	}
+
+	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	if fromSafetyFilterLevel != nil {
+		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+	}
+
+	fromIncludeSafetyAttributes := getValueByPath(fromObject, []string{"includeSafetyAttributes"})
+	if fromIncludeSafetyAttributes != nil {
+		setValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
+	}
+
+	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
+	if fromIncludeRaiReason != nil {
+		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
+	}
+
+	fromLanguage := getValueByPath(fromObject, []string{"language"})
+	if fromLanguage != nil {
+		setValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
+	}
+
+	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	if fromOutputMimeType != nil {
+		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+	}
+
+	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	if fromOutputCompressionQuality != nil {
+		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+	}
+
+	if getValueByPath(fromObject, []string{"addWatermark"}) != nil {
+		return nil, fmt.Errorf("add_watermark parameter is not supported in Google AI")
+	}
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+	}
+
+	return toObject, nil
+}
+
+func generateImageConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromHttpOptions := getValueByPath(fromObject, []string{"httpOptions"})
+	if fromHttpOptions != nil {
+		setValueByPath(toObject, []string{"httpOptions"}, fromHttpOptions)
+	}
+
+	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	if fromOutputGcsUri != nil {
+		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+	}
+
+	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	if fromNegativePrompt != nil {
+		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+	}
+
+	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	if fromNumberOfImages != nil {
+		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+	}
+
+	fromGuidanceScale := getValueByPath(fromObject, []string{"guidanceScale"})
+	if fromGuidanceScale != nil {
+		setValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
+	}
+
+	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	if fromSeed != nil {
+		setValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
+	}
+
+	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	if fromSafetyFilterLevel != nil {
+		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+	}
+
+	fromIncludeSafetyAttributes := getValueByPath(fromObject, []string{"includeSafetyAttributes"})
+	if fromIncludeSafetyAttributes != nil {
+		setValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
+	}
+
+	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
+	if fromIncludeRaiReason != nil {
+		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
+	}
+
+	fromLanguage := getValueByPath(fromObject, []string{"language"})
+	if fromLanguage != nil {
+		setValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
+	}
+
+	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	if fromOutputMimeType != nil {
+		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+	}
+
+	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	if fromOutputCompressionQuality != nil {
+		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+	}
+
+	fromAddWatermark := getValueByPath(fromObject, []string{"addWatermark"})
+	if fromAddWatermark != nil {
+		setValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
+	}
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+	}
+
+	return toObject, nil
+}
+
+func generateImageParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		fromModel, err = tModel(ac, fromModel)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+	}
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(toObject, []string{"instances", "prompt"}, fromPrompt)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = generateImageConfigToMldev(ac, fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
+func generateImageParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		fromModel, err = tModel(ac, fromModel)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+	}
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(toObject, []string{"instances", "prompt"}, fromPrompt)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = generateImageConfigToVertex(ac, fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func partFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1564,6 +1785,107 @@ func generateContentResponseFromVertex(ac *apiClient, fromObject map[string]any,
 	return toObject, nil
 }
 
+func imageFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImageBytes := getValueByPath(fromObject, []string{"bytesBase64Encoded"})
+	if fromImageBytes != nil {
+		setValueByPath(toObject, []string{"imageBytes"}, fromImageBytes)
+	}
+
+	return toObject, nil
+}
+
+func imageFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+	if fromGcsUri != nil {
+		setValueByPath(toObject, []string{"gcsUri"}, fromGcsUri)
+	}
+
+	fromImageBytes := getValueByPath(fromObject, []string{"bytesBase64Encoded"})
+	if fromImageBytes != nil {
+		setValueByPath(toObject, []string{"imageBytes"}, fromImageBytes)
+	}
+
+	return toObject, nil
+}
+
+func generatedImageFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImage := getValueByPath(fromObject, []string{"_self"})
+	if fromImage != nil {
+		fromImage, err = imageFromMldev(ac, fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"image"}, fromImage)
+	}
+
+	fromRaiFilteredReason := getValueByPath(fromObject, []string{"raiFilteredReason"})
+	if fromRaiFilteredReason != nil {
+		setValueByPath(toObject, []string{"raiFilteredReason"}, fromRaiFilteredReason)
+	}
+
+	return toObject, nil
+}
+
+func generatedImageFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImage := getValueByPath(fromObject, []string{"_self"})
+	if fromImage != nil {
+		fromImage, err = imageFromVertex(ac, fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"image"}, fromImage)
+	}
+
+	fromRaiFilteredReason := getValueByPath(fromObject, []string{"raiFilteredReason"})
+	if fromRaiFilteredReason != nil {
+		setValueByPath(toObject, []string{"raiFilteredReason"}, fromRaiFilteredReason)
+	}
+
+	return toObject, nil
+}
+
+func generateImageResponseFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	if fromGeneratedImages != nil {
+		fromGeneratedImages, err = applyConverterToSlice(ac, fromGeneratedImages.([]any), generatedImageFromMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+	}
+
+	return toObject, nil
+}
+
+func generateImageResponseFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	if fromGeneratedImages != nil {
+		fromGeneratedImages, err = applyConverterToSlice(ac, fromGeneratedImages.([]any), generatedImageFromVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+	}
+
+	return toObject, nil
+}
+
 type Models struct {
 	apiClient *apiClient
 }
@@ -1596,6 +1918,7 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	delete(body, "_url")
+	delete(body, "config")
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, &body)
 	if err != nil {
 		return nil, err
@@ -1646,6 +1969,7 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 		return yieldErrorAndEndIterator(fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err))
 	}
 	delete(body, "_url")
+	delete(body, "config")
 	err = sendStreamRequest(ctx, m.apiClient, path, http.MethodPost, &body, &rs)
 	if err != nil {
 		return yieldErrorAndEndIterator(err)
@@ -1662,6 +1986,50 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 		}
 		return response, nil
 	})
+}
+
+func (m Models) GenerateImage(ctx context.Context, model string, prompt string, config *GenerateImageConfig) (*GenerateImageResponse, error) {
+	parameterMap := make(map[string]any)
+
+	kwargs := map[string]any{"model": model, "prompt": prompt, "config": config}
+	deepMarshal(kwargs, &parameterMap)
+
+	var response = new(GenerateImageResponse)
+	var responseMap map[string]any
+	var fromConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig.Backend == BackendVertexAI {
+		toConverter = generateImageParametersToVertex
+		fromConverter = generateImageResponseFromVertex
+	} else {
+		toConverter = generateImageParametersToMldev
+		fromConverter = generateImageResponseFromMldev
+	}
+
+	body, err := toConverter(m.apiClient, parameterMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	urlParams := body["_url"].(map[string]any)
+	path, err := formatMap("{model}:predict", urlParams)
+	if err != nil {
+		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	delete(body, "_url")
+	delete(body, "config")
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, &body)
+	if err != nil {
+		return nil, err
+	}
+	responseMap, err = fromConverter(m.apiClient, responseMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = mapToStruct(responseMap, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 // GenerateContent calls the GenerateContent method on the model.

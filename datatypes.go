@@ -234,6 +234,36 @@ const (
 	MediaResolutionHigh MediaResolution = "MEDIA_RESOLUTION_HIGH"
 )
 
+// Enum that controls the safety filter level for objectionable content.
+type SafetyFilterLevel string
+
+const (
+	SafetyFilterLevelBlockLowAndAbove    SafetyFilterLevel = "BLOCK_LOW_AND_ABOVE"
+	SafetyFilterLevelBlockMediumAndAbove SafetyFilterLevel = "BLOCK_MEDIUM_AND_ABOVE"
+	SafetyFilterLevelBlockOnlyHigh       SafetyFilterLevel = "BLOCK_ONLY_HIGH"
+	SafetyFilterLevelBlockNone           SafetyFilterLevel = "BLOCK_NONE"
+)
+
+// Enum that controls the generation of people.
+type PersonGeneration string
+
+const (
+	PersonGenerationDontAllow  PersonGeneration = "DONT_ALLOW"
+	PersonGenerationAllowAdult PersonGeneration = "ALLOW_ADULT"
+	PersonGenerationAllowAll   PersonGeneration = "ALLOW_ALL"
+)
+
+// Enum that specifies the language of the text in the prompt.
+type ImagePromptLanguage string
+
+const (
+	ImagePromptLanguageAuto ImagePromptLanguage = "auto"
+	ImagePromptLanguageEn   ImagePromptLanguage = "en"
+	ImagePromptLanguageJa   ImagePromptLanguage = "ja"
+	ImagePromptLanguageKo   ImagePromptLanguage = "ko"
+	ImagePromptLanguageHi   ImagePromptLanguage = "hi"
+)
+
 // Enum representing the mask mode of a mask reference image.
 type MaskReferenceMode string
 
@@ -930,6 +960,84 @@ type GenerateContentResponse struct {
 	UsageMetadata *GenerateContentResponseUsageMetadata `json:"usageMetadata,omitempty"`
 }
 
+// Class that represents the config for generating an image.
+type GenerateImageConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions map[string]any `json:"httpOptions,omitempty"`
+	// Cloud Storage URI used to store the generated images.
+	OutputGCSURI string `json:"outputGcsUri,omitempty"`
+	// Description of what to discourage in the generated images.
+	NegativePrompt string `json:"negativePrompt,omitempty"`
+	// Number of images to generate.
+	NumberOfImages *int64 `json:"numberOfImages,omitempty"`
+	// Controls how much the model adheres to the text prompt. Large
+	// values increase output and prompt alignment, but may compromise image
+	// quality.
+	GuidanceScale *float64 `json:"guidanceScale,omitempty"`
+	// Random seed for image generation. This is not available when
+	// ``add_watermark`` is set to true.
+	Seed *int64 `json:"seed,omitempty"`
+	// Filter level for safety filtering.
+	SafetyFilterLevel SafetyFilterLevel `json:"safetyFilterLevel,omitempty"`
+	// Allows generation of people by the model.
+	PersonGeneration PersonGeneration `json:"personGeneration,omitempty"`
+	// Whether to report the safety scores of each image in the response.
+	// If IncludeSafetyAttributes is zero value, then IncludeSafetyAttributes is either
+	// empty or zero value in API response.
+	IncludeSafetyAttributes bool `json:"includeSafetyAttributes,omitempty"`
+	// Whether to include the Responsible AI filter reason if the image
+	// is filtered out of the response.
+	// If IncludeRAIReason is zero value, then no RAI reason will applied in the generation.
+	IncludeRAIReason bool `json:"includeRaiReason,omitempty"`
+	// Language of the text in the prompt.
+	Language ImagePromptLanguage `json:"language,omitempty"`
+	// MIME type of the generated image.
+	OutputMIMEType string `json:"outputMimeType,omitempty"`
+	// Compression quality of the generated image (for ``image/jpeg``
+	// only).
+	OutputCompressionQuality *int64 `json:"outputCompressionQuality,omitempty"`
+	// Whether to add a watermark to the generated image.
+	AddWatermark *bool `json:"addWatermark,omitempty"`
+	// Aspect ratio of the generated image.
+	AspectRatio string `json:"aspectRatio,omitempty"`
+}
+
+// Class that represents the parameters for generating an image.
+type GenerateImageParameters struct {
+	// ID of the model to use. For a list of models, see `Google models
+	// <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.
+	Model string `json:"model,omitempty"`
+	// Text prompt that typically describes the image to output.
+	Prompt string `json:"prompt,omitempty"`
+	// Configuration for generating an image.
+	Config *GenerateImageConfig `json:"config,omitempty"`
+}
+
+// Class that represents an image.
+type Image struct {
+	// The Cloud Storage URI of the image. ``Image`` can contain a value
+	// for this field or the ``image_bytes`` field but not both.
+	GCSURI string `json:"gcsUri,omitempty"`
+	// The image bytes data. ``Image`` can contain a value for this field
+	// or the ``gcs_uri`` field but not both.
+	ImageBytes []byte `json:"imageBytes,omitempty"`
+}
+
+// Class that represents an output image.
+type GeneratedImage struct {
+	// The output image data.
+	Image *Image `json:"image,omitempty"`
+	// Responsible AI filter reason if the image is filtered out of the
+	// response.
+	RAIFilteredReason string `json:"raiFilteredReason,omitempty"`
+}
+
+// Class that represents the output image response.
+type GenerateImageResponse struct {
+	// List of generated images.
+	GeneratedImages []*GeneratedImage `json:"generatedImages,omitempty"`
+}
+
 type testTableItem struct {
 	// The name of the test. This is used to derive the replay id.
 	Name string `json:"name,omitempty"`
@@ -1027,16 +1135,6 @@ type UpscaleImageConfig struct {
 	// The level of compression if the ``output_mime_type`` is
 	// ``image/jpeg``.
 	OutputCompressionQuality *int64 `json:"outputCompressionQuality,omitempty"`
-}
-
-// Class that represents an image.
-type Image struct {
-	// The Cloud Storage URI of the image. ``Image`` can contain a value
-	// for this field or the ``image_bytes`` field but not both.
-	GCSURI string `json:"gcsUri,omitempty"`
-	// The image bytes data. ``Image`` can contain a value for this field
-	// or the ``gcs_uri`` field but not both.
-	ImageBytes []byte `json:"imageBytes,omitempty"`
 }
 
 // User-facing config UpscaleImageParameters.

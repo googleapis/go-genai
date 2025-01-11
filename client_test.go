@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -319,4 +320,114 @@ func TestNewClient(t *testing.T) {
 		}
 	})
 
+}
+
+func TestClientConfigInitialization(t *testing.T) {
+	tests := []struct {
+		name               string
+		clientConfig       ClientConfig
+		expectedBaseURL    string
+		expectedAPIVersion string
+		expectedTimeout    time.Duration
+	}{
+		{
+			name: "Default Backend with API Version and Timeout",
+			clientConfig: ClientConfig{
+				HTTPOptions: HTTPOptions{
+					APIVersion: "v2",
+					Timeout:    5000,
+				},
+				APIKey: "test-api-key",
+			},
+			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
+			expectedAPIVersion: "v2",
+			expectedTimeout:    5000 * time.Millisecond,
+		},
+		{
+			name: "Google AI Backend with API Version and Timeout",
+			clientConfig: ClientConfig{
+				Backend: BackendGoogleAI,
+				HTTPOptions: HTTPOptions{
+					APIVersion: "v2",
+					Timeout:    5000,
+				},
+				APIKey: "test-api-key",
+			},
+			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
+			expectedAPIVersion: "v2",
+			expectedTimeout:    5000 * time.Millisecond,
+		},
+		{
+			name: "Vertex AI Backend with API Version and Timeout",
+			clientConfig: ClientConfig{
+				Backend:  BackendVertexAI,
+				Project:  "test-project",
+				Location: "us-central1",
+				HTTPOptions: HTTPOptions{
+					Timeout:    3000,
+					APIVersion: "v2",
+				},
+				Credentials: &google.Credentials{},
+			},
+			expectedBaseURL:    "https://us-central1-aiplatform.googleapis.com/",
+			expectedAPIVersion: "v2",
+			expectedTimeout:    3000 * time.Millisecond,
+		},
+		{
+			name: "Default Backend without API Version and Timeout",
+			clientConfig: ClientConfig{
+				HTTPOptions: HTTPOptions{},
+				APIKey:      "test-api-key",
+			},
+			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
+			expectedAPIVersion: "v1beta",
+			expectedTimeout:    0,
+		},
+		{
+			name: "Google AI Backend without API Version and Timeout",
+			clientConfig: ClientConfig{
+				HTTPOptions: HTTPOptions{},
+				APIKey:      "test-api-key",
+				Backend:     BackendGoogleAI,
+			},
+			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
+			expectedAPIVersion: "v1beta",
+			expectedTimeout:    0,
+		},
+		{
+			name: "Vertex AI Backend without API Version and Timeout",
+			clientConfig: ClientConfig{
+				Backend:     BackendVertexAI,
+				Project:     "test-project",
+				Location:    "us-central1",
+				HTTPOptions: HTTPOptions{},
+				Credentials: &google.Credentials{},
+			},
+			expectedBaseURL:    "https://us-central1-aiplatform.googleapis.com/",
+			expectedAPIVersion: "v1beta1",
+			expectedTimeout:    0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			client, err := NewClient(ctx, &tt.clientConfig)
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+
+			if client.clientConfig.baseURL != tt.expectedBaseURL {
+				t.Errorf("expected baseURL %s, got %s", tt.expectedBaseURL, client.clientConfig.baseURL)
+			}
+
+			if client.clientConfig.apiVersion != tt.expectedAPIVersion {
+				t.Errorf("expected apiVersion %s, got %s", tt.expectedAPIVersion, client.clientConfig.apiVersion)
+			}
+
+			if client.clientConfig.HTTPClient.Timeout != tt.expectedTimeout {
+				t.Errorf("expected timeout %v, got %v", tt.expectedTimeout, client.clientConfig.HTTPClient.Timeout)
+			}
+		})
+	}
 }

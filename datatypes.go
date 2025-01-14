@@ -265,6 +265,20 @@ const (
 	SubjectReferenceTypeSubjectTypeProduct SubjectReferenceType = "SUBJECT_TYPE_PRODUCT"
 )
 
+// Config class for the server content modalities.
+type Modality string
+
+const (
+	// The modality is unspecified.
+	ModalityUnspecified Modality = "MODALITY_UNSPECIFIED"
+	// Indicates the model should return text
+	ModalityText Modality = "TEXT"
+	// Indicates the model should return images.
+	ModalityImage Modality = "IMAGE"
+	// Indicates the model should return images.
+	ModalityAudio Modality = "AUDIO"
+)
+
 // Metadata describes the input video content.
 type VideoMetadata struct {
 	// Optional. The end offset of the video.
@@ -1192,7 +1206,7 @@ type LiveServerToolCall struct {
 // server turns.
 type LiveServerToolCallCancellation struct {
 	// The IDs of the tool calls to be cancelled.
-	IDs []int64 `json:"ids,omitempty"`
+	IDs []string `json:"ids,omitempty"`
 }
 
 // Response message for API call.
@@ -1338,7 +1352,7 @@ type LiveConnectConfig struct {
 	GenerationConfig *GenerationConfig `json:"generationConfig,omitempty"`
 	// The requested modalities of the response. Represents the set of
 	// modalities that the model can return. Defaults to AUDIO if not specified.
-	ResponseModalities []string `json:"responseModalities,omitempty"`
+	ResponseModalities []Modality `json:"responseModalities,omitempty"`
 	// The speech generation configuration.
 	SpeechConfig *SpeechConfig `json:"speechConfig,omitempty"`
 	// The user provided system instructions for the model.

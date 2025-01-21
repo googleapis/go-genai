@@ -1651,6 +1651,11 @@ func computeTokensParametersToMldev(ac *apiClient, fromObject map[string]any, pa
 		return nil, fmt.Errorf("contents parameter is not supported in Google AI")
 	}
 
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
 	return toObject, nil
 }
 
@@ -1680,6 +1685,11 @@ func computeTokensParametersToVertex(ac *apiClient, fromObject map[string]any, p
 		}
 
 		setValueByPath(toObject, []string{"contents"}, fromContents)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil

@@ -204,7 +204,7 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 
 	want := map[string]any{
 		"method":       replayRequest.Method,
-		"url":          redactReplayURL(replayRequest.Url),
+		"url":          redactReplayURL(replayRequest.URL),
 		"bodySegments": replayRequest.BodySegments,
 	}
 

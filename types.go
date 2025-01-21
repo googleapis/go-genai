@@ -503,6 +503,18 @@ type Content struct {
 	Role string `json:"role,omitempty"`
 }
 
+// HTTP options to be used in each of the requests.
+type HTTPOptions struct {
+	// BaseURL specifies the base URL for the API endpoint. If unset, defaults to "https://generativelanguage.googleapis.com/"
+	// for the Gemini API backend, and location-specific Vertex AI endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/
+	BaseURL string `json:"baseUrl,omitempty"`
+	// APIVersion specifies the version of the API to use.
+	APIVersion string `json:"apiVersion,omitempty"`
+	// Timeout sets the timeout for HTTP requests in milliseconds. If unset, defaults to
+	// "v1beta" for the Gemini API, and "v1beta1" for the Vertex AI.
+	Timeout int64 `json:"timeout,omitempty"`
+}
+
 // Schema that defines the format of input and output data. Represents a select subset
 // of an OpenAPI 3.0 schema object. You can find more details and examples at https://spec.openapis.org/oas/v3.0.3.html#schema-object
 type Schema struct {
@@ -845,7 +857,7 @@ type Citation struct {
 	StartIndex int64 `json:"startIndex,omitempty"`
 	// Output only. Title of the attribution.
 	Title string `json:"title,omitempty"`
-	// Output only. Url reference of the attribution.
+	// Output only. URL reference of the attribution.
 	URI string `json:"uri,omitempty"`
 }
 
@@ -1471,7 +1483,7 @@ type testTableFile struct {
 type replayRequest struct {
 	Method string `json:"method,omitempty"`
 
-	Url string `json:"url,omitempty"`
+	URL string `json:"url,omitempty"`
 
 	Headers map[string]string `json:"headers,omitempty"`
 

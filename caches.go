@@ -229,6 +229,11 @@ func getCachedContentParametersToMldev(ac *apiClient, fromObject map[string]any,
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
 	return toObject, nil
 }
 
@@ -243,6 +248,11 @@ func getCachedContentParametersToVertex(ac *apiClient, fromObject map[string]any
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -261,6 +271,11 @@ func deleteCachedContentParametersToMldev(ac *apiClient, fromObject map[string]a
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
 	return toObject, nil
 }
 
@@ -275,6 +290,11 @@ func deleteCachedContentParametersToVertex(ac *apiClient, fromObject map[string]
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil

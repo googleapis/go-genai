@@ -62,20 +62,6 @@ func (t Backend) String() string {
 	}
 }
 
-// HTTPOptions are user overridable HTTP options for the API.
-type HTTPOptions struct {
-	// BaseURL specifies the base URL for the API endpoint.
-	// If unset, defaults to "https://generativelanguage.googleapis.com/" for the Gemini API backend,
-	// and location-specific Vertex AI endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/").
-	BaseURL string
-	// APIVersion specifies the version of the API to use.
-	// If unset, defaults to "v1beta" for the Gemini API, and "v1beta1" for the Vertex AI.
-	APIVersion string
-	// Timeout sets the timeout for HTTP requests in milliseconds.
-	// If unset, then there is no timeout enforced by HTTP Client. Note that there may still be API-side timeouts.
-	Timeout int
-}
-
 // ClientConfig is the configuration for the GenAI client.
 type ClientConfig struct {
 	APIKey      string              // API Key for GenAI. Required for BackendGeminiAPI.

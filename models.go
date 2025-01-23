@@ -2043,6 +2043,11 @@ func imageFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[s
 		setValueByPath(toObject, []string{"imageBytes"}, fromImageBytes)
 	}
 
+	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+	}
+
 	return toObject, nil
 }
 
@@ -2062,6 +2067,11 @@ func imageFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[
 		}
 
 		setValueByPath(toObject, []string{"imageBytes"}, fromImageBytes)
+	}
+
+	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil

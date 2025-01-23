@@ -1184,6 +1184,8 @@ type Image struct {
 	// The image bytes data. ``Image`` can contain a value for this field
 	// or the ``gcs_uri`` field but not both.
 	ImageBytes []byte `json:"imageBytes,omitempty"`
+	// The MIME type of the image.
+	MIMEType string `json:"mimeType,omitempty"`
 }
 
 // Class that represents an output image.

@@ -127,6 +127,7 @@ func (r *Live) Connect(model string, config *LiveConnectConfig) (*Session, error
 
 // Send transmits a LiveClientMessage over the established connection.
 // It returns an error if sending the message fails.
+// At this time, only audio and video inputs are supported.
 // The live module is experimental.
 func (s *Session) Send(input *LiveClientMessage) error {
 	if input.Setup != nil {

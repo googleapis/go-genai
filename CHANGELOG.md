@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/googleapis/go-genai/compare/v0.2.0...v0.3.0) (2025-02-12)
+
+
+### Features
+
+* Enable Media resolution for Gemini API. ([a22788b](https://github.com/googleapis/go-genai/commit/a22788bb061458bbd15c2fd1a8e2dfdf9e7a3fc8))
+* support property_ordering in response_schema (fixes [#236](https://github.com/googleapis/go-genai/issues/236)) ([ac45038](https://github.com/googleapis/go-genai/commit/ac450381046cd673d6a76e04920fc610b182c2c0))
+
 ## [0.2.0](https://github.com/googleapis/go-genai/compare/v0.1.0...v0.2.0) (2025-02-05)
 
 

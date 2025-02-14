@@ -2236,6 +2236,16 @@ func generateContentResponseFromVertex(ac *apiClient, fromObject map[string]any,
 		setValueByPath(toObject, []string{"candidates"}, fromCandidates)
 	}
 
+	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
+	if fromCreateTime != nil {
+		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
+	}
+
+	fromResponseId := getValueByPath(fromObject, []string{"responseId"})
+	if fromResponseId != nil {
+		setValueByPath(toObject, []string{"responseId"}, fromResponseId)
+	}
+
 	fromModelVersion := getValueByPath(fromObject, []string{"modelVersion"})
 	if fromModelVersion != nil {
 		setValueByPath(toObject, []string{"modelVersion"}, fromModelVersion)

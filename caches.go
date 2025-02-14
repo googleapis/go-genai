@@ -19,6 +19,7 @@ package genai
 import (
 	"context"
 	"fmt"
+	"iter"
 	"net/http"
 )
 
@@ -384,6 +385,70 @@ func updateCachedContentParametersToVertex(ac *apiClient, fromObject map[string]
 	return toObject, nil
 }
 
+func listCachedContentsConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	if fromPageSize != nil {
+		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+	}
+
+	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	if fromPageToken != nil {
+		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+	}
+
+	return toObject, nil
+}
+
+func listCachedContentsConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	if fromPageSize != nil {
+		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+	}
+
+	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	if fromPageToken != nil {
+		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+	}
+
+	return toObject, nil
+}
+
+func listCachedContentsParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = listCachedContentsConfigToMldev(ac, fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
+func listCachedContentsParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = listCachedContentsConfigToVertex(ac, fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func cachedContentFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -478,6 +543,48 @@ func deleteCachedContentResponseFromVertex(ac *apiClient, fromObject map[string]
 	return toObject, nil
 }
 
+func listCachedContentsResponseFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	if fromNextPageToken != nil {
+		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+	}
+
+	fromCachedContents := getValueByPath(fromObject, []string{"cachedContents"})
+	if fromCachedContents != nil {
+		fromCachedContents, err = applyConverterToSlice(ac, fromCachedContents.([]any), cachedContentFromMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"cachedContents"}, fromCachedContents)
+	}
+
+	return toObject, nil
+}
+
+func listCachedContentsResponseFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	if fromNextPageToken != nil {
+		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+	}
+
+	fromCachedContents := getValueByPath(fromObject, []string{"cachedContents"})
+	if fromCachedContents != nil {
+		fromCachedContents, err = applyConverterToSlice(ac, fromCachedContents.([]any), cachedContentFromVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"cachedContents"}, fromCachedContents)
+	}
+
+	return toObject, nil
+}
+
 type Caches struct {
 	apiClient *apiClient
 }
@@ -517,6 +624,14 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
 	}
 
 	if _, ok := body["config"]; ok {
@@ -573,6 +688,14 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
+	}
 
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
@@ -627,6 +750,14 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
 	}
 
 	if _, ok := body["config"]; ok {
@@ -683,6 +814,14 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
+	}
 
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
@@ -700,4 +839,93 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 		return nil, err
 	}
 	return response, nil
+}
+
+func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*ListCachedContentsResponse, error) {
+	parameterMap := make(map[string]any)
+
+	kwargs := map[string]any{"config": config}
+	deepMarshal(kwargs, &parameterMap)
+
+	var response = new(ListCachedContentsResponse)
+	var responseMap map[string]any
+	var fromConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		toConverter = listCachedContentsParametersToVertex
+		fromConverter = listCachedContentsResponseFromVertex
+	} else {
+		toConverter = listCachedContentsParametersToMldev
+		fromConverter = listCachedContentsResponseFromMldev
+	}
+
+	body, err := toConverter(m.apiClient, parameterMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	var path string
+	var urlParams map[string]any
+	if _, ok := body["_url"]; ok {
+		urlParams = body["_url"].(map[string]any)
+		delete(body, "_url")
+	}
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		path, err = formatMap("cachedContents", urlParams)
+	} else {
+		path, err = formatMap("cachedContents", urlParams)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
+	}
+
+	if _, ok := body["config"]; ok {
+		delete(body, "config")
+	}
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body)
+	if err != nil {
+		return nil, err
+	}
+	responseMap, err = fromConverter(m.apiClient, responseMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = mapToStruct(responseMap, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (m Caches) List(ctx context.Context, config *ListCachedContentsConfig) (Page[CachedContent, ListCachedContentsConfig], error) {
+	listFunc := func(ctx context.Context, config *ListCachedContentsConfig) ([]*CachedContent, string, error) {
+		resp, err := m.list(ctx, config)
+		if err != nil {
+			return nil, "", err
+		}
+		return resp.CachedContents, resp.NextPageToken, nil
+	}
+	return newPage(ctx, "cachedContents", *config, listFunc)
+}
+
+func (m Caches) All(ctx context.Context) iter.Seq2[*CachedContent, error] {
+	listFunc := func(ctx context.Context, config *ListCachedContentsConfig) ([]*CachedContent, string, error) {
+		resp, err := m.list(ctx, config)
+		if err != nil {
+			return nil, "", err
+		}
+		return resp.CachedContents, resp.NextPageToken, nil
+	}
+	p, err := newPage(ctx, "cachedContents", ListCachedContentsConfig{}, listFunc)
+	if err != nil {
+		return yieldErrorAndEndIterator[CachedContent](err)
+	}
+	return p.all(ctx)
 }

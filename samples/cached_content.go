@@ -40,9 +40,18 @@ import (
 
 var model = flag.String("model", "gemini-1.5-pro-002", "the model name, e.g. gemini-1.5-pro-002")
 
+func debugPrint(r any) {
+	// Marshal the result to JSON.
+	response, err := json.MarshalIndent(r, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Log the output.
+	fmt.Println(string(response))
+}
+
 func createCachedContent(ctx context.Context) {
 	client, err := genai.NewClient(ctx, nil)
-  fmt.Println("client: ", client.ClientConfig())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,28 +85,34 @@ func createCachedContent(ctx context.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Marshal the result to JSON and pretty-print it to a byte array.
-	response, err := json.MarshalIndent(*result, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Log the output.
-	fmt.Println(string(response))
+	debugPrint(result)
 
-	// Retrieve the cached content.
-	resp, err := client.Caches.Get(ctx, result.Name, nil)
+	// Iterate over the cached contents.
+	// Option 1: using the All method.
+	for item, err := range client.Caches.All(ctx) {
+		if err != nil {
+			log.Fatal(err)
+		}
+		debugPrint(item)
+	}
+
+	// Iterate over the cached contents.
+	// Option 2: using the List method for more control.
+	// Example 2.1 - List the first page.
+	page, err := client.Caches.List(ctx, &genai.ListCachedContentsConfig{PageSize: 2})
+	// Example 2.2 - Continue to the next page.
+	page, err = page.Next(ctx)
+	// Example 2.3 - Resume the page iteration using the next page token.
+	page, err = client.Caches.List(ctx, &genai.ListCachedContentsConfig{PageSize: 2, PageToken: page.NextPageToken})
+	if err == genai.PageDone {
+		fmt.Println("No more cached content to retrieve.")
+		return
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Marshal the result to JSON and pretty-print it to a byte array.
-	respJSON, err := json.MarshalIndent(resp, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Log the output.
-	fmt.Println(string(respJSON))
+	debugPrint(page.Items)
 }
-
 
 func main() {
 	ctx := context.Background()

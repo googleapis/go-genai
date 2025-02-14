@@ -19,7 +19,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"iter"
+	"net/url"
 	"reflect"
+	"strconv"
 )
 
 // Ptr returns a pointer to its argument.
@@ -127,4 +130,35 @@ func deepMarshal(input any, output *map[string]any) error {
 		return fmt.Errorf("deepMarshal: unable to unmarshal input: %w", err)
 	}
 	return nil
+}
+
+func createURLQuery(query map[string]any) (string, error) {
+	v := url.Values{}
+	for key, value := range query {
+		switch value := value.(type) {
+		case string:
+			v.Add(key, value)
+		case int:
+			v.Add(key, strconv.Itoa(value))
+		case float64:
+			v.Add(key, strconv.FormatFloat(value, 'f', -1, 64))
+		case bool:
+			v.Add(key, strconv.FormatBool(value))
+		case []any:
+			for _, item := range value {
+				v.Add(key, item.(string))
+			}
+		default:
+			return "", fmt.Errorf("unsupported type: %T", value)
+		}
+	}
+	return v.Encode(), nil
+}
+
+func yieldErrorAndEndIterator[T any](err error) iter.Seq2[*T, error] {
+	return func(yield func(*T, error) bool) {
+		if !yield(nil, err) {
+			return
+		}
+	}
 }

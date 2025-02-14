@@ -2501,6 +2501,14 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
+	}
 
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
@@ -2619,6 +2627,14 @@ func (m Models) GenerateImages(ctx context.Context, model string, prompt string,
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
+	}
 
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
@@ -2678,11 +2694,19 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
+	}
 
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
 	}
-	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, &body)
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2732,6 +2756,14 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
 	}
 
 	if _, ok := body["config"]; ok {
@@ -2791,6 +2823,14 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path = path + "?" + query
+		delete(body, "_query")
 	}
 
 	if _, ok := body["config"]; ok {

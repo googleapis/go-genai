@@ -2006,3 +2006,12 @@ type LiveConnectConfig struct {
 	// knowledge and scope of the model.
 	Tools []*Tool `json:"tools,omitempty"`
 }
+
+// Parameters for connecting to the live API.
+type LiveConnectParameters struct {
+	// ID of the model to use. For a list of models, see `Google models
+	// <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.
+	Model string `json:"model,omitempty"`
+	// Optional parameters for the request.
+	Config *LiveConnectConfig `json:"config,omitempty"`
+}

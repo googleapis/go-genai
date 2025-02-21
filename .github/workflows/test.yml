@@ -1,0 +1,35 @@
+name: Go Test Automation with Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run Go Tests and Coverage
+    runs-on: ubuntu-latest  # Use GitHub-hosted Ubuntu runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23  # Adjust to your required Go version
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Run tests with coverage
+        run: go test -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Generate coverage report
+        run: go tool cover -func=coverage.out
+
+      - name: Upload coverage report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out

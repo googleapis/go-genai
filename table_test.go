@@ -48,6 +48,32 @@ func snakeToCamel(s string) string {
 	return strings.Join(parts, "")
 }
 
+// methodParamType is extra mapping of method param name to its param type because reflect module cannot process private struct.
+var methodParamType = map[string]map[string]reflect.Type{
+	"editImage": map[string]reflect.Type{
+		"referenceImages": reflect.TypeOf(([]ReferenceImage)(nil)),
+	},
+}
+
+type interfaceDeserialize func([]byte) (reflect.Value, error)
+
+// methodParamType is dedicated deserializer for each interface type because json string cannot be unmarshalled to
+// interface type directly.
+var interfaceDeserializer = map[string]interfaceDeserialize{
+	"[]genai.ReferenceImage": func(s []byte) (reflect.Value, error) {
+		var images1 []*referenceImageAPI
+		if err := json.Unmarshal(s, &images1); err != nil {
+			return reflect.Value{}, err
+		}
+		// Need to match the method type because reflect method.Call() cannot process interface type.
+		var images2 []ReferenceImage
+		for _, image := range images1 {
+			images2 = append(images2, image)
+		}
+		return reflect.ValueOf(images2), nil
+	},
+}
+
 func sanitizeGotSDKResponses(t *testing.T, responses []map[string]any) {
 	t.Helper()
 	for _, response := range responses {
@@ -74,7 +100,19 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 		parameterValue, ok := testTableItem.Parameters[parameterName]
 		if ok {
 			paramType := method.Type().In(i)
-			sanitizeMapWithSourceType(t, paramType, parameterValue)
+			if paramType == nil {
+				_, methodName := moduleAndMethodName(t, testTableFile)
+				if pt, ok := methodParamType[methodName][parameterName]; ok {
+					paramType = pt
+				}
+			}
+
+			paramTypeName := fmt.Sprintf("%s", paramType)
+			if paramTypeName == "[]genai.ReferenceImage" {
+				sanitizeMapWithSourceType(t, reflect.TypeOf(([]*referenceImageAPI)(nil)), parameterValue)
+			} else {
+				sanitizeMapWithSourceType(t, paramType, parameterValue)
+			}
 			sanitizeMapByPath(parameterValue, "httpOptions.headers", func(data any, path string) any {
 				if _, ok := data.(map[string]any); !ok {
 					log.Printf("convertStringMapToHeaderMap: data is not map[string]any: %s %T\n", data, data)
@@ -91,11 +129,22 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 			if err != nil {
 				t.Error("ExtractArgs: error marshalling:", err)
 			}
-			convertedValue := reflect.New(paramType).Elem()
-			if err = json.Unmarshal(convertedJSON, convertedValue.Addr().Interface()); err != nil {
-				t.Error("ExtractArgs: error unmarshalling:", err, string(convertedJSON))
+
+			if deserializer, ok := interfaceDeserializer[paramTypeName]; ok {
+				// interface types.
+				convertedValue, err := deserializer(convertedJSON)
+				if err != nil {
+					t.Fatalf("ExtractArgs: error unmarshalling slice: %v, json: %s", err, string(convertedJSON))
+				}
+				args = append(args, convertedValue)
+			} else {
+				// struct types.
+				convertedValue := reflect.New(paramType).Elem()
+				if err = json.Unmarshal(convertedJSON, convertedValue.Addr().Interface()); err != nil {
+					t.Error("ExtractArgs: error unmarshalling:", err, string(convertedJSON))
+				}
+				args = append(args, convertedValue)
 			}
-			args = append(args, convertedValue)
 		} else {
 			args = append(args, reflect.New(method.Type().In(i)).Elem())
 		}
@@ -109,7 +158,7 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 	return args
 }
 
-func extractMethod(t *testing.T, testTableFile *testTableFile, client *Client) reflect.Value {
+func moduleAndMethodName(t *testing.T, testTableFile *testTableFile) (string, string) {
 	t.Helper()
 	// Gets module name and method name.
 	segments := strings.Split(testTableFile.TestMethod, ".")
@@ -118,6 +167,17 @@ func extractMethod(t *testing.T, testTableFile *testTableFile, client *Client) r
 	}
 	moduleName := segments[0]
 	methodName := segments[1]
+	return moduleName, methodName
+}
+
+func extractMethod(t *testing.T, testTableFile *testTableFile, client *Client) reflect.Value {
+	t.Helper()
+	// Gets module name and method name.
+	segments := strings.Split(testTableFile.TestMethod, ".")
+	if len(segments) != 2 {
+		t.Error("Invalid test method: " + testTableFile.TestMethod)
+	}
+	moduleName, methodName := moduleAndMethodName(t, testTableFile)
 
 	// Finds the module and method.
 	module := reflect.ValueOf(*client).FieldByName(snakeToPascal(moduleName))

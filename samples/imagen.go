@@ -73,6 +73,7 @@ func imagen(ctx context.Context) {
 		log.Fatal(err)
 	}
 	print(response1)
+	print(response1.PositivePromptSafetyAttributes)
 
 	fmt.Println("Upscale image example. Only supported in BackendVertexAI.")
 	response2, err := client.Models.UpscaleImage(

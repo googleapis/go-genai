@@ -1567,7 +1567,8 @@ type GenerateImagesConfig struct {
 	SafetyFilterLevel SafetyFilterLevel `json:"safetyFilterLevel,omitempty"`
 	// Allows generation of people by the model.
 	PersonGeneration PersonGeneration `json:"personGeneration,omitempty"`
-	// Whether to report the safety scores of each image in the response.
+	// Whether to report the safety scores of each generated image and
+	// the positive prompt in the response.
 	IncludeSafetyAttributes bool `json:"includeSafetyAttributes,omitempty"`
 	// Whether to include the Responsible AI filter reason if the image
 	// is filtered out of the response.
@@ -1603,6 +1604,8 @@ type SafetyAttributes struct {
 	Categories []string `json:"categories,omitempty"`
 	// List of scores of each categories.
 	Scores []float32 `json:"scores,omitempty"`
+	// Internal use only.
+	ContentType string `json:"contentType,omitempty"`
 }
 
 // An output image.
@@ -1624,6 +1627,9 @@ type GeneratedImage struct {
 type GenerateImagesResponse struct {
 	// List of generated images.
 	GeneratedImages []*GeneratedImage `json:"generatedImages,omitempty"`
+	// Safety attributes of the positive prompt. Only populated if
+	// ``include_safety_attributes`` is set to True.
+	PositivePromptSafetyAttributes *SafetyAttributes `json:"positivePromptSafetyAttributes,omitempty"`
 }
 
 // Configuration for a Mask reference image.
@@ -1771,7 +1777,8 @@ type EditImageConfig struct {
 	SafetyFilterLevel SafetyFilterLevel `json:"safetyFilterLevel,omitempty"`
 	// Allows generation of people by the model.
 	PersonGeneration PersonGeneration `json:"personGeneration,omitempty"`
-	// Whether to report the safety scores of each image in the response.
+	// Whether to report the safety scores of each generated image and
+	// the positive prompt in the response.
 	IncludeSafetyAttributes bool `json:"includeSafetyAttributes,omitempty"`
 	// Whether to include the Responsible AI filter reason if the image
 	// is filtered out of the response.

@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.0](https://github.com/googleapis/go-genai/compare/v0.3.0...v0.4.0) (2025-02-24)
+
+
+### Features
+
+* Add Imagen upscale_image support for Go ([8e2afe9](https://github.com/googleapis/go-genai/commit/8e2afe992bae5b30c6d9cd2bfecfc71f12c3f986))
+* introduce usability functions to allow quick creation of user content and model content. ([12b5dee](https://github.com/googleapis/go-genai/commit/12b5dee0e6148aa00c5ee3516189e79dc07b1ab8))
+* support list all caches in List and All functions ([addc388](https://github.com/googleapis/go-genai/commit/addc3880e38c6026117d91f8019959347469ef12))
+* support Models .Get, .Update, .Delete ([e67cd8b](https://github.com/googleapis/go-genai/commit/e67cd8b2d619323bfce97a3b6306521799a6b4f9))
+
+
+### Bug Fixes
+
+* fix the civil.Date parsing in Citation struct. fixes [#106](https://github.com/googleapis/go-genai/issues/106) ([f530fcf](https://github.com/googleapis/go-genai/commit/f530fcf86fec626bd6bad88c72d26746acada4ff))
+* missing context in request. fixes [#104](https://github.com/googleapis/go-genai/issues/104) ([747c5ef](https://github.com/googleapis/go-genai/commit/747c5ef9c781024b0f88f30c77ff382b35f6a52b))
+* Remove request body when it's empty. ([cfc82e3](https://github.com/googleapis/go-genai/commit/cfc82e3ca5231506172c9258a1447a114a84ed96))
+
 ## [0.3.0](https://github.com/googleapis/go-genai/compare/v0.2.0...v0.3.0) (2025-02-12)
 
 

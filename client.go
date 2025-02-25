@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -155,10 +154,6 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		} else {
 			cc.HTTPClient = &http.Client{}
 		}
-	}
-
-	if cc.HTTPOptions.Timeout > 0 {
-		cc.HTTPClient.Timeout = time.Duration(cc.HTTPOptions.Timeout) * time.Millisecond
 	}
 
 	ac := &apiClient{clientConfig: cc}

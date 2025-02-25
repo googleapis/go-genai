@@ -595,6 +595,14 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 	kwargs := map[string]any{"model": model, "config": config}
 	deepMarshal(kwargs, &parameterMap)
 
+	var httpOptions *HTTPOptions
+	if config == nil {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	} else {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
+		config.HTTPOptions = nil
+	}
+
 	var response = new(CachedContent)
 	var responseMap map[string]any
 	var fromConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
@@ -637,7 +645,7 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
 	}
-	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body)
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -657,6 +665,14 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 
 	kwargs := map[string]any{"name": name, "config": config}
 	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	} else {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
+		config.HTTPOptions = nil
+	}
 
 	var response = new(CachedContent)
 	var responseMap map[string]any
@@ -700,7 +716,7 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
 	}
-	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body)
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -720,6 +736,14 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 
 	kwargs := map[string]any{"name": name, "config": config}
 	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	} else {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
+		config.HTTPOptions = nil
+	}
 
 	var response = new(DeleteCachedContentResponse)
 	var responseMap map[string]any
@@ -763,7 +787,7 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
 	}
-	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodDelete, body)
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodDelete, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -783,6 +807,14 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 
 	kwargs := map[string]any{"name": name, "config": config}
 	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	} else {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
+		config.HTTPOptions = nil
+	}
 
 	var response = new(CachedContent)
 	var responseMap map[string]any
@@ -826,7 +858,7 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
 	}
-	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPatch, body)
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPatch, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -846,6 +878,14 @@ func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*Li
 
 	kwargs := map[string]any{"config": config}
 	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	} else {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
+		config.HTTPOptions = nil
+	}
 
 	var response = new(ListCachedContentsResponse)
 	var responseMap map[string]any
@@ -889,7 +929,7 @@ func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*Li
 	if _, ok := body["config"]; ok {
 		delete(body, "config")
 	}
-	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body)
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}

@@ -173,3 +173,38 @@ func yieldErrorAndEndIterator[T any](err error) iter.Seq2[*T, error] {
 		}
 	}
 }
+
+func mergeHTTPOptions(clientConfig *ClientConfig, requestHTTPOptions *HTTPOptions) *HTTPOptions {
+	if clientConfig != nil {
+		return doMergeHTTPOptions(&(clientConfig.HTTPOptions), requestHTTPOptions)
+	} else {
+		return doMergeHTTPOptions(nil, requestHTTPOptions)
+	}
+}
+
+func doMergeHTTPOptions(clientHTTPOptions *HTTPOptions, requestHTTPOptions *HTTPOptions) *HTTPOptions {
+	result := HTTPOptions{}
+	if clientHTTPOptions == nil && requestHTTPOptions == nil {
+		return nil
+	} else if clientHTTPOptions == nil {
+		result = HTTPOptions{
+			BaseURL:    requestHTTPOptions.BaseURL,
+			APIVersion: requestHTTPOptions.APIVersion,
+		}
+	} else {
+		result = HTTPOptions{
+			BaseURL:    clientHTTPOptions.BaseURL,
+			APIVersion: clientHTTPOptions.APIVersion,
+		}
+	}
+
+	if requestHTTPOptions != nil {
+		if requestHTTPOptions.BaseURL != "" {
+			result.BaseURL = requestHTTPOptions.BaseURL
+		}
+		if requestHTTPOptions.APIVersion != "" {
+			result.APIVersion = requestHTTPOptions.APIVersion
+		}
+	}
+	return &result
+}

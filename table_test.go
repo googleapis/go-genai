@@ -170,21 +170,22 @@ func TestTable(t *testing.T) {
 							if isDisabledTest(t) {
 								t.Skipf("Skipping disabled test")
 							}
+
 							if testTableItem.HasUnion {
 								// TODO(b/377989301): Handle unions.
 								t.Skipf("Skipping because it has union")
 							}
 							config := ClientConfig{Backend: backend.Backend}
 							replayClient := createReplayAPIClient(t, testTableDirectory, testTableItem, backend.name)
-							if *mode == "replay" {
+							if *mode == replayMode {
 								config.HTTPOptions.BaseURL = replayClient.GetBaseURL()
-								config.HTTPClient, err = replayClient.CreateClient(ctx)
-							}
-							if backend.Backend == BackendVertexAI {
-								config.Project = "fake-project"
-								config.Location = "fake-location"
-							} else {
-								config.APIKey = "fake-api-key"
+								config.HTTPClient = replayClient.server.Client()
+								if backend.Backend == BackendVertexAI {
+									config.Project = "fake-project"
+									config.Location = "fake-location"
+								} else {
+									config.APIKey = "fake-api-key"
+								}
 							}
 							client, err := NewClient(ctx, &config)
 							if err != nil {
@@ -200,6 +201,9 @@ func TestTable(t *testing.T) {
 								injectUnknownFields(t, replayClient)
 							}
 							response := method.Call(args)
+							if *mode == apiMode {
+								return
+							}
 							wantException := extractWantException(testTableItem, backend.Backend)
 							if wantException != "" {
 								if response[1].IsNil() {

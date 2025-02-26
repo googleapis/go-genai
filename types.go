@@ -663,9 +663,6 @@ type HTTPOptions struct {
 	BaseURL string `json:"baseUrl,omitempty"`
 	// APIVersion specifies the version of the API to use.
 	APIVersion string `json:"apiVersion,omitempty"`
-	// Timeout sets the timeout for HTTP requests in milliseconds. If unset, defaults to
-	// "v1beta" for the Gemini API, and "v1beta1" for the Vertex AI.
-	Timeout int64 `json:"timeout,omitempty"`
 }
 
 // Schema that defines the format of input and output data. Represents a select subset
@@ -912,6 +909,8 @@ type GenerationConfigRoutingConfig struct {
 // more details at https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#generationconfig
 // and https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters.
 type GenerateContentConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Instructions for the model to steer it toward better performance.
 	// For example, "Answer as concisely as possible" or "Don't use technical
 	// terms in your response".
@@ -1373,6 +1372,8 @@ func (r *GenerateContentResponse) CodeExecutionResult() string {
 // VertexAI: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api.
 // GeminiAPI: https://ai.google.dev/gemini-api/docs/imagen#imagen-model
 type GenerateImagesConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Cloud Storage URI used to store the generated images.
 	OutputGCSURI string `json:"outputGcsUri,omitempty"`
 	// Description of what to discourage in the generated images.
@@ -1455,6 +1456,8 @@ type GenerateImagesResponse struct {
 // These fields require default values sent to the API which are not intended
 // to be modifiable or exposed to users in the SDK method.
 type upscaleImageAPIConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Whether to include a reason for filtered-out images in the
 	// response.
 	IncludeRAIReason bool `json:"includeRaiReason,omitempty"`
@@ -1488,6 +1491,8 @@ type UpscaleImageResponse struct {
 
 // Optional parameters for models.get method.
 type GetModelConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }
 
 type GetModelParameters struct {
@@ -1564,6 +1569,9 @@ type ListModelsResponse struct {
 }
 
 type UpdateModelConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+
 	DisplayName string `json:"displayName,omitempty"`
 
 	Description string `json:"description,omitempty"`
@@ -1576,6 +1584,8 @@ type UpdateModelParameters struct {
 }
 
 type DeleteModelConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }
 
 type DeleteModelParameters struct {
@@ -1631,6 +1641,8 @@ type GenerationConfig struct {
 
 // Config for the count_tokens method.
 type CountTokensConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Instructions for the model to steer it toward better performance.
 	SystemInstruction *Content `json:"systemInstruction,omitempty"`
 	// Code that enables the system to interact with external systems to
@@ -1663,6 +1675,8 @@ type CountTokensResponse struct {
 
 // Optional parameters for computing tokens.
 type ComputeTokensConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }
 
 // Parameters for computing tokens.
@@ -1721,6 +1735,8 @@ type ComputeTokensResponse struct {
 
 // Optional configuration for cached content creation.
 type CreateCachedContentConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// The TTL for this resource. The expiration time is computed: now + TTL.
 	TTL string `json:"ttl,omitempty"`
 	// Timestamp of when this resource is considered expired.
@@ -1781,6 +1797,8 @@ type CachedContent struct {
 
 // Optional parameters for caches.get method.
 type GetCachedContentConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }
 
 // Parameters for caches.get method.
@@ -1793,6 +1811,8 @@ type GetCachedContentParameters struct {
 
 // Optional parameters for caches.delete method.
 type DeleteCachedContentConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }
 
 // Parameters for caches.delete method.
@@ -1809,6 +1829,8 @@ type DeleteCachedContentResponse struct {
 
 // Optional parameters for caches.update method.
 type UpdateCachedContentConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// The TTL for this resource. The expiration time is computed: now + TTL.
 	TTL string `json:"ttl,omitempty"`
 	// Timestamp of when this resource is considered expired.
@@ -1824,6 +1846,8 @@ type UpdateCachedContentParameters struct {
 
 // Config for caches.list method.
 type ListCachedContentsConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// PageSize specifies the maximum number of cached contents to return per API call.
 	// This setting does not affect the total number of cached contents returned by the
 	// All() function during iteration; it only controls how many items are retrieved in
@@ -1918,6 +1942,8 @@ type replayFile struct {
 
 // Used to override the default configuration.
 type UploadFileConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// The name of the file in the destination (e.g., 'files/sample-image'. If not provided
 	// one will be generated.
 	Name string `json:"name,omitempty"`
@@ -1928,11 +1954,19 @@ type UploadFileConfig struct {
 	DisplayName string `json:"displayName,omitempty"`
 }
 
+// Used to override the default configuration.
+type DownloadFileConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+}
+
 // Configuration for upscaling an image.
 // For more information on this configuration, refer to
 // the `Imagen API reference documentation
 // <https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api>`_.
 type UpscaleImageConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Whether to include a reason for filtered-out images in the
 	// response.
 	IncludeRAIReason bool `json:"includeRaiReason,omitempty"`

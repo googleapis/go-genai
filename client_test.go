@@ -332,45 +332,39 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 		clientConfig       ClientConfig
 		expectedBaseURL    string
 		expectedAPIVersion string
-		expectedTimeout    time.Duration
 	}{
 		{
-			name: "Default Backend with base URL, API Version and Timeout",
+			name: "Default Backend with base URL, API Version",
 			clientConfig: ClientConfig{
 				HTTPOptions: HTTPOptions{
 					APIVersion: "v2",
-					Timeout:    5000,
 					BaseURL:    "https://test-base-url.com/",
 				},
 				APIKey: "test-api-key",
 			},
 			expectedBaseURL:    "https://test-base-url.com/",
 			expectedAPIVersion: "v2",
-			expectedTimeout:    5000 * time.Millisecond,
 		},
 		{
-			name: "Google AI Backend with base URL, API Version and Timeout",
+			name: "Google AI Backend with base URL, API Version",
 			clientConfig: ClientConfig{
 				Backend: BackendGeminiAPI,
 				HTTPOptions: HTTPOptions{
 					APIVersion: "v2",
-					Timeout:    5000,
 					BaseURL:    "https://test-base-url.com/",
 				},
 				APIKey: "test-api-key",
 			},
 			expectedBaseURL:    "https://test-base-url.com/",
 			expectedAPIVersion: "v2",
-			expectedTimeout:    5000 * time.Millisecond,
 		},
 		{
-			name: "Vertex AI Backend with base URL, API Version and Timeout",
+			name: "Vertex AI Backend with base URL, API Version",
 			clientConfig: ClientConfig{
 				Backend:  BackendVertexAI,
 				Project:  "test-project",
 				Location: "us-central1",
 				HTTPOptions: HTTPOptions{
-					Timeout:    3000,
 					APIVersion: "v2",
 					BaseURL:    "https://test-base-url.com/",
 				},
@@ -378,20 +372,18 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 			},
 			expectedBaseURL:    "https://test-base-url.com/",
 			expectedAPIVersion: "v2",
-			expectedTimeout:    3000 * time.Millisecond,
 		},
 		{
-			name: "Default Backend without API Version and Timeout",
+			name: "Default Backend without API Version",
 			clientConfig: ClientConfig{
 				HTTPOptions: HTTPOptions{},
 				APIKey:      "test-api-key",
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
 			expectedAPIVersion: "v1beta",
-			expectedTimeout:    0,
 		},
 		{
-			name: "Google AI Backend without API Version and Timeout",
+			name: "Google AI Backend without API Version",
 			clientConfig: ClientConfig{
 				HTTPOptions: HTTPOptions{},
 				APIKey:      "test-api-key",
@@ -399,10 +391,9 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
 			expectedAPIVersion: "v1beta",
-			expectedTimeout:    0,
 		},
 		{
-			name: "Vertex AI Backend without API Version and Timeout",
+			name: "Vertex AI Backend without API Version",
 			clientConfig: ClientConfig{
 				Backend:     BackendVertexAI,
 				Project:     "test-project",
@@ -412,10 +403,9 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 			},
 			expectedBaseURL:    "https://us-central1-aiplatform.googleapis.com/",
 			expectedAPIVersion: "v1beta1",
-			expectedTimeout:    0,
 		},
 		{
-			name: "Google AI Backend with HTTP Client Timeout and no HTTPOptions Timeout",
+			name: "Google AI Backend with HTTP Client Timeout and no HTTPOptions",
 			clientConfig: ClientConfig{
 				Backend:     BackendGeminiAPI,
 				HTTPOptions: HTTPOptions{},
@@ -424,51 +414,6 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
 			expectedAPIVersion: "v1beta",
-			expectedTimeout:    5000 * time.Millisecond,
-		},
-		{
-			name: "Google AI Backend with HTTP Client Timeout and HTTPOptions Timeout",
-			clientConfig: ClientConfig{
-				Backend: BackendGeminiAPI,
-				HTTPOptions: HTTPOptions{
-					Timeout: 3000,
-				},
-				APIKey:     "test-api-key",
-				HTTPClient: &http.Client{Timeout: 5000 * time.Millisecond},
-			},
-			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
-			expectedAPIVersion: "v1beta",
-			expectedTimeout:    3000 * time.Millisecond,
-		},
-		{
-			name: "Vertex AI Backend with HTTP Client Timeout and no HTTPOptions Timeout",
-			clientConfig: ClientConfig{
-				Backend:     BackendVertexAI,
-				Project:     "test-project",
-				Location:    "us-central1",
-				HTTPOptions: HTTPOptions{},
-				Credentials: &google.Credentials{},
-				HTTPClient:  &http.Client{Timeout: 5000 * time.Millisecond},
-			},
-			expectedBaseURL:    "https://us-central1-aiplatform.googleapis.com/",
-			expectedAPIVersion: "v1beta1",
-			expectedTimeout:    5000 * time.Millisecond,
-		},
-		{
-			name: "Vertex AI Backend with HTTP Client Timeout and HTTPOptions Timeout",
-			clientConfig: ClientConfig{
-				Backend:  BackendVertexAI,
-				Project:  "test-project",
-				Location: "us-central1",
-				HTTPOptions: HTTPOptions{
-					Timeout: 3000,
-				},
-				Credentials: &google.Credentials{},
-				HTTPClient:  &http.Client{Timeout: 5000 * time.Millisecond},
-			},
-			expectedBaseURL:    "https://us-central1-aiplatform.googleapis.com/",
-			expectedAPIVersion: "v1beta1",
-			expectedTimeout:    3000 * time.Millisecond,
 		},
 	}
 
@@ -486,10 +431,6 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 
 			if client.clientConfig.HTTPOptions.APIVersion != tt.expectedAPIVersion {
 				t.Errorf("expected apiVersion %s, got %s", tt.expectedAPIVersion, client.clientConfig.HTTPOptions.APIVersion)
-			}
-
-			if client.clientConfig.HTTPClient.Timeout != tt.expectedTimeout {
-				t.Errorf("expected timeout %v, got %v", tt.expectedTimeout, client.clientConfig.HTTPClient.Timeout)
 			}
 		})
 	}

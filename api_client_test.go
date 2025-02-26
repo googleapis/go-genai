@@ -113,7 +113,7 @@ func TestSendRequest(t *testing.T) {
 				},
 			}
 
-			got, err := sendRequest(ctx, ac, tt.path, tt.method, tt.requestBody)
+			got, err := sendRequest(ctx, ac, tt.path, tt.method, tt.requestBody, &HTTPOptions{BaseURL: ts.URL})
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("sendRequest() error = %v, wantErr %v", err, tt.wantErr)

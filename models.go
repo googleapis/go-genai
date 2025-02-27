@@ -1356,12 +1356,10 @@ func embedContentParametersToMldev(ac *apiClient, fromObject map[string]any, par
 
 	fromContents := getValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
-		// fmt.Println("====> 1fromContents", fromContents)
 		fromContents, err = tContentsForEmbed(ac, fromContents)
 		if err != nil {
 			return nil, err
 		}
-		// fmt.Println("====> 2fromContents", fromContents)
 
 		setValueByPath(toObject, []string{"requests[]", "content"}, fromContents)
 	}
@@ -1400,6 +1398,7 @@ func embedContentParametersToVertex(ac *apiClient, fromObject map[string]any, pa
 		if err != nil {
 			return nil, err
 		}
+
 		setValueByPath(toObject, []string{"instances[]", "content"}, fromContents)
 	}
 
@@ -3369,6 +3368,14 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path += "?" + query
+		delete(body, "_query")
 	}
 
 	if _, ok := body["config"]; ok {

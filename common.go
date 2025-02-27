@@ -22,9 +22,9 @@ import (
 	"iter"
 	"net/url"
 	"reflect"
-	"strings"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 // Ptr returns a pointer to its argument.

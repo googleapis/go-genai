@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/googleapis/go-genai/compare/v0.4.0...v0.5.0) (2025-02-27)
+
+
+### Features
+
+* Add response_id and create_time to GenerateContentResponse ([f46d996](https://github.com/googleapis/go-genai/commit/f46d9969fe228dfa8703224fe36c2fcc8cd6540d))
+* added Models.list() function ([6c2eae4](https://github.com/googleapis/go-genai/commit/6c2eae47aa6fb60cd2f6ae52744033359e0093ba))
+* enable quick accessor of executable code and code execution result in GenerateContentResponse ([21ca251](https://github.com/googleapis/go-genai/commit/21ca2516b27cbf51b4ab3486da9ca31f3a908204))
+* Support aspect ratio for edit_image ([06d554f](https://github.com/googleapis/go-genai/commit/06d554f78ce4b61cc113f5254c4f5b48415ce25e))
+* Support Models.EmbedContent function ([a71f0a7](https://github.com/googleapis/go-genai/commit/a71f0a7a181181316e02f4fe21ad6acddae68c1b))
+
 ## [0.4.0](https://github.com/googleapis/go-genai/compare/v0.3.0...v0.4.0) (2025-02-24)
 
 

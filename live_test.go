@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -46,6 +47,9 @@ func TestLiveConnect(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Needed for account default credential.
+	// Usually this file is in ~/.config/gcloud/application_default_credentials.json
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "testdata/credentials.json")
 	vertexClient, err := NewClient(ctx, &ClientConfig{
 		Backend:  BackendVertexAI,
 		Project:  "test-project",

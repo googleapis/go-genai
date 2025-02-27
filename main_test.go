@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	apiMode     = "api"
-	replayMode  = "replay"
-	requestMode = "request"
+	apiMode    = "api"
+	replayMode = "replay"
+	unitMode   = "unit" // Unit tests runs in the github actions.
 )
 
 // TODO(b/382773687): Enable the TestModelsGenerateContentStream tests.
@@ -70,10 +70,6 @@ var (
 			"TestTable/vertex/caches/update_custom_url/test_caches_update_with_vertex_cache_name",
 			"TestTable/vertex/models/compute_tokens/test_compute_tokens_vertex_custom_url",
 			"TestTable/vertex/models/count_tokens/test_count_tokens_vertex_custom_url",
-		},
-		requestMode: []string{
-			"TestTable/",
-			"TestModelsGenerateContentStream/",
 		},
 	}
 	mode     = flag.String("mode", replayMode, "Test mode")

@@ -1330,6 +1330,44 @@ func (r *GenerateContentResponse) FunctionCalls() []*FunctionCall {
 	return functionCalls
 }
 
+// ExecutableCode returns the executable code in the GenerateContentResponse.
+func (r *GenerateContentResponse) ExecutableCode() string {
+	if len(r.Candidates) == 0 || r.Candidates[0].Content == nil || len(r.Candidates[0].Content.Parts) == 0 {
+		return ""
+	}
+
+	if len(r.Candidates) > 1 {
+		log.Printf("Warning: there are multiple candidates in the response, returning executable code from the first one.")
+	}
+
+	for _, part := range r.Candidates[0].Content.Parts {
+		if part.ExecutableCode != nil {
+			return part.ExecutableCode.Code
+		}
+	}
+
+	return ""
+}
+
+// CodeExecutionResult returns the code execution result in the GenerateContentResponse.
+func (r *GenerateContentResponse) CodeExecutionResult() string {
+	if len(r.Candidates) == 0 || r.Candidates[0].Content == nil || len(r.Candidates[0].Content.Parts) == 0 {
+		return ""
+	}
+
+	if len(r.Candidates) > 1 {
+		log.Printf("Warning: there are multiple candidates in the response, returning code execution result from the first one.")
+	}
+
+	for _, part := range r.Candidates[0].Content.Parts {
+		if part.CodeExecutionResult != nil {
+			return part.CodeExecutionResult.Output
+		}
+	}
+
+	return ""
+}
+
 // Optional parameters for the embed_content method.
 type EmbedContentConfig struct {
 	// Type of task for which the embedding will be used.

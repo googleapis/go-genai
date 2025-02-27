@@ -153,3 +153,37 @@ func tContentsForEmbed(ac *apiClient, contents any) (any, error) {
 		return contents, nil
 	}
 }
+
+func tModelsURL(ac *apiClient, baseModels any) (string, error) {
+	if ac.clientConfig.Backend == BackendVertexAI {
+		if baseModels.(bool) {
+			return "publishers/google/models", nil
+		} else {
+			return "models", nil
+		}
+	} else {
+		if baseModels.(bool) {
+			return "models", nil
+		} else {
+			return "tunedModels", nil
+		}
+	}
+}
+
+func tExtractModels(ac *apiClient, response any) (any, error) {
+	switch response.(type) {
+	case map[string]any:
+		if models, ok := response.(map[string]any)["models"]; ok {
+			return models, nil
+		} else if tunedModels, ok := response.(map[string]any)["tunedModels"]; ok {
+			return tunedModels, nil
+		} else if publisherModels, ok := response.(map[string]any)["publisherModels"]; ok {
+			return publisherModels, nil
+		} else {
+			log.Printf("Warning: Cannot find the models type(models, tunedModels, publisherModels) for response: %s", response)
+			return []any{}, nil
+		}
+	default:
+		return nil, fmt.Errorf("tExtractModels: response is not a map")
+	}
+}

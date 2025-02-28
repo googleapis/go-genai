@@ -1685,6 +1685,453 @@ func imageToVertex(ac *apiClient, fromObject map[string]any, parentObject map[st
 	return toObject, nil
 }
 
+func maskReferenceConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"maskMode"}) != nil {
+		return nil, fmt.Errorf("maskMode parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"segmentationClasses"}) != nil {
+		return nil, fmt.Errorf("segmentationClasses parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"maskDilation"}) != nil {
+		return nil, fmt.Errorf("maskDilation parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func maskReferenceConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromMaskMode := getValueByPath(fromObject, []string{"maskMode"})
+	if fromMaskMode != nil {
+		setValueByPath(toObject, []string{"maskMode"}, fromMaskMode)
+	}
+
+	fromSegmentationClasses := getValueByPath(fromObject, []string{"segmentationClasses"})
+	if fromSegmentationClasses != nil {
+		setValueByPath(toObject, []string{"maskClasses"}, fromSegmentationClasses)
+	}
+
+	fromMaskDilation := getValueByPath(fromObject, []string{"maskDilation"})
+	if fromMaskDilation != nil {
+		setValueByPath(toObject, []string{"dilation"}, fromMaskDilation)
+	}
+
+	return toObject, nil
+}
+
+func controlReferenceConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"controlType"}) != nil {
+		return nil, fmt.Errorf("controlType parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"enableControlImageComputation"}) != nil {
+		return nil, fmt.Errorf("enableControlImageComputation parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func controlReferenceConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromControlType := getValueByPath(fromObject, []string{"controlType"})
+	if fromControlType != nil {
+		setValueByPath(toObject, []string{"controlType"}, fromControlType)
+	}
+
+	fromEnableControlImageComputation := getValueByPath(fromObject, []string{"enableControlImageComputation"})
+	if fromEnableControlImageComputation != nil {
+		setValueByPath(toObject, []string{"computeControl"}, fromEnableControlImageComputation)
+	}
+
+	return toObject, nil
+}
+
+func styleReferenceConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"styleDescription"}) != nil {
+		return nil, fmt.Errorf("styleDescription parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func styleReferenceConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromStyleDescription := getValueByPath(fromObject, []string{"styleDescription"})
+	if fromStyleDescription != nil {
+		setValueByPath(toObject, []string{"styleDescription"}, fromStyleDescription)
+	}
+
+	return toObject, nil
+}
+
+func subjectReferenceConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"subjectType"}) != nil {
+		return nil, fmt.Errorf("subjectType parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"subjectDescription"}) != nil {
+		return nil, fmt.Errorf("subjectDescription parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func subjectReferenceConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSubjectType := getValueByPath(fromObject, []string{"subjectType"})
+	if fromSubjectType != nil {
+		setValueByPath(toObject, []string{"subjectType"}, fromSubjectType)
+	}
+
+	fromSubjectDescription := getValueByPath(fromObject, []string{"subjectDescription"})
+	if fromSubjectDescription != nil {
+		setValueByPath(toObject, []string{"subjectDescription"}, fromSubjectDescription)
+	}
+
+	return toObject, nil
+}
+
+func referenceImageAPIToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"referenceImage"}) != nil {
+		return nil, fmt.Errorf("referenceImage parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"referenceId"}) != nil {
+		return nil, fmt.Errorf("referenceId parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"referenceType"}) != nil {
+		return nil, fmt.Errorf("referenceType parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"maskImageConfig"}) != nil {
+		return nil, fmt.Errorf("maskImageConfig parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"controlImageConfig"}) != nil {
+		return nil, fmt.Errorf("controlImageConfig parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"styleImageConfig"}) != nil {
+		return nil, fmt.Errorf("styleImageConfig parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"subjectImageConfig"}) != nil {
+		return nil, fmt.Errorf("subjectImageConfig parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func referenceImageAPIToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromReferenceImage := getValueByPath(fromObject, []string{"referenceImage"})
+	if fromReferenceImage != nil {
+		fromReferenceImage, err = imageToVertex(ac, fromReferenceImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"referenceImage"}, fromReferenceImage)
+	}
+
+	fromReferenceId := getValueByPath(fromObject, []string{"referenceId"})
+	if fromReferenceId != nil {
+		setValueByPath(toObject, []string{"referenceId"}, fromReferenceId)
+	}
+
+	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
+	if fromReferenceType != nil {
+		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+	}
+
+	fromMaskImageConfig := getValueByPath(fromObject, []string{"maskImageConfig"})
+	if fromMaskImageConfig != nil {
+		fromMaskImageConfig, err = maskReferenceConfigToVertex(ac, fromMaskImageConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"maskImageConfig"}, fromMaskImageConfig)
+	}
+
+	fromControlImageConfig := getValueByPath(fromObject, []string{"controlImageConfig"})
+	if fromControlImageConfig != nil {
+		fromControlImageConfig, err = controlReferenceConfigToVertex(ac, fromControlImageConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"controlImageConfig"}, fromControlImageConfig)
+	}
+
+	fromStyleImageConfig := getValueByPath(fromObject, []string{"styleImageConfig"})
+	if fromStyleImageConfig != nil {
+		fromStyleImageConfig, err = styleReferenceConfigToVertex(ac, fromStyleImageConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"styleImageConfig"}, fromStyleImageConfig)
+	}
+
+	fromSubjectImageConfig := getValueByPath(fromObject, []string{"subjectImageConfig"})
+	if fromSubjectImageConfig != nil {
+		fromSubjectImageConfig, err = subjectReferenceConfigToVertex(ac, fromSubjectImageConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"subjectImageConfig"}, fromSubjectImageConfig)
+	}
+
+	return toObject, nil
+}
+
+func editImageConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	if getValueByPath(fromObject, []string{"outputGcsUri"}) != nil {
+		return nil, fmt.Errorf("outputGcsUri parameter is not supported in Gemini API")
+	}
+
+	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	if fromNegativePrompt != nil {
+		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+	}
+
+	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	if fromNumberOfImages != nil {
+		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+	}
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+	}
+
+	fromGuidanceScale := getValueByPath(fromObject, []string{"guidanceScale"})
+	if fromGuidanceScale != nil {
+		setValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
+	}
+
+	if getValueByPath(fromObject, []string{"seed"}) != nil {
+		return nil, fmt.Errorf("seed parameter is not supported in Gemini API")
+	}
+
+	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	if fromSafetyFilterLevel != nil {
+		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+	}
+
+	fromIncludeSafetyAttributes := getValueByPath(fromObject, []string{"includeSafetyAttributes"})
+	if fromIncludeSafetyAttributes != nil {
+		setValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
+	}
+
+	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
+	if fromIncludeRaiReason != nil {
+		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
+	}
+
+	fromLanguage := getValueByPath(fromObject, []string{"language"})
+	if fromLanguage != nil {
+		setValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
+	}
+
+	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	if fromOutputMimeType != nil {
+		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+	}
+
+	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	if fromOutputCompressionQuality != nil {
+		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+	}
+
+	fromEditMode := getValueByPath(fromObject, []string{"editMode"})
+	if fromEditMode != nil {
+		setValueByPath(parentObject, []string{"parameters", "editMode"}, fromEditMode)
+	}
+
+	return toObject, nil
+}
+
+func editImageConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	if fromOutputGcsUri != nil {
+		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+	}
+
+	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	if fromNegativePrompt != nil {
+		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+	}
+
+	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	if fromNumberOfImages != nil {
+		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+	}
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+	}
+
+	fromGuidanceScale := getValueByPath(fromObject, []string{"guidanceScale"})
+	if fromGuidanceScale != nil {
+		setValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
+	}
+
+	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	if fromSeed != nil {
+		setValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
+	}
+
+	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	if fromSafetyFilterLevel != nil {
+		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+	}
+
+	fromIncludeSafetyAttributes := getValueByPath(fromObject, []string{"includeSafetyAttributes"})
+	if fromIncludeSafetyAttributes != nil {
+		setValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
+	}
+
+	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
+	if fromIncludeRaiReason != nil {
+		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
+	}
+
+	fromLanguage := getValueByPath(fromObject, []string{"language"})
+	if fromLanguage != nil {
+		setValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
+	}
+
+	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	if fromOutputMimeType != nil {
+		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+	}
+
+	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	if fromOutputCompressionQuality != nil {
+		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+	}
+
+	fromEditMode := getValueByPath(fromObject, []string{"editMode"})
+	if fromEditMode != nil {
+		setValueByPath(parentObject, []string{"parameters", "editMode"}, fromEditMode)
+	}
+
+	return toObject, nil
+}
+
+func editImageParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		fromModel, err = tModel(ac, fromModel)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+	}
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(toObject, []string{"instances", "prompt"}, fromPrompt)
+	}
+
+	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	if fromReferenceImages != nil {
+		fromReferenceImages, err = applyConverterToSlice(ac, fromReferenceImages.([]any), referenceImageAPIToMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"instances", "referenceImages"}, fromReferenceImages)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = editImageConfigToMldev(ac, fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
+func editImageParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		fromModel, err = tModel(ac, fromModel)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+	}
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(toObject, []string{"instances", "prompt"}, fromPrompt)
+	}
+
+	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	if fromReferenceImages != nil {
+		fromReferenceImages, err = applyConverterToSlice(ac, fromReferenceImages.([]any), referenceImageAPIToVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"instances", "referenceImages"}, fromReferenceImages)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = editImageConfigToVertex(ac, fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func upscaleImageAPIConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -2892,6 +3339,38 @@ func generateImagesResponseFromVertex(ac *apiClient, fromObject map[string]any, 
 	return toObject, nil
 }
 
+func editImageResponseFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	if fromGeneratedImages != nil {
+		fromGeneratedImages, err = applyConverterToSlice(ac, fromGeneratedImages.([]any), generatedImageFromMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+	}
+
+	return toObject, nil
+}
+
+func editImageResponseFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	if fromGeneratedImages != nil {
+		fromGeneratedImages, err = applyConverterToSlice(ac, fromGeneratedImages.([]any), generatedImageFromVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+	}
+
+	return toObject, nil
+}
+
 func upscaleImageResponseFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3453,6 +3932,80 @@ func (m Models) GenerateImages(ctx context.Context, model string, prompt string,
 		path, err = formatMap("{model}:predict", urlParams)
 	} else {
 		path, err = formatMap("{model}:predict", urlParams)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path += "?" + query
+		delete(body, "_query")
+	}
+
+	if _, ok := body["config"]; ok {
+		delete(body, "config")
+	}
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
+	if err != nil {
+		return nil, err
+	}
+	responseMap, err = fromConverter(m.apiClient, responseMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = mapToStruct(responseMap, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (m Models) editImage(ctx context.Context, model string, prompt string, referenceImages []*referenceImageAPI, config *EditImageConfig) (*EditImageResponse, error) {
+	parameterMap := make(map[string]any)
+
+	kwargs := map[string]any{"model": model, "prompt": prompt, "referenceImages": referenceImages, "config": config}
+	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	} else {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
+		config.HTTPOptions = nil
+	}
+	if m.apiClient.clientConfig.Backend == BackendGeminiAPI {
+		return nil, fmt.Errorf("method editImage is only supported in the Vertex AI client.")
+	}
+
+	var response = new(EditImageResponse)
+	var responseMap map[string]any
+	var fromConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		toConverter = editImageParametersToVertex
+		fromConverter = editImageResponseFromVertex
+	} else {
+		toConverter = editImageParametersToMldev
+		fromConverter = editImageResponseFromMldev
+	}
+
+	body, err := toConverter(m.apiClient, parameterMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	var path string
+	var urlParams map[string]any
+	if _, ok := body["_url"]; ok {
+		urlParams = body["_url"].(map[string]any)
+		delete(body, "_url")
+	}
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		path, err = formatMap("{model}:predict", urlParams)
+	} else {
+		path, err = formatMap("None", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
@@ -4062,4 +4615,13 @@ func (m Models) UpscaleImage(ctx context.Context, model string, image *Image, up
 	}
 
 	return m.upscaleImage(ctx, model, image, upscaleFactor, apiConfig)
+}
+
+// EditImage calls the EditImage method on the model.
+func (m Models) EditImage(ctx context.Context, model, prompt string, referenceImages []ReferenceImage, config *EditImageConfig) (*EditImageResponse, error) {
+	refImages := make([]*referenceImageAPI, len(referenceImages))
+	for i, img := range referenceImages {
+		refImages[i] = img.referenceImageAPI()
+	}
+	return m.editImage(ctx, model, prompt, refImages, config)
 }

@@ -321,6 +321,20 @@ const (
 	SubjectReferenceTypeSubjectTypeProduct SubjectReferenceType = "SUBJECT_TYPE_PRODUCT"
 )
 
+// Enum representing the Imagen 3 Edit mode.
+type EditMode string
+
+const (
+	EditModeDefault           EditMode = "EDIT_MODE_DEFAULT"
+	EditModeInpaintRemoval    EditMode = "EDIT_MODE_INPAINT_REMOVAL"
+	EditModeInpaintInsertion  EditMode = "EDIT_MODE_INPAINT_INSERTION"
+	EditModeOutpaint          EditMode = "EDIT_MODE_OUTPAINT"
+	EditModeControlledEditing EditMode = "EDIT_MODE_CONTROLLED_EDITING"
+	EditModeStyle             EditMode = "EDIT_MODE_STYLE"
+	EditModeBgswap            EditMode = "EDIT_MODE_BGSWAP"
+	EditModeProductImage      EditMode = "EDIT_MODE_PRODUCT_IMAGE"
+)
+
 // Server content modalities.
 type Modality string
 
@@ -1522,6 +1536,185 @@ type GenerateImagesResponse struct {
 	GeneratedImages []*GeneratedImage `json:"generatedImages,omitempty"`
 }
 
+// Configuration for a Mask reference image.
+type MaskReferenceConfig struct {
+	// Prompts the model to generate a mask instead of you needing to
+	// provide one (unless MASK_MODE_USER_PROVIDED is used).
+	MaskMode MaskReferenceMode `json:"maskMode,omitempty"`
+	// A list of up to 5 class IDs to use for semantic segmentation.
+	// Automatically creates an image mask based on specific objects.
+	SegmentationClasses []int64 `json:"segmentationClasses,omitempty"`
+	// Dilation percentage of the mask provided. Float between 0 and 1. If nil, then API
+	// will determine the default value.
+	MaskDilation *float64 `json:"maskDilation,omitempty"`
+}
+
+// Configuration for a Control reference image.
+type ControlReferenceConfig struct {
+	// The type of control reference image to use.
+	ControlType ControlReferenceType `json:"controlType,omitempty"`
+	// Defaults to False. When set to True, the control image will be
+	// computed by the model based on the control type. When set to False,
+	// the control image must be provided by the user.
+	EnableControlImageComputation bool `json:"enableControlImageComputation,omitempty"`
+}
+
+// Configuration for a Style reference image.
+type StyleReferenceConfig struct {
+	// A text description of the style to use for the generated image.
+	StyleDescription string `json:"styleDescription,omitempty"`
+}
+
+// Configuration for a Subject reference image.
+type SubjectReferenceConfig struct {
+	// The subject type of a subject reference image.
+	SubjectType SubjectReferenceType `json:"subjectType,omitempty"`
+	// Subject description for the image.
+	SubjectDescription string `json:"subjectDescription,omitempty"`
+}
+
+// referenceImageAPI represents a Reference image that is sent to API.
+type referenceImageAPI struct {
+	// The reference image for the editing operation.
+	ReferenceImage *Image `json:"referenceImage,omitempty"`
+	// The ID of the reference image.
+	ReferenceID int64 `json:"referenceId,omitempty"`
+	// The type of the reference image. Only set by the SDK.
+	ReferenceType string `json:"referenceType,omitempty"`
+	// Configuration for the mask reference image.
+	MaskImageConfig *MaskReferenceConfig `json:"maskImageConfig,omitempty"`
+	// Configuration for the control reference image.
+	ControlImageConfig *ControlReferenceConfig `json:"controlImageConfig,omitempty"`
+	// Configuration for the style reference image.
+	StyleImageConfig *StyleReferenceConfig `json:"styleImageConfig,omitempty"`
+	// Configuration for the subject reference image.
+	SubjectImageConfig *SubjectReferenceConfig `json:"subjectImageConfig,omitempty"`
+}
+
+func (r *referenceImageAPI) referenceImageAPI() *referenceImageAPI {
+	return r
+}
+
+// ReferenceImage is an interface that represents a generic reference image.
+//
+// You can create instances that implement this interface using the following
+// constructor functions:
+//   - NewRawReferenceImage
+//   - NewMaskReferenceImage
+//   - NewControlReferenceImage
+//   - NewStyleReferenceImage
+//   - NewSubjectReferenceImage
+//   - ...
+type ReferenceImage interface {
+	referenceImageAPI() *referenceImageAPI
+}
+
+// NewRawReferenceImage creates a new RawReferenceImage.
+func NewRawReferenceImage(referenceImage *Image, referenceID int64) *RawReferenceImage {
+	return &RawReferenceImage{
+		ReferenceImage: referenceImage,
+		ReferenceID:    referenceID,
+		referenceType:  "REFERENCE_TYPE_RAW",
+	}
+}
+
+// NewMaskReferenceImage creates a new MaskReferenceImage.
+func NewMaskReferenceImage(referenceImage *Image, referenceID int64, config *MaskReferenceConfig) *MaskReferenceImage {
+	return &MaskReferenceImage{
+		ReferenceImage: referenceImage,
+		ReferenceID:    referenceID,
+		Config:         config,
+		referenceType:  "REFERENCE_TYPE_MASK",
+	}
+}
+
+// NewControlReferenceImage creates a new ControlReferenceImage.
+func NewControlReferenceImage(referenceImage *Image, referenceID int64, config *ControlReferenceConfig) *ControlReferenceImage {
+	return &ControlReferenceImage{
+		ReferenceImage: referenceImage,
+		ReferenceID:    referenceID,
+		Config:         config,
+		referenceType:  "REFERENCE_TYPE_CONTROL",
+	}
+}
+
+// NewStyleReferenceImage creates a new ControlReferenceImage.
+func NewStyleReferenceImage(referenceImage *Image, referenceID int64, config *StyleReferenceConfig) *StyleReferenceImage {
+	return &StyleReferenceImage{
+		ReferenceImage: referenceImage,
+		ReferenceID:    referenceID,
+		Config:         config,
+		referenceType:  "REFERENCE_TYPE_STYLE",
+	}
+}
+
+// NewSubjectReferenceImage creates a new StyleReferenceImage.
+func NewSubjectReferenceImage(referenceImage *Image, referenceID int64, config *SubjectReferenceConfig) *SubjectReferenceImage {
+	return &SubjectReferenceImage{
+		ReferenceImage: referenceImage,
+		ReferenceID:    referenceID,
+		Config:         config,
+		referenceType:  "REFERENCE_TYPE_SUBJECT",
+	}
+}
+
+// Configuration for editing an image.
+type EditImageConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Cloud Storage URI used to store the generated images.
+	OutputGCSURI string `json:"outputGcsUri,omitempty"`
+	// Description of what to discourage in the generated images.
+	NegativePrompt string `json:"negativePrompt,omitempty"`
+	// Number of images to generate.
+	NumberOfImages int64 `json:"numberOfImages,omitempty"`
+	// Aspect ratio of the generated images.
+	AspectRatio string `json:"aspectRatio,omitempty"`
+	// Controls how much the model adheres to the text prompt. Large values increase output
+	// and prompt alignment, but may compromise image quality. If empty, then API will determine
+	// the default value.
+	GuidanceScale *float64 `json:"guidanceScale,omitempty"`
+	// Seed for the random number generator. If empty, then API will determine the default
+	// value.
+	Seed *int64 `json:"seed,omitempty"`
+	// Filter level for safety filtering.
+	SafetyFilterLevel SafetyFilterLevel `json:"safetyFilterLevel,omitempty"`
+	// Allows generation of people by the model.
+	PersonGeneration PersonGeneration `json:"personGeneration,omitempty"`
+	// Whether to report the safety scores of each image in the response.
+	IncludeSafetyAttributes bool `json:"includeSafetyAttributes,omitempty"`
+	// Whether to include the Responsible AI filter reason if the image
+	// is filtered out of the response.
+	IncludeRAIReason bool `json:"includeRaiReason,omitempty"`
+	// Language of the text in the prompt.
+	Language ImagePromptLanguage `json:"language,omitempty"`
+	// MIME type of the generated image.
+	OutputMIMEType string `json:"outputMimeType,omitempty"`
+	// Compression quality of the generated image (for `image/jpeg` MIME type only). If
+	// empty, then API will determine the default value.
+	OutputCompressionQuality *int64 `json:"outputCompressionQuality,omitempty"`
+	// Describes the editing mode for the request.
+	EditMode EditMode `json:"editMode,omitempty"`
+}
+
+// Parameters for the request to edit an image.
+type EditImageParameters struct {
+	// The model to use.
+	Model string `json:"model,omitempty"`
+	// A text description of the edit to apply to the image.
+	Prompt string `json:"prompt,omitempty"`
+	// The reference images for Imagen 3 editing.
+	ReferenceImages []*referenceImageAPI `json:"referenceImages,omitempty"`
+	// Configuration for editing.
+	Config *EditImageConfig `json:"config,omitempty"`
+}
+
+// Response for the request to edit an image.
+type EditImageResponse struct {
+	// Generated images.
+	GeneratedImages []*GeneratedImage `json:"generatedImages,omitempty"`
+}
+
 // API config for UpscaleImage with fields not exposed to users.
 // These fields require default values sent to the API which are not intended
 // to be modifiable or exposed to users in the SDK method.
@@ -2071,47 +2264,43 @@ type RawReferenceImage struct {
 	ReferenceImage *Image `json:"referenceImage,omitempty"`
 	// The ID of the reference image.
 	ReferenceID int64 `json:"referenceId,omitempty"`
-	// The type of the reference image. Only set by the SDK.
-	ReferenceType string `json:"referenceType,omitempty"`
+	// The type of the reference image. This field always set to REFERENCE_TYPE_RAW by SDK
+	// internally.
+	referenceType string `json:"referenceType,omitempty"`
 }
 
-// Configuration for a Mask reference image.
-type MaskReferenceConfig struct {
-	// Prompts the model to generate a mask instead of you needing to
-	// provide one (unless MASK_MODE_USER_PROVIDED is used).
-	MaskMode MaskReferenceMode `json:"maskMode,omitempty"`
-	// A list of up to 5 class IDs to use for semantic segmentation.
-	// Automatically creates an image mask based on specific objects.
-	SegmentationClasses []int64 `json:"segmentationClasses,omitempty"`
-	// Dilation percentage of the mask provided. Float between 0 and 1. If nil, then API
-	// will determine the default value.
-	MaskDilation *float64 `json:"maskDilation,omitempty"`
+func (r *RawReferenceImage) referenceImageAPI() *referenceImageAPI {
+	return &referenceImageAPI{
+		ReferenceImage: r.ReferenceImage,
+		ReferenceID:    r.ReferenceID,
+		ReferenceType:  "REFERENCE_TYPE_RAW",
+	}
 }
 
-// A mask image is an image whose non-zero values indicate where to edit the base image.
-// If the user provides a mask image, the mask must be in the same dimensions as the
-// raw image. MaskReferenceImage encapsulates either a mask image provided by the user
-// and configs for the user provided mask, or only config parameters for the model to
-// generate a mask.
+// MaskReferenceImage is an image whose non-zero values indicate where to edit the base
+// image. If the user provides a mask image, the mask must be in the same dimensions
+// as the raw image. MaskReferenceImage encapsulates either a mask image provided by
+// the user and configs for the user provided mask, or only config parameters for the
+// model to generate a mask.
 type MaskReferenceImage struct {
 	// The reference image for the editing operation.
 	ReferenceImage *Image `json:"referenceImage,omitempty"`
 	// The ID of the reference image.
 	ReferenceID int64 `json:"referenceId,omitempty"`
-	// The type of the reference image. Only set by the SDK.
-	ReferenceType string `json:"referenceType,omitempty"`
+	// The type of the reference image. This field always set to REFERENCE_TYPE_MASK by
+	// SDK internally.
+	referenceType string `json:"referenceType,omitempty"`
 	// Configuration for the mask reference image.
 	Config *MaskReferenceConfig `json:"config,omitempty"`
 }
 
-// Configuration for a Control reference image.
-type ControlReferenceConfig struct {
-	// The type of control reference image to use.
-	ControlType ControlReferenceType `json:"controlType,omitempty"`
-	// Defaults to False. When set to True, the control image will be
-	// computed by the model based on the control type. When set to False,
-	// the control image must be provided by the user.
-	EnableControlImageComputation bool `json:"enableControlImageComputation,omitempty"`
+func (r *MaskReferenceImage) referenceImageAPI() *referenceImageAPI {
+	return &referenceImageAPI{
+		ReferenceImage:  r.ReferenceImage,
+		ReferenceID:     r.ReferenceID,
+		ReferenceType:   "REFERENCE_TYPE_MASK",
+		MaskImageConfig: r.Config,
+	}
 }
 
 // A control image is an image that represents a sketch image of areas for the model
@@ -2125,16 +2314,20 @@ type ControlReferenceImage struct {
 	ReferenceImage *Image `json:"referenceImage,omitempty"`
 	// The ID of the reference image.
 	ReferenceID int64 `json:"referenceId,omitempty"`
-	// The type of the reference image. Only set by the SDK.
-	ReferenceType string `json:"referenceType,omitempty"`
+	// The type of the reference image. This field always set to REFERENCE_TYPE_CONTROL
+	// by SDK internally.
+	referenceType string `json:"referenceType,omitempty"`
 	// Configuration for the control reference image.
 	Config *ControlReferenceConfig `json:"config,omitempty"`
 }
 
-// Configuration for a Style reference image.
-type StyleReferenceConfig struct {
-	// A text description of the style to use for the generated image.
-	StyleDescription string `json:"styleDescription,omitempty"`
+func (r *ControlReferenceImage) referenceImageAPI() *referenceImageAPI {
+	return &referenceImageAPI{
+		ReferenceImage:     r.ReferenceImage,
+		ReferenceID:        r.ReferenceID,
+		ReferenceType:      "REFERENCE_TYPE_CONTROL",
+		ControlImageConfig: r.Config,
+	}
 }
 
 // A style reference image.
@@ -2147,18 +2340,20 @@ type StyleReferenceImage struct {
 	ReferenceImage *Image `json:"referenceImage,omitempty"`
 	// The ID of the reference image.
 	ReferenceID int64 `json:"referenceId,omitempty"`
-	// The type of the reference image. Only set by the SDK.
-	ReferenceType string `json:"referenceType,omitempty"`
+	// The type of the reference image. This field always set to REFERENCE_TYPE_STYLE by
+	// SDK internally.
+	referenceType string `json:"referenceType,omitempty"`
 	// Configuration for the style reference image.
 	Config *StyleReferenceConfig `json:"config,omitempty"`
 }
 
-// Configuration for a Subject reference image.
-type SubjectReferenceConfig struct {
-	// The subject type of a subject reference image.
-	SubjectType SubjectReferenceType `json:"subjectType,omitempty"`
-	// Subject description for the image.
-	SubjectDescription string `json:"subjectDescription,omitempty"`
+func (r *StyleReferenceImage) referenceImageAPI() *referenceImageAPI {
+	return &referenceImageAPI{
+		ReferenceImage:   r.ReferenceImage,
+		ReferenceID:      r.ReferenceID,
+		ReferenceType:    "REFERENCE_TYPE_CONTROL",
+		StyleImageConfig: r.Config,
+	}
 }
 
 // A subject reference image.
@@ -2171,10 +2366,20 @@ type SubjectReferenceImage struct {
 	ReferenceImage *Image `json:"referenceImage,omitempty"`
 	// The ID of the reference image.
 	ReferenceID int64 `json:"referenceId,omitempty"`
-	// The type of the reference image. Only set by the SDK.
-	ReferenceType string `json:"referenceType,omitempty"`
+	// The type of the reference image. This field always set to REFERENCE_TYPE_SUBJECT
+	// by SDK internally.
+	referenceType string `json:"referenceType,omitempty"`
 	// Configuration for the subject reference image.
 	Config *SubjectReferenceConfig `json:"config,omitempty"`
+}
+
+func (r *SubjectReferenceImage) referenceImageAPI() *referenceImageAPI {
+	return &referenceImageAPI{
+		ReferenceImage:     r.ReferenceImage,
+		ReferenceID:        r.ReferenceID,
+		ReferenceType:      "REFERENCE_TYPE_CONTROL",
+		SubjectImageConfig: r.Config,
+	}
 }
 
 // Sent in response to a `LiveGenerateContentSetup` message from the client.

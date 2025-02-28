@@ -19,7 +19,6 @@ package genai
 import (
 	"cloud.google.com/go/civil"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -1269,10 +1268,11 @@ func (r *GenerateContentResponse) Text() (string, error) {
 	}
 
 	if len(r.Candidates) > 1 {
-		log.Printf("Warning: there are multiple candidates in the response, returning text from the first one.")
+		log.Println("Warning: there are multiple candidates in the response, returning text from the first one.")
 	}
 
 	var texts []string
+	var notTextParts []string
 	for _, part := range r.Candidates[0].Content.Parts {
 		if part.Text != "" {
 			if part.Thought {
@@ -1281,24 +1281,28 @@ func (r *GenerateContentResponse) Text() (string, error) {
 			texts = append(texts, part.Text)
 		} else {
 			if part.InlineData != nil {
-				return "", errors.New("GenerateContentResponse.Text only supports text parts, but got InlineData")
+				notTextParts = append(notTextParts, "InlineData")
 			}
 			if part.CodeExecutionResult != nil {
-				return "", errors.New("GenerateContentResponse.Text only supports text parts, but got CodeExecutionResult")
+				notTextParts = append(notTextParts, "CodeExecutionResult")
 			}
 			if part.ExecutableCode != nil {
-				return "", errors.New("GenerateContentResponse.Text only supports text parts, but got ExecutableCode")
+				notTextParts = append(notTextParts, "ExecutableCode")
 			}
 			if part.FileData != nil {
-				return "", errors.New("GenerateContentResponse.Text only supports text parts, but got FileData")
+				notTextParts = append(notTextParts, "FileData")
 			}
 			if part.FunctionCall != nil {
-				return "", errors.New("GenerateContentResponse.Text only supports text parts, but got FunctionCall")
+				notTextParts = append(notTextParts, "FunctionCall")
 			}
 			if part.FunctionResponse != nil {
-				return "", errors.New("GenerateContentResponse.Text only supports text parts, but got FunctionResponse")
+				notTextParts = append(notTextParts, "FunctionResponse")
 			}
 		}
+	}
+
+	if len(notTextParts) > 0 {
+		log.Printf("Warning: there are non-text parts %s in the response, returning concatenation of all text parts. Please refer to the non text parts for a full response from model.\n", strings.Join(notTextParts, ", "))
 	}
 
 	if len(texts) == 0 {
@@ -1315,7 +1319,7 @@ func (r *GenerateContentResponse) FunctionCalls() []*FunctionCall {
 	}
 
 	if len(r.Candidates) > 1 {
-		log.Printf("Warning: there are multiple candidates in the response, returning function calls from the first one.")
+		log.Println("Warning: there are multiple candidates in the response, returning function calls from the first one.")
 	}
 
 	var functionCalls []*FunctionCall
@@ -1339,7 +1343,7 @@ func (r *GenerateContentResponse) ExecutableCode() string {
 	}
 
 	if len(r.Candidates) > 1 {
-		log.Printf("Warning: there are multiple candidates in the response, returning executable code from the first one.")
+		log.Println("Warning: there are multiple candidates in the response, returning executable code from the first one.")
 	}
 
 	for _, part := range r.Candidates[0].Content.Parts {
@@ -1358,7 +1362,7 @@ func (r *GenerateContentResponse) CodeExecutionResult() string {
 	}
 
 	if len(r.Candidates) > 1 {
-		log.Printf("Warning: there are multiple candidates in the response, returning code execution result from the first one.")
+		log.Println("Warning: there are multiple candidates in the response, returning code execution result from the first one.")
 	}
 
 	for _, part := range r.Candidates[0].Content.Parts {

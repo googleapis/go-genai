@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -29,7 +30,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"math"
 
 	"github.com/google/go-cmp/cmp"
 )

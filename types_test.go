@@ -15,7 +15,6 @@
 package genai
 
 import (
-	"errors"
 	"reflect"
 	"testing"
 )
@@ -88,7 +87,7 @@ func TestText(t *testing.T) {
 					{InlineData: &Blob{}},
 				}}},
 			}),
-			expectedError: errors.New("GenerateContentResponse.Text only supports text parts, but got InlineData"),
+			expectedText: "text1",
 		},
 	}
 

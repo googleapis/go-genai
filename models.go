@@ -20,7 +20,9 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"log"
 	"net/http"
+	"sync"
 )
 
 func partToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
@@ -2738,6 +2740,204 @@ func computeTokensParametersToVertex(ac *apiClient, fromObject map[string]any, p
 	return toObject, nil
 }
 
+func generateVideosConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromNumberOfVideos := getValueByPath(fromObject, []string{"numberOfVideos"})
+	if fromNumberOfVideos != nil {
+		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfVideos)
+	}
+
+	if getValueByPath(fromObject, []string{"outputGcsUri"}) != nil {
+		return nil, fmt.Errorf("outputGcsUri parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"fps"}) != nil {
+		return nil, fmt.Errorf("fps parameter is not supported in Gemini API")
+	}
+
+	fromDurationSeconds := getValueByPath(fromObject, []string{"durationSeconds"})
+	if fromDurationSeconds != nil {
+		setValueByPath(parentObject, []string{"parameters", "durationSeconds"}, fromDurationSeconds)
+	}
+
+	if getValueByPath(fromObject, []string{"seed"}) != nil {
+		return nil, fmt.Errorf("seed parameter is not supported in Gemini API")
+	}
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+	}
+
+	if getValueByPath(fromObject, []string{"resolution"}) != nil {
+		return nil, fmt.Errorf("resolution parameter is not supported in Gemini API")
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+	}
+
+	if getValueByPath(fromObject, []string{"pubsubTopic"}) != nil {
+		return nil, fmt.Errorf("pubsubTopic parameter is not supported in Gemini API")
+	}
+
+	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	if fromNegativePrompt != nil {
+		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+	}
+
+	if getValueByPath(fromObject, []string{"enhancePrompt"}) != nil {
+		return nil, fmt.Errorf("enhancePrompt parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func generateVideosConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromNumberOfVideos := getValueByPath(fromObject, []string{"numberOfVideos"})
+	if fromNumberOfVideos != nil {
+		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfVideos)
+	}
+
+	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	if fromOutputGcsUri != nil {
+		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+	}
+
+	fromFps := getValueByPath(fromObject, []string{"fps"})
+	if fromFps != nil {
+		setValueByPath(parentObject, []string{"parameters", "fps"}, fromFps)
+	}
+
+	fromDurationSeconds := getValueByPath(fromObject, []string{"durationSeconds"})
+	if fromDurationSeconds != nil {
+		setValueByPath(parentObject, []string{"parameters", "durationSeconds"}, fromDurationSeconds)
+	}
+
+	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	if fromSeed != nil {
+		setValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
+	}
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+	}
+
+	fromResolution := getValueByPath(fromObject, []string{"resolution"})
+	if fromResolution != nil {
+		setValueByPath(parentObject, []string{"parameters", "resolution"}, fromResolution)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+	}
+
+	fromPubsubTopic := getValueByPath(fromObject, []string{"pubsubTopic"})
+	if fromPubsubTopic != nil {
+		setValueByPath(parentObject, []string{"parameters", "pubsubTopic"}, fromPubsubTopic)
+	}
+
+	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	if fromNegativePrompt != nil {
+		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+	}
+
+	fromEnhancePrompt := getValueByPath(fromObject, []string{"enhancePrompt"})
+	if fromEnhancePrompt != nil {
+		setValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
+	}
+
+	return toObject, nil
+}
+
+func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		fromModel, err = tModel(ac, fromModel)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+	}
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
+	}
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToMldev(ac, fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = generateVideosConfigToMldev(ac, fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
+func generateVideosParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		fromModel, err = tModel(ac, fromModel)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+	}
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
+	}
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToVertex(ac, fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = generateVideosConfigToVertex(ac, fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func partFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3685,6 +3885,224 @@ func computeTokensResponseFromVertex(ac *apiClient, fromObject map[string]any, p
 	return toObject, nil
 }
 
+func videoFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromUri := getValueByPath(fromObject, []string{"video", "uri"})
+	if fromUri != nil {
+		setValueByPath(toObject, []string{"uri"}, fromUri)
+	}
+
+	fromVideoBytes := getValueByPath(fromObject, []string{"video", "encodedVideo"})
+	if fromVideoBytes != nil {
+		fromVideoBytes, err = tBytes(ac, fromVideoBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"videoBytes"}, fromVideoBytes)
+	}
+
+	fromMimeType := getValueByPath(fromObject, []string{"encoding"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+	}
+
+	return toObject, nil
+}
+
+func videoFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromUri := getValueByPath(fromObject, []string{"gcsUri"})
+	if fromUri != nil {
+		setValueByPath(toObject, []string{"uri"}, fromUri)
+	}
+
+	fromVideoBytes := getValueByPath(fromObject, []string{"bytesBase64Encoded"})
+	if fromVideoBytes != nil {
+		fromVideoBytes, err = tBytes(ac, fromVideoBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"videoBytes"}, fromVideoBytes)
+	}
+
+	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+	}
+
+	return toObject, nil
+}
+
+func generatedVideoFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromVideo := getValueByPath(fromObject, []string{"_self"})
+	if fromVideo != nil {
+		fromVideo, err = videoFromMldev(ac, fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"video"}, fromVideo)
+	}
+
+	return toObject, nil
+}
+
+func generatedVideoFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromVideo := getValueByPath(fromObject, []string{"_self"})
+	if fromVideo != nil {
+		fromVideo, err = videoFromVertex(ac, fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"video"}, fromVideo)
+	}
+
+	return toObject, nil
+}
+
+func generateVideosResponseFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGeneratedVideos := getValueByPath(fromObject, []string{"generatedSamples"})
+	if fromGeneratedVideos != nil {
+		fromGeneratedVideos, err = applyConverterToSlice(ac, fromGeneratedVideos.([]any), generatedVideoFromMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"generatedVideos"}, fromGeneratedVideos)
+	}
+
+	fromRaiMediaFilteredCount := getValueByPath(fromObject, []string{"raiMediaFilteredCount"})
+	if fromRaiMediaFilteredCount != nil {
+		setValueByPath(toObject, []string{"raiMediaFilteredCount"}, fromRaiMediaFilteredCount)
+	}
+
+	fromRaiMediaFilteredReasons := getValueByPath(fromObject, []string{"raiMediaFilteredReasons"})
+	if fromRaiMediaFilteredReasons != nil {
+		setValueByPath(toObject, []string{"raiMediaFilteredReasons"}, fromRaiMediaFilteredReasons)
+	}
+
+	return toObject, nil
+}
+
+func generateVideosResponseFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGeneratedVideos := getValueByPath(fromObject, []string{"videos"})
+	if fromGeneratedVideos != nil {
+		fromGeneratedVideos, err = applyConverterToSlice(ac, fromGeneratedVideos.([]any), generatedVideoFromVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"generatedVideos"}, fromGeneratedVideos)
+	}
+
+	fromRaiMediaFilteredCount := getValueByPath(fromObject, []string{"raiMediaFilteredCount"})
+	if fromRaiMediaFilteredCount != nil {
+		setValueByPath(toObject, []string{"raiMediaFilteredCount"}, fromRaiMediaFilteredCount)
+	}
+
+	fromRaiMediaFilteredReasons := getValueByPath(fromObject, []string{"raiMediaFilteredReasons"})
+	if fromRaiMediaFilteredReasons != nil {
+		setValueByPath(toObject, []string{"raiMediaFilteredReasons"}, fromRaiMediaFilteredReasons)
+	}
+
+	return toObject, nil
+}
+
+func generateVideosOperationFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	if fromMetadata != nil {
+		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+
+	fromDone := getValueByPath(fromObject, []string{"done"})
+	if fromDone != nil {
+		setValueByPath(toObject, []string{"done"}, fromDone)
+	}
+
+	fromError := getValueByPath(fromObject, []string{"error"})
+	if fromError != nil {
+		setValueByPath(toObject, []string{"error"}, fromError)
+	}
+
+	fromResponse := getValueByPath(fromObject, []string{"response"})
+	if fromResponse != nil {
+		setValueByPath(toObject, []string{"response"}, fromResponse)
+	}
+
+	fromResult := getValueByPath(fromObject, []string{"response", "generateVideoResponse"})
+	if fromResult != nil {
+		fromResult, err = generateVideosResponseFromMldev(ac, fromResult.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"result"}, fromResult)
+	}
+
+	return toObject, nil
+}
+
+func generateVideosOperationFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	if fromMetadata != nil {
+		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+
+	fromDone := getValueByPath(fromObject, []string{"done"})
+	if fromDone != nil {
+		setValueByPath(toObject, []string{"done"}, fromDone)
+	}
+
+	fromError := getValueByPath(fromObject, []string{"error"})
+	if fromError != nil {
+		setValueByPath(toObject, []string{"error"}, fromError)
+	}
+
+	fromResponse := getValueByPath(fromObject, []string{"response"})
+	if fromResponse != nil {
+		setValueByPath(toObject, []string{"response"}, fromResponse)
+	}
+
+	fromResult := getValueByPath(fromObject, []string{"response"})
+	if fromResult != nil {
+		fromResult, err = generateVideosResponseFromVertex(ac, fromResult.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"result"}, fromResult)
+	}
+
+	return toObject, nil
+}
+
 type Models struct {
 	apiClient *apiClient
 }
@@ -4512,6 +4930,85 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 		path, err = formatMap("{model}:computeTokens", urlParams)
 	} else {
 		path, err = formatMap("None", urlParams)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path += "?" + query
+		delete(body, "_query")
+	}
+
+	if _, ok := body["config"]; ok {
+		delete(body, "config")
+	}
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
+	if err != nil {
+		return nil, err
+	}
+	responseMap, err = fromConverter(m.apiClient, responseMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = mapToStruct(responseMap, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+var (
+	experimentalWarningModelsGenerateVideos sync.Once
+)
+
+func (m Models) GenerateVideos(ctx context.Context, model string, prompt string, image *Image, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+	experimentalWarningModelsGenerateVideos.Do(func() {
+		log.Println("Warning: The method Models.GenerateVideos is experimental and may change in future versions.")
+	})
+
+	parameterMap := make(map[string]any)
+
+	kwargs := map[string]any{"model": model, "prompt": prompt, "image": image, "config": config}
+	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	} else {
+		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
+		config.HTTPOptions = nil
+	}
+
+	var response = new(GenerateVideosOperation)
+	var responseMap map[string]any
+	var fromConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		toConverter = generateVideosParametersToVertex
+		fromConverter = generateVideosOperationFromVertex
+	} else {
+		toConverter = generateVideosParametersToMldev
+		fromConverter = generateVideosOperationFromMldev
+	}
+
+	body, err := toConverter(m.apiClient, parameterMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	var path string
+	var urlParams map[string]any
+	if _, ok := body["_url"]; ok {
+		urlParams = body["_url"].(map[string]any)
+		delete(body, "_url")
+	}
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		path, err = formatMap("{model}:predictLongRunning", urlParams)
+	} else {
+		path, err = formatMap("{model}:predictLongRunning", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)

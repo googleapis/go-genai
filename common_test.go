@@ -107,7 +107,7 @@ func TestMergeHTTPOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "empty client config",
+			name:         "empty client config",
 			clientConfig: &ClientConfig{},
 			requestHTTPOptions: &HTTPOptions{
 				BaseURL:    "https://request.com",

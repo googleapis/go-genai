@@ -81,6 +81,14 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 				}
 			}
 			return
+		} else if strings.HasSuffix(key, "[0]") {
+			keyName := key[:len(key)-3]
+			if _, ok := data[keyName]; !ok {
+				data[keyName] = make([]map[string]any, 1)
+				data[keyName].([]map[string]any)[0] = make(map[string]any)
+			}
+			setValueByPath(data[keyName].([]map[string]any)[0], keys[i+1:], value)
+			return
 		} else {
 			if _, ok := data[key]; !ok {
 				data[key] = make(map[string]any)

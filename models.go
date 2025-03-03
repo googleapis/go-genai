@@ -1588,7 +1588,7 @@ func generateImagesParametersToMldev(ac *apiClient, fromObject map[string]any, p
 
 	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(toObject, []string{"instances", "prompt"}, fromPrompt)
+		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
@@ -1619,7 +1619,7 @@ func generateImagesParametersToVertex(ac *apiClient, fromObject map[string]any, 
 
 	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(toObject, []string{"instances", "prompt"}, fromPrompt)
+		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
@@ -1767,7 +1767,7 @@ func upscaleImageAPIParametersToMldev(ac *apiClient, fromObject map[string]any, 
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"instances", "image"}, fromImage)
+		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
 	fromUpscaleFactor := getValueByPath(fromObject, []string{"upscaleFactor"})
@@ -1808,7 +1808,7 @@ func upscaleImageAPIParametersToVertex(ac *apiClient, fromObject map[string]any,
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"instances", "image"}, fromImage)
+		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
 	fromUpscaleFactor := getValueByPath(fromObject, []string{"upscaleFactor"})

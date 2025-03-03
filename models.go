@@ -167,17 +167,8 @@ func contentToVertex(ac *apiClient, fromObject map[string]any, parentObject map[
 
 func schemaToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"minItems"}) != nil {
-		return nil, fmt.Errorf("minItems parameter is not supported in Gemini API")
-	}
-
 	if getValueByPath(fromObject, []string{"example"}) != nil {
 		return nil, fmt.Errorf("example parameter is not supported in Gemini API")
-	}
-
-	fromPropertyOrdering := getValueByPath(fromObject, []string{"propertyOrdering"})
-	if fromPropertyOrdering != nil {
-		setValueByPath(toObject, []string{"propertyOrdering"}, fromPropertyOrdering)
 	}
 
 	if getValueByPath(fromObject, []string{"pattern"}) != nil {
@@ -212,25 +203,12 @@ func schemaToMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 		return nil, fmt.Errorf("minProperties parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"maxItems"}) != nil {
-		return nil, fmt.Errorf("maxItems parameter is not supported in Gemini API")
-	}
-
 	if getValueByPath(fromObject, []string{"maximum"}) != nil {
 		return nil, fmt.Errorf("maximum parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"nullable"}) != nil {
-		return nil, fmt.Errorf("nullable parameter is not supported in Gemini API")
-	}
-
 	if getValueByPath(fromObject, []string{"maxProperties"}) != nil {
 		return nil, fmt.Errorf("maxProperties parameter is not supported in Gemini API")
-	}
-
-	fromType := getValueByPath(fromObject, []string{"type"})
-	if fromType != nil {
-		setValueByPath(toObject, []string{"type"}, fromType)
 	}
 
 	fromDescription := getValueByPath(fromObject, []string{"description"})
@@ -253,14 +231,39 @@ func schemaToMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 		setValueByPath(toObject, []string{"items"}, fromItems)
 	}
 
+	fromMaxItems := getValueByPath(fromObject, []string{"maxItems"})
+	if fromMaxItems != nil {
+		setValueByPath(toObject, []string{"maxItems"}, fromMaxItems)
+	}
+
+	fromMinItems := getValueByPath(fromObject, []string{"minItems"})
+	if fromMinItems != nil {
+		setValueByPath(toObject, []string{"minItems"}, fromMinItems)
+	}
+
+	fromNullable := getValueByPath(fromObject, []string{"nullable"})
+	if fromNullable != nil {
+		setValueByPath(toObject, []string{"nullable"}, fromNullable)
+	}
+
 	fromProperties := getValueByPath(fromObject, []string{"properties"})
 	if fromProperties != nil {
 		setValueByPath(toObject, []string{"properties"}, fromProperties)
 	}
 
+	fromPropertyOrdering := getValueByPath(fromObject, []string{"propertyOrdering"})
+	if fromPropertyOrdering != nil {
+		setValueByPath(toObject, []string{"propertyOrdering"}, fromPropertyOrdering)
+	}
+
 	fromRequired := getValueByPath(fromObject, []string{"required"})
 	if fromRequired != nil {
 		setValueByPath(toObject, []string{"required"}, fromRequired)
+	}
+
+	fromType := getValueByPath(fromObject, []string{"type"})
+	if fromType != nil {
+		setValueByPath(toObject, []string{"type"}, fromType)
 	}
 
 	return toObject, nil
@@ -269,19 +272,9 @@ func schemaToMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 func schemaToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMinItems := getValueByPath(fromObject, []string{"minItems"})
-	if fromMinItems != nil {
-		setValueByPath(toObject, []string{"minItems"}, fromMinItems)
-	}
-
 	fromExample := getValueByPath(fromObject, []string{"example"})
 	if fromExample != nil {
 		setValueByPath(toObject, []string{"example"}, fromExample)
-	}
-
-	fromPropertyOrdering := getValueByPath(fromObject, []string{"propertyOrdering"})
-	if fromPropertyOrdering != nil {
-		setValueByPath(toObject, []string{"propertyOrdering"}, fromPropertyOrdering)
 	}
 
 	fromPattern := getValueByPath(fromObject, []string{"pattern"})
@@ -324,29 +317,14 @@ func schemaToVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 		setValueByPath(toObject, []string{"minProperties"}, fromMinProperties)
 	}
 
-	fromMaxItems := getValueByPath(fromObject, []string{"maxItems"})
-	if fromMaxItems != nil {
-		setValueByPath(toObject, []string{"maxItems"}, fromMaxItems)
-	}
-
 	fromMaximum := getValueByPath(fromObject, []string{"maximum"})
 	if fromMaximum != nil {
 		setValueByPath(toObject, []string{"maximum"}, fromMaximum)
 	}
 
-	fromNullable := getValueByPath(fromObject, []string{"nullable"})
-	if fromNullable != nil {
-		setValueByPath(toObject, []string{"nullable"}, fromNullable)
-	}
-
 	fromMaxProperties := getValueByPath(fromObject, []string{"maxProperties"})
 	if fromMaxProperties != nil {
 		setValueByPath(toObject, []string{"maxProperties"}, fromMaxProperties)
-	}
-
-	fromType := getValueByPath(fromObject, []string{"type"})
-	if fromType != nil {
-		setValueByPath(toObject, []string{"type"}, fromType)
 	}
 
 	fromDescription := getValueByPath(fromObject, []string{"description"})
@@ -369,14 +347,39 @@ func schemaToVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 		setValueByPath(toObject, []string{"items"}, fromItems)
 	}
 
+	fromMaxItems := getValueByPath(fromObject, []string{"maxItems"})
+	if fromMaxItems != nil {
+		setValueByPath(toObject, []string{"maxItems"}, fromMaxItems)
+	}
+
+	fromMinItems := getValueByPath(fromObject, []string{"minItems"})
+	if fromMinItems != nil {
+		setValueByPath(toObject, []string{"minItems"}, fromMinItems)
+	}
+
+	fromNullable := getValueByPath(fromObject, []string{"nullable"})
+	if fromNullable != nil {
+		setValueByPath(toObject, []string{"nullable"}, fromNullable)
+	}
+
 	fromProperties := getValueByPath(fromObject, []string{"properties"})
 	if fromProperties != nil {
 		setValueByPath(toObject, []string{"properties"}, fromProperties)
 	}
 
+	fromPropertyOrdering := getValueByPath(fromObject, []string{"propertyOrdering"})
+	if fromPropertyOrdering != nil {
+		setValueByPath(toObject, []string{"propertyOrdering"}, fromPropertyOrdering)
+	}
+
 	fromRequired := getValueByPath(fromObject, []string{"required"})
 	if fromRequired != nil {
 		setValueByPath(toObject, []string{"required"}, fromRequired)
+	}
+
+	fromType := getValueByPath(fromObject, []string{"type"})
+	if fromType != nil {
+		setValueByPath(toObject, []string{"type"}, fromType)
 	}
 
 	return toObject, nil

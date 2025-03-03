@@ -52,17 +52,24 @@ const (
 	LanguagePython Language = "PYTHON"
 )
 
-// A basic data type.
+// The type of the data.
 type Type string
 
 const (
+	// Not specified, should not be used.
 	TypeUnspecified Type = "TYPE_UNSPECIFIED"
-	TypeString      Type = "STRING"
-	TypeNumber      Type = "NUMBER"
-	TypeInteger     Type = "INTEGER"
-	TypeBoolean     Type = "BOOLEAN"
-	TypeArray       Type = "ARRAY"
-	TypeObject      Type = "OBJECT"
+	// OpenAPI string type
+	TypeString Type = "STRING"
+	// OpenAPI number type
+	TypeNumber Type = "NUMBER"
+	// OpenAPI integer type
+	TypeInteger Type = "INTEGER"
+	// OpenAPI boolean type
+	TypeBoolean Type = "BOOLEAN"
+	// OpenAPI array type
+	TypeArray Type = "ARRAY"
+	// OpenAPI object type
+	TypeObject Type = "OBJECT"
 )
 
 // Harm category.
@@ -670,13 +677,8 @@ type HTTPOptions struct {
 // Schema that defines the format of input and output data. Represents a select subset
 // of an OpenAPI 3.0 schema object. You can find more details and examples at https://spec.openapis.org/oas/v3.0.3.html#schema-object
 type Schema struct {
-	// Optional. Minimum number of the elements for Type.ARRAY.
-	MinItems *int64 `json:"minItems,omitempty"`
 	// Optional. Example of the object. Will only populated when the object is the root.
 	Example any `json:"example,omitempty"`
-	// Optional. The order of the properties. Not a standard field in open API spec. Only
-	// used to support the order of the properties.
-	PropertyOrdering []string `json:"propertyOrdering,omitempty"`
 	// Optional. Pattern of the Type.STRING to restrict a string to a regular expression.
 	Pattern string `json:"pattern,omitempty"`
 	// Optional. SCHEMA FIELDS FOR TYPE INTEGER and NUMBER Minimum value of the Type.INTEGER
@@ -695,16 +697,10 @@ type Schema struct {
 	MinLength *int64 `json:"minLength,omitempty"`
 	// Optional. Minimum number of the properties for Type.OBJECT.
 	MinProperties *int64 `json:"minProperties,omitempty"`
-	// Optional. Maximum number of the elements for Type.ARRAY.
-	MaxItems *int64 `json:"maxItems,omitempty"`
 	// Optional. Maximum value of the Type.INTEGER and Type.NUMBER
 	Maximum *float64 `json:"maximum,omitempty"`
-	// Optional. Indicates if the value may be null.
-	Nullable bool `json:"nullable,omitempty"`
 	// Optional. Maximum number of the properties for Type.OBJECT.
 	MaxProperties *int64 `json:"maxProperties,omitempty"`
-	// Optional. The type of the data.
-	Type Type `json:"type,omitempty"`
 	// Optional. The description of the data.
 	Description string `json:"description,omitempty"`
 	// Optional. Possible values of the element of primitive type with enum format. Examples:
@@ -717,10 +713,21 @@ type Schema struct {
 	Format string `json:"format,omitempty"`
 	// Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.
 	Items *Schema `json:"items,omitempty"`
+	// Optional. Maximum number of the elements for Type.ARRAY.
+	MaxItems *int64 `json:"maxItems,omitempty"`
+	// Optional. Minimum number of the elements for Type.ARRAY.
+	MinItems *int64 `json:"minItems,omitempty"`
+	// Optional. Indicates if the value may be null.
+	Nullable bool `json:"nullable,omitempty"`
 	// Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.
 	Properties map[string]*Schema `json:"properties,omitempty"`
+	// Optional. The order of the properties. Not a standard field in open API spec. Only
+	// used to support the order of the properties.
+	PropertyOrdering []string `json:"propertyOrdering,omitempty"`
 	// Optional. Required properties of Type.OBJECT.
 	Required []string `json:"required,omitempty"`
+	// Optional. The type of the data.
+	Type Type `json:"type,omitempty"`
 }
 
 // Safety settings.

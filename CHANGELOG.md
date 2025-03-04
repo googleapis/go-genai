@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0](https://github.com/googleapis/go-genai/compare/v0.4.0...v1.0.0) (2025-03-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* change int64, float64 types to int32, unit32, float32 to prevent data loss
+* remove ClientConfig.Timeout and add HTTPOptions to ...Config structs
+
+### Features
+
+* Add Headers field into HTTPOption struct ([5ec9ff4](https://github.com/googleapis/go-genai/commit/5ec9ff40ce4e9f3fd4625eab68dfbe5e9d259237))
+* Add response_id and create_time to GenerateContentResponse ([f46d996](https://github.com/googleapis/go-genai/commit/f46d9969fe228dfa8703224fe36c2fcc8cd6540d))
+* added Models.list() function ([6c2eae4](https://github.com/googleapis/go-genai/commit/6c2eae47aa6fb60cd2f6ae52744033359e0093ba))
+* enable quick accessor of executable code and code execution result in GenerateContentResponse ([21ca251](https://github.com/googleapis/go-genai/commit/21ca2516b27cbf51b4ab3486da9ca31f3a908204))
+* remove ClientConfig.Timeout and add HTTPOptions to ...Config structs ([ba6c431](https://github.com/googleapis/go-genai/commit/ba6c43132ce8a2fcad1fdad48bc3f80b6ecb0a96))
+* Support aspect ratio for edit_image ([06d554f](https://github.com/googleapis/go-genai/commit/06d554f78ce4b61cc113f5254c4f5b48415ce25e))
+* Support Models.EmbedContent function ([a71f0a7](https://github.com/googleapis/go-genai/commit/a71f0a7a181181316e02f4fe21ad6acddae68c1b))
+
+
+### Bug Fixes
+
+* change int64, float64 types to int32, unit32, float32 to prevent data loss ([af83fa7](https://github.com/googleapis/go-genai/commit/af83fa7501b3e81102b35c1bffd76cdf68203d1b))
+* log warning instead of throwing error for GenerateContentResponse.text() quick accessor when there are mixed types of parts. ([006e3af](https://github.com/googleapis/go-genai/commit/006e3af99fb568d89926bb6129b8d890e8f6a0db))
+
 ## [0.4.0](https://github.com/googleapis/go-genai/compare/v0.3.0...v0.4.0) (2025-02-24)
 
 

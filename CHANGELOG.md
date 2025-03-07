@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0](https://github.com/googleapis/go-genai/compare/v0.5.0...v1.0.0) (2025-03-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* change GenerateImageConfig.NumberOfImages to value type. And add clearer error message and docstring to other APIs.
+* Remove default role to "user" for GenerateContent and GenerateContentStream.
+
+### Features
+
+* change GenerateImageConfig.NumberOfImages to value type. And add clearer error message and docstring to other APIs. ([a75a9ae](https://github.com/googleapis/go-genai/commit/a75a9ae4d7f782c8894b9c8bc7e9c44f93e71fe6))
+* Remove default role to "user" for GenerateContent and GenerateContentStream. ([74d4647](https://github.com/googleapis/go-genai/commit/74d46476678813c1888d89b0112c94f6fa0d3a2e))
+
 ## [0.5.0](https://github.com/googleapis/go-genai/compare/v0.4.0...v0.5.0) (2025-03-06)
 
 

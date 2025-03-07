@@ -130,20 +130,8 @@ func sdkHeader(ac *apiClient) http.Header {
 	libraryLabel := "google-genai-sdk/0.0.1"
 	languageLabel := fmt.Sprintf("gl-go/%s", runtime.Version())
 	versionHeaderValue := fmt.Sprintf("%s %s", libraryLabel, languageLabel)
-	// Set user-agent header
-	userAgent := http.CanonicalHeaderKey("user-agent")
-	if userAgentHeader, ok := header[userAgent]; ok {
-		header[userAgent] = append(userAgentHeader, versionHeaderValue)
-	} else {
-		header[userAgent] = []string{versionHeaderValue}
-	}
-	// Set x-goog-api-client header
-	xGoogleAPIClient := http.CanonicalHeaderKey("x-goog-api-client")
-	if apiClientHeader, ok := header[xGoogleAPIClient]; ok {
-		header[xGoogleAPIClient] = append(apiClientHeader, versionHeaderValue)
-	} else {
-		header[xGoogleAPIClient] = []string{versionHeaderValue}
-	}
+	header.Set("user-agent", versionHeaderValue)
+	header.Set("x-goog-api-client", versionHeaderValue)
 	return header
 }
 
@@ -199,6 +187,7 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 				// in Step 2.
 				respRaw := make(map[string]any)
 				if err := json.Unmarshal(data, &respRaw); err != nil {
+					err = fmt.Errorf("iterateResponseStream: error unmarshalling data %s:%s. error: %w", string(prefix), string(data), err)
 					if !yield(nil, err) {
 						return
 					}
@@ -220,7 +209,7 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 				}
 			default:
 				// Stream chunk not started with "data" is treated as an error.
-				if !yield(nil, fmt.Errorf("iterateResponseStream: invalid stream chunk: %s", string(data))) {
+				if !yield(nil, fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))) {
 					return
 				}
 			}

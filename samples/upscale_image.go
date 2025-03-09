@@ -53,11 +53,14 @@ func upscaleImage(ctx context.Context) {
 
 	// First, generate an image.
 	var generateImagesConfig *genai.GenerateImagesConfig = &genai.GenerateImagesConfig{
-		NumberOfImages:   genai.Ptr[int64](1),
+		NumberOfImages:   1,
 		OutputMIMEType:   "image/jpeg",
 		IncludeRAIReason: true,
 	}
 	generationResult, err := client.Models.GenerateImages(ctx, *model, "Create a blue circle", generateImagesConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Call the UpscaleImage method.
 	var config *genai.UpscaleImageConfig = &genai.UpscaleImageConfig{

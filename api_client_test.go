@@ -13,7 +13,6 @@ import (
 	"slices"
 	"strings"
 	"testing"
-	"time"
 
 	"cloud.google.com/go/civil"
 	"github.com/google/go-cmp/cmp"
@@ -495,7 +494,24 @@ func TestMapToStruct(t *testing.T) {
 				EndIndex:        20,
 				Title:           "Citation Title",
 				URI:             "https://example.com",
-				PublicationDate: Ptr(civil.DateOf(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC))),
+				PublicationDate: &civil.Date{Year: 2000, Month: 1, Day: 1},
+			},
+		},
+		{
+			name: "Citation year only",
+			inputMap: map[string]any{
+				"startIndex":      float64(0),
+				"endIndex":        float64(20),
+				"title":           "Citation Title",
+				"uri":             "https://example.com",
+				"publicationDate": map[string]int{"year": 2000},
+			},
+			wantValue: Citation{
+				StartIndex:      0,
+				EndIndex:        20,
+				Title:           "Citation Title",
+				URI:             "https://example.com",
+				PublicationDate: &civil.Date{Year: 2000},
 			},
 		},
 	}

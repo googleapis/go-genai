@@ -1042,19 +1042,16 @@ func (c *Citation) UnmarshalJSON(data []byte) error {
 	}
 
 	if aux.PublicationDate != nil {
-		var year, month, day int
-		var ok bool
-		if year, ok = aux.PublicationDate["year"]; !ok {
+		if _, ok := aux.PublicationDate["year"]; !ok {
 			return fmt.Errorf("key %q not found", "year")
 		}
-		if month, ok = aux.PublicationDate["month"]; !ok {
-			return fmt.Errorf("key %q not found", "month")
+		c.PublicationDate = &civil.Date{Year: aux.PublicationDate["year"]}
+		if month, ok := aux.PublicationDate["month"]; ok {
+			c.PublicationDate.Month = time.Month(month)
 		}
-		if day, ok = aux.PublicationDate["day"]; !ok {
-			return fmt.Errorf("key %q not found", "day")
+		if day, ok := aux.PublicationDate["day"]; ok {
+		  c.PublicationDate.Day = day
 		}
-
-		c.PublicationDate = &civil.Date{Year: year, Month: time.Month(month), Day: day}
 	}
 
 	return nil

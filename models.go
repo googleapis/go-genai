@@ -2937,14 +2937,14 @@ func candidateFromMldev(ac *apiClient, fromObject map[string]any, parentObject m
 		setValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
 	}
 
-	fromAvgLogprobs := getValueByPath(fromObject, []string{"avgLogprobs"})
-	if fromAvgLogprobs != nil {
-		setValueByPath(toObject, []string{"avgLogprobs"}, fromAvgLogprobs)
-	}
-
 	fromFinishReason := getValueByPath(fromObject, []string{"finishReason"})
 	if fromFinishReason != nil {
 		setValueByPath(toObject, []string{"finishReason"}, fromFinishReason)
+	}
+
+	fromAvgLogprobs := getValueByPath(fromObject, []string{"avgLogprobs"})
+	if fromAvgLogprobs != nil {
+		setValueByPath(toObject, []string{"avgLogprobs"}, fromAvgLogprobs)
 	}
 
 	fromGroundingMetadata := getValueByPath(fromObject, []string{"groundingMetadata"})
@@ -2998,14 +2998,14 @@ func candidateFromVertex(ac *apiClient, fromObject map[string]any, parentObject 
 		setValueByPath(toObject, []string{"finishMessage"}, fromFinishMessage)
 	}
 
-	fromAvgLogprobs := getValueByPath(fromObject, []string{"avgLogprobs"})
-	if fromAvgLogprobs != nil {
-		setValueByPath(toObject, []string{"avgLogprobs"}, fromAvgLogprobs)
-	}
-
 	fromFinishReason := getValueByPath(fromObject, []string{"finishReason"})
 	if fromFinishReason != nil {
 		setValueByPath(toObject, []string{"finishReason"}, fromFinishReason)
+	}
+
+	fromAvgLogprobs := getValueByPath(fromObject, []string{"avgLogprobs"})
+	if fromAvgLogprobs != nil {
+		setValueByPath(toObject, []string{"avgLogprobs"}, fromAvgLogprobs)
 	}
 
 	fromGroundingMetadata := getValueByPath(fromObject, []string{"groundingMetadata"})

@@ -137,7 +137,11 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 	}
 
 	if cc.HTTPOptions.BaseURL == "" && cc.Backend == BackendVertexAI {
-		cc.HTTPOptions.BaseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", cc.Location)
+		if cc.Location == "global" {
+			cc.HTTPOptions.BaseURL = "https://aiplatform.googleapis.com/"
+		} else {
+			cc.HTTPOptions.BaseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", cc.Location)
+		}
 	} else if cc.HTTPOptions.BaseURL == "" {
 		cc.HTTPOptions.BaseURL = "https://generativelanguage.googleapis.com/"
 	}

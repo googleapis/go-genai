@@ -208,6 +208,20 @@ const (
 	BlockedReasonProhibitedContent BlockedReason = "PROHIBITED_CONTENT"
 )
 
+// Server content modalities.
+type Modality string
+
+const (
+	// The modality is unspecified.
+	ModalityUnspecified Modality = "MODALITY_UNSPECIFIED"
+	// Indicates the model should return text
+	ModalityText Modality = "TEXT"
+	// Indicates the model should return images.
+	ModalityImage Modality = "IMAGE"
+	// Indicates the model should return images.
+	ModalityAudio Modality = "AUDIO"
+)
+
 type DeploymentResourcesType string
 
 const (
@@ -339,20 +353,6 @@ const (
 	EditModeStyle             EditMode = "EDIT_MODE_STYLE"
 	EditModeBgswap            EditMode = "EDIT_MODE_BGSWAP"
 	EditModeProductImage      EditMode = "EDIT_MODE_PRODUCT_IMAGE"
-)
-
-// Server content modalities.
-type Modality string
-
-const (
-	// The modality is unspecified.
-	ModalityUnspecified Modality = "MODALITY_UNSPECIFIED"
-	// Indicates the model should return text
-	ModalityText Modality = "TEXT"
-	// Indicates the model should return images.
-	ModalityImage Modality = "IMAGE"
-	// Indicates the model should return images.
-	ModalityAudio Modality = "AUDIO"
 )
 
 // Metadata describes the input video content.
@@ -1338,19 +1338,39 @@ type GenerateContentResponsePromptFeedback struct {
 	SafetyRatings []*SafetyRating `json:"safetyRatings,omitempty"`
 }
 
+// Represents token counting info for a single modality.
+type ModalityTokenCount struct {
+	// The modality associated with this token count.
+	Modality Modality `json:"modality,omitempty"`
+	// Number of tokens.
+	TokenCount *int32 `json:"tokenCount,omitempty"`
+}
+
 // Usage metadata about response(s).
 type GenerateContentResponseUsageMetadata struct {
+	// Output only. List of modalities of the cached content in the request input.
+	CacheTokensDetails []*ModalityTokenCount `json:"cacheTokensDetails,omitempty"`
 	// Output only. Number of tokens in the cached part in the input (the cached content).
 	// If nil, then no CachedContentTokenCount is returned by the API.
 	CachedContentTokenCount *int32 `json:"cachedContentTokenCount,omitempty"`
 	// Number of tokens in the response(all the generated response candidates). If nil,
 	// then no CandidatesTokenCount is returned by the API.
 	CandidatesTokenCount *int32 `json:"candidatesTokenCount,omitempty"`
+	// Output only. List of modalities that were returned in the response.
+	CandidatesTokensDetails []*ModalityTokenCount `json:"candidatesTokensDetails,omitempty"`
 	// Number of tokens in the prompt. When cached_content is set, this is still the total
 	// effective prompt size meaning this includes the number of tokens in the cached content.
 	// If nil, then no PromptTokenCount is returned by the API.
 	PromptTokenCount *int32 `json:"promptTokenCount,omitempty"`
-	// Total token count for prompt and response candidates.
+	// Output only. List of modalities that were processed in the request input.
+	PromptTokensDetails []*ModalityTokenCount `json:"promptTokensDetails,omitempty"`
+	// Output only. Number of tokens present in thoughts output.
+	ThoughtsTokenCount *int32 `json:"thoughtsTokenCount,omitempty"`
+	// Output only. Number of tokens present in tool-use prompt(s).
+	ToolUsePromptTokenCount *int32 `json:"toolUsePromptTokenCount,omitempty"`
+	// Output only. List of modalities that were processed for tool-use request inputs.
+	ToolUsePromptTokensDetails []*ModalityTokenCount `json:"toolUsePromptTokensDetails,omitempty"`
+	// Total token count for prompt, response candidates, and tool-use prompts (if present).
 	TotalTokenCount int32 `json:"totalTokenCount,omitempty"`
 }
 

@@ -16,11 +16,14 @@ package genai
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Stream test runs in api mode but read _test_table.json for retrieving test params.
@@ -132,6 +135,43 @@ func TestModelsGenerateContentAudio(t *testing.T) {
 			}
 			if len(result.Candidates) == 0 {
 				t.Errorf("expected at least one candidate, got none")
+			}
+		})
+	}
+}
+
+func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			operation, err := client.Models.GenerateVideos(ctx, "veo-2.0-generate-001", "A neon hologram of a cat driving at top speed", nil, nil)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation, err = client.Operations.Get(ctx, operation, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation == nil || operation.Result == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if operation.Result.GeneratedVideos[0].Video.URI == "" && operation.Result.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have either URI or video bytes")
 			}
 		})
 	}

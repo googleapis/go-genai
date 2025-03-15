@@ -2044,6 +2044,91 @@ type ComputeTokensResponse struct {
 	TokensInfo []*TokensInfo `json:"tokensInfo,omitempty"`
 }
 
+// Configuration for generating videos.
+type GenerateVideosConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Number of output videos.
+	NumberOfVideos *int32 `json:"numberOfVideos,omitempty"`
+	// The GCS bucket where to save the generated videos.
+	OutputGCSURI string `json:"outputGcsUri,omitempty"`
+	// Frames per second for video generation.
+	Fps *int32 `json:"fps,omitempty"`
+	// Duration of the clip for video generation in seconds.
+	DurationSeconds *int32 `json:"durationSeconds,omitempty"`
+	// The RNG seed. If RNG seed is exactly same for each request with unchanged inputs,
+	// the prediction results will be consistent. Otherwise, a random RNG seed will be used
+	// each time to produce a different result.
+	Seed *int32 `json:"seed,omitempty"`
+	// The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait) are
+	// supported.
+	AspectRatio string `json:"aspectRatio,omitempty"`
+	// The resolution for the generated video. 1280x720, 1920x1080 are supported.
+	Resolution string `json:"resolution,omitempty"`
+	// Whether allow to generate person videos, and restrict to specific ages. Supported
+	// values are: dont_allow, allow_adult.
+	PersonGeneration string `json:"personGeneration,omitempty"`
+	// The pubsub topic where to publish the video generation progress.
+	PubsubTopic string `json:"pubsubTopic,omitempty"`
+	// Optional field in addition to the text content. Negative prompts can be explicitly
+	// stated here to help generate the video.
+	NegativePrompt string `json:"negativePrompt,omitempty"`
+	// Whether to use the prompt rewriting logic.
+	EnhancePrompt bool `json:"enhancePrompt,omitempty"`
+}
+
+// A generated video.
+type Video struct {
+	// Path to another storage.
+	URI string `json:"uri,omitempty"`
+	// Video bytes.
+	VideoBytes []byte `json:"videoBytes,omitempty"`
+	// Video encoding, for example "video/mp4".
+	MIMEType string `json:"mimeType,omitempty"`
+}
+
+// A generated video.
+type GeneratedVideo struct {
+	// The output video
+	Video *Video `json:"video,omitempty"`
+}
+
+// Response with generated videos.
+type GenerateVideosResponse struct {
+	// List of the generated videos
+	GeneratedVideos []*GeneratedVideo `json:"generatedVideos,omitempty"`
+	// Returns if any videos were filtered due to RAI policies.
+	RAIMediaFilteredCount *int32 `json:"raiMediaFilteredCount,omitempty"`
+	// Returns RAI failure reasons if any.
+	RAIMediaFilteredReasons []string `json:"raiMediaFilteredReasons,omitempty"`
+}
+
+// A video generation operation.
+// Use the following code to refresh the operation:
+// ```
+// operation = client.operations.get(operation)
+// ```
+type GenerateVideosOperation struct {
+	// The server-assigned name, which is only unique within the same service that originally
+	// returns it. If you use the default HTTP mapping, the `name` should be a resource
+	// name ending with `operations/{unique_id}`.
+	Name string `json:"name,omitempty"`
+	// Service-specific metadata associated with the operation. It typically contains progress
+	// information and common metadata such as create time. Some services might not provide
+	// such metadata. Any method that returns a long-running operation should document the
+	// metadata type, if any.
+	Metadata map[string]any `json:"metadata,omitempty"`
+	// If the value is `false`, it means the operation is still in progress. If `true`,
+	// the operation is completed, and either `error` or `response` is available.
+	Done bool `json:"done,omitempty"`
+	// The error result of the operation in case of failure or cancellation.
+	Error map[string]any `json:"error,omitempty"`
+	// The normal response of the operation in case of success.
+	Response map[string]any `json:"response,omitempty"`
+	// The generated videos.
+	Result *GenerateVideosResponse `json:"result,omitempty"`
+}
+
 // Optional configuration for cached content creation.
 type CreateCachedContentConfig struct {
 	// Used to override HTTP request options.
@@ -2145,6 +2230,16 @@ type ListCachedContentsResponse struct {
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// List of cached contents.
 	CachedContents []*CachedContent `json:"cachedContents,omitempty"`
+}
+
+type GetOperationConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+}
+
+type FetchPredictOperationConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }
 
 type testTableItem struct {

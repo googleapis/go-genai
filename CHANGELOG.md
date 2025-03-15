@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0](https://github.com/googleapis/go-genai/compare/v0.5.0...v1.0.0) (2025-03-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove error from the GenerateContentResponse.Text() return values and add more samples(text embedding, tokens, models)
+* change GenerateImageConfig.NumberOfImages to value type. And add clearer error message and docstring to other APIs.
+* Remove default role to "user" for GenerateContent and GenerateContentStream.
+
+### Features
+
+* Add base steps to EditImageConfig ([e3c8252](https://github.com/googleapis/go-genai/commit/e3c82523429d43684e898a10991fb86161f5f48f))
+* change GenerateImageConfig.NumberOfImages to value type. And add clearer error message and docstring to other APIs. ([a75a9ae](https://github.com/googleapis/go-genai/commit/a75a9ae4d7f782c8894b9c8bc7e9c44f93e71fe6))
+* enable union type for Schema when calling Gemini API. ([2edcc55](https://github.com/googleapis/go-genai/commit/2edcc5560a89b76542d77566890911bf1a163795))
+* Remove default role to "user" for GenerateContent and GenerateContentStream. ([74d4647](https://github.com/googleapis/go-genai/commit/74d46476678813c1888d89b0112c94f6fa0d3a2e))
+* remove error from the GenerateContentResponse.Text() return values and add more samples(text embedding, tokens, models) ([1dc5c1c](https://github.com/googleapis/go-genai/commit/1dc5c1c95acb2f207632eeeeb8fa6d4cbb6a7df4))
+* Support returned safety attributes for generate_images ([cc2bf1a](https://github.com/googleapis/go-genai/commit/cc2bf1aa581439b2d674966eed55caa580038a83))
+
+
+### Bug Fixes
+
+* Make month and day optional for PublicationDate. fixes [#141](https://github.com/googleapis/go-genai/issues/141) ([8a61516](https://github.com/googleapis/go-genai/commit/8a615165d2161f5be0efb0d7bf5f77570166b0b0))
+* Remove unsupported parameter negative_prompt from Gemini API generate_images ([be2619d](https://github.com/googleapis/go-genai/commit/be2619d6d2304f680ae8f9b2b669a6799929988b))
+
 ## [0.5.0](https://github.com/googleapis/go-genai/compare/v0.4.0...v0.5.0) (2025-03-06)
 
 

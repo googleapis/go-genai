@@ -279,6 +279,12 @@ func TestTable(t *testing.T) {
 							if *mode == apiMode {
 								return
 							}
+							// TODO(b/399217361): Re-enable response checks after replay files record using extras.
+							if *mode == replayMode && testName == "models/generate_images" &&
+								(testTableItem.Name == "test_all_vertexai_config_parameters" ||
+									testTableItem.Name == "test_all_mldev_config_parameters") {
+								return
+							}
 							wantException := extractWantException(testTableItem, backend.Backend)
 							if wantException != "" {
 								if response[1].IsNil() {

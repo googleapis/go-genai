@@ -3286,6 +3286,11 @@ func safetyAttributesFromMldev(ac *apiClient, fromObject map[string]any, parentO
 		setValueByPath(toObject, []string{"scores"}, fromScores)
 	}
 
+	fromContentType := getValueByPath(fromObject, []string{"contentType"})
+	if fromContentType != nil {
+		setValueByPath(toObject, []string{"contentType"}, fromContentType)
+	}
+
 	return toObject, nil
 }
 
@@ -3300,6 +3305,11 @@ func safetyAttributesFromVertex(ac *apiClient, fromObject map[string]any, parent
 	fromScores := getValueByPath(fromObject, []string{"safetyAttributes", "scores"})
 	if fromScores != nil {
 		setValueByPath(toObject, []string{"scores"}, fromScores)
+	}
+
+	fromContentType := getValueByPath(fromObject, []string{"contentType"})
+	if fromContentType != nil {
+		setValueByPath(toObject, []string{"contentType"}, fromContentType)
 	}
 
 	return toObject, nil
@@ -3385,6 +3395,16 @@ func generateImagesResponseFromMldev(ac *apiClient, fromObject map[string]any, p
 		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
 	}
 
+	fromPositivePromptSafetyAttributes := getValueByPath(fromObject, []string{"positivePromptSafetyAttributes"})
+	if fromPositivePromptSafetyAttributes != nil {
+		fromPositivePromptSafetyAttributes, err = safetyAttributesFromMldev(ac, fromPositivePromptSafetyAttributes.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"positivePromptSafetyAttributes"}, fromPositivePromptSafetyAttributes)
+	}
+
 	return toObject, nil
 }
 
@@ -3399,6 +3419,16 @@ func generateImagesResponseFromVertex(ac *apiClient, fromObject map[string]any, 
 		}
 
 		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+	}
+
+	fromPositivePromptSafetyAttributes := getValueByPath(fromObject, []string{"positivePromptSafetyAttributes"})
+	if fromPositivePromptSafetyAttributes != nil {
+		fromPositivePromptSafetyAttributes, err = safetyAttributesFromVertex(ac, fromPositivePromptSafetyAttributes.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"positivePromptSafetyAttributes"}, fromPositivePromptSafetyAttributes)
 	}
 
 	return toObject, nil
@@ -3957,7 +3987,7 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 	return response, nil
 }
 
-func (m Models) GenerateImages(ctx context.Context, model string, prompt string, config *GenerateImagesConfig) (*GenerateImagesResponse, error) {
+func (m Models) generateImages(ctx context.Context, model string, prompt string, config *GenerateImagesConfig) (*GenerateImagesResponse, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "prompt": prompt, "config": config}
@@ -4660,6 +4690,29 @@ func (m Models) All(ctx context.Context) iter.Seq2[*Model, error] {
 		return yieldErrorAndEndIterator[Model](err)
 	}
 	return p.all(ctx)
+}
+
+// GenerateImages calls the generateImages method on the model.
+func (m Models) GenerateImages(ctx context.Context, model string, prompt string, config *GenerateImagesConfig) (*GenerateImagesResponse, error) {
+	apiResponse, err := m.generateImages(ctx, model, prompt, config)
+	if err != nil {
+		return nil, err
+	}
+	var positivePromptSafetyAttributes *SafetyAttributes
+	generatedImages := []*GeneratedImage{}
+
+	for _, generatedImage := range apiResponse.GeneratedImages {
+		if generatedImage.SafetyAttributes != nil && generatedImage.SafetyAttributes.ContentType == "Positive Prompt" {
+			positivePromptSafetyAttributes = generatedImage.SafetyAttributes
+		} else {
+			generatedImages = append(generatedImages, generatedImage)
+		}
+	}
+
+	return &GenerateImagesResponse{
+		GeneratedImages:                generatedImages,
+		PositivePromptSafetyAttributes: positivePromptSafetyAttributes,
+	}, nil
 }
 
 // UpscaleImage calls the upscaleImage method on the model.

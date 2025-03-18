@@ -39,7 +39,7 @@ func live(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := client.Live.Connect("gemini-2.0-flash-exp", &genai.LiveConnectConfig{})
+	session, err := client.Live.Connect("gemini-2.0-flash-exp", &genai.LiveConnectConfig{HTTPOptions: &genai.HTTPOptions{APIVersion: "v1alpha"}})
 	if err != nil {
 		log.Fatal("connect to model error: ", err)
 	}

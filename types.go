@@ -2703,6 +2703,8 @@ type LiveClientMessage struct {
 
 // Session config for the API connection.
 type LiveConnectConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// The generation configuration for the session.
 	GenerationConfig *GenerationConfig `json:"generationConfig,omitempty"`
 	// The requested modalities of the response. Represents the set of

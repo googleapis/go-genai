@@ -747,8 +747,6 @@ type Schema struct {
 	Default any `json:"default,omitempty"`
 	// Optional. Maximum length of the Type.STRING
 	MaxLength *int64 `json:"maxLength,omitempty"`
-	// Optional. The title of the Schema.
-	Title string `json:"title,omitempty"`
 	// Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING
 	MinLength *int64 `json:"minLength,omitempty"`
 	// Optional. Minimum number of the properties for Type.OBJECT.
@@ -788,6 +786,8 @@ type Schema struct {
 	PropertyOrdering []string `json:"propertyOrdering,omitempty"`
 	// Optional. Required properties of Type.OBJECT.
 	Required []string `json:"required,omitempty"`
+	// Optional. The title of the Schema.
+	Title string `json:"title,omitempty"`
 	// Optional. The type of the data.
 	Type Type `json:"type,omitempty"`
 }

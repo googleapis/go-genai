@@ -313,12 +313,19 @@ func TestTable(t *testing.T) {
 								} else {
 									resp = response[0].Interface()
 								}
-								got := convertSDKResponseToMatchReplayType(t, resp)
+								got := convertSDKResponseToMatchReplayType(t, resp, testTableItem.IgnoreKeys)
 								sanitizeGotSDKResponses(t, got)
 								for _, v := range got {
 									sanitizeMapWithSourceType(t, reflect.TypeOf(resp), v)
 								}
 								want := replayClient.LatestInteraction().Response.SDKResponseSegments
+								if testTableItem.IgnoreKeys != nil {
+									for _, keyToIgnore := range testTableItem.IgnoreKeys {
+										for _, m := range want {
+											delete(m, keyToIgnore)
+										}
+									}
+								}
 								opts := cmp.Options{stringComparator, floatComparator}
 								if diff := cmp.Diff(got, want, opts); diff != "" {
 									t.Errorf("Responses had diff (-got +want):\n%v\n %v\n\n %v", diff, got, want)
@@ -336,7 +343,7 @@ func TestTable(t *testing.T) {
 	}
 }
 
-func convertSDKResponseToMatchReplayType(t *testing.T, response any) []map[string]any {
+func convertSDKResponseToMatchReplayType(t *testing.T, response any, ignoreKeys []string) []map[string]any {
 	t.Helper()
 	responseJSON, err := json.MarshalIndent([]any{response}, "", "  ")
 	if err != nil {
@@ -347,6 +354,14 @@ func convertSDKResponseToMatchReplayType(t *testing.T, response any) []map[strin
 		t.Fatal("Error unmarshalling want:", err)
 	}
 	omitEmptyValues(responseMap)
+	// Remove the keys in ignoreKeys
+	if ignoreKeys != nil {
+		for _, m := range responseMap {
+			for _, keyToIgnore := range ignoreKeys {
+				delete(m, keyToIgnore)
+			}
+		}
+	}
 	return responseMap
 }
 

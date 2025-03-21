@@ -15,6 +15,7 @@
 package genai
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -116,8 +117,54 @@ func tTools(_ *apiClient, tools any) (any, error) {
 	return tools, nil
 }
 
-func tSchema(_ *apiClient, origin any) (any, error) {
-	return origin, nil
+func processSchema(apiClient *apiClient, schema map[string]any) error {
+	if apiClient.clientConfig.Backend == BackendGeminiAPI {
+		if _, ok := schema["default"]; ok {
+			return errors.New("default value is not supported in the response schema for the Gemini API")
+		}
+	}
+
+	if anyOf, ok := schema["anyOf"].([]any); ok {
+		for _, subSchema := range anyOf {
+			if subSchema, ok := subSchema.(map[string]any); ok {
+				if err := processSchema(apiClient, subSchema); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	if items, ok := schema["items"]; ok {
+		if items, ok := items.(map[string]any); ok {
+			if err := processSchema(apiClient, items); err != nil {
+				return err
+			}
+		}
+	}
+
+	if properties, ok := schema["properties"]; ok {
+		if properties, ok := properties.(map[string]any); ok {
+			for _, subSchema := range properties {
+				if subSchema, ok := subSchema.(map[string]any); ok {
+					if err := processSchema(apiClient, subSchema); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func tSchema(apiClient *apiClient, origin any) (any, error) {
+	if schema, ok := origin.(map[string]any); ok {
+		err := processSchema(apiClient, schema)
+		if err != nil {
+			return nil, err
+		}
+		return schema, nil
+	}
+	return nil, fmt.Errorf("input is not a map[string]any")
 }
 
 func tSpeechConfig(_ *apiClient, speechConfig any) (any, error) {

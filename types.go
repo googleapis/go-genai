@@ -2349,6 +2349,9 @@ type testTableItem struct {
 	// flag for tests that can not be reproduced with the real API. E.g. a test that deletes
 	// a resource.
 	SkipInAPIMode string `json:"skipInApiMode,omitempty"`
+	// Keys to ignore when comparing the request and response. This is useful for tests
+	// that are not deterministic.
+	IgnoreKeys []string `json:"ignoreKeys,omitempty"`
 }
 
 type testTableFile struct {

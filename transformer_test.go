@@ -135,3 +135,120 @@ func TestModelTransformer(t *testing.T) {
 		}
 	})
 }
+
+func TestSchemaTransformer(t *testing.T) {
+	tests := []struct {
+		name    string
+		backend Backend
+		input   map[string]any
+		want    map[string]any
+		wantErr bool
+	}{
+		{
+			name:    "GeminiAPI_Schema_With_Default",
+			backend: BackendGeminiAPI,
+			input: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"name": map[string]any{
+						"type":    "STRING",
+						"default": "test",
+					},
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "VertexAI_Schema_With_Default",
+			backend: BackendVertexAI,
+			input: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"type":    "STRING",
+					"default": "test",
+				},
+			},
+			want: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"type":    "STRING",
+					"default": "test",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "VertexAI_Schema_With_AnyOf",
+			backend: BackendVertexAI,
+			input: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"type": "STRING",
+					"anyOf": []any{
+						map[string]any{
+							"type": "STRING",
+						},
+						map[string]any{
+							"type": "NUMBER",
+						},
+					},
+				},
+			},
+			want: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"type": "STRING",
+					"anyOf": []any{
+						map[string]any{
+							"type": "STRING",
+						},
+						map[string]any{
+							"type": "NUMBER",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "VertexAI_Schema_With_Items",
+			backend: BackendVertexAI,
+			input: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"type": "STRING",
+					"items": map[string]any{
+						"type": "STRING",
+					},
+				},
+			},
+			want: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"type": "STRING",
+					"items": map[string]any{
+						"type": "STRING",
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ac := &apiClient{clientConfig: &ClientConfig{
+				Backend: tt.backend,
+			}}
+			got, err := tSchema(ac, tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("tSchema() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && !cmp.Equal(got, tt.want) {
+				t.Errorf("tSchema() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0](https://github.com/googleapis/go-genai/compare/v0.6.0...v0.7.0) (2025-03-21)
+
+
+### Features
+
+* add IMAGE_SAFTY enum value to FinishReason ([cc6081a](https://github.com/googleapis/go-genai/commit/cc6081a7e781fb68a6cbcb89528de85c31c4fb6a))
+* Save prompt safety attributes in dedicated field for generate_images ([eb3cfdc](https://github.com/googleapis/go-genai/commit/eb3cfdc8773b85bae648a90dddaa69435824a58b))
+* support new UsageMetadata fields ([3a56c63](https://github.com/googleapis/go-genai/commit/3a56c632f11d703786cb546d4ced3ee7bbf84b39))
+
 ## [0.6.0](https://github.com/googleapis/go-genai/compare/v0.5.0...v0.6.0) (2025-03-19)
 
 

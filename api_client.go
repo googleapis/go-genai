@@ -214,6 +214,12 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 				}
 			}
 		}
+		if rs.r.Err() != nil {
+			if rs.r.Err() == bufio.ErrTooLong {
+				log.Printf("The response is too large to process in streaming mode. Please use a non-streaming method.")
+			}
+			log.Printf("Error %v", rs.r.Err())
+		}
 	}
 }
 
@@ -287,6 +293,12 @@ func deserializeStreamResponse[T responseStream[R], R any](resp *http.Response, 
 		return newAPIError(resp)
 	}
 	output.r = bufio.NewScanner(resp.Body)
+	// Scanner default buffer max size is 64*1024 (64KB).
+	// We provide 1KB byte buffer to the scanner and set max to 256MB.
+	// When data exceed 1KB, then scanner will allocate new memory up to 256MB.
+	// When data exceed 256MB, scanner will stop and returns err: bufio.ErrTooLong.
+	output.r.Buffer(make([]byte, 1024), 268435456)
+
 	output.r.Split(scan)
 	output.rc = resp.Body
 	return nil

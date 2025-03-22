@@ -31,6 +31,7 @@ type Client struct {
 	Models       *Models
 	Live         *Live
 	Caches       *Caches
+	Operations   *Operations
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -166,6 +167,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		Models:       &Models{apiClient: ac},
 		Live:         &Live{apiClient: ac},
 		Caches:       &Caches{apiClient: ac},
+		Operations:   &Operations{apiClient: ac},
 	}
 	return c, nil
 }

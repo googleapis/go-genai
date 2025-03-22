@@ -42,6 +42,7 @@ var (
 			"TestModelsGenerateContentStream/vertex/models/generate_content_tools/test_code_execution",
 			"TestModelsGenerateContentStream/mldev/models/generate_content_model",
 			"TestModelsGenerateContentAudio/",
+			"TestModelsGenerateVideosText2VideoPoll/",
 		},
 		replayMode: []string{
 			// TODO(b/372730941): httpOptions related tests are not covered in replay mode.

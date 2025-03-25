@@ -40,7 +40,7 @@ import (
 
 var model = flag.String("model", "gemini-2.0-flash-exp", "the model name, e.g. gemini-2.0-flash-exp")
 
-func generateAudio(ctx context.Context) {
+func generateImage(ctx context.Context) {
 	client, err := genai.NewClient(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -69,5 +69,5 @@ func generateAudio(ctx context.Context) {
 func main() {
 	ctx := context.Background()
 	flag.Parse()
-	generateAudio(ctx)
+	generateImage(ctx)
 }

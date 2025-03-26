@@ -223,15 +223,20 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 	}
 }
 
-type apiError struct {
-	Code    int              `json:"code,omitempty"`
-	Message string           `json:"message,omitempty"`
-	Status  string           `json:"status,omitempty"`
+// APIError contains an error response from the server.
+type APIError struct {
+	// Code is the HTTP response status code.
+	Code int `json:"code,omitempty"`
+	// Message is the server response message.
+	Message string `json:"message,omitempty"`
+	// Status is the server response status.
+	Status string `json:"status,omitempty"`
+	// Details provide more context to an error.
 	Details []map[string]any `json:"details,omitempty"`
 }
 
 type responseWithError struct {
-	ErrorInfo *apiError `json:"error,omitempty"`
+	ErrorInfo *APIError `json:"error,omitempty"`
 }
 
 func newAPIError(resp *http.Response) error {
@@ -245,41 +250,15 @@ func newAPIError(resp *http.Response) error {
 		if err := json.Unmarshal(body, respWithError); err != nil {
 			return fmt.Errorf("newAPIError: unmarshal response to error failed: %w. Response: %v", err, string(body))
 		}
-		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
-			return ClientError{apiError: *respWithError.ErrorInfo}
-		}
-		return ServerError{apiError: *respWithError.ErrorInfo}
+		return *respWithError.ErrorInfo
 	}
-	if resp.StatusCode >= 400 && resp.StatusCode < 500 {
-		return ClientError{apiError: apiError{Code: resp.StatusCode, Status: resp.Status}}
-	}
-	return ServerError{apiError: apiError{Code: resp.StatusCode, Status: resp.Status}}
-}
-
-// ClientError is an error that occurs when the GenAI API
-// receives an invalid request from a client.
-type ClientError struct {
-	apiError
-}
-
-// Error returns a string representation of the ClientError.
-func (e ClientError) Error() string {
-	return fmt.Sprintf(
-		"client error. Code: %d, Message: %s, Status: %s, Details: %v",
-		e.Code, e.Message, e.Status, e.Details,
-	)
-}
-
-// ServerError is an error that occurs when the GenAI API
-// encounters an unexpected server problem.
-type ServerError struct {
-	apiError
+	return APIError{Code: resp.StatusCode, Status: resp.Status}
 }
 
 // Error returns a string representation of the ServerError.
-func (e ServerError) Error() string {
+func (e APIError) Error() string {
 	return fmt.Sprintf(
-		"server error. Code: %d, Message: %s, Status: %s, Details: %v",
+		"Error %d, Message: %s, Status: %s, Details: %v",
 		e.Code, e.Message, e.Status, e.Details,
 	)
 }

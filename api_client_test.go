@@ -79,7 +79,7 @@ func TestSendRequest(t *testing.T) {
 			method:       http.MethodGet,
 			responseCode: http.StatusBadRequest,
 			responseBody: `{"error": {"code": 400, "message": "bad request", "status": "INVALID_ARGUMENTS", "details": [{"field": "value"}]}}`,
-			wantErr:      &ClientError{apiError: apiError{Code: http.StatusBadRequest, Message: ""}},
+			wantErr:      &APIError{Code: http.StatusBadRequest, Message: "bad request", Details: []map[string]any{{"field": "value"}}},
 		},
 		{
 			desc:         "500 error response",
@@ -87,7 +87,7 @@ func TestSendRequest(t *testing.T) {
 			method:       http.MethodGet,
 			responseCode: http.StatusInternalServerError,
 			responseBody: `{"error": {"code": 500, "message": "internal server error", "status": "INTERNAL_SERVER_ERROR", "details": [{"field": "value"}]}}`,
-			wantErr:      &ServerError{apiError: apiError{Code: http.StatusInternalServerError, Message: ""}},
+			wantErr:      &APIError{Code: http.StatusInternalServerError, Message: "internal server error", Details: []map[string]any{{"field": "value"}}},
 		},
 		{
 			desc:         "invalid response body",
@@ -126,16 +126,10 @@ func TestSendRequest(t *testing.T) {
 			}
 			if tt.wantErr != nil && err != nil {
 				// For error cases, check for want error types
-				if tt.responseCode >= 400 && tt.responseCode < 500 {
-					_, ok := err.(ClientError)
+				if tt.responseCode >= 400 {
+					_, ok := err.(APIError)
 					if !ok {
-						t.Errorf("want ClientError, got %T(%s)", err, err.Error())
-					}
-
-				} else if tt.responseCode >= 500 {
-					_, ok := err.(ServerError)
-					if !ok {
-						t.Errorf("want ServerError, got %T", err)
+						t.Errorf("want Error, got %T(%s)", err, err.Error())
 					}
 				} else if tt.path == "" { // build request error
 					if !strings.Contains(err.Error(), tt.wantErr.Error()) {
@@ -303,7 +297,7 @@ func TestSendStreamRequest(t *testing.T) {
 			mockResponse:     `{"error":{"code":400,"message":"test error message","status":"INVALID_ARGUMENT"}}`,
 			mockStatusCode:   http.StatusBadRequest,
 			wantErr:          true,
-			wantErrorMessage: "client error. Code: 400, Message: test error message, Status: INVALID_ARGUMENT, Details: []",
+			wantErrorMessage: "Error 400, Message: test error message, Status: INVALID_ARGUMENT, Details: []",
 		},
 		{
 			name:             "Error Response with empty body",
@@ -313,7 +307,7 @@ func TestSendStreamRequest(t *testing.T) {
 			mockResponse:     ``,
 			mockStatusCode:   http.StatusBadRequest,
 			wantErr:          true,
-			wantErrorMessage: "client error. Code: 400, Message: , Status: 400 Bad Request, Details: []",
+			wantErrorMessage: "Error 400, Message: , Status: 400 Bad Request, Details: []",
 		},
 		{
 			name:             "Error Response with invalid json",
@@ -333,7 +327,7 @@ func TestSendStreamRequest(t *testing.T) {
 			mockResponse:     `{"error":{"code":500,"message":"test error message","status":"INTERNAL"}}`,
 			mockStatusCode:   http.StatusInternalServerError,
 			wantErr:          true,
-			wantErrorMessage: "server error. Code: 500, Message: test error message, Status: INTERNAL, Details: []",
+			wantErrorMessage: "Error 500, Message: test error message, Status: INTERNAL, Details: []",
 		},
 		{
 			name:             "Error Response with server error and empty body",
@@ -343,7 +337,7 @@ func TestSendStreamRequest(t *testing.T) {
 			mockResponse:     ``,
 			mockStatusCode:   http.StatusInternalServerError,
 			wantErr:          true,
-			wantErrorMessage: "server error. Code: 500, Message: , Status: 500 Internal Server Error, Details: []",
+			wantErrorMessage: "Error 500, Message: , Status: 500 Internal Server Error, Details: []",
 		},
 		{
 			name:             "Error Response with server error and invalid json",

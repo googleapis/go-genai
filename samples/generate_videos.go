@@ -64,7 +64,7 @@ func generateVideos(ctx context.Context) {
 	for !operation.Done {
 		fmt.Println("Waiting for operation to complete...")
 		time.Sleep(20 * time.Second)
-		operation, err = client.Operations.Get(ctx, operation, nil)
+		operation, err = client.Operations.GetVideosOperation(ctx, operation, nil)
 		if err != nil {
 			log.Fatal(err)
 		}

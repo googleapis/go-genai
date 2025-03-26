@@ -50,7 +50,13 @@ func embedContent(ctx context.Context) {
 		fmt.Println("Calling GeminiAPI Backend...")
 	}
 	// Call the GenerateContent method.
-	result, err := client.Models.EmbedContent(ctx, *model, genai.Text("What is your name?"), nil)
+	result, err := client.Models.EmbedContent(ctx, *model, genai.Text("What is your name?"), &genai.EmbedContentConfig{TaskType: "RETRIEVAL_QUERY"})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%#v\n", result.Embeddings[0])
+
+	result, err = client.Models.EmbedContent(ctx, *model, genai.Text("What is your name?"), &genai.EmbedContentConfig{TaskType: "RETRIEVAL_DOCUMENT"})
 	if err != nil {
 		log.Fatal(err)
 	}

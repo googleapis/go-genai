@@ -357,6 +357,24 @@ const (
 	EditModeProductImage      EditMode = "EDIT_MODE_PRODUCT_IMAGE"
 )
 
+// Server content modalities.
+type MediaModality string
+
+const (
+	// The modality is unspecified.
+	MediaModalityUnspecified MediaModality = "MODALITY_UNSPECIFIED"
+	// Plain text.
+	MediaModalityText MediaModality = "TEXT"
+	// Images.
+	MediaModalityImage MediaModality = "IMAGE"
+	// Video.
+	MediaModalityVideo MediaModality = "VIDEO"
+	// Audio.
+	MediaModalityAudio MediaModality = "AUDIO"
+	// Document, e.g. PDF.
+	MediaModalityDocument MediaModality = "DOCUMENT"
+)
+
 // Metadata describes the input video content.
 type VideoMetadata struct {
 	// Optional. The end offset of the video.
@@ -747,8 +765,6 @@ type Schema struct {
 	Default any `json:"default,omitempty"`
 	// Optional. Maximum length of the Type.STRING
 	MaxLength *int64 `json:"maxLength,omitempty"`
-	// Optional. The title of the Schema.
-	Title string `json:"title,omitempty"`
 	// Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING
 	MinLength *int64 `json:"minLength,omitempty"`
 	// Optional. Minimum number of the properties for Type.OBJECT.
@@ -788,6 +804,8 @@ type Schema struct {
 	PropertyOrdering []string `json:"propertyOrdering,omitempty"`
 	// Optional. Required properties of Type.OBJECT.
 	Required []string `json:"required,omitempty"`
+	// Optional. The title of the Schema.
+	Title string `json:"title,omitempty"`
 	// Optional. The type of the data.
 	Type Type `json:"type,omitempty"`
 }
@@ -1408,7 +1426,7 @@ type GenerateContentResponsePromptFeedback struct {
 // Represents token counting info for a single modality.
 type ModalityTokenCount struct {
 	// The modality associated with this token count.
-	Modality Modality `json:"modality,omitempty"`
+	Modality MediaModality `json:"modality,omitempty"`
 	// Number of tokens.
 	TokenCount *int32 `json:"tokenCount,omitempty"`
 }
@@ -2261,9 +2279,11 @@ type GenerateVideosOperation struct {
 type CreateCachedContentConfig struct {
 	// Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
-	// The TTL for this resource. The expiration time is computed: now + TTL.
+	// The TTL for this resource. The expiration time is computed: now + TTL. It is a duration
+	// string, with up to nine fractional digits, terminated by 's'. Example: "3.5s".
 	TTL string `json:"ttl,omitempty"`
-	// Timestamp of when this resource is considered expired.
+	// Timestamp of when this resource is considered expired. Uses RFC 3339 format, Example:
+	// 2014-10-02T15:01:23Z.
 	ExpireTime time.Time `json:"expireTime,omitempty"`
 	// The user-generated meaningful display name of the cached content.
 	DisplayName string `json:"displayName,omitempty"`
@@ -2371,9 +2391,11 @@ type DeleteCachedContentResponse struct {
 type UpdateCachedContentConfig struct {
 	// Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
-	// The TTL for this resource. The expiration time is computed: now + TTL.
+	// The TTL for this resource. The expiration time is computed: now + TTL. It is a duration
+	// string, with up to nine fractional digits, terminated by 's'. Example: "3.5s".
 	TTL string `json:"ttl,omitempty"`
-	// Timestamp of when this resource is considered expired.
+	// Timestamp of when this resource is considered expired. Uses RFC 3339 format, Example:
+	// 2014-10-02T15:01:23Z.
 	ExpireTime time.Time `json:"expireTime,omitempty"`
 }
 

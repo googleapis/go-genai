@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -113,10 +113,6 @@ func schemaToMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 		return nil, fmt.Errorf("maxLength parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"title"}) != nil {
-		return nil, fmt.Errorf("title parameter is not supported in Gemini API")
-	}
-
 	if getValueByPath(fromObject, []string{"minLength"}) != nil {
 		return nil, fmt.Errorf("minLength parameter is not supported in Gemini API")
 	}
@@ -192,6 +188,11 @@ func schemaToMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 	fromRequired := getValueByPath(fromObject, []string{"required"})
 	if fromRequired != nil {
 		setValueByPath(toObject, []string{"required"}, fromRequired)
+	}
+
+	fromTitle := getValueByPath(fromObject, []string{"title"})
+	if fromTitle != nil {
+		setValueByPath(toObject, []string{"title"}, fromTitle)
 	}
 
 	fromType := getValueByPath(fromObject, []string{"type"})
@@ -865,7 +866,7 @@ func listModelsConfigToMldev(ac *apiClient, fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"_url", "modelsUrl"}, fromQueryBase)
+		setValueByPath(parentObject, []string{"_url", "models_url"}, fromQueryBase)
 	}
 
 	return toObject, nil
@@ -1224,11 +1225,6 @@ func schemaToVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 		setValueByPath(toObject, []string{"maxLength"}, fromMaxLength)
 	}
 
-	fromTitle := getValueByPath(fromObject, []string{"title"})
-	if fromTitle != nil {
-		setValueByPath(toObject, []string{"title"}, fromTitle)
-	}
-
 	fromMinLength := getValueByPath(fromObject, []string{"minLength"})
 	if fromMinLength != nil {
 		setValueByPath(toObject, []string{"minLength"}, fromMinLength)
@@ -1307,6 +1303,11 @@ func schemaToVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 	fromRequired := getValueByPath(fromObject, []string{"required"})
 	if fromRequired != nil {
 		setValueByPath(toObject, []string{"required"}, fromRequired)
+	}
+
+	fromTitle := getValueByPath(fromObject, []string{"title"})
+	if fromTitle != nil {
+		setValueByPath(toObject, []string{"title"}, fromTitle)
 	}
 
 	fromType := getValueByPath(fromObject, []string{"type"})
@@ -1778,7 +1779,7 @@ func embedContentConfigToVertex(ac *apiClient, fromObject map[string]any, parent
 
 	fromTaskType := getValueByPath(fromObject, []string{"taskType"})
 	if fromTaskType != nil {
-		setValueByPath(parentObject, []string{"instances[]", "taskType"}, fromTaskType)
+		setValueByPath(parentObject, []string{"instances[]", "task_type"}, fromTaskType)
 	}
 
 	fromTitle := getValueByPath(fromObject, []string{"title"})
@@ -2348,7 +2349,7 @@ func listModelsConfigToVertex(ac *apiClient, fromObject map[string]any, parentOb
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"_url", "modelsUrl"}, fromQueryBase)
+		setValueByPath(parentObject, []string{"_url", "models_url"}, fromQueryBase)
 	}
 
 	return toObject, nil
@@ -3394,7 +3395,7 @@ func contentEmbeddingStatisticsFromVertex(ac *apiClient, fromObject map[string]a
 		setValueByPath(toObject, []string{"truncated"}, fromTruncated)
 	}
 
-	fromTokenCount := getValueByPath(fromObject, []string{"tokenCount"})
+	fromTokenCount := getValueByPath(fromObject, []string{"token_count"})
 	if fromTokenCount != nil {
 		setValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
 	}
@@ -4377,9 +4378,9 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 		delete(body, "_url")
 	}
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{modelsUrl}", urlParams)
+		path, err = formatMap("{models_url}", urlParams)
 	} else {
-		path, err = formatMap("{modelsUrl}", urlParams)
+		path, err = formatMap("{models_url}", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)

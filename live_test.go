@@ -64,9 +64,13 @@ func TestLiveConnect(t *testing.T) {
 	connectTests := []struct {
 		desc            string
 		client          *Client
+		clientHTTPOpts  *HTTPOptions
 		config          *LiveConnectConfig
 		wantRequestBody string
+		wantHeaders     map[string]string
+		wantPath        string
 		wantErr         bool
+		wantErrMessage  string
 	}{
 		{
 			desc:            "successful connection mldev",
@@ -82,6 +86,23 @@ func TestLiveConnect(t *testing.T) {
 				Tools:             []*Tool{{GoogleSearch: &GoogleSearch{}}},
 			},
 			wantRequestBody: `{"setup":{"generationConfig":{"temperature":0.5},"model":"models/test-model","systemInstruction":{"parts":[{"text":"test instruction"}]},"tools":[{"googleSearch":{}}]}}`,
+		},
+		{
+			desc:            "successful connection with http options mldev",
+			client:          mldevClient,
+			clientHTTPOpts:  &HTTPOptions{Headers: map[string][]string{"test-header": {"test-value"}}, APIVersion: "test-api-version"},
+			wantRequestBody: `{"setup":{"model":"models/test-model"}}`,
+			wantHeaders:     map[string]string{"test-header": "test-value"},
+			wantPath:        "/ws/google.ai.generativelanguage.test-api-version.GenerativeService.BidiGenerateContent?key=test-api-key",
+			wantErr:         false,
+		},
+		{
+			desc:            "failed connection with http options mldev",
+			client:          mldevClient,
+			clientHTTPOpts:  &HTTPOptions{BaseURL: "http://not-the-testing-server-url/path", APIVersion: "v1apha"},
+			wantRequestBody: `{"setup":{"model":"models/test-model"}}`,
+			wantErrMessage:  "Connect to wss://not-the-testing-server-url/path/ws/",
+			wantErr:         true,
 		},
 		{
 			desc:            "successful connection vertex",
@@ -107,6 +128,19 @@ func TestLiveConnect(t *testing.T) {
 				conn, _ := upgrader.Upgrade(w, r, nil)
 				defer conn.Close()
 
+				if tt.config != nil && tt.clientHTTPOpts != nil {
+					if tt.wantHeaders != nil {
+						if diff := cmp.Diff(r.Header.Get("test-header"), tt.wantHeaders["test-header"]); diff != "" {
+							t.Errorf("Request header mismatch (-want +got):\n%s", diff)
+						}
+					}
+					if tt.wantPath != "" {
+						if diff := cmp.Diff(r.URL.String(), tt.wantPath); diff != "" {
+							t.Errorf("Request URL mismatch (-want +got):\n%s", diff)
+						}
+					}
+				}
+
 				mt, message, err := conn.ReadMessage()
 				if err != nil {
 					if tt.wantErr {
@@ -116,6 +150,10 @@ func TestLiveConnect(t *testing.T) {
 				}
 				if diff := cmp.Diff(string(message), tt.wantRequestBody); diff != "" {
 					t.Errorf("Request message mismatch (-want +got):\n%s", diff)
+				}
+				if tt.wantErr {
+					conn.Close()
+					return
 				}
 
 				response := &LiveServerMessage{}
@@ -134,7 +172,13 @@ func TestLiveConnect(t *testing.T) {
 			}))
 			defer ts.Close()
 
-			tt.client.Live.apiClient.clientConfig.HTTPOptions.BaseURL = strings.Replace(ts.URL, "http", "ws", 1)
+			url := ts.URL
+			if tt.clientHTTPOpts != nil {
+				tt.client.Live.apiClient.clientConfig.HTTPOptions = *tt.clientHTTPOpts
+				url = tt.clientHTTPOpts.BaseURL
+			}
+			tt.client.Live.apiClient.clientConfig.HTTPOptions.BaseURL = strings.Replace(url, "http", "wss", 1)
+
 			tt.client.Live.apiClient.clientConfig.HTTPClient = ts.Client()
 			if tt.client.Live.apiClient.clientConfig.Backend == BackendVertexAI {
 				tt.client.Live.apiClient.clientConfig.Credentials.TokenSource = mts
@@ -143,8 +187,8 @@ func TestLiveConnect(t *testing.T) {
 				t.Fatalf("NewClient failed: %v", err)
 			}
 			session, err := tt.client.Live.Connect(model, tt.config)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Connect() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr && !strings.Contains(err.Error(), tt.wantErrMessage) {
+				t.Errorf("Connect() error message = %v, wantErrMessage %v", err.Error(), tt.wantErrMessage)
 				return
 			}
 			defer session.Close()

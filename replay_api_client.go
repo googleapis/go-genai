@@ -136,7 +136,7 @@ func readFileForReplayTest[T any](path string, output *T, omitempty bool) error 
 	if omitempty {
 		omitEmptyValues(m)
 	}
-	convertKeysToCamelCase(m)
+	m = convertKeysToCamelCase(m, "").(map[string]any)
 
 	// Marshal the modified map back to struct
 	err = mapToStruct(m, output)
@@ -195,6 +195,7 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 		}
 	}
 	bodySegment = redactRequestBody(bodySegment)
+	bodySegment = convertKeysToCamelCase(bodySegment, "").(map[string]any)
 
 	headers := make(map[string]string)
 	for k, v := range sdkRequest.Header {
@@ -215,8 +216,6 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 
 	opts := cmp.Options{
 		stringComparator,
-		// TODO(b/390425822): Revert candidateCount back to pointer type.
-		ignoreFields("BodySegments.generationConfig.candidateCount"),
 	}
 
 	if diff := cmp.Diff(got, want, opts); diff != "" {
@@ -251,26 +250,30 @@ func omitEmptyValues(v any) {
 	}
 }
 
-// convertKeysToCamelCase recursively traverses the given value and if it is a `map[string]any`, it
-// converts the keys to camel case.
-func convertKeysToCamelCase(v any) {
+func convertKeysToCamelCase(v any, parentKey string) any {
 	if v == nil {
-		return
+		return nil
 	}
 	switch m := v.(type) {
 	case map[string]any:
+		newMap := make(map[string]any)
 		for key, value := range m {
 			camelCaseKey := toCamelCase(key)
-			if camelCaseKey != key {
-				m[camelCaseKey] = value
-				delete(m, key)
+			if parentKey == "response" && key == "body_segments" {
+				newMap[camelCaseKey] = value
+			} else {
+				newMap[camelCaseKey] = convertKeysToCamelCase(value, key)
 			}
-			convertKeysToCamelCase(value)
 		}
+		return newMap
 	case []any:
-		for _, item := range m {
-			convertKeysToCamelCase(item)
+		newSlice := make([]any, len(m))
+		for i, item := range m {
+			newSlice[i] = convertKeysToCamelCase(item, parentKey)
 		}
+		return newSlice
+	default:
+		return v
 	}
 }
 
@@ -281,7 +284,6 @@ func convertKeysToCamelCase(v any) {
 //	"fooBar" -> "fooBar"
 //	"foo_bar" -> "fooBar"
 //	"foo_bar_baz" -> "fooBarBaz"
-//	"foo-bar" -> "foo-bar"
 func toCamelCase(s string) string {
 	parts := strings.Split(s, "_")
 	if len(parts) == 1 {
@@ -320,7 +322,6 @@ var timeStringComparator = func(x, y string) bool {
 }
 
 var base64StringComparator = func(x, y string) bool {
-	// fmt.Println("x: ", x, " y: ", y)
 	stdBase64Handler := func(s string) ([]byte, error) {
 		b, err := base64.URLEncoding.DecodeString(s)
 		if err != nil {
@@ -341,33 +342,4 @@ var base64StringComparator = func(x, y string) bool {
 		return x == y
 	}
 	return bytes.Equal(xb, yb)
-}
-
-// `re“ is a regex that matches the fields that should be ignored in a given cmp.Path.
-var re = regexp.MustCompile(strings.Join([]string{
-	"map\\[string\\]any", // map[string]any
-	"\\[\\]any",          // []any
-	"\\d",                // [0..9]
-	"\\[",                // [
-	"\\]",                // ]
-	"\\(",                // (
-	"\\)",                // )
-	"\"",                 // "
-	"\\*",                // *
-	"\\.",                // .
-}, "|"))
-
-func ignoreFields(ignoringPath string) cmp.Option {
-	return cmp.FilterPath(func(p cmp.Path) bool {
-		pathArray := make([]string, 0, len(p))
-		for _, pathStep := range p[1:] {
-			step := re.ReplaceAllString(pathStep.String(), "")
-			if len(step) == 0 {
-				continue
-			}
-			pathArray = append(pathArray, step)
-		}
-		calculatedPath := strings.Join(pathArray, ".")
-		return strings.EqualFold(calculatedPath, ignoringPath)
-	}, cmp.Ignore())
 }

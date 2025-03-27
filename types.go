@@ -357,6 +357,34 @@ const (
 	EditModeProductImage      EditMode = "EDIT_MODE_PRODUCT_IMAGE"
 )
 
+// The different ways of handling user activity.
+type ActivityHandling string
+
+const (
+	// If unspecified, the default behavior is `START_OF_ACTIVITY_INTERRUPTS`.
+	ActivityHandlingUnspecified ActivityHandling = "ACTIVITY_HANDLING_UNSPECIFIED"
+	// If true, start of activity will interrupt the model's response (also called "barge
+	// in"). The model's current response will be cut-off in the moment of the interruption.
+	// This is the default behavior.
+	ActivityHandlingStartOfActivityInterrupts ActivityHandling = "START_OF_ACTIVITY_INTERRUPTS"
+	// The model's response will not be interrupted.
+	ActivityHandlingNoInterruption ActivityHandling = "NO_INTERRUPTION"
+)
+
+// Options about which input is included in the user's turn.
+type TurnCoverage string
+
+const (
+	// If unspecified, the default behavior is `TURN_INCLUDES_ONLY_ACTIVITY`.
+	TurnCoverageUnspecified TurnCoverage = "TURN_COVERAGE_UNSPECIFIED"
+	// The users turn only includes activity since the last turn, excluding inactivity (e.g.
+	// silence on the audio stream). This is the default behavior.
+	TurnCoverageTurnIncludesOnlyActivity TurnCoverage = "TURN_INCLUDES_ONLY_ACTIVITY"
+	// The users turn includes all realtime input since the last turn, including inactivity
+	// (e.g. silence on the audio stream).
+	TurnCoverageTurnIncludesAllInput TurnCoverage = "TURN_INCLUDES_ALL_INPUT"
+)
+
 // Server content modalities.
 type MediaModality string
 
@@ -2746,6 +2774,26 @@ type LiveServerMessage struct {
 	ToolCallCancellation *LiveServerToolCallCancellation `json:"toolCallCancellation,omitempty"`
 }
 
+// Configures automatic detection of activity.
+type AutomaticActivityDetection struct {
+	// If enbled, detected voice and text input count as activity. If disabled, the client
+	// must send activity signals.
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+// Marks the end of user activity.
+// This can only be sent if automatic (i.e. server-side) activity detection is
+// disabled.
+type RealtimeInputConfig struct {
+	// If not set, automatic activity detection is enabled by default. If automatic voice
+	// detection is disabled, the client must send activity signals.
+	AutomaticActivityDetection *AutomaticActivityDetection `json:"automaticActivityDetection,omitempty"`
+	// Defines what effect activity has.
+	ActivityHandling ActivityHandling `json:"activityHandling,omitempty"`
+	// Defines which input is included in the user's turn.
+	TurnCoverage TurnCoverage `json:"turnCoverage,omitempty"`
+}
+
 // Message contains configuration that will apply for the duration of the streaming
 // session.
 type LiveClientSetup struct {
@@ -2771,6 +2819,8 @@ type LiveClientSetup struct {
 	// external systems to perform an action, or set of actions, outside of
 	// knowledge and scope of the model.
 	Tools []*Tool `json:"tools,omitempty"`
+	// Configures the realtime input behavior in BidiGenerateContent.
+	RealtimeInputConfig *RealtimeInputConfig `json:"realtimeInputConfig,omitempty"`
 }
 
 // Incremental update of the current conversation delivered from the client.
@@ -2789,6 +2839,18 @@ type LiveClientContent struct {
 	TurnComplete bool `json:"turnComplete,omitempty"`
 }
 
+// Marks the start of user activity.
+// This can only be sent if automatic (i.e. server-side) activity detection is
+// disabled.
+type ActivityStart struct {
+}
+
+// Marks the end of user activity.
+// This can only be sent if automatic (i.e. server-side) activity detection is
+// disabled.
+type ActivityEnd struct {
+}
+
 // User input that is sent in real time.
 // This is different from `ClientContentUpdate` in a few ways:
 //   - Can be sent continuously without interruption to model generation.
@@ -2804,6 +2866,10 @@ type LiveClientContent struct {
 type LiveClientRealtimeInput struct {
 	// Inlined bytes data for media input.
 	MediaChunks []*Blob `json:"mediaChunks,omitempty"`
+	// Marks the start of user activity.
+	ActivityStart *ActivityStart `json:"activityStart,omitempty"`
+	// Marks the end of user activity.
+	ActivityEnd *ActivityEnd `json:"activityEnd,omitempty"`
 }
 
 // Client generated response to a `ToolCall` received from the server.

@@ -31,6 +31,7 @@ type Client struct {
 	Models       *Models
 	Live         *Live
 	Caches       *Caches
+	Chats        *Chats
 	Operations   *Operations
 }
 
@@ -167,6 +168,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		Models:       &Models{apiClient: ac},
 		Live:         &Live{apiClient: ac},
 		Caches:       &Caches{apiClient: ac},
+		Chats:        &Chats{apiClient: ac},
 		Operations:   &Operations{apiClient: ac},
 	}
 	return c, nil

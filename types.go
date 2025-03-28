@@ -899,7 +899,7 @@ type GoogleSearch struct {
 type DynamicRetrievalConfig struct {
 	// The mode of the predictor to be used in dynamic retrieval.
 	Mode DynamicRetrievalConfigMode `json:"mode,omitempty"`
-	// Optional. The threshold to be used in dynamic retrieval. If empty, a system default
+	// Optional. The threshold to be used in dynamic retrieval. If nil, a system default
 	// value is used.
 	DynamicThreshold *float32 `json:"dynamicThreshold,omitempty"`
 }
@@ -928,8 +928,7 @@ type VertexRAGStoreRAGResource struct {
 	RAGFileIDs []string `json:"ragFileIds,omitempty"`
 }
 
-// Retrieve from Vertex RAG Store for grounding. You can find API default values and
-// more details at https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/rag-api-v1#parameters-list
+// Retrieve from Vertex RAG Store for grounding.
 type VertexRAGStore struct {
 	// Optional. Deprecated. Please use rag_resources instead.
 	RAGCorpora []string `json:"ragCorpora,omitempty"`
@@ -937,8 +936,9 @@ type VertexRAGStore struct {
 	// only or ragfiles. Currently only support one corpus or multiple files from one corpus.
 	// In the future we may open up multiple corpora support.
 	RAGResources []*VertexRAGStoreRAGResource `json:"ragResources,omitempty"`
-	// Optional. Number of top k results to return from the selected corpora.
-	SimilarityTopK *int32 `json:"similarityTopK,omitempty"`
+	// Optional. Number of top k results to return from the selected corpora. If zero, then
+	// API will determine the default value.
+	SimilarityTopK int32 `json:"similarityTopK,omitempty"`
 	// Optional. Only return results with vector distance smaller than the threshold.
 	VectorDistanceThreshold *float64 `json:"vectorDistanceThreshold,omitempty"`
 }
@@ -1067,10 +1067,12 @@ type GenerateContentConfig struct {
 	// a lower number for less random responses and a higher number for more
 	// random responses.
 	TopK *float32 `json:"topK,omitempty"`
-	// Number of response variations to return.
-	CandidateCount *int32 `json:"candidateCount,omitempty"`
-	// Maximum number of tokens that can be generated in the response.
-	MaxOutputTokens *int32 `json:"maxOutputTokens,omitempty"`
+	// Number of response variations to return. If zero, then API will determine the default
+	// value.
+	CandidateCount int32 `json:"candidateCount,omitempty"`
+	// Maximum number of tokens that can be generated in the response. If zero, then API
+	// will determine the default value.
+	MaxOutputTokens int32 `json:"maxOutputTokens,omitempty"`
 	// List of strings that tells the model to stop generating text if one
 	// of the strings is encountered in the response.
 	StopSequences []string `json:"stopSequences,omitempty"`
@@ -1284,13 +1286,12 @@ type GroundingMetadata struct {
 
 // Candidate for the logprobs token and score.
 type LogprobsResultCandidate struct {
-	// The candidate's log probability. If nil, then no LogProbability is returned by the
-	// API.
-	LogProbability *float32 `json:"logProbability,omitempty"`
+	// The candidate's log probability.
+	LogProbability float32 `json:"logProbability,omitempty"`
 	// The candidate's token string value.
 	Token string `json:"token,omitempty"`
-	// The candidate's token ID value. If nil, then no TokenID is returned by the API.
-	TokenID *int32 `json:"tokenId,omitempty"`
+	// The candidate's token ID value.
+	TokenID int32 `json:"tokenId,omitempty"`
 }
 
 // Candidates with top log probabilities at each decoding step.
@@ -1316,14 +1317,12 @@ type SafetyRating struct {
 	Category HarmCategory `json:"category,omitempty"`
 	// Output only. Harm probability levels in the content.
 	Probability HarmProbability `json:"probability,omitempty"`
-	// Output only. Harm probability score. If nil, then no ProbabilityScore is returned
-	// by the API.
-	ProbabilityScore *float32 `json:"probabilityScore,omitempty"`
+	// Output only. Harm probability score.
+	ProbabilityScore float32 `json:"probabilityScore,omitempty"`
 	// Output only. Harm severity levels in the content.
 	Severity HarmSeverity `json:"severity,omitempty"`
-	// Output only. Harm severity score. If nil, then no ProbabilityScore is returned by
-	// the API.
-	SeverityScore *float32 `json:"severityScore,omitempty"`
+	// Output only. Harm severity score.
+	SeverityScore float32 `json:"severityScore,omitempty"`
 }
 
 // A response candidate generated from the model.
@@ -1340,13 +1339,12 @@ type Candidate struct {
 	// The reason why the model stopped generating tokens.
 	// If empty, the model has not stopped generating the tokens.
 	FinishReason FinishReason `json:"finishReason,omitempty"`
-	// Output only. Average log probability score of the candidate. If nil, then no AvgLogprobs
-	// is returned by the API.
-	AvgLogprobs *float64 `json:"avgLogprobs,omitempty"`
+	// Output only. Average log probability score of the candidate.
+	AvgLogprobs float64 `json:"avgLogprobs,omitempty"`
 	// Output only. Metadata specifies sources used to ground generated content.
 	GroundingMetadata *GroundingMetadata `json:"groundingMetadata,omitempty"`
-	// Output only. Index of the candidate. If nil, then no Index is returned by the API.
-	Index *int32 `json:"index,omitempty"`
+	// Output only. Index of the candidate.
+	Index int32 `json:"index,omitempty"`
 	// Output only. Log-likelihood scores for the response tokens and top tokens
 	LogprobsResult *LogprobsResult `json:"logprobsResult,omitempty"`
 	// Output only. List of ratings for the safety of a response candidate. There is at
@@ -1369,7 +1367,7 @@ type ModalityTokenCount struct {
 	// The modality associated with this token count.
 	Modality MediaModality `json:"modality,omitempty"`
 	// Number of tokens.
-	TokenCount *int32 `json:"tokenCount,omitempty"`
+	TokenCount int32 `json:"tokenCount,omitempty"`
 }
 
 // Usage metadata about response(s).
@@ -1377,23 +1375,21 @@ type GenerateContentResponseUsageMetadata struct {
 	// Output only. List of modalities of the cached content in the request input.
 	CacheTokensDetails []*ModalityTokenCount `json:"cacheTokensDetails,omitempty"`
 	// Output only. Number of tokens in the cached part in the input (the cached content).
-	// If nil, then no CachedContentTokenCount is returned by the API.
-	CachedContentTokenCount *int32 `json:"cachedContentTokenCount,omitempty"`
-	// Number of tokens in the response(all the generated response candidates). If nil,
-	// then no CandidatesTokenCount is returned by the API.
-	CandidatesTokenCount *int32 `json:"candidatesTokenCount,omitempty"`
+	CachedContentTokenCount int32 `json:"cachedContentTokenCount,omitempty"`
+	// Number of tokens in the response(s).
+	CandidatesTokenCount int32 `json:"candidatesTokenCount,omitempty"`
 	// Output only. List of modalities that were returned in the response.
 	CandidatesTokensDetails []*ModalityTokenCount `json:"candidatesTokensDetails,omitempty"`
-	// Number of tokens in the prompt. When cached_content is set, this is still the total
-	// effective prompt size meaning this includes the number of tokens in the cached content.
-	// If nil, then no PromptTokenCount is returned by the API.
-	PromptTokenCount *int32 `json:"promptTokenCount,omitempty"`
+	// Number of tokens in the request. When `cached_content` is set, this is still the
+	// total effective prompt size meaning this includes the number of tokens in the cached
+	// content.
+	PromptTokenCount int32 `json:"promptTokenCount,omitempty"`
 	// Output only. List of modalities that were processed in the request input.
 	PromptTokensDetails []*ModalityTokenCount `json:"promptTokensDetails,omitempty"`
 	// Output only. Number of tokens present in thoughts output.
-	ThoughtsTokenCount *int32 `json:"thoughtsTokenCount,omitempty"`
+	ThoughtsTokenCount int32 `json:"thoughtsTokenCount,omitempty"`
 	// Output only. Number of tokens present in tool-use prompt(s).
-	ToolUsePromptTokenCount *int32 `json:"toolUsePromptTokenCount,omitempty"`
+	ToolUsePromptTokenCount int32 `json:"toolUsePromptTokenCount,omitempty"`
 	// Output only. List of modalities that were processed for tool-use request inputs.
 	ToolUsePromptTokensDetails []*ModalityTokenCount `json:"toolUsePromptTokensDetails,omitempty"`
 	// Total token count for prompt, response candidates, and tool-use prompts (if present).
@@ -1560,7 +1556,7 @@ type EmbedContentConfig struct {
 	// excessive values in the output embedding are truncated from the end.
 	// Supported by newer models since 2024 only. You cannot set this value if
 	// using the earlier model (`models/embedding-001`).
-	OutputDimensionality *int32 `json:"outputDimensionality,omitempty"`
+	OutputDimensionality int32 `json:"outputDimensionality,omitempty"`
 	// Vertex API only. The MIME type of the input.
 	MIMEType string `json:"mimeType,omitempty"`
 	// Vertex API only. Whether to silently truncate inputs longer than
@@ -1574,7 +1570,8 @@ type ContentEmbeddingStatistics struct {
 	// Vertex API only. If the input text was truncated due to having
 	// a length longer than the allowed maximum input.
 	Truncated bool `json:"truncated,omitempty"`
-	// Vertex API only. Number of tokens of the input text.
+	// Vertex API only. Number of tokens of the input text. If nil, then no TokenCount is
+	// returned by the API.
 	TokenCount *float32 `json:"tokenCount,omitempty"`
 }
 
@@ -1589,8 +1586,7 @@ type ContentEmbedding struct {
 
 // Request-level metadata for the Vertex Embed Content API.
 type EmbedContentMetadata struct {
-	// Vertex API only. The total number of billable characters included
-	// in the request.
+	// Vertex API only. The total number of billable characters included in the request.
 	BillableCharacterCount *int32 `json:"billableCharacterCount,omitempty"`
 }
 
@@ -1965,9 +1961,12 @@ type Model struct {
 type ListModelsConfig struct {
 	// Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
-
-	PageSize *int32 `json:"pageSize,omitempty"`
-
+	// PageSize specifies the maximum number of cached contents to return per API call.
+	// If zero, the server will use a default value.
+	PageSize int32 `json:"pageSize,omitempty"`
+	// PageToken represents a token used for pagination in API responses. It's an opaque
+	// string that should be passed to subsequent requests to retrieve the next page of
+	// results. An empty PageToken typically indicates that there are no further pages available.
 	PageToken string `json:"pageToken,omitempty"`
 
 	Filter string `json:"filter,omitempty"`
@@ -2004,14 +2003,16 @@ type DeleteModelResponse struct {
 type GenerationConfig struct {
 	// Optional. If enabled, audio timestamp will be included in the request to the model.
 	AudioTimestamp bool `json:"audioTimestamp,omitempty"`
-	// Optional. Number of candidates to generate.
-	CandidateCount *int32 `json:"candidateCount,omitempty"`
+	// Number of response variations to return. If zero, then API will determine the default
+	// value.
+	CandidateCount int32 `json:"candidateCount,omitempty"`
 	// Optional. Frequency penalties.
 	FrequencyPenalty *float32 `json:"frequencyPenalty,omitempty"`
 	// Optional. Logit probabilities.
 	Logprobs *int32 `json:"logprobs,omitempty"`
-	// Optional. The maximum number of output tokens to generate per message.
-	MaxOutputTokens *int32 `json:"maxOutputTokens,omitempty"`
+	// Maximum number of tokens that can be generated in the response. If zero, then API
+	// will determine the default value.
+	MaxOutputTokens int32 `json:"maxOutputTokens,omitempty"`
 	// Optional. Positive penalties.
 	PresencePenalty *float32 `json:"presencePenalty,omitempty"`
 	// Optional. If true, export the logprobs results in response.
@@ -2139,14 +2140,15 @@ type ComputeTokensResponse struct {
 type GenerateVideosConfig struct {
 	// Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
-	// Number of output videos.
+	// Number of output videos. If zero, then API will use a default value.
 	NumberOfVideos int32 `json:"numberOfVideos,omitempty"`
 	// The GCS bucket where to save the generated videos.
 	OutputGCSURI string `json:"outputGcsUri,omitempty"`
-	// Frames per second for video generation.
-	Fps *int32 `json:"fps,omitempty"`
-	// Duration of the clip for video generation in seconds.
-	DurationSeconds *int32 `json:"durationSeconds,omitempty"`
+	// Frames per second for video generation. If zero, then API will use a default value.
+	FPS int32 `json:"fps,omitempty"`
+	// Duration of the clip for video generation in seconds. If zero, then API will use
+	// a default value.
+	DurationSeconds int32 `json:"durationSeconds,omitempty"`
 	// The RNG seed. If RNG seed is exactly same for each request with unchanged inputs,
 	// the prediction results will be consistent. Otherwise, a random RNG seed will be used
 	// each time to produce a different result.
@@ -2189,7 +2191,7 @@ type GenerateVideosResponse struct {
 	// List of the generated videos
 	GeneratedVideos []*GeneratedVideo `json:"generatedVideos,omitempty"`
 	// Returns if any videos were filtered due to RAI policies.
-	RAIMediaFilteredCount *int32 `json:"raiMediaFilteredCount,omitempty"`
+	RAIMediaFilteredCount int32 `json:"raiMediaFilteredCount,omitempty"`
 	// Returns RAI failure reasons if any.
 	RAIMediaFilteredReasons []string `json:"raiMediaFilteredReasons,omitempty"`
 }
@@ -2282,18 +2284,16 @@ func (c *CreateCachedContentConfig) UnmarshalJSON(data []byte) error {
 
 // Metadata on the usage of the cached content.
 type CachedContentUsageMetadata struct {
-	// Duration of audio in seconds. If nil, then no AudioDurationSeconds is returned by
-	// the API.
-	AudioDurationSeconds *int32 `json:"audioDurationSeconds,omitempty"`
-	// Number of images. If nil, then no ImageCount is returned by the API.
-	ImageCount *int32 `json:"imageCount,omitempty"`
-	// Number of text characters. If nil, then no TextCount is returned by the API.
-	TextCount *int32 `json:"textCount,omitempty"`
+	// Duration of audio in seconds.
+	AudioDurationSeconds int32 `json:"audioDurationSeconds,omitempty"`
+	// Number of images.
+	ImageCount int32 `json:"imageCount,omitempty"`
+	// Number of text characters.
+	TextCount int32 `json:"textCount,omitempty"`
 	// Total number of tokens that the cached content consumes.
 	TotalTokenCount int32 `json:"totalTokenCount,omitempty"`
-	// Duration of video in seconds. If nil, then no VideoDurationSeconds is returned by
-	// the API.
-	VideoDurationSeconds *int32 `json:"videoDurationSeconds,omitempty"`
+	// Duration of video in seconds.
+	VideoDurationSeconds int32 `json:"videoDurationSeconds,omitempty"`
 }
 
 // A resource used in LLM queries for users to explicitly specify what to cache.
@@ -2413,11 +2413,7 @@ type ListCachedContentsConfig struct {
 	// Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// PageSize specifies the maximum number of cached contents to return per API call.
-	// This setting does not affect the total number of cached contents returned by the
-	// All() function during iteration; it only controls how many items are retrieved in
-	// each individual request to the server. If zero, the server will use a default value.
-	// Setting a positive value can be useful for managing the size and frequency of API
-	// calls.
+	// If zero, the server will use a default value.
 	PageSize int32 `json:"pageSize,omitempty"`
 	// PageToken represents a token used for pagination in API responses. It's an opaque
 	// string that should be passed to subsequent requests to retrieve the next page of

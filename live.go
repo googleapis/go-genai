@@ -20,8 +20,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -43,10 +45,18 @@ type Session struct {
 	apiClient *apiClient
 }
 
+var (
+	experimentalWarningLiveConnect sync.Once
+)
+
 // Connect establishes a realtime connection to the specified model with given configuration.
 // It returns a Session object representing the connection or an error if the connection fails.
 // The live module is experimental.
 func (r *Live) Connect(context context.Context, model string, config *LiveConnectConfig) (*Session, error) {
+	experimentalWarningLiveConnect.Do(func() {
+		log.Println("Warning: The Live API is experimental and may change in future versions.")
+	})
+
 	httpOptions := r.apiClient.clientConfig.HTTPOptions
 	if httpOptions.APIVersion == "" {
 		return nil, fmt.Errorf("live module requires APIVersion to be set. You can set APIVersion to v1beta1 for BackendVertexAI or v1apha for BackendGeminiAPI")
@@ -202,10 +212,11 @@ func (s *Session) Receive() (*LiveServerMessage, error) {
 
 // Close terminates the connection.
 // The live module is experimental.
-func (s *Session) Close() {
+func (s *Session) Close() error {
 	if s != nil && s.conn != nil {
-		s.conn.Close()
+		return s.conn.Close()
 	}
+	return nil
 }
 
 // BEGIN: Converter functions

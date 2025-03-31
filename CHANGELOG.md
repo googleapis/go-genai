@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.7.0](https://github.com/googleapis/go-genai/compare/v0.6.0...v0.7.0) (2025-03-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add error return type to Close() function
+* consolidate NewUserContentFrom* and NewModelContentFrom* functions into NewContentFrom* to make API simpler
+* Support quota project and migrate ClientConfig.Credential from google.Credentials to auth.Credential type.
+* Change caches TTL field to duration type.
+* rename ClientError and ServerError to APIError. fixes: #159
+
+### Features
+
+* Add Chats module for Go SDK (non-stream only) ([e7f75fd](https://github.com/googleapis/go-genai/commit/e7f75fdd931001e5e3e68c453201ce933a70f064))
+* Add engine to VertexAISearch ([cc2ab5d](https://github.com/googleapis/go-genai/commit/cc2ab5dc7013f045d6d7393cc7cbd05988f767da))
+* add IMAGE_SAFTY enum value to FinishReason ([cc6081a](https://github.com/googleapis/go-genai/commit/cc6081a7e781fb68a6cbcb89528de85c31c4fb6a))
+* add MediaModalities for ModalityTokenCount ([0969afd](https://github.com/googleapis/go-genai/commit/0969afd3854fdec86e001f3412582aa95123286f))
+* Add Veo 2 generate_videos support in Go SDK ([5321a25](https://github.com/googleapis/go-genai/commit/5321a25f0134b8b2d45ebdfb73544123044f96c7))
+* allow title property to be sent to Gemini API. Gemini API now supports the title property, so it's ok to pass this onto both Vertex and Gemini API. ([8f27aba](https://github.com/googleapis/go-genai/commit/8f27aba6199bfac6205fb7e88883a5c6a1ee017e))
+* consolidate NewUserContentFrom* and NewModelContentFrom* functions into NewContentFrom* to make API simpler ([e8608b1](https://github.com/googleapis/go-genai/commit/e8608b19f7bec5cb976095b2d5cdb69886ae6036))
+* merge GenerationConfig into LiveConnectConfig ([96232de](https://github.com/googleapis/go-genai/commit/96232de67aa69af0f1e10625961765b13d3dbfc5))
+* rename ClientError and ServerError to APIError. fixes: [#159](https://github.com/googleapis/go-genai/issues/159) ([12adbfa](https://github.com/googleapis/go-genai/commit/12adbfae781a1df63a32094895dc0b37baad32da))
+* Save prompt safety attributes in dedicated field for generate_images ([eb3cfdc](https://github.com/googleapis/go-genai/commit/eb3cfdc8773b85bae648a90dddaa69435824a58b))
+* support new UsageMetadata fields ([3a56c63](https://github.com/googleapis/go-genai/commit/3a56c632f11d703786cb546d4ced3ee7bbf84b39))
+* Support quota project and migrate ClientConfig.Credential from google.Credentials to auth.Credential type. ([74c05fb](https://github.com/googleapis/go-genai/commit/74c05fbf68e3c35627d69720d3de733f0d38cbce))
+
+
+### Bug Fixes
+
+* Add error return type to Close() function ([673a7f7](https://github.com/googleapis/go-genai/commit/673a7f7e61cf4a3377e145d4aed8f54b7d90886f))
+* Change caches TTL field to duration type. ([11271b4](https://github.com/googleapis/go-genai/commit/11271b4d888741d5dcaebbe9dea44daface9e198))
+* fix list models API url ([036c4d3](https://github.com/googleapis/go-genai/commit/036c4d3e368c1184641e9e089056b57c875e2a10))
+* fix response modality in streaming mode. fixes [#163](https://github.com/googleapis/go-genai/issues/163). fixes [#158](https://github.com/googleapis/go-genai/issues/158) ([996dac3](https://github.com/googleapis/go-genai/commit/996dac39f23dff4436dfea3f2badf414f9435338))
+* missing zero value bug in setValueByPath. fixes [#196](https://github.com/googleapis/go-genai/issues/196) ([557c6d8](https://github.com/googleapis/go-genai/commit/557c6d8a8de80caf6999fc2ba2be166e140e8880))
+* schema transformer logic fix. ([8017092](https://github.com/googleapis/go-genai/commit/8017092b7cfe42a44e5b4b09f4c934ac723618f4))
+* use snake_case in embed_content request/response parsing. fixes [#174](https://github.com/googleapis/go-genai/issues/174) ([ba644e1](https://github.com/googleapis/go-genai/commit/ba644e19b03d948487da3b12f843fe32cb3b1851))
+
+
+### Miscellaneous Chores
+
+* release 0.7.0 ([06523b4](https://github.com/googleapis/go-genai/commit/06523b4d9b90c3dae5dba72331297c5c1d23e28d))
+
 ## [0.6.0](https://github.com/googleapis/go-genai/compare/v0.5.0...v0.6.0) (2025-03-19)
 
 

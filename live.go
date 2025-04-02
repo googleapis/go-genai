@@ -130,10 +130,40 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 	return s, nil
 }
 
+// SendClientContent transmits a [LiveClientContent] over the established connection.
+// It returns an error if sending the message fails.
+// The live module is experimental.
+func (s *Session) SendClientContent(content *LiveClientContent) error {
+	clientMessage := &LiveClientMessage{
+		ClientContent: content,
+	}
+	return s.send(clientMessage)
+}
+
+// SendRealtimeInput transmits a [LiveClientRealtimeInput] over the established connection.
+// It returns an error if sending the message fails.
+// The live module is experimental.
+func (s *Session) SendRealtimeInput(realtimeInput *LiveClientRealtimeInput) error {
+	clientMessage := &LiveClientMessage{
+		RealtimeInput: realtimeInput,
+	}
+	return s.send(clientMessage)
+}
+
+// SendToolResponse transmits a [LiveClientToolResponse] over the established connection.
+// It returns an error if sending the message fails.
+// The live module is experimental.
+func (s *Session) SendToolResponse(toolResponse *LiveClientToolResponse) error {
+	clientMessage := &LiveClientMessage{
+		ToolResponse: toolResponse,
+	}
+	return s.send(clientMessage)
+}
+
 // Send transmits a LiveClientMessage over the established connection.
 // It returns an error if sending the message fails.
 // The live module is experimental.
-func (s *Session) Send(input *LiveClientMessage) error {
+func (s *Session) send(input *LiveClientMessage) error {
 	if input.Setup != nil {
 		return fmt.Errorf("message SetUp is not supported in Send(). Use Connect() instead")
 	}

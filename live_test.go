@@ -17,6 +17,7 @@ package genai
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -195,7 +196,7 @@ func TestLiveConnect(t *testing.T) {
 		})
 	}
 
-	t.Run("Send and Receive", func(t *testing.T) {
+	t.Run("SendClientContent and Receive", func(t *testing.T) {
 		sendReceiveTests := []struct {
 			desc                  string
 			client                *Client
@@ -239,12 +240,152 @@ func TestLiveConnect(t *testing.T) {
 				defer session.Close()
 
 				// Construct a test message
-				clientMessage := &LiveClientMessage{
-					ClientContent: &LiveClientContent{Turns: Text("client test message")},
+				clientContent := &LiveClientContent{Turns: Text("client test message")}
+
+				// Test sending the message
+				err = session.SendClientContent(clientContent)
+				if err != nil {
+					t.Errorf("Send failed : %v", err)
+				}
+
+				// Construct the expected response
+				serverMessage := &LiveServerMessage{ServerContent: &LiveServerContent{ModelTurn: Text("server test message")[0]}}
+				// Test receiving the response
+				gotMessage, err := session.Receive()
+				if err != nil {
+					if tt.wantErr {
+						return
+					}
+					t.Errorf("Receive failed: %v", err)
+				}
+				if diff := cmp.Diff(gotMessage, serverMessage); diff != "" {
+					t.Errorf("Response message mismatch (-want +got):\n%s", diff)
+				}
+			})
+		}
+	})
+
+	t.Run("SendRealtimeInput and Receive", func(t *testing.T) {
+		sendReceiveTests := []struct {
+			desc                  string
+			client                *Client
+			wantRequestBodySlice  []string
+			fakeResponseBodySlice []string
+			wantErr               bool
+		}{
+			{
+				desc:                  "send realtimeInput to Google AI",
+				client:                mldevClient,
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"realtimeInput":{"mediaChunks":[{"data":"dGVzdCBkYXRh","mimeType":"image/png"}]}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:                  "send realtimeInput to Vertex AI",
+				client:                vertexClient,
+				wantRequestBodySlice:  []string{`{"setup":{"model":"projects/test-project/locations/test-location/publishers/google/models/test-model"}}`, `{"realtimeInput":{"mediaChunks":[{"data":"dGVzdCBkYXRh","mimeType":"image/png"}]}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:                  "received error in response",
+				client:                mldevClient,
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"realtimeInput":{"mediaChunks":[{"data":"dGVzdCBkYXRh","mimeType":"image/png"}]}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"error":{"code":400,"message":"test error message","status":"INVALID_ARGUMENT"}}`},
+				wantErr:               true,
+			},
+		}
+
+		for _, tt := range sendReceiveTests {
+			t.Run(tt.desc, func(t *testing.T) {
+				ts := setupTestWebsocketServer(t, tt.wantRequestBodySlice, tt.fakeResponseBodySlice)
+				defer ts.Close()
+
+				tt.client.Live.apiClient.clientConfig.HTTPOptions.BaseURL = strings.Replace(ts.URL, "http", "ws", 1)
+				tt.client.Live.apiClient.clientConfig.HTTPClient = ts.Client()
+
+				session, err := tt.client.Live.Connect(ctx, "test-model", &LiveConnectConfig{})
+				if err != nil {
+					t.Fatalf("Connect failed: %v", err)
+				}
+				defer session.Close()
+
+				// Construct a test message
+				realtimeInput := &LiveClientRealtimeInput{
+					MediaChunks: []*Blob{&Blob{Data: []byte("test data"), MIMEType: "image/png"}},
 				}
 
 				// Test sending the message
-				err = session.Send(clientMessage)
+				err = session.SendRealtimeInput(realtimeInput)
+				if err != nil {
+					t.Errorf("Send failed : %v", err)
+				}
+
+				// Construct the expected response
+				serverMessage := &LiveServerMessage{ServerContent: &LiveServerContent{ModelTurn: Text("server test message")[0]}}
+				// Test receiving the response
+				gotMessage, err := session.Receive()
+				if err != nil {
+					if tt.wantErr {
+						return
+					}
+					t.Errorf("Receive failed: %v", err)
+				}
+				if diff := cmp.Diff(gotMessage, serverMessage); diff != "" {
+					t.Errorf("Response message mismatch (-want +got):\n%s", diff)
+				}
+			})
+		}
+	})
+
+	t.Run("SendToolResponse and Receive", func(t *testing.T) {
+		sendReceiveTests := []struct {
+			desc                  string
+			client                *Client
+			wantRequestBodySlice  []string
+			fakeResponseBodySlice []string
+			wantErr               bool
+		}{
+			{
+				desc:                  "send realtimeInput to Google AI",
+				client:                mldevClient,
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"toolResponse":{"functionResponses":[{"name":"test-function"}]}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:                  "send realtimeInput to Vertex AI",
+				client:                vertexClient,
+				wantRequestBodySlice:  []string{`{"setup":{"model":"projects/test-project/locations/test-location/publishers/google/models/test-model"}}`, `{"toolResponse":{"functionResponses":[{"name":"test-function"}]}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:                  "received error in response",
+				client:                mldevClient,
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"toolResponse":{"functionResponses":[{"name":"test-function"}]}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"error":{"code":400,"message":"test error message","status":"INVALID_ARGUMENT"}}`},
+				wantErr:               true,
+			},
+		}
+
+		for _, tt := range sendReceiveTests {
+			t.Run(tt.desc, func(t *testing.T) {
+				ts := setupTestWebsocketServer(t, tt.wantRequestBodySlice, tt.fakeResponseBodySlice)
+				defer ts.Close()
+
+				tt.client.Live.apiClient.clientConfig.HTTPOptions.BaseURL = strings.Replace(ts.URL, "http", "ws", 1)
+				tt.client.Live.apiClient.clientConfig.HTTPClient = ts.Client()
+
+				session, err := tt.client.Live.Connect(ctx, "test-model", &LiveConnectConfig{})
+				if err != nil {
+					t.Fatalf("Connect failed: %v", err)
+				}
+				defer session.Close()
+
+				// Construct a test message
+				toolResponse := &LiveClientToolResponse{
+					FunctionResponses: []*FunctionResponse{{Name: "test-function"}},
+				}
+
+				// Test sending the message
+				err = session.SendToolResponse(toolResponse)
 				if err != nil {
 					t.Errorf("Send failed : %v", err)
 				}
@@ -285,6 +426,7 @@ func setupTestWebsocketServer(t *testing.T, wantRequestBodySlice []string, fakeR
 				t.Logf("read error: %v", err)
 				break
 			}
+			fmt.Println("message: ", string(message))
 			if diff := cmp.Diff(string(message), wantRequestBodySlice[index]); diff != "" {
 				t.Errorf("Request message mismatch (-want +got):\n%s", diff)
 			}

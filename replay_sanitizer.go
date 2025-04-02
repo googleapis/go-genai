@@ -67,42 +67,6 @@ func sanitizeMapWithSourceType(t *testing.T, sourceType reflect.Type, m any) {
 			sanitizeMapByPath(m.(map[string]any), path, stdBase64Handler, false)
 		}
 	}
-
-	int64ArrayPaths := make([]string, 0)
-	st = sourceType
-	if sourceType.Kind() == reflect.Slice {
-		st = sourceType.Elem()
-	}
-	visitedTypes = make(map[string]bool)
-	if err := getFieldPath(st, reflect.TypeOf([]int64{}), &int64ArrayPaths, "", visitedTypes, false); err != nil {
-		t.Fatal(err)
-	}
-
-	int64ArrayHandler := func(data any, path string) any {
-		t.Log("data: ", data, reflect.TypeOf(data))
-		s := data.([]any)
-		b := make([]any, len(s))
-		for i := 0; i < len(s); i++ {
-			v, err := strconv.ParseInt(s[i].(string), 10, 64)
-			if err != nil {
-				t.Errorf("invalid int64 string %s at path %s", s, path)
-			}
-			b[i] = float64(v) // When loading the replay file, the int64 is converted to float64.
-		}
-
-		return b
-	}
-	for _, path := range int64ArrayPaths {
-
-		if sourceType.Kind() == reflect.Slice {
-			data := m.([]any)
-			for i := 0; i < len(data); i++ {
-				sanitizeMapByPath(data[i], path, int64ArrayHandler, false)
-			}
-		} else {
-			sanitizeMapByPath(m.(map[string]any), path, int64ArrayHandler, false)
-		}
-	}
 }
 
 // sanitizeMapByPath sanitizes a value within a nested map structure based on the given path.
@@ -178,6 +142,42 @@ func sanitizeMapByPath(data any, path string, sanitizer func(data any, path stri
 	} else {
 		sanitizeMapByPath(m[key], strings.Join(keys[1:], "."), sanitizer, debug)
 	}
+}
+
+// convertFloat64ToString recursively converts float64 values within a map[string]any to strings.
+func convertFloat64ToString(data map[string]any) map[string]any {
+	for key, value := range data {
+		switch v := value.(type) {
+		case float64:
+			// Convert float64 to string
+			data[key] = strconv.FormatFloat(v, 'f', 5, 64)
+		case map[string]any:
+			// Recursively process nested maps
+			data[key] = convertFloat64ToString(v)
+		case []any:
+			// Recursively process slices
+			data[key] = convertSliceFloat64ToString(v)
+		}
+	}
+	return data
+}
+
+// convertSliceFloat64ToString recursively converts float64 values within a []any to strings.
+func convertSliceFloat64ToString(data []any) []any {
+	for i, value := range data {
+		switch v := value.(type) {
+		case float64:
+			// Convert float64 to string
+			data[i] = strconv.FormatFloat(v, 'f', -1, 64)
+		case map[string]any:
+			// Recursively process nested maps
+			data[i] = convertFloat64ToString(v)
+		case []any:
+			// Recursively process nested slices
+			data[i] = convertSliceFloat64ToString(v)
+		}
+	}
+	return data
 }
 
 // getFieldPath retrieves the paths to all fields within a nested struct that match a given target type.

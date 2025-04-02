@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -300,7 +301,7 @@ func toCamelCase(s string) string {
 }
 
 var stringComparator = cmp.Comparer(func(x, y string) bool {
-	if timeStringComparator(x, y) || base64StringComparator(x, y) {
+	if timeStringComparator(x, y) || base64StringComparator(x, y) || floatStringComparator(x, y) {
 		return true
 	}
 	return x == y
@@ -309,6 +310,18 @@ var stringComparator = cmp.Comparer(func(x, y string) bool {
 var floatComparator = cmp.Comparer(func(x, y float64) bool {
 	return math.Abs(x-y) < 1e-6
 })
+
+var floatStringComparator = func(x, y string) bool {
+	vx, err := strconv.ParseFloat(x, 64)
+	if err != nil {
+		return x == y
+	}
+	vy, err := strconv.ParseFloat(y, 64)
+	if err != nil {
+		return x == y
+	}
+	return math.Abs(vx-vy) < 1e-6
+}
 
 var timeStringComparator = func(x, y string) bool {
 	xTime, err := time.Parse(time.RFC3339, x)

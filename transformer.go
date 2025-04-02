@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 )
 
@@ -232,5 +233,31 @@ func tExtractModels(ac *apiClient, response any) (any, error) {
 		}
 	default:
 		return nil, fmt.Errorf("tExtractModels: response is not a map")
+	}
+}
+
+func tFileName(ac *apiClient, name any) (string, error) {
+	switch name := name.(type) {
+	case string:
+		{
+			if strings.HasPrefix(name, "https://") || strings.HasPrefix(name, "http://") {
+				parts := strings.SplitN(name, "files/", 2)
+				if len(parts) < 2 {
+					return "", fmt.Errorf("could not find 'files/' in URI: %s", name)
+				}
+				suffix := parts[1]
+				re := regexp.MustCompile("^[a-z0-9]+")
+				match := re.FindStringSubmatch(suffix)
+				if len(match) == 0 {
+					return "", fmt.Errorf("could not extract file name from URI: %s", name)
+				}
+				name = match[0]
+			} else if strings.HasPrefix(name, "files/") {
+				name = strings.TrimPrefix(name, "files/")
+			}
+			return name, nil
+		}
+	default:
+		return "", fmt.Errorf("tFileName: name is not a string")
 	}
 }

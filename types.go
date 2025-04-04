@@ -2564,18 +2564,6 @@ type UpscaleImageConfig struct {
 	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
 }
 
-// User-facing config UpscaleImageParameters.
-type UpscaleImageParameters struct {
-	// The model to use.
-	Model string `json:"model,omitempty"`
-	// The input image to upscale.
-	Image *Image `json:"image,omitempty"`
-	// The factor to upscale the image (x2 or x4).
-	UpscaleFactor string `json:"upscaleFactor,omitempty"`
-	// Configuration for upscaling.
-	Config *UpscaleImageConfig `json:"config,omitempty"`
-}
-
 // A raw reference image.
 // A raw reference image represents the base image to edit, provided by the user.
 // It can optionally be provided in addition to a mask reference image or
@@ -2833,11 +2821,31 @@ type AudioTranscriptionConfig struct {
 
 // Session config for the API connection.
 type LiveConnectConfig struct {
-	// The generation configuration for the session.
-	GenerationConfig *GenerationConfig `json:"generationConfig,omitempty"`
 	// The requested modalities of the response. Represents the set of
 	// modalities that the model can return. Defaults to AUDIO if not specified.
 	ResponseModalities []Modality `json:"responseModalities,omitempty"`
+	// Value that controls the degree of randomness in token selection.
+	// Lower temperatures are good for prompts that require a less open-ended or
+	// creative response, while higher temperatures can lead to more diverse or
+	// creative results.
+	Temperature *float32 `json:"temperature,omitempty"`
+	// Tokens are selected from the most to least probable until the sum
+	// of their probabilities equals this value. Use a lower value for less
+	// random responses and a higher value for more random responses.
+	TopP *float32 `json:"topP,omitempty"`
+	// For each token selection step, the ``top_k`` tokens with the
+	// highest probabilities are sampled. Then tokens are further filtered based
+	// on ``top_p`` with the final token selected using temperature sampling. Use
+	// a lower number for less random responses and a higher number for more
+	// random responses.
+	TopK *float32 `json:"topK,omitempty"`
+	// Maximum number of tokens that can be generated in the response.
+	// If empty, API will use a default value. The default value varies by model.
+	MaxOutputTokens int32 `json:"maxOutputTokens,omitempty"`
+	// When ``seed`` is fixed to a specific number, the model makes a best
+	// effort to provide the same response for repeated requests. By default, a
+	// random number is used.
+	Seed *int32 `json:"seed,omitempty"`
 	// The speech generation configuration.
 	SpeechConfig *SpeechConfig `json:"speechConfig,omitempty"`
 	// The user provided system instructions for the model.

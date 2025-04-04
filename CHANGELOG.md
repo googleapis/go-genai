@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0](https://github.com/googleapis/go-genai/compare/v0.7.0...v1.0.0) (2025-04-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* Change NewContentFrom... functions role param type from string to Role and miscs docstring improvements
+* Change some pointer to value type and value to pointer type
+
+### Features
+
+* Add support for Chats streaming in Go SDK ([9ee0523](https://github.com/googleapis/go-genai/commit/9ee0523e4975ddced4b3918ada8bdea4c1a0787f))
+* expose generation_complete, input/output_transcription & input/output_audio_transcription to SDK for Vertex Live API ([0dbbc82](https://github.com/googleapis/go-genai/commit/0dbbc82a0f03c617d01726468993c58128016dca))
+
+
+### Bug Fixes
+
+* Change NewContentFrom... functions role param type from string to Role and miscs docstring improvements ([7810e07](https://github.com/googleapis/go-genai/commit/7810e074299bbd9c38160a995cc6df311a3e9e88))
+* Change some pointer to value type and value to pointer type ([0d2ba97](https://github.com/googleapis/go-genai/commit/0d2ba97b813ad51f964306de4399cbdd777105eb))
+
 ## [0.7.0](https://github.com/googleapis/go-genai/compare/v0.6.0...v0.7.0) (2025-03-31)
 
 

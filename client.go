@@ -37,6 +37,8 @@ type Client struct {
 	Caches *Caches
 	// Chats provides util functions for creating a new chat session.
 	Chats *Chats
+	// Files provides access to the Files service.
+	Files *Files
 	// Operations provides access to long-running operations.
 	Operations *Operations
 }
@@ -256,6 +258,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		Caches:       &Caches{apiClient: ac},
 		Chats:        &Chats{apiClient: ac},
 		Operations:   &Operations{apiClient: ac},
+		Files:        &Files{apiClient: ac},
 	}
 	return c, nil
 }

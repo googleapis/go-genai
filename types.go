@@ -240,6 +240,18 @@ const (
 	DeploymentResourcesTypeSharedResources DeploymentResourcesType = "SHARED_RESOURCES"
 )
 
+// RAGFile state.
+type State string
+
+const (
+	// RAGFile state is unspecified.
+	StateUnspecified State = "STATE_UNSPECIFIED"
+	// RAGFile resource has been created and indexed successfully.
+	StateActive State = "ACTIVE"
+	// RAGFile resource is in a problematic state. See `error_message` field for details.
+	StateError State = "ERROR"
+)
+
 // Config for the dynamic retrieval config mode.
 type DynamicRetrievalConfigMode string
 
@@ -355,6 +367,25 @@ const (
 	EditModeStyle             EditMode = "EDIT_MODE_STYLE"
 	EditModeBgswap            EditMode = "EDIT_MODE_BGSWAP"
 	EditModeProductImage      EditMode = "EDIT_MODE_PRODUCT_IMAGE"
+)
+
+// State for the lifecycle of a File.
+type FileState string
+
+const (
+	FileStateUnspecified FileState = "STATE_UNSPECIFIED"
+	FileStateProcessing  FileState = "PROCESSING"
+	FileStateActive      FileState = "ACTIVE"
+	FileStateFailed      FileState = "FAILED"
+)
+
+// Source of the File.
+type FileSource string
+
+const (
+	FileSourceUnspecified FileSource = "SOURCE_UNSPECIFIED"
+	FileSourceUploaded    FileSource = "UPLOADED"
+	FileSourceGenerated   FileSource = "GENERATED"
 )
 
 // Server content modalities.
@@ -2201,10 +2232,28 @@ type Video struct {
 	MIMEType string `json:"mimeType,omitempty"`
 }
 
+func (v *Video) uri() string {
+	return v.URI
+}
+
+func (v *Video) setVideoBytes(b []byte) bool {
+	v.VideoBytes = b
+	return true
+}
+
 // A generated video.
 type GeneratedVideo struct {
 	// The output video
 	Video *Video `json:"video,omitempty"`
+}
+
+func (v *GeneratedVideo) uri() string {
+	return v.Video.uri()
+}
+
+func (v *GeneratedVideo) setVideoBytes(b []byte) bool {
+	v.Video.setVideoBytes(b)
+	return true
 }
 
 // Response with generated videos.
@@ -2446,6 +2495,172 @@ type ListCachedContentsResponse struct {
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// List of cached contents.
 	CachedContents []*CachedContent `json:"cachedContents,omitempty"`
+}
+
+// Used to override the default configuration.
+type ListFilesConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// PageSize specifies the maximum number of cached contents to return per API call.
+	// If zero, the server will use a default value.
+	PageSize int32 `json:"pageSize,omitempty"`
+	// PageToken represents a token used for pagination in API responses. It's an opaque
+	// string that should be passed to subsequent requests to retrieve the next page of
+	// results. An empty PageToken typically indicates that there are no further pages available.
+	PageToken string `json:"pageToken,omitempty"`
+}
+
+// Status of a File that uses a common error model.
+type FileStatus struct {
+	// A list of messages that carry the error details. There is a common set of message
+	// types for APIs to use.
+	Details []map[string]any `json:"details,omitempty"`
+	// A list of messages that carry the error details. There is a common set of message
+	// types for APIs to use.
+	Message string `json:"message,omitempty"`
+	// The status code. 0 for OK, 1 for CANCELLED
+	Code int32 `json:"code,omitempty"`
+}
+
+// A file uploaded to the API.
+type File struct {
+	// The `File` resource name. The ID (name excluding the "files/" prefix) can contain
+	// up to 40 characters that are lowercase alphanumeric or dashes (-). The ID cannot
+	// start or end with a dash. If the name is empty on create, a unique name will be generated.
+	// Example: `files/123-456`
+	Name string `json:"name,omitempty"`
+	// Optional. The human-readable display name for the `File`. The display name must be
+	// no more than 512 characters in length, including spaces. Example: 'Welcome Image'
+	DisplayName string `json:"displayName,omitempty"`
+	// Output only. MIME type of the file.
+	MIMEType string `json:"mimeType,omitempty"`
+	// Output only. Size of the file in bytes.
+	SizeBytes int64 `json:"sizeBytes,omitempty"`
+	// Output only. The timestamp of when the `File` was created.
+	CreateTime time.Time `json:"createTime,omitempty"`
+	// Output only. The timestamp of when the `File` will be deleted. Only set if the `File`
+	// is scheduled to expire.
+	ExpirationTime time.Time `json:"expirationTime,omitempty"`
+	// Output only. The timestamp of when the `File` was last updated.
+	UpdateTime time.Time `json:"updateTime,omitempty"`
+	// Output only. SHA-256 hash of the uploaded bytes. The hash value is encoded in base64
+	// format.
+	Sha256Hash string `json:"sha256Hash,omitempty"`
+	// Output only. The URI of the `File`.
+	URI string `json:"uri,omitempty"`
+	// Output only. The URI of the `File`, only set for downloadable (generated) files.
+	DownloadURI string `json:"downloadUri,omitempty"`
+	// Output only. Processing state of the File.
+	State FileState `json:"state,omitempty"`
+	// Output only. The source of the `File`.
+	Source FileSource `json:"source,omitempty"`
+	// Output only. Metadata for a video.
+	VideoMetadata map[string]any `json:"videoMetadata,omitempty"`
+	// Output only. Error status if File processing failed.
+	Error *FileStatus `json:"error,omitempty"`
+}
+
+// DownloadURI represents a resource that can be downloaded.
+//
+// It is used to abstract the different types of resources that can be downloaded,
+// such as files or videos
+//
+// You can create instances that implement this interface using the following
+// constructor functions:
+//   - NewDownloadURIFromFile
+//   - NewDownloadURIFromVideo
+//   - NewDownloadURIFromGeneratedVideo
+//   - ...
+type DownloadURI interface {
+	uri() string
+	setVideoBytes([]byte) bool
+}
+
+// NewDownloadURIFromFile creates a DownloadURI from a [File].
+func NewDownloadURIFromFile(f *File) DownloadURI {
+	return f
+}
+
+// NewDownloadURIFromVideo creates a DownloadURI from a [Video].
+func NewDownloadURIFromVideo(v *Video) DownloadURI {
+	return v
+}
+
+// NewDownloadURIFromVideo creates a DownloadURI from a [GeneratedVideo].
+func NewDownloadURIFromGeneratedVideo(v *GeneratedVideo) DownloadURI {
+	return v
+}
+
+func (f *File) uri() string {
+	return f.DownloadURI
+}
+
+func (f *File) setVideoBytes(b []byte) bool {
+	// File does not support setting video bytes.
+	return false
+}
+
+func (s *File) UnmarshalJSON(data []byte) error {
+	type Alias File
+	aux := &struct {
+		SizeBytes string `json:"sizeBytes,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if aux.SizeBytes != "" {
+		sizeBytes, err := strconv.ParseInt(aux.SizeBytes, 10, 64)
+		if err != nil {
+			return fmt.Errorf("error parsing SizeBytes: %w", err)
+		}
+		s.SizeBytes = sizeBytes
+	}
+
+	return nil
+}
+
+func (s *File) MarshalJSON() ([]byte, error) {
+	type Alias File
+	aux := struct {
+		SizeBytes string `json:"sizeBytes,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
+
+	if s.SizeBytes != 0 {
+		aux.SizeBytes = strconv.FormatInt(s.SizeBytes, 10)
+	}
+	return json.Marshal(aux)
+}
+
+// Response for the list files method.
+type ListFilesResponse struct {
+	// A token to retrieve next page of results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+	// The list of files.
+	Files []*File `json:"files,omitempty"`
+}
+
+// Used to override the default configuration.
+type GetFileConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+}
+
+// Used to override the default configuration.
+type DeleteFileConfig struct {
+	// Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+}
+
+// Response for the delete file method.
+type DeleteFileResponse struct {
 }
 
 type GetOperationConfig struct {

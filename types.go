@@ -2233,10 +2233,8 @@ type GenerateVideosOperation struct {
 	Done bool `json:"done,omitempty"`
 	// The error result of the operation in case of failure or cancellation.
 	Error map[string]any `json:"error,omitempty"`
-	// The normal response of the operation in case of success.
-	Response map[string]any `json:"response,omitempty"`
 	// The generated videos.
-	Result *GenerateVideosResponse `json:"result,omitempty"`
+	Response *GenerateVideosResponse `json:"response,omitempty"`
 }
 
 // Optional configuration for cached content creation.

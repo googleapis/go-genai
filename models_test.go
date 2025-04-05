@@ -170,10 +170,10 @@ func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
 					log.Fatal(err)
 				}
 			}
-			if operation == nil || operation.Result == nil {
+			if operation == nil || operation.Response == nil {
 				t.Fatalf("expected at least one response, got none")
 			}
-			if operation.Result.GeneratedVideos[0].Video.URI == "" && operation.Result.GeneratedVideos[0].Video.VideoBytes == nil {
+			if operation.Response.GeneratedVideos[0].Video.URI == "" && operation.Response.GeneratedVideos[0].Video.VideoBytes == nil {
 				t.Fatalf("expected generated video to have either URI or video bytes")
 			}
 		})

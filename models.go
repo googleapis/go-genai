@@ -412,6 +412,11 @@ func thinkingConfigToMldev(ac *apiClient, fromObject map[string]any, parentObjec
 		setValueByPath(toObject, []string{"includeThoughts"}, fromIncludeThoughts)
 	}
 
+	fromThinkingBudget := getValueByPath(fromObject, []string{"thinkingBudget"})
+	if fromThinkingBudget != nil {
+		setValueByPath(toObject, []string{"thinkingBudget"}, fromThinkingBudget)
+	}
+
 	return toObject, nil
 }
 
@@ -1538,6 +1543,11 @@ func thinkingConfigToVertex(ac *apiClient, fromObject map[string]any, parentObje
 	fromIncludeThoughts := getValueByPath(fromObject, []string{"includeThoughts"})
 	if fromIncludeThoughts != nil {
 		setValueByPath(toObject, []string{"includeThoughts"}, fromIncludeThoughts)
+	}
+
+	fromThinkingBudget := getValueByPath(fromObject, []string{"thinkingBudget"})
+	if fromThinkingBudget != nil {
+		setValueByPath(toObject, []string{"thinkingBudget"}, fromThinkingBudget)
 	}
 
 	return toObject, nil

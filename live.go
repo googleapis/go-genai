@@ -13,7 +13,6 @@
 // limitations under the License.
 
 // Live client. The live module is experimental.
-
 package genai
 
 import (
@@ -842,6 +841,11 @@ func liveServerContentFromMldev(ac *apiClient, fromObject map[string]any, parent
 		setValueByPath(toObject, []string{"interrupted"}, fromInterrupted)
 	}
 
+	fromGenerationComplete := getValueByPath(fromObject, []string{"generationComplete"})
+	if fromGenerationComplete != nil {
+		setValueByPath(toObject, []string{"generationComplete"}, fromGenerationComplete)
+	}
+
 	return toObject, nil
 }
 
@@ -966,6 +970,11 @@ func liveServerContentFromVertex(ac *apiClient, fromObject map[string]any, paren
 	fromInterrupted := getValueByPath(fromObject, []string{"interrupted"})
 	if fromInterrupted != nil {
 		setValueByPath(toObject, []string{"interrupted"}, fromInterrupted)
+	}
+
+	fromGenerationComplete := getValueByPath(fromObject, []string{"generationComplete"})
+	if fromGenerationComplete != nil {
+		setValueByPath(toObject, []string{"generationComplete"}, fromGenerationComplete)
 	}
 
 	return toObject, nil

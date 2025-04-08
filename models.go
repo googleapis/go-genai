@@ -517,6 +517,10 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		return nil, fmt.Errorf("routingConfig parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"generateContentModelConfig"}) != nil {
+		return nil, fmt.Errorf("generateContentModelConfig parameter is not supported in Gemini API")
+	}
+
 	fromSafetySettings := getValueByPath(fromObject, []string{"safetySettings"})
 	if fromSafetySettings != nil {
 		fromSafetySettings, err = applyConverterToSlice(ac, fromSafetySettings.([]any), safetySettingToMldev)
@@ -1649,6 +1653,11 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 	fromRoutingConfig := getValueByPath(fromObject, []string{"routingConfig"})
 	if fromRoutingConfig != nil {
 		setValueByPath(toObject, []string{"routingConfig"}, fromRoutingConfig)
+	}
+
+	fromGenerateContentModelConfig := getValueByPath(fromObject, []string{"generateContentModelConfig"})
+	if fromGenerateContentModelConfig != nil {
+		setValueByPath(toObject, []string{"modelConfig"}, fromGenerateContentModelConfig)
 	}
 
 	fromSafetySettings := getValueByPath(fromObject, []string{"safetySettings"})

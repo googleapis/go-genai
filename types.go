@@ -131,6 +131,20 @@ const (
 	ModeDynamic Mode = "MODE_DYNAMIC"
 )
 
+// Options for feature selection preference.
+type FeatureSelectionPreference string
+
+const (
+	// Unspecified feature selection preference.
+	FeatureSelectionPreferenceUnspecified FeatureSelectionPreference = "FEATURE_SELECTION_PREFERENCE_UNSPECIFIED"
+	// Prefer higher quality over lower cost.
+	FeatureSelectionPreferencePrioritizeQuality FeatureSelectionPreference = "PRIORITIZE_QUALITY"
+	// Balanced feature selection preference.
+	FeatureSelectionPreferenceBalanced FeatureSelectionPreference = "BALANCED"
+	// Prefer lower cost over higher quality.
+	FeatureSelectionPreferencePrioritizeCost FeatureSelectionPreference = "PRIORITIZE_COST"
+)
+
 // The reason why the model stopped generating tokens.
 // If empty, the model has not stopped generating the tokens.
 type FinishReason string
@@ -1100,6 +1114,12 @@ type GenerationConfigRoutingConfig struct {
 	ManualMode *GenerationConfigRoutingConfigManualRoutingMode `json:"manualMode,omitempty"`
 }
 
+// Config for model selection.
+type GenerationConfigModelConfig struct {
+	// Options for feature selection preference.
+	FeatureSelectionPreference FeatureSelectionPreference `json:"featureSelectionPreference,omitempty"`
+}
+
 // Optional model configuration parameters.
 // For more information, see `Content generation parameters
 // <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
@@ -1156,8 +1176,11 @@ type GenerateContentConfig struct {
 	ResponseMIMEType string `json:"responseMimeType,omitempty"`
 	// Schema that the generated candidate text must adhere to.
 	ResponseSchema *Schema `json:"responseSchema,omitempty"`
-	// Configuration for model router requests.
+	// Deprecated. Configuration for model router requests. This field is
+	// deprecated, please use the `generate_content_model_config` field instead.
 	RoutingConfig *GenerationConfigRoutingConfig `json:"routingConfig,omitempty"`
+	// Configuration for model selection.
+	GenerateContentModelConfig *GenerationConfigModelConfig `json:"generateContentModelConfig,omitempty"`
 	// Safety settings in the request to block unsafe content in the
 	// response.
 	SafetySettings []*SafetySetting `json:"safetySettings,omitempty"`

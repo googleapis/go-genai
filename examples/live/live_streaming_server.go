@@ -49,7 +49,7 @@ func live(w http.ResponseWriter, r *http.Request) {
 	defer c.Close()
 
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{Backend: genai.BackendGeminiAPI, HTTPOptions: genai.HTTPOptions{APIVersion: "v1alpha"}})
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{Backend: genai.BackendGeminiAPI})
 	// Vertex AI client.
 	// client, err := genai.NewClient(ctx, &genai.ClientConfig{Backend: genai.BackendVertexAI, HTTPOptions: genai.HTTPOptions{APIVersion: "v1beta"}})
 	if err != nil {
@@ -57,7 +57,7 @@ func live(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := client.Live.Connect(ctx, "gemini-2.0-flash-exp", &genai.LiveConnectConfig{})
+	session, err := client.Live.Connect(ctx, "gemini-2.0-flash", &genai.LiveConnectConfig{})
 	if err != nil {
 		log.Fatal("connect to model error: ", err)
 	}

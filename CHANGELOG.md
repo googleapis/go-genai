@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.0.0](https://github.com/googleapis/go-genai/compare/v0.7.0...v1.0.0) (2025-04-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Support SendClientContent/SendRealtimeInput/SendToolResponse methods in Session struct and remove Send method
+* Merge GenerationConfig to LiveConnectConfig. GenerationConfig is removed.
+* Change NewContentFrom... functions role param type from string to Role and miscs docstring improvements
+* Change some pointer to value type and value to pointer type
+
+### Features
+
+* Add domain to Web GroundingChunk ([183ac49](https://github.com/googleapis/go-genai/commit/183ac49d75bb8a84c95df6aba6b284761509e61e))
+* Add generationComplete notification to Live ServerContent ([9a038b9](https://github.com/googleapis/go-genai/commit/9a038b96cc8e979649033a6636387329da443b26))
+* Add session resumption to Live module ([4a92461](https://github.com/googleapis/go-genai/commit/4a92461832b60b7a4adf32d99f3a50651c4db50b))
+* add session resumption. ([507137b](https://github.com/googleapis/go-genai/commit/507137bcbe76e8e2b4a7372038e3136fb4a36425))
+* Add support for Chats streaming in Go SDK ([9ee0523](https://github.com/googleapis/go-genai/commit/9ee0523e4975ddced4b3918ada8bdea4c1a0787f))
+* Add thinking_budget to ThinkingConfig for Gemini Thinking Models ([f811ee4](https://github.com/googleapis/go-genai/commit/f811ee48b67db553b7520bc417f366270415d95e))
+* Add traffic type to GenerateContentResponseUsageMetadata ([601add2](https://github.com/googleapis/go-genai/commit/601add239ae6722ab84f9bfabe3b0d4a84bf7b42))
+* Add types for configurable speech detection ([f4e1b11](https://github.com/googleapis/go-genai/commit/f4e1b118df97866e8b7b47baedde9470cb842ed0))
+* Add types to support continuous sessions with a sliding window ([5d4f5d7](https://github.com/googleapis/go-genai/commit/5d4f5d7e5e3ce96f7876fc8a65ef49c5c796a6ad))
+* Add UsageMetadata to LiveServerMessage ([4286c6b](https://github.com/googleapis/go-genai/commit/4286c6bf04adee388c4dcdc83c4fe5923558b573))
+* expose generation_complete, input/output_transcription & input/output_audio_transcription to SDK for Vertex Live API ([0dbbc82](https://github.com/googleapis/go-genai/commit/0dbbc82a0f03c617d01726468993c58128016dca))
+* Merge GenerationConfig to LiveConnectConfig. GenerationConfig is removed. ([65b7c1c](https://github.com/googleapis/go-genai/commit/65b7c1c51e6d954f3c2d61202f6d7b6ba5a8ceb1))
+* Remove experimental warnings for generate_videos and operations ([2e4bb0b](https://github.com/googleapis/go-genai/commit/2e4bb0bb12f2eb3a88d4d125ed8bc6c8166e051f))
+* Support files delete, get, list, download/ ([8e7b3fd](https://github.com/googleapis/go-genai/commit/8e7b3fd50775ab4ca11484a85a40166066e05f6a))
+* Support files upload method ([ce790dd](https://github.com/googleapis/go-genai/commit/ce790ddd9b34c12c913634b890ba5fa01f86c18a))
+* support media resolution ([825c81d](https://github.com/googleapis/go-genai/commit/825c81dbcb9eeff54f52052270e1f5d738fab39c))
+* Support SendClientContent/SendRealtimeInput/SendToolResponse methods in Session struct and remove Send method ([c8ecaf4](https://github.com/googleapis/go-genai/commit/c8ecaf4ffa2c3f5ca59692af6711651966630729))
+* use io.Reader in Upload function and add a new convenience function UploadFromPath. fixes [#222](https://github.com/googleapis/go-genai/issues/222) ([1c064e3](https://github.com/googleapis/go-genai/commit/1c064e3e15c75e987189cb4a65080a4aa087531d))
+
+
+### Bug Fixes
+
+* Change NewContentFrom... functions role param type from string to Role and miscs docstring improvements ([7810e07](https://github.com/googleapis/go-genai/commit/7810e074299bbd9c38160a995cc6df311a3e9e88))
+* Change some pointer to value type and value to pointer type ([0d2ba97](https://github.com/googleapis/go-genai/commit/0d2ba97b813ad51f964306de4399cbdd777105eb))
+* fix Add() dead loop ([afa2324](https://github.com/googleapis/go-genai/commit/afa23240ac30a0fafca7877d5034f34a3c187e91))
+* Fix failing chat_test ([aebbdaa](https://github.com/googleapis/go-genai/commit/aebbdaa234b2a0552f738c593a46094e6016dedc))
+
 ## [0.7.0](https://github.com/googleapis/go-genai/compare/v0.6.0...v0.7.0) (2025-03-31)
 
 

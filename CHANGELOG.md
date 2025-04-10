@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/googleapis/go-genai/compare/v1.0.0...v1.1.0) (2025-04-10)
+
+
+### Features
+
+* Support RealtimeInputConfig, and language_code in SpeechConfig in python ([f90a0ec](https://github.com/googleapis/go-genai/commit/f90a0ec3bd58759152b5c417c9d725cedbb98fe9))
+* Update VertexRagStore ([62d582c](https://github.com/googleapis/go-genai/commit/62d582c9f2a0bd4149f6a87efd3b71886fa969ef))
+
 ## [1.0.0](https://github.com/googleapis/go-genai/compare/v0.7.0...v1.0.0) (2025-04-09)
 
 

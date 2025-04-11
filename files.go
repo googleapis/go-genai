@@ -750,8 +750,8 @@ func (m Files) Upload(ctx context.Context, r io.Reader, config *UploadFileConfig
 	if config != nil && config.HTTPOptions != nil {
 		httpOptions = *config.HTTPOptions
 	}
-	if config.HTTPOptions.Headers == nil {
-		config.HTTPOptions.Headers = http.Header{}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 
 	httpOptions.APIVersion = ""

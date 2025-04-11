@@ -190,24 +190,22 @@ func (s *Session) send(input *LiveClientMessage) error {
 		return fmt.Errorf("message SetUp is not supported in Send(). Use Connect() instead")
 	}
 
-	kwargs := map[string]any{"input": input}
 	parameterMap := make(map[string]any)
-	err := deepMarshal(kwargs, &parameterMap)
+	err := deepMarshal(input, &parameterMap)
 	if err != nil {
 		return err
 	}
 
 	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
 	if s.apiClient.clientConfig.Backend == BackendVertexAI {
-		toConverter = liveSendParametersToVertex
+		toConverter = liveClientMessageToVertex
 	} else {
-		toConverter = liveSendParametersToMldev
+		toConverter = liveClientMessageToMldev
 	}
 	body, err := toConverter(s.apiClient, parameterMap, nil)
 	if err != nil {
 		return err
 	}
-	delete(body, "input")
 
 	data, err := json.Marshal(body)
 	if err != nil {

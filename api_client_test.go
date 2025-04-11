@@ -8,11 +8,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"reflect"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/civil"
@@ -853,6 +857,208 @@ func Test_sdkHeader(t *testing.T) {
 			if diff := cmp.Diff(sdkHeader(tt.args.ac), tt.want); diff != "" {
 				t.Errorf("sdkHeader() mismatch (-want +got):\n%s", diff)
 			}
+		})
+	}
+}
+
+// createTestFile creates a temporary file with the specified size containing dummy text data.
+// It returns the file path and a cleanup function to remove the file.
+func createTestFile(t *testing.T, size int64) (string, func()) {
+	t.Helper()
+	tmpfile, err := os.CreateTemp("", "upload-test-*.txt")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+
+	buf := make([]byte, 1024*1024) // 1MB buffer
+	pattern := []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()")
+	for i := 0; i < len(buf); i++ {
+		buf[i] = pattern[i%len(pattern)]
+	}
+
+	var written int64
+	for written < size {
+		bytesToWrite := int64(len(buf))
+		if written+bytesToWrite > size {
+			bytesToWrite = size - written
+		}
+		n, err := tmpfile.Write(buf[:bytesToWrite])
+		if err != nil {
+			tmpfile.Close()
+			os.Remove(tmpfile.Name())
+			t.Fatalf("Failed to write to temp file: %v", err)
+		}
+		written += int64(n)
+	}
+
+	if err := tmpfile.Close(); err != nil {
+		os.Remove(tmpfile.Name())
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+
+	cleanup := func() {
+		os.Remove(tmpfile.Name())
+	}
+	return tmpfile.Name(), cleanup
+}
+
+// mockUploadServer simulates the resumable upload endpoint.
+func mockUploadServer(t *testing.T, expectedSize int64) (*httptest.Server, *sync.Map) {
+	t.Helper()
+	var totalReceived int64
+	var mu sync.Mutex
+	// Use sync.Map to store received data per upload URL (though in this test we only use one)
+	receivedData := &sync.Map{}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+			return
+		}
+
+		uploadCommand := r.Header.Get("X-Goog-Upload-Command")
+		uploadOffsetStr := r.Header.Get("X-Goog-Upload-Offset")
+		contentLengthStr := r.Header.Get("Content-Length")
+
+		uploadOffset, err := strconv.ParseInt(uploadOffsetStr, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid X-Goog-Upload-Offset", http.StatusBadRequest)
+			return
+		}
+
+		contentLength, err := strconv.ParseInt(contentLengthStr, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid Content-Length", http.StatusBadRequest)
+			return
+		}
+
+		mu.Lock()
+		if uploadOffset != totalReceived {
+			mu.Unlock()
+			t.Errorf("Offset mismatch: expected %d, got %d", totalReceived, uploadOffset)
+			http.Error(w, "Offset mismatch", http.StatusBadRequest)
+			return
+		}
+		mu.Unlock()
+
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Failed to read body", http.StatusInternalServerError)
+			return
+		}
+		if int64(len(bodyBytes)) != contentLength {
+			t.Errorf("Content-Length mismatch: header %d, body %d", contentLength, len(bodyBytes))
+			http.Error(w, "Content-Length mismatch", http.StatusBadRequest)
+			return
+		}
+
+		// Store received data chunk (optional, but useful for verification)
+		receivedData.Store(uploadOffset, bodyBytes)
+
+		mu.Lock()
+		totalReceived += contentLength
+		currentTotal := totalReceived
+		mu.Unlock()
+
+		isFinal := strings.Contains(uploadCommand, "finalize")
+
+		if isFinal {
+			if currentTotal != expectedSize {
+				t.Errorf("Final size mismatch: expected %d, received %d", expectedSize, currentTotal)
+				http.Error(w, "Final size mismatch", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("X-Goog-Upload-Status", "final")
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			finalFile := map[string]any{
+				"file": map[string]any{
+					"name":      fmt.Sprintf("files/upload-%d", time.Now().UnixNano()),
+					"sizeBytes": strconv.FormatInt(currentTotal, 10),
+					"mimeType":  "text/plain", // Assuming text for simplicity
+				},
+			}
+			if err := json.NewEncoder(w).Encode(finalFile); err != nil {
+				t.Errorf("Failed to encode final file: %v", err)
+				http.Error(w, "Failed to encode final file", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			w.Header().Set("X-Goog-Upload-Status", "active")
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+
+	return server, receivedData
+}
+
+func TestUploadFile(t *testing.T) {
+	ctx := context.Background()
+
+	testSizes := []struct {
+		name string
+		size int64 // Size in bytes
+	}{
+		{"1MB", 1 * 1024 * 1024},
+		{"8MB", 8 * 1024 * 1024}, // Exactly maxChunkSize
+		{"9MB", 9 * 1024 * 1024}, // Requires multiple chunks
+	}
+
+	for _, ts := range testSizes {
+		t.Run(ts.name, func(t *testing.T) {
+			filePath, cleanup := createTestFile(t, ts.size)
+			defer cleanup()
+
+			server, _ := mockUploadServer(t, ts.size)
+			defer server.Close()
+
+			ac := &apiClient{
+				clientConfig: &ClientConfig{
+					HTTPClient: server.Client(),
+					APIKey:     "test-key-upload",
+				},
+			}
+
+			httpOpts := &HTTPOptions{
+				Headers: http.Header{},
+			}
+
+			fileReader, err := os.Open(filePath)
+			if err != nil {
+				t.Fatalf("Failed to open test file %s: %v", filePath, err)
+			}
+			defer fileReader.Close()
+
+			uploadURL := server.URL + "/upload"
+
+			uploadedFile, err := ac.uploadFile(ctx, fileReader, uploadURL, httpOpts)
+
+			if err != nil {
+				t.Fatalf("uploadFile failed: %v", err)
+			}
+
+			if uploadedFile == nil {
+				t.Fatal("uploadFile returned nil File, expected a valid File object")
+			}
+
+			if uploadedFile.Name == "" {
+				t.Error("uploadedFile.Name is empty")
+			}
+			// Convert SizeBytes to int64 if it's a pointer
+			var gotSizeBytes int64
+			if uploadedFile.SizeBytes != nil {
+				gotSizeBytes = *uploadedFile.SizeBytes
+			} else {
+				t.Error("uploadedFile.SizeBytes is nil")
+			}
+
+			if gotSizeBytes != ts.size {
+				t.Errorf("uploadedFile.SizeBytes mismatch: want %d, got %d", ts.size, gotSizeBytes)
+			}
+			if uploadedFile.MIMEType != "text/plain" { // Matches mock server response
+				t.Errorf("uploadedFile.MIMEType mismatch: want 'text/plain', got '%s'", uploadedFile.MIMEType)
+			}
+
 		})
 	}
 }

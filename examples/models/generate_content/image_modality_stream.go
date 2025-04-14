@@ -25,7 +25,7 @@ import (
 	"google.golang.org/genai"
 )
 
-var model = flag.String("model", "gemini-2.0-flash-exp", "the model name, e.g. gemini-2.0-flash")
+var model = flag.String("model", "gemini-2.0-flash", "the model name, e.g. gemini-2.0-flash")
 
 func run(ctx context.Context) {
 	client, err := genai.NewClient(ctx, nil)

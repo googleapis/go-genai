@@ -74,7 +74,7 @@ func ExampleModels_GenerateContent_text_vertexai() {
 	}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", genai.Text("Tell me about New York?"), nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", genai.Text("Tell me about New York?"), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -93,7 +93,7 @@ func ExampleModels_GenerateContent_text_geminiapi() {
 	}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", genai.Text("Tell me about New York?"), nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", genai.Text("Tell me about New York?"), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func ExampleModels_GenerateContent_texts_vertexai() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -144,7 +144,7 @@ func ExampleModels_GenerateContent_texts_geminiapi() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -182,7 +182,7 @@ func ExampleModels_GenerateContent_inlineImage_vertexai() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -219,7 +219,7 @@ func ExampleModels_GenerateContent_inlineImage_geminiapi() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -257,7 +257,7 @@ func ExampleModels_GenerateContent_inlinePDF_vertexai() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -294,7 +294,7 @@ func ExampleModels_GenerateContent_inlinePDF_geminiapi() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -332,7 +332,7 @@ func ExampleModels_GenerateContent_inlineAudio_vertexai() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -368,7 +368,7 @@ func ExampleModels_GenerateContent_inlineAudio_geminiapi() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	// Call the GenerateContent method.
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -405,7 +405,7 @@ func ExampleModels_GenerateContent_inlineVideo_vertexai() {
 	}
 	contents := []*genai.Content{{Parts: parts}}
 
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -441,7 +441,7 @@ func ExampleModels_GenerateContent_inlineVideo_geminiapi() {
 	}
 	contents := []*genai.Content{{Parts: parts}}
 
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -467,7 +467,7 @@ func ExampleModels_GenerateContent_gcsURI_vertexai() {
 	}
 	contents := []*genai.Content{{Parts: parts}}
 
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -492,7 +492,7 @@ func ExampleModels_GenerateContent_httpURL_vertexai() {
 	}
 	contents := []*genai.Content{{Parts: parts}}
 
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -516,7 +516,7 @@ func ExampleModels_GenerateContent_googleSearchRetrieval_vertexai() {
 	contents := []*genai.Content{{Parts: parts}}
 
 	result, err := client.Models.GenerateContent(ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		contents,
 		&genai.GenerateContentConfig{
 			Tools: []*genai.Tool{
@@ -543,7 +543,7 @@ func ExampleModels_GenerateContent_googleSearchRetrieval_geminiapi() {
 
 	// Call the GenerateContent method.
 	result, err := client.Models.GenerateContent(ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("Tell me about New York?"),
 		&genai.GenerateContentConfig{
 			Tools: []*genai.Tool{
@@ -571,7 +571,7 @@ func ExampleModels_GenerateContent_codeExecution_vertexai() {
 
 	// Call the GenerateContent method.
 	result, err := client.Models.GenerateContent(ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("What is the sum of the first 50 prime numbers? Generate and run code for the calculation, and make sure you get all 50."),
 		&genai.GenerateContentConfig{
 			Tools: []*genai.Tool{
@@ -598,7 +598,7 @@ func ExampleModels_GenerateContent_codeExecution_geminiapi() {
 
 	// Call the GenerateContent method.
 	result, err := client.Models.GenerateContent(ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("What is the sum of the first 50 prime numbers? Generate and run code for the calculation, and make sure you get all 50."),
 		&genai.GenerateContentConfig{
 			Tools: []*genai.Tool{
@@ -626,7 +626,7 @@ func ExampleModels_GenerateContent_config_vertexai() {
 
 	// Call the GenerateContent method.
 	result, err := client.Models.GenerateContent(ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("Tell me about New York?"),
 		&genai.GenerateContentConfig{
 			Temperature:      genai.Ptr[float32](0.5),
@@ -660,7 +660,7 @@ func ExampleModels_GenerateContent_config_geminiapi() {
 
 	// Call the GenerateContent method.
 	result, err := client.Models.GenerateContent(ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("Tell me about New York?"),
 		&genai.GenerateContentConfig{
 			Temperature:      genai.Ptr[float32](0.5),
@@ -695,7 +695,7 @@ func ExampleModels_GenerateContent_systemInstruction_vertexai() {
 
 	// Call the GenerateContent method.
 	result, err := client.Models.GenerateContent(ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("Tell me about New York?"),
 		&genai.GenerateContentConfig{
 			SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: "You are a helpful assistant."}}},
@@ -720,7 +720,7 @@ func ExampleModels_GenerateContent_systemInstruction_geminiapi() {
 
 	// Call the GenerateContent method.
 	result, err := client.Models.GenerateContent(ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("Tell me about New York?"),
 		&genai.GenerateContentConfig{
 			SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: "You are a helpful assistant."}}},
@@ -771,7 +771,7 @@ func ExampleModels_GenerateContentStream_text_vertexai() {
 	// Call the GenerateContentStream method.
 	for result, err := range client.Models.GenerateContentStream(
 		ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("Give me top 3 indoor kids friendly ideas."),
 		nil,
 	) {
@@ -796,7 +796,7 @@ func ExampleModels_GenerateContentStream_text_geminiapi() {
 	// Call the GenerateContentStream method.
 	for result, err := range client.Models.GenerateContentStream(
 		ctx,
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
 		genai.Text("Give me top 3 indoor kids friendly ideas."),
 		nil,
 	) {
@@ -817,7 +817,7 @@ func ExampleChats_geminiapi() {
 		log.Fatal(err)
 	}
 
-	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash-exp", nil, nil)
+	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -846,7 +846,7 @@ func ExampleChats_vertexai() {
 		log.Fatal(err)
 	}
 
-	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash-exp", nil, nil)
+	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -874,7 +874,7 @@ func ExampleChats_stream_geminiapi() {
 		log.Fatal(err)
 	}
 
-	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash-exp", nil, nil)
+	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -905,7 +905,7 @@ func ExampleChats_stream_vertexai() {
 		log.Fatal(err)
 	}
 
-	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash-exp", nil, nil)
+	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

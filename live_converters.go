@@ -123,6 +123,11 @@ func liveConnectConfigToMldev(ac *apiClient, fromObject map[string]any, parentOb
 		return nil, fmt.Errorf("inputAudioTranscription parameter is not supported in Gemini API")
 	}
 
+	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
+	if fromOutputAudioTranscription != nil {
+		setValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
+	}
+
 	return toObject, nil
 }
 
@@ -439,6 +444,16 @@ func liveConnectConfigToVertex(ac *apiClient, fromObject map[string]any, parentO
 		setValueByPath(parentObject, []string{"setup", "sessionResumption"}, fromSessionResumption)
 	}
 
+	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
+	if fromInputAudioTranscription != nil {
+		setValueByPath(parentObject, []string{"setup", "InputAudioTranscription"}, fromInputAudioTranscription)
+	}
+
+	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
+	if fromOutputAudioTranscription != nil {
+		setValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
+	}
+
 	return toObject, nil
 }
 
@@ -685,6 +700,16 @@ func liveServerContentFromMldev(ac *apiClient, fromObject map[string]any, parent
 	fromGenerationComplete := getValueByPath(fromObject, []string{"generationComplete"})
 	if fromGenerationComplete != nil {
 		setValueByPath(toObject, []string{"generationComplete"}, fromGenerationComplete)
+	}
+
+	fromInputTranscription := getValueByPath(fromObject, []string{"inputTranscription"})
+	if fromInputTranscription != nil {
+		setValueByPath(toObject, []string{"inputTranscription"}, fromInputTranscription)
+	}
+
+	fromOutputTranscription := getValueByPath(fromObject, []string{"outputTranscription"})
+	if fromOutputTranscription != nil {
+		setValueByPath(toObject, []string{"outputTranscription"}, fromOutputTranscription)
 	}
 
 	return toObject, nil

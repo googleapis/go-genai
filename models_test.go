@@ -132,9 +132,10 @@ func TestModelsGenerateContentAudio(t *testing.T) {
 							VoiceName: "Aoede",
 						},
 					},
+					LanguageCode: "en-US",
 				},
 			}
-			result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", Text("say something nice to me"), config)
+			result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", Text("say something nice to me"), config)
 			if err != nil {
 				t.Errorf("GenerateContent failed unexpectedly: %v", err)
 			}

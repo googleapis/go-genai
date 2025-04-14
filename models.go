@@ -399,6 +399,11 @@ func speechConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject 
 		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
 	}
 
+	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
+	if fromLanguageCode != nil {
+		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
+	}
+
 	return toObject, nil
 }
 
@@ -1530,6 +1535,11 @@ func speechConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject
 		}
 
 		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
+	}
+
+	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
+	if fromLanguageCode != nil {
+		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
 	}
 
 	return toObject, nil
@@ -3208,16 +3218,6 @@ func generateVideosOperationFromMldev(ac *apiClient, fromObject map[string]any, 
 		setValueByPath(toObject, []string{"response"}, fromResponse)
 	}
 
-	fromResult := getValueByPath(fromObject, []string{"response", "generateVideoResponse"})
-	if fromResult != nil {
-		fromResult, err = generateVideosResponseFromMldev(ac, fromResult.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"result"}, fromResult)
-	}
-
 	return toObject, nil
 }
 
@@ -3862,16 +3862,6 @@ func generateVideosOperationFromVertex(ac *apiClient, fromObject map[string]any,
 		}
 
 		setValueByPath(toObject, []string{"response"}, fromResponse)
-	}
-
-	fromResult := getValueByPath(fromObject, []string{"response"})
-	if fromResult != nil {
-		fromResult, err = generateVideosResponseFromVertex(ac, fromResult.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"result"}, fromResult)
 	}
 
 	return toObject, nil

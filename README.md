@@ -24,7 +24,7 @@ parts := []*genai.Part{
   {Text: "What's this image about?"},
   {InlineData: &genai.Blob{Data: imageBytes, MIMEType: "image/jpeg"}},
 }
-result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-exp", []*genai.Content{{Parts: parts}}, nil)
+result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", []*genai.Content{{Parts: parts}}, nil)
 ```
 
 ## Installation and usage

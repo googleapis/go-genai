@@ -117,11 +117,12 @@ func TestLiveConnect(t *testing.T) {
 			desc:   "successful connection with config vertex",
 			client: vertexClient,
 			config: &LiveConnectConfig{
-				Temperature:       Ptr[float32](0.5),
-				SystemInstruction: &Content{Parts: []*Part{{Text: "test instruction"}}},
-				Tools:             []*Tool{{GoogleSearch: &GoogleSearch{}}},
+				Temperature:              Ptr[float32](0.5),
+				SystemInstruction:        &Content{Parts: []*Part{{Text: "test instruction"}}},
+				Tools:                    []*Tool{{GoogleSearch: &GoogleSearch{}}},
+				OutputAudioTranscription: &AudioTranscriptionConfig{},
 			},
-			wantRequestBody: `{"setup":{"generationConfig":{"temperature":0.5},"model":"projects/test-project/locations/test-location/publishers/google/models/test-model","systemInstruction":{"parts":[{"text":"test instruction"}]},"tools":[{"googleSearch":{}}]}}`,
+			wantRequestBody: `{"setup":{"generationConfig":{"temperature":0.5},"model":"projects/test-project/locations/test-location/publishers/google/models/test-model","outputAudioTranscription":{},"systemInstruction":{"parts":[{"text":"test instruction"}]},"tools":[{"googleSearch":{}}]}}`,
 		},
 		{
 			desc:   "failed connection when set transparent using mldev client",

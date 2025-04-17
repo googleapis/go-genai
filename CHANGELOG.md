@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/googleapis/go-genai/compare/v1.1.0...v1.2.0) (2025-04-17)
+
+
+### Features
+
+* Expose transcription configurations for audio in TS, and move generationConfig to the top level LiveConnectConfig ([ead7e49](https://github.com/googleapis/go-genai/commit/ead7e49e4e710a31bd87cf18d0f7d5925bae8662))
+
 ## [1.1.0](https://github.com/googleapis/go-genai/compare/v1.0.0...v1.1.0) (2025-04-16)
 
 

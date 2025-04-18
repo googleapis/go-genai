@@ -539,6 +539,10 @@ type ExecutableCode struct {
 
 // URI based data.
 type FileData struct {
+	// Optional. Display name of the file data. Used to provide a label or filename to distinguish
+	// file datas. This field is only returned in PromptMessage for prompt management. It
+	// is not currently used in the Gemini GenerateContent calls.
+	DisplayName string `json:"displayName,omitempty"`
 	// Required. URI.
 	FileURI string `json:"fileUri,omitempty"`
 	// Required. The IANA standard MIME type of the source data.
@@ -575,6 +579,10 @@ type FunctionResponse struct {
 type Blob struct {
 	// Required. Raw bytes.
 	Data []byte `json:"data,omitempty"`
+	// Optional. Display name of the blob. Used to provide a label or filename to distinguish
+	// blobs. This field is only returned in PromptMessage for prompt management. It is
+	// not currently used in the Gemini GenerateContent calls.
+	DisplayName string `json:"displayName,omitempty"`
 	// Required. The IANA standard MIME type of the source data.
 	MIMEType string `json:"mimeType,omitempty"`
 }
@@ -1018,6 +1026,10 @@ type GoogleSearchRetrieval struct {
 	DynamicRetrievalConfig *DynamicRetrievalConfig `json:"dynamicRetrievalConfig,omitempty"`
 }
 
+// Tool to search public web data, powered by Vertex AI Search and Sec4 compliance.
+type EnterpriseWebSearch struct {
+}
+
 // Retrieve from Vertex AI Search datastore or engine for grounding. datastore and engine
 // are mutually exclusive. See https://cloud.google.com/products/agent-builder
 type VertexAISearch struct {
@@ -1135,8 +1147,10 @@ type Tool struct {
 	// Optional. GoogleSearchRetrieval tool type. Specialized retrieval tool that is powered
 	// by Google search.
 	GoogleSearchRetrieval *GoogleSearchRetrieval `json:"googleSearchRetrieval,omitempty"`
+	// Optional. Enterprise web search tool type. Specialized retrieval
+	// tool that is powered by Vertex AI Search and Sec4 compliance.
+	EnterpriseWebSearch *EnterpriseWebSearch `json:"enterpriseWebSearch,omitempty"`
 	// Optional. CodeExecution tool type. Enables the model to execute code as part of generation.
-	// This field is only used by the Gemini Developer API services.
 	CodeExecution *ToolCodeExecution `json:"codeExecution,omitempty"`
 }
 
@@ -1150,11 +1164,32 @@ type FunctionCallingConfig struct {
 	AllowedFunctionNames []string `json:"allowedFunctionNames,omitempty"`
 }
 
+// An object that represents a latitude/longitude pair. This is expressed as a pair
+// of doubles to represent degrees latitude and degrees longitude. Unless specified
+// otherwise, this object must conform to the WGS84 standard. Values must be within
+// normalized ranges.
+type GoogleTypeLatLng struct {
+	// The latitude in degrees. It must be in the range [-90.0, +90.0].
+	Latitude *float64 `json:"latitude,omitempty"`
+	// The longitude in degrees. It must be in the range [-180.0, +180.0].
+	Longitude *float64 `json:"longitude,omitempty"`
+}
+
+// Retrieval config.
+type RetrievalConfig struct {
+	// The language code of the user.
+	LanguageCode string `json:"languageCode,omitempty"`
+	// The location of the user.
+	LatLng *GoogleTypeLatLng `json:"latLng,omitempty"`
+}
+
 // Tool config.
 // This config is shared for all tools provided in the request.
 type ToolConfig struct {
 	// Optional. Function calling config.
 	FunctionCallingConfig *FunctionCallingConfig `json:"functionCallingConfig,omitempty"`
+	// Optional. Retrieval config.
+	RetrievalConfig *RetrievalConfig `json:"retrievalConfig,omitempty"`
 }
 
 // The configuration for the prebuilt speaker to use.
@@ -2200,6 +2235,8 @@ type GenerationConfig struct {
 	// candidates. The model needs to be prompted to output the appropriate response type,
 	// otherwise the behavior is undefined. This is a preview feature.
 	ResponseMIMEType string `json:"responseMimeType,omitempty"`
+	// Optional. The modalities of the response.
+	ResponseModalities []Modality `json:"responseModalities,omitempty"`
 	// Optional. The `Schema` object allows the definition of input and output data types.
 	// These types can be objects, but also primitives and arrays. Represents a select subset
 	// of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If
@@ -2210,6 +2247,8 @@ type GenerationConfig struct {
 	RoutingConfig *GenerationConfigRoutingConfig `json:"routingConfig,omitempty"`
 	// Optional. Seed.
 	Seed *int32 `json:"seed,omitempty"`
+	// Optional. The speech generation config.
+	SpeechConfig *SpeechConfig `json:"speechConfig,omitempty"`
 	// Optional. Stop sequences.
 	StopSequences []string `json:"stopSequences,omitempty"`
 	// Optional. Controls the randomness of predictions.

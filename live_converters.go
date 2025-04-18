@@ -549,6 +549,42 @@ func liveConnectParametersToVertex(ac *apiClient, fromObject map[string]any, par
 	return toObject, nil
 }
 
+func activityStartToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func activityStartToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func activityEndToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func activityEndToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func liveSendRealtimeInputParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func liveSendRealtimeInputParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
 func liveClientSetupToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -783,30 +819,6 @@ func liveClientContentToVertex(ac *apiClient, fromObject map[string]any, parentO
 	if fromTurnComplete != nil {
 		setValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
 	}
-
-	return toObject, nil
-}
-
-func activityStartToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityStartToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityEndToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityEndToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
 
 	return toObject, nil
 }

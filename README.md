@@ -5,7 +5,7 @@
 
 ### Google Gemini Multimodal Live support
 
-Introducing support for the Gemini Multimodal Live feature. Here's an example Multimodal Live server showing realtime conversation and video streaming: [code](./samples/live_streaming_server.go)
+Introducing support for the Gemini Multimodal Live feature. Here's an example Multimodal Live server showing realtime conversation and video streaming: [code](./examples/live/live_streaming_server.go)
 
 # Google Gen AI Go SDK
 

@@ -125,61 +125,33 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 }
 
 // Preview. LiveClientContentInput is the input for [SendClientContent].
-type LiveClientContentInput struct {
-	// The content appended to the current conversation with the model.
-	// For single-turn queries, this is a single instance. For multi-turn
-	// queries, this is a repeated field that contains conversation history and
-	// latest request.
-	Turns []*Content `json:"turns,omitempty"`
-	// TurnComplete is default to true, indicating that the server content generation should
-	// start with the currently accumulated prompt. If set to false, the server will await
-	// additional messages, accumulating the prompt, and start generation until received a
-	// TurnComplete true message.
-	TurnComplete *bool `json:"turnComplete,omitempty"`
-}
+type LiveClientContentInput = LiveSendClientContentParameters
 
 // Preview. SendClientContent transmits a [LiveClientContent] over the established connection.
 // It returns an error if sending the message fails.
 // The live module is experimental.
 func (s *Session) SendClientContent(input LiveClientContentInput) error {
-	if input.TurnComplete == nil {
-		input.TurnComplete = Ptr(true)
-	}
-	clientMessage := &LiveClientMessage{
-		ClientContent: &LiveClientContent{Turns: input.Turns, TurnComplete: *input.TurnComplete},
-	}
-	return s.send(clientMessage)
+	return s.send(input.toLiveClientMessage())
 }
 
 // Preview. LiveRealtimeInput is the input for [SendRealtimeInput].
-type LiveRealtimeInput struct {
-	Media *Blob `json:"media,omitempty"`
-}
+type LiveRealtimeInput = LiveSendRealtimeInputParameters
 
 // Preview. SendRealtimeInput transmits a [LiveClientRealtimeInput] over the established connection.
 // It returns an error if sending the message fails.
 // The live module is experimental.
 func (s *Session) SendRealtimeInput(input LiveRealtimeInput) error {
-	clientMessage := &LiveClientMessage{
-		RealtimeInput: &LiveClientRealtimeInput{MediaChunks: []*Blob{input.Media}},
-	}
-	return s.send(clientMessage)
+	return s.send(input.toLiveClientMessage())
 }
 
 // Preview. LiveToolResponseInput is the input for [SendToolResponse].
-type LiveToolResponseInput struct {
-	// The response to the function calls.
-	FunctionResponses []*FunctionResponse `json:"functionResponses,omitempty"`
-}
+type LiveToolResponseInput = LiveSendToolResponseParameters
 
 // Preview. SendToolResponse transmits a [LiveClientToolResponse] over the established connection.
 // It returns an error if sending the message fails.
 // The live module is experimental.
 func (s *Session) SendToolResponse(input LiveToolResponseInput) error {
-	clientMessage := &LiveClientMessage{
-		ToolResponse: &LiveClientToolResponse{FunctionResponses: input.FunctionResponses},
-	}
-	return s.send(clientMessage)
+	return s.send(input.toLiveClientMessage())
 }
 
 // Send transmits a LiveClientMessage over the established connection.

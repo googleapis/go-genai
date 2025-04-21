@@ -345,7 +345,7 @@ func TestLiveConnect(t *testing.T) {
 				defer session.Close()
 
 				// Test sending the message
-				err = session.SendRealtimeInput(LiveRealtimeInput{&Blob{Data: []byte("test data"), MIMEType: "image/png"}})
+				err = session.SendRealtimeInput(LiveRealtimeInput{Media: &Blob{Data: []byte("test data"), MIMEType: "image/png"}})
 				if err != nil {
 					t.Errorf("Send failed : %v", err)
 				}

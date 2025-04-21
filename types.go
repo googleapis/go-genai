@@ -3574,3 +3574,55 @@ type LiveConnectConfig struct {
 	// If included, server will compress context window to fit into given length.
 	ContextWindowCompression *ContextWindowCompressionConfig `json:"contextWindowCompression,omitempty"`
 }
+
+// Parameters for sending client content to the live API.
+type LiveSendClientContentParameters struct {
+	// Client content to send to the session.
+	Turns []*Content `json:"turns,omitempty"`
+	// If true, indicates that the server content generation should start with
+	// the currently accumulated prompt. Otherwise, the server will await
+	// additional messages before starting generation. If nil, then SDK will use the default
+	// value Ptr(true).
+	TurnComplete *bool `json:"turnComplete,omitempty"`
+}
+
+func (p LiveSendClientContentParameters) toLiveClientMessage() *LiveClientMessage {
+	if p.TurnComplete == nil {
+		p.TurnComplete = Ptr(true)
+	}
+	return &LiveClientMessage{
+		ClientContent: &LiveClientContent{Turns: p.Turns, TurnComplete: *p.TurnComplete},
+	}
+}
+
+// Parameters for sending realtime input to the live API.
+type LiveSendRealtimeInputParameters struct {
+	// Realtime input to send to the session.
+	Media *Blob `json:"media,omitempty"`
+	// Marks the start of user activity.
+	ActivityStart *ActivityStart `json:"activityStart,omitempty"`
+	// Marks the end of user activity.
+	ActivityEnd *ActivityEnd `json:"activityEnd,omitempty"`
+}
+
+func (p LiveSendRealtimeInputParameters) toLiveClientMessage() *LiveClientMessage {
+	return &LiveClientMessage{
+		RealtimeInput: &LiveClientRealtimeInput{
+			MediaChunks:   []*Blob{p.Media},
+			ActivityStart: p.ActivityStart,
+			ActivityEnd:   p.ActivityEnd,
+		},
+	}
+}
+
+// Parameters for sending tool responses to the live API.
+type LiveSendToolResponseParameters struct {
+	// Tool responses to send to the session.
+	FunctionResponses []*FunctionResponse `json:"functionResponses,omitempty"`
+}
+
+func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage {
+	return &LiveClientMessage{
+		ToolResponse: &LiveClientToolResponse{FunctionResponses: p.FunctionResponses},
+	}
+}

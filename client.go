@@ -213,6 +213,10 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		cc.Credentials = cred
 	}
 
+	baseURL := GetBaseURL(cc.Backend == BackendVertexAI, &cc.HTTPOptions)
+	if baseURL != nil {
+		cc.HTTPOptions.BaseURL = *baseURL
+	}
 	if cc.HTTPOptions.BaseURL == "" && cc.Backend == BackendVertexAI {
 		if cc.Location == "global" {
 			cc.HTTPOptions.BaseURL = "https://aiplatform.googleapis.com/"

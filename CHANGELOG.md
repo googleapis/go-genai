@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0](https://github.com/googleapis/go-genai/compare/v1.1.0...v1.2.0) (2025-04-23)
+
+
+### Features
+
+* add additional realtime input fields ([1190539](https://github.com/googleapis/go-genai/commit/11905391266e0ee01e7eff4ee68304bcc3654f36))
+* Expose transcription configurations for audio in TS, and move generationConfig to the top level LiveConnectConfig ([ead7e49](https://github.com/googleapis/go-genai/commit/ead7e49e4e710a31bd87cf18d0f7d5925bae8662))
+* support `default` field in Schema when users call Gemini API ([643eb80](https://github.com/googleapis/go-genai/commit/643eb801b141ab27e05d77678f179c9a1dc5407c))
+
 ## [1.1.0](https://github.com/googleapis/go-genai/compare/v1.0.0...v1.1.0) (2025-04-16)
 
 

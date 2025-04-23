@@ -214,3 +214,49 @@ func tFileName(ac *apiClient, name any) (string, error) {
 		return "", fmt.Errorf("tFileName: name is not a string")
 	}
 }
+
+func tBlobs(ac *apiClient, blobs any) (any, error) {
+	switch blobs := blobs.(type) {
+	case []any:
+		// The only use case of this tBlobs function is for LiveSendRealtimeInputParameters.Media field.
+		// The Media field is a Blob type, not a list of Blob. So this branch will never be executed.
+		// If tBlobs function is used for other purposes in the future, uncomment the following line to
+		// enable this branch.
+		// applyConverterToSlice(ac, blobs, tBlob)
+		return nil, fmt.Errorf("unimplemented")
+	default:
+		blob, err := tBlob(ac, blobs)
+		if err != nil {
+			return nil, err
+		}
+		return []any{blob}, nil
+	}
+}
+
+func tBlob(ac *apiClient, blob any) (any, error) {
+	return blob, nil
+}
+
+func tImageBlob(ac *apiClient, blob any) (any, error) {
+	switch blob := blob.(type) {
+	case map[string]any:
+		if strings.HasPrefix(blob["mimeType"].(string), "image/") {
+			return blob, nil
+		}
+		return nil, fmt.Errorf("Unsupported mime type: %s", blob["mimeType"])
+	default:
+		return nil, fmt.Errorf("tImageBlob: blob is not a map")
+	}
+}
+
+func tAudioBlob(ac *apiClient, blob any) (any, error) {
+	switch blob := blob.(type) {
+	case map[string]any:
+		if strings.HasPrefix(blob["mimeType"].(string), "audio/") {
+			return blob, nil
+		}
+		return nil, fmt.Errorf("Unsupported mime type: %s", blob["mimeType"])
+	default:
+		return nil, fmt.Errorf("tAudioBlob: blob is not a map")
+	}
+}

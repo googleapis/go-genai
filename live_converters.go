@@ -576,11 +576,118 @@ func activityEndToVertex(ac *apiClient, fromObject map[string]any, parentObject 
 func liveSendRealtimeInputParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromMedia := getValueByPath(fromObject, []string{"media"})
+	if fromMedia != nil {
+		fromMedia, err = tBlobs(ac, fromMedia)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"mediaChunks"}, fromMedia)
+	}
+
+	fromAudio := getValueByPath(fromObject, []string{"audio"})
+	if fromAudio != nil {
+		fromAudio, err = tAudioBlob(ac, fromAudio)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"audio"}, fromAudio)
+	}
+
+	fromAudioStreamEnd := getValueByPath(fromObject, []string{"audioStreamEnd"})
+	if fromAudioStreamEnd != nil {
+		setValueByPath(toObject, []string{"audioStreamEnd"}, fromAudioStreamEnd)
+	}
+
+	fromVideo := getValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = tImageBlob(ac, fromVideo)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"video"}, fromVideo)
+	}
+
+	fromText := getValueByPath(fromObject, []string{"text"})
+	if fromText != nil {
+		setValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
+	if fromActivityStart != nil {
+		fromActivityStart, err = activityStartToMldev(ac, fromActivityStart.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
+	}
+
+	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
+	if fromActivityEnd != nil {
+		fromActivityEnd, err = activityEndToMldev(ac, fromActivityEnd.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
+	}
+
 	return toObject, nil
 }
 
 func liveSendRealtimeInputParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromMedia := getValueByPath(fromObject, []string{"media"})
+	if fromMedia != nil {
+		fromMedia, err = tBlobs(ac, fromMedia)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"mediaChunks"}, fromMedia)
+	}
+
+	if getValueByPath(fromObject, []string{"audio"}) != nil {
+		return nil, fmt.Errorf("audio parameter is not supported in Vertex AI")
+	}
+
+	fromAudioStreamEnd := getValueByPath(fromObject, []string{"audioStreamEnd"})
+	if fromAudioStreamEnd != nil {
+		setValueByPath(toObject, []string{"audioStreamEnd"}, fromAudioStreamEnd)
+	}
+
+	if getValueByPath(fromObject, []string{"video"}) != nil {
+		return nil, fmt.Errorf("video parameter is not supported in Vertex AI")
+	}
+
+	if getValueByPath(fromObject, []string{"text"}) != nil {
+		return nil, fmt.Errorf("text parameter is not supported in Vertex AI")
+	}
+
+	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
+	if fromActivityStart != nil {
+		fromActivityStart, err = activityStartToVertex(ac, fromActivityStart.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
+	}
+
+	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
+	if fromActivityEnd != nil {
+		fromActivityEnd, err = activityEndToVertex(ac, fromActivityEnd.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
+	}
 
 	return toObject, nil
 }

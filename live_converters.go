@@ -269,6 +269,11 @@ func liveConnectConfigToMldev(ac *apiClient, fromObject map[string]any, parentOb
 		setValueByPath(parentObject, []string{"setup", "generationConfig", "maxOutputTokens"}, fromMaxOutputTokens)
 	}
 
+	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		setValueByPath(parentObject, []string{"setup", "generationConfig", "mediaResolution"}, fromMediaResolution)
+	}
+
 	fromSeed := getValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
 		setValueByPath(parentObject, []string{"setup", "generationConfig", "seed"}, fromSeed)
@@ -387,6 +392,11 @@ func liveConnectConfigToVertex(ac *apiClient, fromObject map[string]any, parentO
 	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
 	if fromMaxOutputTokens != nil {
 		setValueByPath(parentObject, []string{"setup", "generationConfig", "maxOutputTokens"}, fromMaxOutputTokens)
+	}
+
+	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		setValueByPath(parentObject, []string{"setup", "generationConfig", "mediaResolution"}, fromMediaResolution)
 	}
 
 	fromSeed := getValueByPath(fromObject, []string{"seed"})
@@ -535,6 +545,42 @@ func liveConnectParametersToVertex(ac *apiClient, fromObject map[string]any, par
 
 		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
+
+	return toObject, nil
+}
+
+func activityStartToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func activityStartToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func activityEndToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func activityEndToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func liveSendRealtimeInputParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	return toObject, nil
+}
+
+func liveSendRealtimeInputParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
 
 	return toObject, nil
 }
@@ -773,30 +819,6 @@ func liveClientContentToVertex(ac *apiClient, fromObject map[string]any, parentO
 	if fromTurnComplete != nil {
 		setValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
 	}
-
-	return toObject, nil
-}
-
-func activityStartToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityStartToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityEndToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityEndToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
 
 	return toObject, nil
 }

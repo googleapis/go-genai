@@ -789,27 +789,24 @@ func (m Files) UploadFromPath(ctx context.Context, path string, config *UploadFi
 	}
 	defer osf.Close()
 
-	var fileToUpload File
-	fileToUpload.SizeBytes = Ptr[int64](fileInfo.Size())
+	if config == nil {
+		config = &UploadFileConfig{}
+	}
 
-	if fileToUpload.MIMEType == "" {
-		fileToUpload.MIMEType = mime.TypeByExtension(filepath.Ext(path))
-		if fileToUpload.MIMEType == "" {
+	if config.MIMEType == "" {
+		config.MIMEType = mime.TypeByExtension(filepath.Ext(path))
+		if config.MIMEType == "" {
 			return nil, fmt.Errorf("Unknown mime type: Could not determine the mimetype for your file please set the `MIMEType` argument")
 		}
 	}
 
-	if config == nil {
-		config = &UploadFileConfig{}
-	}
-	config.MIMEType = fileToUpload.MIMEType
 	if config.HTTPOptions == nil {
 		config.HTTPOptions = &HTTPOptions{Headers: http.Header{}}
 	}
 	if config.HTTPOptions.Headers == nil {
 		config.HTTPOptions.Headers = http.Header{}
 	}
-	config.HTTPOptions.Headers.Add("X-Goog-Upload-Header-Content-Length", strconv.FormatInt(*fileToUpload.SizeBytes, 10))
+	config.HTTPOptions.Headers.Add("X-Goog-Upload-Header-Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
 
 	return m.Upload(ctx, osf, config)
 }

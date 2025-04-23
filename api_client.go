@@ -270,7 +270,8 @@ func newAPIError(resp *http.Response) error {
 
 	if len(body) > 0 {
 		if err := json.Unmarshal(body, respWithError); err != nil {
-			return fmt.Errorf("newAPIError: unmarshal response to error failed: %w. Response: %v", err, string(body))
+			// Handle plain text error message. File upload backend doesn't return json error message.
+			return APIError{Code: resp.StatusCode, Status: resp.Status, Message: string(body)}
 		}
 		return *respWithError.ErrorInfo
 	}
@@ -380,7 +381,8 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 		offset += int64(bytesRead)
 
 		uploadStatus := resp.Header.Get("X-Goog-Upload-Status")
-		if uploadStatus != "final" && strings.Contains(uploadStatus, "finalize") {
+
+		if uploadStatus != "final" && strings.Contains(uploadCommand, "finalize") {
 			return nil, fmt.Errorf("send finalize command but doesn't receive final status. Offset %d, Bytes read: %d, Upload status: %s", offset, bytesRead, uploadStatus)
 		}
 		if uploadStatus != "active" {

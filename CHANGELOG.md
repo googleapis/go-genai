@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.0](https://github.com/googleapis/go-genai/compare/v1.0.0...v1.1.0) (2025-04-16)
+
+
+### Features
+
+* Add converters to support continuous sessions with a sliding window ([97bbba4](https://github.com/googleapis/go-genai/commit/97bbba4655ec1b754532c10d464ed037e7312158))
+* add support for model_selection_config to GenerateContentConfig ([a44a6c7](https://github.com/googleapis/go-genai/commit/a44a6c78bb4e2bc614bcf526930338e1fd6b84a7))
+* Add types for configurable speech detection ([658c17a](https://github.com/googleapis/go-genai/commit/658c17a226256decb52c59e595d360867cf987ea))
+* Support audio transcription in Vertex Live API ([f09dfab](https://github.com/googleapis/go-genai/commit/f09dfab7de4a8bb4abf52302b0df3749a7e043a6))
+* Support RealtimeInputConfig, and language_code in SpeechConfig in python ([f90a0ec](https://github.com/googleapis/go-genai/commit/f90a0ec3bd58759152b5c417c9d725cedbb98fe9))
+* Update VertexRagStore ([62d582c](https://github.com/googleapis/go-genai/commit/62d582c9f2a0bd4149f6a87efd3b71886fa969ef))
+
+
+### Bug Fixes
+
+* **files:** use `io.ReadFull` to read the file. fixes [#237](https://github.com/googleapis/go-genai/issues/237) ([908c783](https://github.com/googleapis/go-genai/commit/908c78371f2c9e16b4bd43286b6e7ed95d02fa8e))
+* Fix error "assignment to entry in nil map" of `Files.Upload()` when `config.HTTPOptions` is nil ([#235](https://github.com/googleapis/go-genai/issues/235)) ([05c0c49](https://github.com/googleapis/go-genai/commit/05c0c49512f56dd808408ddf555699af6b164ac3))
+* fix MIME type error in UploadFromPath and add unit tests. fixes: [#247](https://github.com/googleapis/go-genai/issues/247) ([f851639](https://github.com/googleapis/go-genai/commit/f851639a7f5bc3d8392a8d2cee2e25ed0d42feda))
+
 ## [1.0.0](https://github.com/googleapis/go-genai/compare/v0.7.0...v1.0.0) (2025-04-09)
 
 

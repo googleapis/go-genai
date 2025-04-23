@@ -321,7 +321,7 @@ func TestSendStreamRequest(t *testing.T) {
 			mockResponse:     `invalid json`,
 			mockStatusCode:   http.StatusBadRequest,
 			wantErr:          true,
-			wantErrorMessage: "newAPIError: unmarshal response to error failed: invalid character 'i' looking for beginning of value. Response: invalid json",
+			wantErrorMessage: "Error 400, Message: invalid json, Status: 400 Bad Request, Details: []",
 		},
 		{
 			name:             "Error Response with server error",
@@ -351,7 +351,7 @@ func TestSendStreamRequest(t *testing.T) {
 			mockResponse:     `invalid json`,
 			mockStatusCode:   http.StatusInternalServerError,
 			wantErr:          true,
-			wantErrorMessage: "newAPIError: unmarshal response to error failed: invalid character 'i' looking for beginning of value. Response: invalid json",
+			wantErrorMessage: "Error 500, Message: invalid json, Status: 500 Internal Server Error, Details: []",
 		},
 		{
 			name:           "Request Error",

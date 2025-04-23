@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -3543,6 +3543,8 @@ type LiveConnectConfig struct {
 	// Maximum number of tokens that can be generated in the response.
 	// If empty, API will use a default value. The default value varies by model.
 	MaxOutputTokens int32 `json:"maxOutputTokens,omitempty"`
+	// If specified, the media resolution specified will be used.
+	MediaResolution MediaResolution `json:"mediaResolution,omitempty"`
 	// When ``seed`` is fixed to a specific number, the model makes a best
 	// effort to provide the same response for repeated requests. By default, a
 	// random number is used.

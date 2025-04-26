@@ -103,10 +103,6 @@ func schemaToMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 		return nil, fmt.Errorf("pattern parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"default"}) != nil {
-		return nil, fmt.Errorf("default parameter is not supported in Gemini API")
-	}
-
 	if getValueByPath(fromObject, []string{"maxLength"}) != nil {
 		return nil, fmt.Errorf("maxLength parameter is not supported in Gemini API")
 	}
@@ -126,6 +122,11 @@ func schemaToMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 	fromAnyOf := getValueByPath(fromObject, []string{"anyOf"})
 	if fromAnyOf != nil {
 		setValueByPath(toObject, []string{"anyOf"}, fromAnyOf)
+	}
+
+	fromDefault := getValueByPath(fromObject, []string{"default"})
+	if fromDefault != nil {
+		setValueByPath(toObject, []string{"default"}, fromDefault)
 	}
 
 	fromDescription := getValueByPath(fromObject, []string{"description"})
@@ -1239,11 +1240,6 @@ func schemaToVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 		setValueByPath(toObject, []string{"pattern"}, fromPattern)
 	}
 
-	fromDefault := getValueByPath(fromObject, []string{"default"})
-	if fromDefault != nil {
-		setValueByPath(toObject, []string{"default"}, fromDefault)
-	}
-
 	fromMaxLength := getValueByPath(fromObject, []string{"maxLength"})
 	if fromMaxLength != nil {
 		setValueByPath(toObject, []string{"maxLength"}, fromMaxLength)
@@ -1267,6 +1263,11 @@ func schemaToVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 	fromAnyOf := getValueByPath(fromObject, []string{"anyOf"})
 	if fromAnyOf != nil {
 		setValueByPath(toObject, []string{"anyOf"}, fromAnyOf)
+	}
+
+	fromDefault := getValueByPath(fromObject, []string{"default"})
+	if fromDefault != nil {
+		setValueByPath(toObject, []string{"default"}, fromDefault)
 	}
 
 	fromDescription := getValueByPath(fromObject, []string{"description"})

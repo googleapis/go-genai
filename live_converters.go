@@ -1015,8 +1015,10 @@ func functionResponseToMldev(ac *apiClient, fromObject map[string]any, parentObj
 
 func functionResponseToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"id"}) != nil {
-		return nil, fmt.Errorf("id parameter is not supported in Vertex AI")
+
+	fromId := getValueByPath(fromObject, []string{"id"})
+	if fromId != nil {
+		setValueByPath(toObject, []string{"id"}, fromId)
 	}
 
 	fromName := getValueByPath(fromObject, []string{"name"})
@@ -1305,14 +1307,14 @@ func liveServerContentFromVertex(ac *apiClient, fromObject map[string]any, paren
 func functionCallFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromId := getValueByPath(fromObject, []string{"id"})
-	if fromId != nil {
-		setValueByPath(toObject, []string{"id"}, fromId)
-	}
-
 	fromArgs := getValueByPath(fromObject, []string{"args"})
 	if fromArgs != nil {
 		setValueByPath(toObject, []string{"args"}, fromArgs)
+	}
+
+	fromId := getValueByPath(fromObject, []string{"id"})
+	if fromId != nil {
+		setValueByPath(toObject, []string{"id"}, fromId)
 	}
 
 	fromName := getValueByPath(fromObject, []string{"name"})
@@ -1329,6 +1331,11 @@ func functionCallFromVertex(ac *apiClient, fromObject map[string]any, parentObje
 	fromArgs := getValueByPath(fromObject, []string{"args"})
 	if fromArgs != nil {
 		setValueByPath(toObject, []string{"args"}, fromArgs)
+	}
+
+	fromId := getValueByPath(fromObject, []string{"id"})
+	if fromId != nil {
+		setValueByPath(toObject, []string{"id"}, fromId)
 	}
 
 	fromName := getValueByPath(fromObject, []string{"name"})

@@ -29,11 +29,6 @@ func partToMldev(ac *apiClient, fromObject map[string]any, parentObject map[stri
 		return nil, fmt.Errorf("videoMetadata parameter is not supported in Gemini API")
 	}
 
-	fromThought := getValueByPath(fromObject, []string{"thought"})
-	if fromThought != nil {
-		setValueByPath(toObject, []string{"thought"}, fromThought)
-	}
-
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -67,6 +62,11 @@ func partToMldev(ac *apiClient, fromObject map[string]any, parentObject map[stri
 	fromText := getValueByPath(fromObject, []string{"text"})
 	if fromText != nil {
 		setValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	fromThought := getValueByPath(fromObject, []string{"thought"})
+	if fromThought != nil {
+		setValueByPath(toObject, []string{"thought"}, fromThought)
 	}
 
 	return toObject, nil
@@ -304,10 +304,6 @@ func toolToMldev(ac *apiClient, fromObject map[string]any, parentObject map[stri
 		setValueByPath(toObject, []string{"functionDeclarations"}, fromFunctionDeclarations)
 	}
 
-	if getValueByPath(fromObject, []string{"retrieval"}) != nil {
-		return nil, fmt.Errorf("retrieval parameter is not supported in Gemini API")
-	}
-
 	fromGoogleSearch := getValueByPath(fromObject, []string{"googleSearch"})
 	if fromGoogleSearch != nil {
 		fromGoogleSearch, err = googleSearchToMldev(ac, fromGoogleSearch.(map[string]any), toObject)
@@ -316,6 +312,10 @@ func toolToMldev(ac *apiClient, fromObject map[string]any, parentObject map[stri
 		}
 
 		setValueByPath(toObject, []string{"googleSearch"}, fromGoogleSearch)
+	}
+
+	if getValueByPath(fromObject, []string{"retrieval"}) != nil {
+		return nil, fmt.Errorf("retrieval parameter is not supported in Gemini API")
 	}
 
 	fromGoogleSearchRetrieval := getValueByPath(fromObject, []string{"googleSearchRetrieval"})
@@ -331,6 +331,11 @@ func toolToMldev(ac *apiClient, fromObject map[string]any, parentObject map[stri
 	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
 	if fromCodeExecution != nil {
 		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
+	}
+
+	fromEnterpriseWebSearch := getValueByPath(fromObject, []string{"enterpriseWebSearch"})
+	if fromEnterpriseWebSearch != nil {
+		setValueByPath(toObject, []string{"enterpriseWebSearch"}, fromEnterpriseWebSearch)
 	}
 
 	return toObject, nil
@@ -365,31 +370,9 @@ func toolConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject ma
 		setValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
 	}
 
-	return toObject, nil
-}
-
-func prebuiltVoiceConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromVoiceName := getValueByPath(fromObject, []string{"voiceName"})
-	if fromVoiceName != nil {
-		setValueByPath(toObject, []string{"voiceName"}, fromVoiceName)
-	}
-
-	return toObject, nil
-}
-
-func voiceConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromPrebuiltVoiceConfig := getValueByPath(fromObject, []string{"prebuiltVoiceConfig"})
-	if fromPrebuiltVoiceConfig != nil {
-		fromPrebuiltVoiceConfig, err = prebuiltVoiceConfigToMldev(ac, fromPrebuiltVoiceConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"prebuiltVoiceConfig"}, fromPrebuiltVoiceConfig)
+	fromRetrievalConfig := getValueByPath(fromObject, []string{"retrievalConfig"})
+	if fromRetrievalConfig != nil {
+		setValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
 	}
 
 	return toObject, nil
@@ -398,19 +381,14 @@ func voiceConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject m
 func speechConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
-	if fromVoiceConfig != nil {
-		fromVoiceConfig, err = voiceConfigToMldev(ac, fromVoiceConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
-	}
-
 	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
 	if fromLanguageCode != nil {
 		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
+	}
+
+	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
+	if fromVoiceConfig != nil {
+		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
 	}
 
 	return toObject, nil
@@ -1162,11 +1140,6 @@ func partToVertex(ac *apiClient, fromObject map[string]any, parentObject map[str
 		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
 	}
 
-	fromThought := getValueByPath(fromObject, []string{"thought"})
-	if fromThought != nil {
-		setValueByPath(toObject, []string{"thought"}, fromThought)
-	}
-
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -1200,6 +1173,11 @@ func partToVertex(ac *apiClient, fromObject map[string]any, parentObject map[str
 	fromText := getValueByPath(fromObject, []string{"text"})
 	if fromText != nil {
 		setValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	fromThought := getValueByPath(fromObject, []string{"thought"})
+	if fromThought != nil {
+		setValueByPath(toObject, []string{"thought"}, fromThought)
 	}
 
 	return toObject, nil
@@ -1456,11 +1434,6 @@ func toolToVertex(ac *apiClient, fromObject map[string]any, parentObject map[str
 		setValueByPath(toObject, []string{"functionDeclarations"}, fromFunctionDeclarations)
 	}
 
-	fromRetrieval := getValueByPath(fromObject, []string{"retrieval"})
-	if fromRetrieval != nil {
-		setValueByPath(toObject, []string{"retrieval"}, fromRetrieval)
-	}
-
 	fromGoogleSearch := getValueByPath(fromObject, []string{"googleSearch"})
 	if fromGoogleSearch != nil {
 		fromGoogleSearch, err = googleSearchToVertex(ac, fromGoogleSearch.(map[string]any), toObject)
@@ -1469,6 +1442,11 @@ func toolToVertex(ac *apiClient, fromObject map[string]any, parentObject map[str
 		}
 
 		setValueByPath(toObject, []string{"googleSearch"}, fromGoogleSearch)
+	}
+
+	fromRetrieval := getValueByPath(fromObject, []string{"retrieval"})
+	if fromRetrieval != nil {
+		setValueByPath(toObject, []string{"retrieval"}, fromRetrieval)
 	}
 
 	fromGoogleSearchRetrieval := getValueByPath(fromObject, []string{"googleSearchRetrieval"})
@@ -1484,6 +1462,11 @@ func toolToVertex(ac *apiClient, fromObject map[string]any, parentObject map[str
 	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
 	if fromCodeExecution != nil {
 		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
+	}
+
+	fromEnterpriseWebSearch := getValueByPath(fromObject, []string{"enterpriseWebSearch"})
+	if fromEnterpriseWebSearch != nil {
+		setValueByPath(toObject, []string{"enterpriseWebSearch"}, fromEnterpriseWebSearch)
 	}
 
 	return toObject, nil
@@ -1518,31 +1501,9 @@ func toolConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject m
 		setValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
 	}
 
-	return toObject, nil
-}
-
-func prebuiltVoiceConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromVoiceName := getValueByPath(fromObject, []string{"voiceName"})
-	if fromVoiceName != nil {
-		setValueByPath(toObject, []string{"voiceName"}, fromVoiceName)
-	}
-
-	return toObject, nil
-}
-
-func voiceConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromPrebuiltVoiceConfig := getValueByPath(fromObject, []string{"prebuiltVoiceConfig"})
-	if fromPrebuiltVoiceConfig != nil {
-		fromPrebuiltVoiceConfig, err = prebuiltVoiceConfigToVertex(ac, fromPrebuiltVoiceConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"prebuiltVoiceConfig"}, fromPrebuiltVoiceConfig)
+	fromRetrievalConfig := getValueByPath(fromObject, []string{"retrievalConfig"})
+	if fromRetrievalConfig != nil {
+		setValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
 	}
 
 	return toObject, nil
@@ -1551,19 +1512,14 @@ func voiceConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject 
 func speechConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
-	if fromVoiceConfig != nil {
-		fromVoiceConfig, err = voiceConfigToVertex(ac, fromVoiceConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
-	}
-
 	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
 	if fromLanguageCode != nil {
 		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
+	}
+
+	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
+	if fromVoiceConfig != nil {
+		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
 	}
 
 	return toObject, nil
@@ -2710,11 +2666,6 @@ func generateVideosParametersToVertex(ac *apiClient, fromObject map[string]any, 
 func partFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromThought := getValueByPath(fromObject, []string{"thought"})
-	if fromThought != nil {
-		setValueByPath(toObject, []string{"thought"}, fromThought)
-	}
-
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -2748,6 +2699,11 @@ func partFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 	fromText := getValueByPath(fromObject, []string{"text"})
 	if fromText != nil {
 		setValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	fromThought := getValueByPath(fromObject, []string{"thought"})
+	if fromThought != nil {
+		setValueByPath(toObject, []string{"thought"}, fromThought)
 	}
 
 	return toObject, nil
@@ -3263,11 +3219,6 @@ func partFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
 	}
 
-	fromThought := getValueByPath(fromObject, []string{"thought"})
-	if fromThought != nil {
-		setValueByPath(toObject, []string{"thought"}, fromThought)
-	}
-
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -3301,6 +3252,11 @@ func partFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 	fromText := getValueByPath(fromObject, []string{"text"})
 	if fromText != nil {
 		setValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	fromThought := getValueByPath(fromObject, []string{"thought"})
+	if fromThought != nil {
+		setValueByPath(toObject, []string{"thought"}, fromThought)
 	}
 
 	return toObject, nil

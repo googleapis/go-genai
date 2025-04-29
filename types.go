@@ -819,8 +819,6 @@ type Schema struct {
 	Example any `json:"example,omitempty"`
 	// Optional. Pattern of the Type.STRING to restrict a string to a regular expression.
 	Pattern string `json:"pattern,omitempty"`
-	// Optional. Default value of the data.
-	Default any `json:"default,omitempty"`
 	// Optional. Maximum length of the Type.STRING
 	MaxLength *int64 `json:"maxLength,omitempty"`
 	// Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING
@@ -832,6 +830,8 @@ type Schema struct {
 	// Optional. The value should be validated against any (one or more) of the subschemas
 	// in the list.
 	AnyOf []*Schema `json:"anyOf,omitempty"`
+	// Optional. Default value of the data.
+	Default any `json:"default,omitempty"`
 	// Optional. The description of the data.
 	Description string `json:"description,omitempty"`
 	// Optional. Possible values of the element of primitive type with enum format. Examples:

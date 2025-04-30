@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.3.0](https://github.com/googleapis/go-genai/compare/v1.2.0...v1.3.0) (2025-04-30)
+
+
+### Features
+
+* add models.delete and models.update to manage tuned models ([6f5bbed](https://github.com/googleapis/go-genai/commit/6f5bbed7ab1514d246befe4e8aa16c4244678b25))
+* add NewPartFromFile for File type convenience. Related to [#281](https://github.com/googleapis/go-genai/issues/281) ([2ac0429](https://github.com/googleapis/go-genai/commit/2ac0429c634edca2396c272f27f013b4a960529a))
+* add support for live grounding metadata ([9ce2ed9](https://github.com/googleapis/go-genai/commit/9ce2ed91ffbe781b513487ca29b86d95497e8f06))
+* make min_property, max_property, min_length, max_length, example, patter fields available for Schema class when calling Gemini API ([b487724](https://github.com/googleapis/go-genai/commit/b48772435585584c9974b923d071fe567cd00366))
+* Populate X-Server-Timeout header when a request timeout is set. ([8f446a0](https://github.com/googleapis/go-genai/commit/8f446a0a0c5ffe74ec00e32b0667d830596db49d))
+* Support setting the default base URL in clients via SetDefaultBaseURLs() ([f465a20](https://github.com/googleapis/go-genai/commit/f465a2088c0d4a104f4edbd7197b64f1097fc1b8))
+
+
+### Bug Fixes
+
+* do not raise error for `default` field in Schema for Gemini API calls ([ec31e4b](https://github.com/googleapis/go-genai/commit/ec31e4b92afca2f167456ef5e8f775cfad198b8d))
+* do not remove content parts with `Text` unset. ([b967057](https://github.com/googleapis/go-genai/commit/b967057d68ad8cd5385aa19b65b0648646cb8c00))
+* **files:** deep copy config struct before modifying it. ([a6b0fd6](https://github.com/googleapis/go-genai/commit/a6b0fd6c47cfda6ce28d01a8119ae6f38e2214f4))
+
 ## [1.2.0](https://github.com/googleapis/go-genai/compare/v1.1.0...v1.2.0) (2025-04-23)
 
 

@@ -280,28 +280,6 @@ func functionCallingConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 	return toObject, nil
 }
 
-func latLngToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"latitude"}) != nil {
-		return nil, fmt.Errorf("latitude parameter is not supported in Gemini API")
-	}
-
-	if getValueByPath(fromObject, []string{"longitude"}) != nil {
-		return nil, fmt.Errorf("longitude parameter is not supported in Gemini API")
-	}
-
-	return toObject, nil
-}
-
-func retrievalConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"latLng"}) != nil {
-		return nil, fmt.Errorf("latLng parameter is not supported in Gemini API")
-	}
-
-	return toObject, nil
-}
-
 func toolConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -315,8 +293,9 @@ func toolConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject ma
 		setValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
 	}
 
-	if getValueByPath(fromObject, []string{"retrievalConfig"}) != nil {
-		return nil, fmt.Errorf("retrievalConfig parameter is not supported in Gemini API")
+	fromRetrievalConfig := getValueByPath(fromObject, []string{"retrievalConfig"})
+	if fromRetrievalConfig != nil {
+		setValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
 	}
 
 	return toObject, nil
@@ -1396,38 +1375,6 @@ func functionCallingConfigToVertex(ac *apiClient, fromObject map[string]any, par
 	return toObject, nil
 }
 
-func latLngToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromLatitude := getValueByPath(fromObject, []string{"latitude"})
-	if fromLatitude != nil {
-		setValueByPath(toObject, []string{"latitude"}, fromLatitude)
-	}
-
-	fromLongitude := getValueByPath(fromObject, []string{"longitude"})
-	if fromLongitude != nil {
-		setValueByPath(toObject, []string{"longitude"}, fromLongitude)
-	}
-
-	return toObject, nil
-}
-
-func retrievalConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromLatLng := getValueByPath(fromObject, []string{"latLng"})
-	if fromLatLng != nil {
-		fromLatLng, err = latLngToVertex(ac, fromLatLng.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"latLng"}, fromLatLng)
-	}
-
-	return toObject, nil
-}
-
 func toolConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1443,11 +1390,6 @@ func toolConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject m
 
 	fromRetrievalConfig := getValueByPath(fromObject, []string{"retrievalConfig"})
 	if fromRetrievalConfig != nil {
-		fromRetrievalConfig, err = retrievalConfigToVertex(ac, fromRetrievalConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
 	}
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.0](https://github.com/googleapis/go-genai/compare/v1.3.0...v1.4.0) (2025-05-08)
+
+
+### Features
+
+* Add `Tool.enterprise_web_search` field ([452d379](https://github.com/googleapis/go-genai/commit/452d379e1a9cffb722c34e038af89539855fdc69))
+* Add support for Grounding with Google Maps ([76c6472](https://github.com/googleapis/go-genai/commit/76c6472eac47f6c5b1f8875d3d9d1fd198db3e77))
+* enable input transcription for Gemini API. ([f1ccf67](https://github.com/googleapis/go-genai/commit/f1ccf67133ee0c929661e821790768775db3f9fc))
+
+
+### Bug Fixes
+
+* add retry logic for missing X-Goog-Upload-Status header for golang ([1a25f15](https://github.com/googleapis/go-genai/commit/1a25f159557ce461598483b144ab9adfe4c85a95))
+
 ## [1.3.0](https://github.com/googleapis/go-genai/compare/v1.2.0...v1.3.0) (2025-04-30)
 
 

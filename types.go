@@ -3779,6 +3779,8 @@ type LiveClientMessage struct {
 
 // Session config for the API connection.
 type LiveConnectConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Optional. The requested modalities of the response. Represents the set of
 	// modalities that the model can return. Defaults to AUDIO if not specified.
 	ResponseModalities []Modality `json:"responseModalities,omitempty"`

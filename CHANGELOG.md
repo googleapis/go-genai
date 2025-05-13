@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.0](https://github.com/googleapis/go-genai/compare/v1.4.0...v1.5.0) (2025-05-13)
+
+
+### Features
+
+* Add Send and SendStream to chats module. Related to [#295](https://github.com/googleapis/go-genai/issues/295) ([f2f8041](https://github.com/googleapis/go-genai/commit/f2f80410f7924eca0d59ee8ff02ff7f8ffae22ce))
+* add support for audio, video, text and session resumption in java. ([e38c53f](https://github.com/googleapis/go-genai/commit/e38c53ff41f8a6e4acaf05e0f63bcf6c0a3b1869))
+* support display_name for Blob class when calling Vertex AI ([10b5438](https://github.com/googleapis/go-genai/commit/10b5438d997ea8ae05931dedf7037f369c149576))
+* Support tuning checkpoints ([c65e033](https://github.com/googleapis/go-genai/commit/c65e0335471317f2fec29fe2161ef57ca31e3abe))
+
 ## [1.4.0](https://github.com/googleapis/go-genai/compare/v1.3.0...v1.4.0) (2025-05-08)
 
 

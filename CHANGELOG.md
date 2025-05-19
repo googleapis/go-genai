@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.6.0](https://github.com/googleapis/go-genai/compare/v1.5.0...v1.6.0) (2025-05-19)
+
+
+### Features
+
+* add `time range filter` to Google Search Tool ([02bec9d](https://github.com/googleapis/go-genai/commit/02bec9d69fe6d28848c09f23897c4b5149825250))
+* Add basic support for async function calling. ([514cf37](https://github.com/googleapis/go-genai/commit/514cf37e73f27dd3d70745222f50a100b368c5dc))
+* add live proactivity_audio and enable_affective_dialog ([a72f5ce](https://github.com/googleapis/go-genai/commit/a72f5ce369b8dfa77845dd818d2146c584919307))
+* add multi-speaker voice config ([aae87a9](https://github.com/googleapis/go-genai/commit/aae87a9c251c20c0739dae9c2a5423847d1a9cd1))
+* Add support for lat/long in search. ([0e2ba95](https://github.com/googleapis/go-genai/commit/0e2ba95e523e6733709146e6e6b776f8ea8011d3))
+* Add Video FPS, and enable start/end_offset for MLDev ([fa403ac](https://github.com/googleapis/go-genai/commit/fa403ac4ff1908e71cfe695934d150c023fdb773))
+* support customer-managed encryption key in cached content ([a8a6dc2](https://github.com/googleapis/go-genai/commit/a8a6dc2894ba4d037f1734a97dc457b54b68487e))
+* Support Url Context Retrieval tool ([7bf9acc](https://github.com/googleapis/go-genai/commit/7bf9acc8bed7d38d8780e6a1c7548c90008c463e))
+
+
+### Bug Fixes
+
+* fix SendMessageStream when iterator callback returns false. fixes [#310](https://github.com/googleapis/go-genai/issues/310) ([08cf7d9](https://github.com/googleapis/go-genai/commit/08cf7d9c5bc9f50e2feb4093c5952b6668d7e36b))
+
 ## [1.5.0](https://github.com/googleapis/go-genai/compare/v1.4.0...v1.5.0) (2025-05-13)
 
 

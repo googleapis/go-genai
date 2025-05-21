@@ -833,6 +833,11 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
 	}
 
+	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	if fromResponseJsonSchema != nil {
+		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+	}
+
 	if getValueByPath(fromObject, []string{"routingConfig"}) != nil {
 		return nil, fmt.Errorf("routingConfig parameter is not supported in Gemini API")
 	}
@@ -2324,6 +2329,11 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		}
 
 		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
+	}
+
+	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	if fromResponseJsonSchema != nil {
+		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
 	}
 
 	fromRoutingConfig := getValueByPath(fromObject, []string{"routingConfig"})

@@ -91,6 +91,10 @@ func createCachedContentConfigToMldev(ac *apiClient, fromObject map[string]any, 
 		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
+	if getValueByPath(fromObject, []string{"kmsKeyName"}) != nil {
+		return nil, fmt.Errorf("kmsKeyName parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -302,6 +306,11 @@ func createCachedContentConfigToVertex(ac *apiClient, fromObject map[string]any,
 		}
 
 		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
+	}
+
+	fromKmsKeyName := getValueByPath(fromObject, []string{"kmsKeyName"})
+	if fromKmsKeyName != nil {
+		setValueByPath(parentObject, []string{"encryption_spec", "kmsKeyName"}, fromKmsKeyName)
 	}
 
 	return toObject, nil

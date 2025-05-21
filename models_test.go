@@ -149,6 +149,61 @@ func TestModelsGenerateContentAudio(t *testing.T) {
 	}
 }
 
+func TestModelsGenerateContentMultiSpeakerVoiceConfigAudio(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			config := &GenerateContentConfig{
+				ResponseModalities: []string{"AUDIO"},
+				SpeechConfig: &SpeechConfig{
+					MultiSpeakerVoiceConfig: &MultiSpeakerVoiceConfig{
+						SpeakerVoiceConfigs: []*SpeakerVoiceConfig{
+							{
+								Speaker: "Alice",
+								VoiceConfig: &VoiceConfig{
+									PrebuiltVoiceConfig: &PrebuiltVoiceConfig{
+										VoiceName: "Aoede",
+									},
+								},
+							},
+							{
+								Speaker: "Bob",
+								VoiceConfig: &VoiceConfig{
+									PrebuiltVoiceConfig: &PrebuiltVoiceConfig{
+										VoiceName: "Kore",
+									},
+								},
+							},
+						},
+					},
+					LanguageCode: "en-US",
+				},
+			}
+			result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", Text("say something nice to me"), config)
+			if err != nil {
+				t.Errorf("GenerateContent failed unexpectedly: %v", err)
+			}
+			if result == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if len(result.Candidates) == 0 {
+				t.Errorf("expected at least one candidate, got none")
+			}
+		})
+	}
+}
+
 func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
 	if *mode != apiMode {
 		t.Skip("Skip. This test is only in the API mode")

@@ -148,7 +148,9 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 			if len(chunk.Candidates) > 0 && chunk.Candidates[0].Content != nil {
 				outputContents = append(outputContents, chunk.Candidates[0].Content)
 			}
-			yield(chunk, nil)
+			if !yield(chunk, nil) {
+				return
+			}
 		}
 		// Record history. By default, use the first candidate for history.
 		c.recordHistory(ctx, inputContent, outputContents)

@@ -92,6 +92,35 @@ func TestLiveConnect(t *testing.T) {
 			wantRequestBody: `{"setup":{"generationConfig":{"temperature":0.5},"model":"models/test-model","systemInstruction":{"parts":[{"text":"test instruction"}]},"tools":[{"googleSearch":{}}]}}`,
 		},
 		{
+			desc:   "Fail if multispeaker config.",
+			client: mldevClient,
+			config: &LiveConnectConfig{
+				SpeechConfig: &SpeechConfig{
+					MultiSpeakerVoiceConfig: &MultiSpeakerVoiceConfig{
+						SpeakerVoiceConfigs: []*SpeakerVoiceConfig{
+							{
+								Speaker: "Alice",
+								VoiceConfig: &VoiceConfig{
+									PrebuiltVoiceConfig: &PrebuiltVoiceConfig{VoiceName: "kore"},
+								},
+							},
+							{
+								Speaker: "Bob",
+								VoiceConfig: &VoiceConfig{
+									PrebuiltVoiceConfig: &PrebuiltVoiceConfig{VoiceName: "puck"},
+								},
+							},
+						},
+					},
+				},
+				Temperature:       Ptr[float32](0.5),
+				SystemInstruction: &Content{Parts: []*Part{{Text: "test instruction"}}},
+				Tools:             []*Tool{{GoogleSearch: &GoogleSearch{}}},
+			},
+			wantErr:        true,
+			wantErrMessage: "multiSpeakerVoiceConfig is not supported",
+		},
+		{
 			desc:            "successful connection with http options mldev",
 			client:          mldevClient,
 			clientHTTPOpts:  &HTTPOptions{Headers: map[string][]string{"test-header": {"test-value"}}, APIVersion: "test-api-version"},

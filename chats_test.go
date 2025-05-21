@@ -85,6 +85,11 @@ func TestChatsUnitTest(t *testing.T) {
 		if result.Text() == "" {
 			t.Errorf("Response text should not be empty")
 		}
+
+		// Test iterator break logic.
+		for range chat.SendMessageStream(ctx, part) {
+			break
+		}
 	})
 
 }

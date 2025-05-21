@@ -101,6 +101,26 @@ const (
 	HarmBlockThresholdOff HarmBlockThreshold = "OFF"
 )
 
+// The type of the data.
+type Type string
+
+const (
+	// Not specified, should not be used.
+	TypeUnspecified Type = "TYPE_UNSPECIFIED"
+	// OpenAPI string type
+	TypeString Type = "STRING"
+	// OpenAPI number type
+	TypeNumber Type = "NUMBER"
+	// OpenAPI integer type
+	TypeInteger Type = "INTEGER"
+	// OpenAPI boolean type
+	TypeBoolean Type = "BOOLEAN"
+	// OpenAPI array type
+	TypeArray Type = "ARRAY"
+	// OpenAPI object type
+	TypeObject Type = "OBJECT"
+)
+
 // The mode of the predictor to be used in dynamic retrieval.
 type Mode string
 
@@ -128,26 +148,6 @@ const (
 	AuthTypeOauth AuthType = "OAUTH"
 	// OpenID Connect (OIDC) Auth.
 	AuthTypeOidcAuth AuthType = "OIDC_AUTH"
-)
-
-// The type of the data.
-type Type string
-
-const (
-	// Not specified, should not be used.
-	TypeUnspecified Type = "TYPE_UNSPECIFIED"
-	// OpenAPI string type
-	TypeString Type = "STRING"
-	// OpenAPI number type
-	TypeNumber Type = "NUMBER"
-	// OpenAPI integer type
-	TypeInteger Type = "INTEGER"
-	// OpenAPI boolean type
-	TypeBoolean Type = "BOOLEAN"
-	// OpenAPI array type
-	TypeArray Type = "ARRAY"
-	// OpenAPI object type
-	TypeObject Type = "OBJECT"
 )
 
 // The reason why the model stopped generating tokens.
@@ -282,6 +282,21 @@ const (
 	FeatureSelectionPreferencePrioritizeCost    FeatureSelectionPreference = "PRIORITIZE_COST"
 )
 
+// Defines the function behavior. Defaults to `BLOCKING`.
+type Behavior string
+
+const (
+	// This value is unused.
+	BehaviorUnspecified Behavior = "UNSPECIFIED"
+	// If set, the system will wait to receive the function response before continuing the
+	// conversation.
+	BehaviorBlocking Behavior = "BLOCKING"
+	// If set, the system will not wait to receive the function response. Instead, it will
+	// attempt to handle function responses as they become available while maintaining the
+	// conversation between the user and the model.
+	BehaviorNonBlocking Behavior = "NON_BLOCKING"
+)
+
 // Config for the dynamic retrieval config mode.
 type DynamicRetrievalConfigMode string
 
@@ -308,6 +323,18 @@ const (
 	// Model will not predict any function calls. Model behavior is same as when not passing
 	// any function declarations.
 	FunctionCallingConfigModeNone FunctionCallingConfigMode = "NONE"
+)
+
+// Status of the URL retrieval.
+type UrlRetrievalStatus string
+
+const (
+	// Default value. This value is unused
+	URLRetrievalStatusUnspecified UrlRetrievalStatus = "URL_RETRIEVAL_STATUS_UNSPECIFIED"
+	// URL retrieval is successful.
+	URLRetrievalStatusSuccess UrlRetrievalStatus = "URL_RETRIEVAL_STATUS_SUCCESS"
+	// URL retrieval is failed due to error.
+	URLRetrievalStatusError UrlRetrievalStatus = "URL_RETRIEVAL_STATUS_ERROR"
 )
 
 // Enum that controls the safety filter level for objectionable content.
@@ -474,19 +501,27 @@ const (
 	TurnCoverageTurnIncludesAllInput TurnCoverage = "TURN_INCLUDES_ALL_INPUT"
 )
 
-// Content blob.
-type Blob struct {
-	// Optional. Display name of the blob. Used to provide a label or filename to distinguish
-	// blobs. This field is not currently used in the Gemini GenerateContent calls.
-	DisplayName string `json:"displayName,omitempty"`
-	// Required. Raw bytes.
-	Data []byte `json:"data,omitempty"`
-	// Required. The IANA standard MIME type of the source data.
-	MIMEType string `json:"mimeType,omitempty"`
-}
+// Specifies how the response should be scheduled in the conversation.
+type FunctionResponseScheduling string
 
-// Metadata describes the input video content.
+const (
+	// This value is unused.
+	FunctionResponseSchedulingUnspecified FunctionResponseScheduling = "SCHEDULING_UNSPECIFIED"
+	// Only add the result to the conversation context, do not interrupt or trigger generation.
+	FunctionResponseSchedulingSilent FunctionResponseScheduling = "SILENT"
+	// Add the result to the conversation context, and prompt to generate output without
+	// interrupting ongoing generation.
+	FunctionResponseSchedulingWhenIdle FunctionResponseScheduling = "WHEN_IDLE"
+	// Add the result to the conversation context, interrupt ongoing generation and prompt
+	// to generate output.
+	FunctionResponseSchedulingInterrupt FunctionResponseScheduling = "INTERRUPT"
+)
+
+// Describes how the video in the Part should be used by the model.
 type VideoMetadata struct {
+	// Optional. The frame rate of the video sent to the model. If not specified, the
+	// default value will be 1.0. The FPS range is (0.0, 24.0].
+	FPS *float64 `json:"fps,omitempty"`
 	// Optional. The end offset of the video.
 	EndOffset time.Duration `json:"endOffset,omitempty"`
 	// Optional. The start offset of the video.
@@ -549,6 +584,17 @@ func (c *VideoMetadata) MarshalJSON() ([]byte, error) {
 	return json.Marshal(aux)
 }
 
+// Content blob.
+type Blob struct {
+	// Optional. Display name of the blob. Used to provide a label or filename to distinguish
+	// blobs. This field is not currently used in the Gemini GenerateContent calls.
+	DisplayName string `json:"displayName,omitempty"`
+	// Required. Raw bytes.
+	Data []byte `json:"data,omitempty"`
+	// Required. The IANA standard MIME type of the source data.
+	MIMEType string `json:"mimeType,omitempty"`
+}
+
 // Result of executing the [ExecutableCode]. Always follows a `part` containing the
 // [ExecutableCode].
 type CodeExecutionResult struct {
@@ -592,6 +638,17 @@ type FunctionCall struct {
 
 // A function response.
 type FunctionResponse struct {
+	// Optional. Signals that function call continues, and more responses will be returned,
+	// turning the function call into a generator. Is only applicable to NON_BLOCKING function
+	// calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false,
+	// the default, future responses will not be considered. Is only applicable to NON_BLOCKING
+	// function calls, is ignored otherwise. If set to false, future responses will not
+	// be considered. It is allowed to return empty `response` with `will_continue=False`
+	// to signal that the function call is finished.
+	WillContinue *bool `json:"willContinue,omitempty"`
+	// Optional. Specifies how the response should be scheduled in the conversation. Only
+	// applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE.
+	Scheduling FunctionResponseScheduling `json:"scheduling,omitempty"`
 	// Optional. The ID of the function call this response is for. Populated by the client
 	// to match the corresponding function call `id`.
 	ID string `json:"id,omitempty"`
@@ -850,206 +907,6 @@ type SafetySetting struct {
 	Threshold HarmBlockThreshold `json:"threshold,omitempty"`
 }
 
-// Tool to support Google Search in Model. Powered by Google.
-type GoogleSearch struct {
-}
-
-// Describes the options to customize dynamic retrieval.
-type DynamicRetrievalConfig struct {
-	// Optional. The mode of the predictor to be used in dynamic retrieval.
-	Mode DynamicRetrievalConfigMode `json:"mode,omitempty"`
-	// Optional. The threshold to be used in dynamic retrieval. If empty, a system default
-	// value is used.
-	DynamicThreshold *float32 `json:"dynamicThreshold,omitempty"`
-}
-
-// Tool to retrieve public web data for grounding, powered by Google.
-type GoogleSearchRetrieval struct {
-	// Optional. Specifies the dynamic retrieval configuration for the given source.
-	DynamicRetrievalConfig *DynamicRetrievalConfig `json:"dynamicRetrievalConfig,omitempty"`
-}
-
-// Tool to search public web data, powered by Vertex AI Search and Sec4 compliance.
-type EnterpriseWebSearch struct {
-}
-
-// Config for authentication with API key.
-type APIKeyConfig struct {
-	// Optional. The API key to be used in the request directly.
-	APIKeyString string `json:"apiKeyString,omitempty"`
-}
-
-// Config for Google Service Account Authentication.
-type AuthConfigGoogleServiceAccountConfig struct {
-	// Optional. The service account that the extension execution service runs as. - If
-	// the service account is specified, the `iam.serviceAccounts.getAccessToken` permission
-	// should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents)
-	// on the specified service account. - If not specified, the Vertex AI Extension Service
-	// Agent will be used to execute the Extension.
-	ServiceAccount string `json:"serviceAccount,omitempty"`
-}
-
-// Config for HTTP Basic Authentication.
-type AuthConfigHTTPBasicAuthConfig struct {
-	// Required. The name of the SecretManager secret version resource storing the base64
-	// encoded credentials. Format: `projects/{project}/secrets/{secrete}/versions/{version}`
-	// - If specified, the `secretmanager.versions.access` permission should be granted
-	// to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents)
-	// on the specified resource.
-	CredentialSecret string `json:"credentialSecret,omitempty"`
-}
-
-// Config for user oauth.
-type AuthConfigOauthConfig struct {
-	// Access token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]]
-	// at request time.
-	AccessToken string `json:"accessToken,omitempty"`
-	// The service account used to generate access tokens for executing the Extension. -
-	// If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission
-	// should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents)
-	// on the provided service account.
-	ServiceAccount string `json:"serviceAccount,omitempty"`
-}
-
-// Config for user OIDC auth.
-type AuthConfigOidcConfig struct {
-	// OpenID Connect formatted ID token for extension endpoint. Only used to propagate
-	// token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time.
-	IDToken string `json:"idToken,omitempty"`
-	// The service account used to generate an OpenID Connect (OIDC)-compatible JWT token
-	// signed by the Google OIDC Provider (accounts.google.com) for extension endpoint (https://cloud.google.com/iam/docs/create-short-lived-credentials-direct#sa-credentials-oidc).
-	// - The audience for the token will be set to the URL in the server URL defined in
-	// the OpenAPI spec. - If the service account is provided, the service account should
-	// grant `iam.serviceAccounts.getOpenIDToken` permission to Vertex AI Extension Service
-	// Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents).
-	ServiceAccount string `json:"serviceAccount,omitempty"`
-}
-
-// Auth configuration to run the extension.
-type AuthConfig struct {
-	// Optional. Config for API key auth.
-	APIKeyConfig *APIKeyConfig `json:"apiKeyConfig,omitempty"`
-	// Type of auth scheme.
-	AuthType AuthType `json:"authType,omitempty"`
-	// Config for Google Service Account auth.
-	GoogleServiceAccountConfig *AuthConfigGoogleServiceAccountConfig `json:"googleServiceAccountConfig,omitempty"`
-	// Config for HTTP Basic auth.
-	HTTPBasicAuthConfig *AuthConfigHTTPBasicAuthConfig `json:"httpBasicAuthConfig,omitempty"`
-	// Config for user oauth.
-	OauthConfig *AuthConfigOauthConfig `json:"oauthConfig,omitempty"`
-	// Config for user OIDC auth.
-	OidcConfig *AuthConfigOidcConfig `json:"oidcConfig,omitempty"`
-}
-
-// Tool to support Google Maps in Model.
-type GoogleMaps struct {
-	// Optional. Auth config for the Google Maps tool.
-	AuthConfig *AuthConfig `json:"authConfig,omitempty"`
-}
-
-// Retrieve from Vertex AI Search datastore or engine for grounding. datastore and engine
-// are mutually exclusive. See https://cloud.google.com/products/agent-builder
-type VertexAISearch struct {
-	// Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`
-	Datastore string `json:"datastore,omitempty"`
-	// Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`
-	Engine string `json:"engine,omitempty"`
-}
-
-// The definition of the RAG resource.
-type VertexRAGStoreRAGResource struct {
-	// Optional. RAGCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`
-	RAGCorpus string `json:"ragCorpus,omitempty"`
-	// Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus
-	// field.
-	RAGFileIDs []string `json:"ragFileIds,omitempty"`
-}
-
-// Config for filters.
-type RAGRetrievalConfigFilter struct {
-	// Optional. String for metadata filtering.
-	MetadataFilter string `json:"metadataFilter,omitempty"`
-	// Optional. Only returns contexts with vector distance smaller than the threshold.
-	VectorDistanceThreshold *float64 `json:"vectorDistanceThreshold,omitempty"`
-	// Optional. Only returns contexts with vector similarity larger than the threshold.
-	VectorSimilarityThreshold *float64 `json:"vectorSimilarityThreshold,omitempty"`
-}
-
-// Config for Hybrid Search.
-type RAGRetrievalConfigHybridSearch struct {
-	// Optional. Alpha value controls the weight between dense and sparse vector search
-	// results. The range is [0, 1], while 0 means sparse vector search only and 1 means
-	// dense vector search only. The default value is 0.5 which balances sparse and dense
-	// vector search equally.
-	Alpha *float32 `json:"alpha,omitempty"`
-}
-
-// Config for LlmRanker.
-type RAGRetrievalConfigRankingLlmRanker struct {
-	// Optional. The model name used for ranking. Format: `gemini-1.5-pro`
-	ModelName string `json:"modelName,omitempty"`
-}
-
-// Config for Rank Service.
-type RAGRetrievalConfigRankingRankService struct {
-	// Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`
-	ModelName string `json:"modelName,omitempty"`
-}
-
-// Config for ranking and reranking.
-type RAGRetrievalConfigRanking struct {
-	// Optional. Config for LlmRanker.
-	LlmRanker *RAGRetrievalConfigRankingLlmRanker `json:"llmRanker,omitempty"`
-	// Optional. Config for Rank Service.
-	RankService *RAGRetrievalConfigRankingRankService `json:"rankService,omitempty"`
-}
-
-// Specifies the context retrieval config.
-type RAGRetrievalConfig struct {
-	// Optional. Config for filters.
-	Filter *RAGRetrievalConfigFilter `json:"filter,omitempty"`
-	// Optional. Config for Hybrid Search.
-	HybridSearch *RAGRetrievalConfigHybridSearch `json:"hybridSearch,omitempty"`
-	// Optional. Config for ranking and reranking.
-	Ranking *RAGRetrievalConfigRanking `json:"ranking,omitempty"`
-	// Optional. The number of contexts to retrieve.
-	TopK *int32 `json:"topK,omitempty"`
-}
-
-// Retrieve from Vertex RAG Store for grounding. You can find API default values and
-// more details at https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/rag-api-v1#parameters-list
-type VertexRAGStore struct {
-	// Optional. Deprecated. Please use rag_resources instead.
-	RAGCorpora []string `json:"ragCorpora,omitempty"`
-	// Optional. The representation of the RAG source. It can be used to specify corpus
-	// only or ragfiles. Currently only support one corpus or multiple files from one corpus.
-	// In the future we may open up multiple corpora support.
-	RAGResources []*VertexRAGStoreRAGResource `json:"ragResources,omitempty"`
-	// Optional. The retrieval config for the RAG query.
-	RAGRetrievalConfig *RAGRetrievalConfig `json:"ragRetrievalConfig,omitempty"`
-	// Optional. Number of top k results to return from the selected corpora.
-	SimilarityTopK *int32 `json:"similarityTopK,omitempty"`
-	// Optional. Only return results with vector distance smaller than the threshold.
-	VectorDistanceThreshold *float64 `json:"vectorDistanceThreshold,omitempty"`
-}
-
-// Defines a retrieval tool that model can call to access external knowledge.
-type Retrieval struct {
-	// Optional. Deprecated. This option is no longer supported.
-	DisableAttribution bool `json:"disableAttribution,omitempty"`
-	// Set to use data source powered by Vertex AI Search.
-	VertexAISearch *VertexAISearch `json:"vertexAiSearch,omitempty"`
-	// Set to use data source powered by Vertex RAG store. User data is uploaded via the
-	// VertexRAGDataService.
-	VertexRAGStore *VertexRAGStore `json:"vertexRagStore,omitempty"`
-}
-
-// Tool that executes code generated by the model, and automatically returns the result
-// to the model. See also [ExecutableCode]and [CodeExecutionResult] which are input
-// and output to this tool.
-type ToolCodeExecution struct {
-}
-
 // Schema is used to define the format of input/output data. Represents a select subset
 // of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema-object).
 // More fields may be added in the future as needed. You can find more details and examples
@@ -1211,12 +1068,12 @@ func (s *Schema) MarshalJSON() ([]byte, error) {
 	return json.Marshal(aux)
 }
 
-// Structured representation of a function declaration as defined by the [OpenAPI 3.0
-// specification](https://spec.openapis.org/oas/v3.0.3). Included in this declaration
-// are the function name, description, parameters and response type. This FunctionDeclaration
-// is a representation of a block of code that can be used as a `Tool` by the model
-// and executed by the client.
+// Defines a function that the model can generate JSON inputs for.
+// The inputs are based on `OpenAPI 3.0 specifications
+// <https://spec.openapis.org/oas/v3.0.3>`_.
 type FunctionDeclaration struct {
+	// Optional. Defines the function behavior.
+	Behavior Behavior `json:"behavior,omitempty"`
 	// Optional. Description and purpose of the function. Model uses it to decide how and
 	// whether to call the function.
 	Description string `json:"description,omitempty"`
@@ -1239,8 +1096,229 @@ type FunctionDeclaration struct {
 	Response *Schema `json:"response,omitempty"`
 }
 
+// Represents a time interval, encoded as a start time (inclusive) and an end time (exclusive).
+// The start time must be less than or equal to the end time.
+// When the start equals the end time, the interval is an empty interval.
+// (matches no time)
+// When both start and end are unspecified, the interval matches any time.
+type Interval struct {
+	// Optional. The start time of the interval.
+	StartTime time.Time `json:"startTime,omitempty"`
+	// Optional. The end time of the interval.
+	EndTime time.Time `json:"endTime,omitempty"`
+}
+
+// Tool to support Google Search in Model. Powered by Google.
+type GoogleSearch struct {
+	// Optional. Filter search results to a specific time range.
+	// If customers set a start time, they must set an end time (and vice versa).
+	TimeRangeFilter *Interval `json:"timeRangeFilter,omitempty"`
+}
+
+// Describes the options to customize dynamic retrieval.
+type DynamicRetrievalConfig struct {
+	// Optional. The mode of the predictor to be used in dynamic retrieval.
+	Mode DynamicRetrievalConfigMode `json:"mode,omitempty"`
+	// Optional. The threshold to be used in dynamic retrieval. If empty, a system default
+	// value is used.
+	DynamicThreshold *float32 `json:"dynamicThreshold,omitempty"`
+}
+
+// Tool to retrieve public web data for grounding, powered by Google.
+type GoogleSearchRetrieval struct {
+	// Optional. Specifies the dynamic retrieval configuration for the given source.
+	DynamicRetrievalConfig *DynamicRetrievalConfig `json:"dynamicRetrievalConfig,omitempty"`
+}
+
+// Tool to search public web data, powered by Vertex AI Search and Sec4 compliance.
+type EnterpriseWebSearch struct {
+}
+
+// Config for authentication with API key.
+type APIKeyConfig struct {
+	// Optional. The API key to be used in the request directly.
+	APIKeyString string `json:"apiKeyString,omitempty"`
+}
+
+// Config for Google Service Account Authentication.
+type AuthConfigGoogleServiceAccountConfig struct {
+	// Optional. The service account that the extension execution service runs as. - If
+	// the service account is specified, the `iam.serviceAccounts.getAccessToken` permission
+	// should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents)
+	// on the specified service account. - If not specified, the Vertex AI Extension Service
+	// Agent will be used to execute the Extension.
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+}
+
+// Config for HTTP Basic Authentication.
+type AuthConfigHTTPBasicAuthConfig struct {
+	// Required. The name of the SecretManager secret version resource storing the base64
+	// encoded credentials. Format: `projects/{project}/secrets/{secrete}/versions/{version}`
+	// - If specified, the `secretmanager.versions.access` permission should be granted
+	// to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents)
+	// on the specified resource.
+	CredentialSecret string `json:"credentialSecret,omitempty"`
+}
+
+// Config for user oauth.
+type AuthConfigOauthConfig struct {
+	// Access token for extension endpoint. Only used to propagate token from [[ExecuteExtensionRequest.runtime_auth_config]]
+	// at request time.
+	AccessToken string `json:"accessToken,omitempty"`
+	// The service account used to generate access tokens for executing the Extension. -
+	// If the service account is specified, the `iam.serviceAccounts.getAccessToken` permission
+	// should be granted to Vertex AI Extension Service Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents)
+	// on the provided service account.
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+}
+
+// Config for user OIDC auth.
+type AuthConfigOidcConfig struct {
+	// OpenID Connect formatted ID token for extension endpoint. Only used to propagate
+	// token from [[ExecuteExtensionRequest.runtime_auth_config]] at request time.
+	IDToken string `json:"idToken,omitempty"`
+	// The service account used to generate an OpenID Connect (OIDC)-compatible JWT token
+	// signed by the Google OIDC Provider (accounts.google.com) for extension endpoint (https://cloud.google.com/iam/docs/create-short-lived-credentials-direct#sa-credentials-oidc).
+	// - The audience for the token will be set to the URL in the server URL defined in
+	// the OpenAPI spec. - If the service account is provided, the service account should
+	// grant `iam.serviceAccounts.getOpenIDToken` permission to Vertex AI Extension Service
+	// Agent (https://cloud.google.com/vertex-ai/docs/general/access-control#service-agents).
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+}
+
+// Auth configuration to run the extension.
+type AuthConfig struct {
+	// Optional. Config for API key auth.
+	APIKeyConfig *APIKeyConfig `json:"apiKeyConfig,omitempty"`
+	// Type of auth scheme.
+	AuthType AuthType `json:"authType,omitempty"`
+	// Config for Google Service Account auth.
+	GoogleServiceAccountConfig *AuthConfigGoogleServiceAccountConfig `json:"googleServiceAccountConfig,omitempty"`
+	// Config for HTTP Basic auth.
+	HTTPBasicAuthConfig *AuthConfigHTTPBasicAuthConfig `json:"httpBasicAuthConfig,omitempty"`
+	// Config for user oauth.
+	OauthConfig *AuthConfigOauthConfig `json:"oauthConfig,omitempty"`
+	// Config for user OIDC auth.
+	OidcConfig *AuthConfigOidcConfig `json:"oidcConfig,omitempty"`
+}
+
+// Tool to support Google Maps in Model.
+type GoogleMaps struct {
+	// Optional. Auth config for the Google Maps tool.
+	AuthConfig *AuthConfig `json:"authConfig,omitempty"`
+}
+
+// Tool to support URL context retrieval.
+type URLContext struct {
+}
+
+// Retrieve from Vertex AI Search datastore or engine for grounding. datastore and engine
+// are mutually exclusive. See https://cloud.google.com/products/agent-builder
+type VertexAISearch struct {
+	// Optional. Fully-qualified Vertex AI Search data store resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/dataStores/{dataStore}`
+	Datastore string `json:"datastore,omitempty"`
+	// Optional. Fully-qualified Vertex AI Search engine resource ID. Format: `projects/{project}/locations/{location}/collections/{collection}/engines/{engine}`
+	Engine string `json:"engine,omitempty"`
+}
+
+// The definition of the RAG resource.
+type VertexRAGStoreRAGResource struct {
+	// Optional. RAGCorpora resource name. Format: `projects/{project}/locations/{location}/ragCorpora/{rag_corpus}`
+	RAGCorpus string `json:"ragCorpus,omitempty"`
+	// Optional. rag_file_id. The files should be in the same rag_corpus set in rag_corpus
+	// field.
+	RAGFileIDs []string `json:"ragFileIds,omitempty"`
+}
+
+// Config for filters.
+type RAGRetrievalConfigFilter struct {
+	// Optional. String for metadata filtering.
+	MetadataFilter string `json:"metadataFilter,omitempty"`
+	// Optional. Only returns contexts with vector distance smaller than the threshold.
+	VectorDistanceThreshold *float64 `json:"vectorDistanceThreshold,omitempty"`
+	// Optional. Only returns contexts with vector similarity larger than the threshold.
+	VectorSimilarityThreshold *float64 `json:"vectorSimilarityThreshold,omitempty"`
+}
+
+// Config for Hybrid Search.
+type RAGRetrievalConfigHybridSearch struct {
+	// Optional. Alpha value controls the weight between dense and sparse vector search
+	// results. The range is [0, 1], while 0 means sparse vector search only and 1 means
+	// dense vector search only. The default value is 0.5 which balances sparse and dense
+	// vector search equally.
+	Alpha *float32 `json:"alpha,omitempty"`
+}
+
+// Config for LlmRanker.
+type RAGRetrievalConfigRankingLlmRanker struct {
+	// Optional. The model name used for ranking. Format: `gemini-1.5-pro`
+	ModelName string `json:"modelName,omitempty"`
+}
+
+// Config for Rank Service.
+type RAGRetrievalConfigRankingRankService struct {
+	// Optional. The model name of the rank service. Format: `semantic-ranker-512@latest`
+	ModelName string `json:"modelName,omitempty"`
+}
+
+// Config for ranking and reranking.
+type RAGRetrievalConfigRanking struct {
+	// Optional. Config for LlmRanker.
+	LlmRanker *RAGRetrievalConfigRankingLlmRanker `json:"llmRanker,omitempty"`
+	// Optional. Config for Rank Service.
+	RankService *RAGRetrievalConfigRankingRankService `json:"rankService,omitempty"`
+}
+
+// Specifies the context retrieval config.
+type RAGRetrievalConfig struct {
+	// Optional. Config for filters.
+	Filter *RAGRetrievalConfigFilter `json:"filter,omitempty"`
+	// Optional. Config for Hybrid Search.
+	HybridSearch *RAGRetrievalConfigHybridSearch `json:"hybridSearch,omitempty"`
+	// Optional. Config for ranking and reranking.
+	Ranking *RAGRetrievalConfigRanking `json:"ranking,omitempty"`
+	// Optional. The number of contexts to retrieve.
+	TopK *int32 `json:"topK,omitempty"`
+}
+
+// Retrieve from Vertex RAG Store for grounding. You can find API default values and
+// more details at https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/rag-api-v1#parameters-list
+type VertexRAGStore struct {
+	// Optional. Deprecated. Please use rag_resources instead.
+	RAGCorpora []string `json:"ragCorpora,omitempty"`
+	// Optional. The representation of the RAG source. It can be used to specify corpus
+	// only or ragfiles. Currently only support one corpus or multiple files from one corpus.
+	// In the future we may open up multiple corpora support.
+	RAGResources []*VertexRAGStoreRAGResource `json:"ragResources,omitempty"`
+	// Optional. The retrieval config for the RAG query.
+	RAGRetrievalConfig *RAGRetrievalConfig `json:"ragRetrievalConfig,omitempty"`
+	// Optional. Number of top k results to return from the selected corpora.
+	SimilarityTopK *int32 `json:"similarityTopK,omitempty"`
+	// Optional. Only return results with vector distance smaller than the threshold.
+	VectorDistanceThreshold *float64 `json:"vectorDistanceThreshold,omitempty"`
+}
+
+// Defines a retrieval tool that model can call to access external knowledge.
+type Retrieval struct {
+	// Optional. Deprecated. This option is no longer supported.
+	DisableAttribution bool `json:"disableAttribution,omitempty"`
+	// Set to use data source powered by Vertex AI Search.
+	VertexAISearch *VertexAISearch `json:"vertexAiSearch,omitempty"`
+	// Set to use data source powered by Vertex RAG store. User data is uploaded via the
+	// VertexRAGDataService.
+	VertexRAGStore *VertexRAGStore `json:"vertexRagStore,omitempty"`
+}
+
+// Tool that executes code generated by the model, and automatically returns the result
+// to the model. See also [ExecutableCode]and [CodeExecutionResult] which are input
+// and output to this tool.
+type ToolCodeExecution struct {
+}
+
 // Tool details of a tool that the model may use to generate a response.
 type Tool struct {
+	// Optional. List of function declarations that the tool supports.
+	FunctionDeclarations []*FunctionDeclaration `json:"functionDeclarations,omitempty"`
 	// Optional. Retrieval tool type. System will always execute the provided retrieval
 	// tool(s) to get external knowledge to answer the prompt. Retrieval results are presented
 	// to the model for generation.
@@ -1257,16 +1335,11 @@ type Tool struct {
 	// Optional. Google Maps tool type. Specialized retrieval tool
 	// that is powered by Google Maps.
 	GoogleMaps *GoogleMaps `json:"googleMaps,omitempty"`
+	// Optional. Tool to support URL context retrieval.
+	URLContext *URLContext `json:"urlContext,omitempty"`
 	// Optional. CodeExecution tool type. Enables the model to execute code as part of generation.
 	// This field is only used by the Gemini Developer API services.
 	CodeExecution *ToolCodeExecution `json:"codeExecution,omitempty"`
-	// Optional. Function tool type. One or more function declarations to be passed to the
-	// model along with the current user query. Model may decide to call a subset of these
-	// functions by populating FunctionCall in the response. User should provide a FunctionResponse
-	// for each function call in the next turn. Based on the function responses, Model will
-	// generate the final response back to the user. Maximum 128 function declarations can
-	// be provided.
-	FunctionDeclarations []*FunctionDeclaration `json:"functionDeclarations,omitempty"`
 }
 
 // Function calling config.
@@ -1318,11 +1391,29 @@ type VoiceConfig struct {
 	PrebuiltVoiceConfig *PrebuiltVoiceConfig `json:"prebuiltVoiceConfig,omitempty"`
 }
 
+// The configuration for the speaker to use.
+type SpeakerVoiceConfig struct {
+	// The name of the speaker to use. Should be the same as in the
+	// prompt.
+	Speaker string `json:"speaker,omitempty"`
+	// The configuration for the voice to use.
+	VoiceConfig *VoiceConfig `json:"voiceConfig,omitempty"`
+}
+
+// The configuration for the multi-speaker setup.
+type MultiSpeakerVoiceConfig struct {
+	// The configuration for the speaker to use.
+	SpeakerVoiceConfigs []*SpeakerVoiceConfig `json:"speakerVoiceConfigs,omitempty"`
+}
+
 // The speech generation configuration.
 type SpeechConfig struct {
-	// The configuration for the speaker to use.
+	// Optional. The configuration for the speaker to use.
 	VoiceConfig *VoiceConfig `json:"voiceConfig,omitempty"`
-	// Language code (ISO 639. e.g. en-US) for the speech synthesization.
+	// Optional. The configuration for the multi-speaker setup.
+	// It is mutually exclusive with the voice_config field.
+	MultiSpeakerVoiceConfig *MultiSpeakerVoiceConfig `json:"multiSpeakerVoiceConfig,omitempty"`
+	// Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization.
 	// Only available for Live API.
 	LanguageCode string `json:"languageCode,omitempty"`
 }
@@ -1528,6 +1619,20 @@ type CitationMetadata struct {
 	Citations []*Citation `json:"citations,omitempty"`
 }
 
+// Context for a single URL retrieval.
+type URLMetadata struct {
+	// Optional. The URL retrieved by the tool.
+	RetrievedURL string `json:"retrievedUrl,omitempty"`
+	// Optional. Status of the URL retrieval.
+	URLRetrievalStatus UrlRetrievalStatus `json:"urlRetrievalStatus,omitempty"`
+}
+
+// Metadata related to URL context retrieval tool.
+type URLContextMetadata struct {
+	// Optional. List of URL context.
+	URLMetadata []*URLMetadata `json:"urlMetadata,omitempty"`
+}
+
 // Chunk from context retrieved by the retrieval tools.
 type GroundingChunkRetrievedContext struct {
 	// Text of the attribution.
@@ -1672,6 +1777,8 @@ type Candidate struct {
 	// Optional. The reason why the model stopped generating tokens.
 	// If empty, the model has not stopped generating the tokens.
 	FinishReason FinishReason `json:"finishReason,omitempty"`
+	// Optional. Metadata related to URL context retrieval tool.
+	URLContextMetadata *URLContextMetadata `json:"urlContextMetadata,omitempty"`
 	// Output only. Average log probability score of the candidate.
 	AvgLogprobs float64 `json:"avgLogprobs,omitempty"`
 	// Output only. Metadata specifies sources used to ground generated content.
@@ -2654,6 +2761,15 @@ type CreateCachedContentConfig struct {
 	Tools []*Tool `json:"tools,omitempty"`
 	// Optional. Configuration for the tools to use. This config is shared for all tools.
 	ToolConfig *ToolConfig `json:"toolConfig,omitempty"`
+	// Optional. The Cloud KMS resource identifier of the customer managed
+	// encryption key used to protect a resource.
+	// The key needs to be in the same region as where the compute resource is
+	// created. See
+	// https://cloud.google.com/vertex-ai/docs/general/cmek for more
+	// details. If this is set, then all created CachedContent objects
+	// will be encrypted with the provided encryption key.
+	// Allowed formats: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
+	KmsKeyName string `json:"kmsKeyName,omitempty"`
 }
 
 func (c *CreateCachedContentConfig) MarshalJSON() ([]byte, error) {
@@ -3323,6 +3439,8 @@ type LiveServerContent struct {
 	// turn which means it doesn’t imply any ordering between transcription and
 	// model turn.
 	OutputTranscription *Transcription `json:"outputTranscription,omitempty"`
+	// Optional. Metadata related to URL context retrieval tool.
+	URLContextMetadata *URLContextMetadata `json:"urlContextMetadata,omitempty"`
 }
 
 // Request for the client to execute the `function_calls` and return the responses with
@@ -3650,6 +3768,14 @@ func (c *ContextWindowCompressionConfig) MarshalJSON() ([]byte, error) {
 type AudioTranscriptionConfig struct {
 }
 
+// Config for proactivity features.
+type ProactivityConfig struct {
+	// Optional. If enabled, the model can reject responding to the last prompt. For
+	// example, this allows the model to ignore out of context speech or to stay
+	// silent if the user did not make a request, yet.
+	ProactiveAudio *bool `json:"proactiveAudio,omitempty"`
+}
+
 // Message contains configuration that will apply for the duration of the streaming
 // session.
 type LiveClientSetup struct {
@@ -3681,6 +3807,10 @@ type LiveClientSetup struct {
 	// Optional. The transcription of the output aligns with the language code
 	// specified for the output audio.
 	OutputAudioTranscription *AudioTranscriptionConfig `json:"outputAudioTranscription,omitempty"`
+	// Optional. Configures the proactivity of the model. This allows the model to respond
+	// proactively to
+	// the input and to ignore irrelevant input.
+	Proactivity *ProactivityConfig `json:"proactivity,omitempty"`
 }
 
 // Incremental update of the current conversation delivered from the client.
@@ -3782,6 +3912,8 @@ type LiveClientMessage struct {
 
 // Session config for the API connection.
 type LiveConnectConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Optional. The requested modalities of the response. Represents the set of
 	// modalities that the model can return. Defaults to AUDIO if not specified.
 	ResponseModalities []Modality `json:"responseModalities,omitempty"`
@@ -3811,6 +3943,8 @@ type LiveConnectConfig struct {
 	Seed *int32 `json:"seed,omitempty"`
 	// Optional. The speech generation configuration.
 	SpeechConfig *SpeechConfig `json:"speechConfig,omitempty"`
+	// Optional. If enabled, the model will detect emotions and adapt its responses accordingly.
+	EnableAffectiveDialog *bool `json:"enableAffectiveDialog,omitempty"`
 	// Optional. The user provided system instructions for the model.
 	// Note: only text should be used in parts and content in each part will be
 	// in a separate paragraph.
@@ -3833,6 +3967,10 @@ type LiveConnectConfig struct {
 	// Optional. Configures context window compression mechanism.
 	// If included, server will compress context window to fit into given length.
 	ContextWindowCompression *ContextWindowCompressionConfig `json:"contextWindowCompression,omitempty"`
+	// Optional. Configures the proactivity of the model. This allows the model to respond
+	// proactively to
+	// the input and to ignore irrelevant input.
+	Proactivity *ProactivityConfig `json:"proactivity,omitempty"`
 }
 
 // Parameters for sending client content to the live API.
@@ -3865,4 +4003,39 @@ func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage
 	return &LiveClientMessage{
 		ToolResponse: &LiveClientToolResponse{FunctionResponses: p.FunctionResponses},
 	}
+}
+
+// Config for LiveEphemeralParameters for Auth Token creation.
+type LiveEphemeralParameters struct {
+	// Optional. ID of the model to configure in the ephemeral token for Live API.
+	// For a list of models, see `Gemini models
+	// <https://ai.google.dev/gemini-api/docs/models>`.
+	Model string `json:"model,omitempty"`
+	// Optional. Configuration specific to Live API connections created using this token.
+	Config *LiveConnectConfig `json:"config,omitempty"`
+}
+
+// Optional parameters.
+type CreateAuthTokenConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. An optional time after which, when using the resulting token,
+	// messages in Live API sessions will be rejected. (Gemini may
+	// preemptively close the session after this time.)
+	// If not set then this defaults to 30 minutes in the future. If set, this
+	// value must be less than 20 hours in the future.
+	ExpireTime time.Time `json:"expireTime,omitempty"`
+	// Optional. The time after which new Live API sessions using the token
+	// resulting from this request will be rejected.
+	// If not set this defaults to 60 seconds in the future. If set, this value
+	// must be less than 20 hours in the future.
+	NewSessionExpireTime time.Time `json:"newSessionExpireTime,omitempty"`
+	// Optional. The number of times the token can be used. If this value is zero
+	// then no limit is applied. Default is 1. Resuming a Live API session does
+	// not count as a use.
+	Uses int32 `json:"uses,omitempty"`
+	// Optional. Configuration specific to Live API connections created using this token.
+	LiveEphemeralParameters *LiveEphemeralParameters `json:"liveEphemeralParameters,omitempty"`
+	// Optional. Additional fields to lock in the effective LiveConnectParameters.
+	LockAdditionalFields []string `json:"lockAdditionalFields,omitempty"`
 }

@@ -5,9 +5,17 @@
 
 ### Google Gemini Multimodal Live support
 
-Introducing support for the Gemini Multimodal Live feature. Here's an example Multimodal Live server showing realtime conversation and video streaming: [code](./examples/live/live_streaming_server.go)
+Introducing support for the Gemini Multimodal Live feature. Here's an example
+Multimodal Live server showing realtime conversation and video streaming:
+[code](./examples/live/live_streaming_server.go)
 
 # Google Gen AI Go SDK
+
+The Google Gen AI Go SDK provides an interface for developers to integrate
+Google's generative models into their Go applications. It supports the
+[Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
+[Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
+APIs.
 
 The Google Gen AI Go SDK enables developers to use Google's state-of-the-art
 generative AI models (like Gemini) to build AI-powered features and applications.

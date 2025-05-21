@@ -125,6 +125,19 @@ func tSpeechConfig(_ *apiClient, speechConfig any) (any, error) {
 	return speechConfig, nil
 }
 
+func tLiveSpeechConfig(_ *apiClient, speechConfig any) (any, error) {
+	switch config := speechConfig.(type) {
+	case map[string]any:
+		if _, ok := config["multiSpeakerVoiceConfig"]; ok {
+			return nil, fmt.Errorf("multiSpeakerVoiceConfig is not supported in the live API")
+		}
+		return config, nil
+	case nil:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unsupported speechConfig type: %T", speechConfig)
+	}
+}
 func tBytes(_ *apiClient, fromImageBytes any) (any, error) {
 	// TODO(b/389133914): Remove dummy bytes converter.
 	return fromImageBytes, nil

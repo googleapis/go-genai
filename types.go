@@ -256,7 +256,7 @@ const (
 	ModalityText Modality = "TEXT"
 	// Indicates the model should return images.
 	ModalityImage Modality = "IMAGE"
-	// Indicates the model should return images.
+	// Indicates the model should return audio.
 	ModalityAudio Modality = "AUDIO"
 )
 

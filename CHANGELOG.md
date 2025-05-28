@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0](https://github.com/googleapis/go-genai/compare/v1.6.0...v1.7.0) (2025-05-28)
+
+
+### Features
+
+* Add generate_audio field for private testing of video generation ([d48d6f3](https://github.com/googleapis/go-genai/commit/d48d6f354e8d914c65f65244d87046d59167db3b))
+* support new fields in FileData, GenerationConfig, GroundingChunkRetrievedContext, RetrievalConfig, Schema, TuningJob, VertexAISearch, ([9331c82](https://github.com/googleapis/go-genai/commit/9331c8285a9be325226ab32307db2e3fdb007652))
+
+
+### Bug Fixes
+
+* use correct mimetype for image content ([#301](https://github.com/googleapis/go-genai/issues/301)) ([ddc69b8](https://github.com/googleapis/go-genai/commit/ddc69b8a3d6eca1130964dcf838764b8c8de41d7))
+
 ## [1.6.0](https://github.com/googleapis/go-genai/compare/v1.5.0...v1.6.0) (2025-05-19)
 
 

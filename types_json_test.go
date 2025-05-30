@@ -284,6 +284,39 @@ func TestUnmarshalJSON(t *testing.T) {
 			wantErr: false,
 			target:  "Candidate",
 		},
+		// Checkpoint tests
+		{
+			name:    "Checkpoint empty",
+			jsonStr: `{}`,
+			want:    &Checkpoint{},
+			wantErr: false,
+			target:  "Checkpoint",
+		},
+		{
+			name:    "Checkpoint all fields",
+			jsonStr: `{"checkpointId": "id123", "epoch": "10", "step": "100"}`,
+			want: &Checkpoint{
+				CheckpointID: "id123",
+				Epoch:        10,
+				Step:         100,
+			},
+			wantErr: false,
+			target:  "Checkpoint",
+		},
+		{
+			name:    "Checkpoint invalid epoch",
+			jsonStr: `{"epoch": "abc"}`,
+			want:    nil,
+			wantErr: true,
+			target:  "Checkpoint",
+		},
+		{
+			name:    "Checkpoint invalid step",
+			jsonStr: `{"step": "xyz"}`,
+			want:    nil,
+			wantErr: true,
+			target:  "Checkpoint",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -312,6 +345,10 @@ func TestUnmarshalJSON(t *testing.T) {
 				got = v
 			case "Candidate":
 				c := &Candidate{}
+				err = json.Unmarshal([]byte(tt.jsonStr), c)
+				got = c
+			case "Checkpoint":
+				c := &Checkpoint{}
 				err = json.Unmarshal([]byte(tt.jsonStr), c)
 				got = c
 			default:
@@ -359,7 +396,7 @@ func TestMarshalJSON(t *testing.T) {
 				Maximum:       Ptr[float64](10.0),
 				Minimum:       Ptr[float64](2.0),
 			},
-			want:    `{"maxLength":"10","minLength":"5","minProperties":"2","maxProperties":"4","maxItems":"8","minItems":"1","maximum":10,"minimum":2}`,
+			want:    `{"maxItems":"8","maxLength":"10","maxProperties":"4","maximum":10,"minItems":"1","minLength":"5","minProperties":"2","minimum":2}`,
 			wantErr: false,
 			target:  "Schema",
 		},
@@ -543,7 +580,7 @@ func TestMarshalJSON(t *testing.T) {
 				VideoMetadata:  map[string]any{"test": "test"},
 				Error:          &FileStatus{Message: "test error"},
 			},
-			want:    `{"name":"files/test-file","displayName":"Test File","mimeType":"image/jpeg","sha256Hash":"test-hash","uri":"https://example.com/test-file","downloadUri":"https://example.com/download/test-file","state":"ACTIVE","source":"UPLOADED","videoMetadata":{"test":"test"},"error":{"message":"test error"},"sizeBytes":"1024","expirationTime":"2025-12-31T23:59:59Z","createTime":"2024-12-31T23:59:59Z","updateTime":"2025-01-01T00:00:00Z"}`,
+			want:    `{"name":"files/test-file","displayName":"Test File","mimeType":"image/jpeg","sizeBytes":"1024","sha256Hash":"test-hash","uri":"https://example.com/test-file","downloadUri":"https://example.com/download/test-file","state":"ACTIVE","source":"UPLOADED","videoMetadata":{"test":"test"},"error":{"message":"test error"},"expirationTime":"2025-12-31T23:59:59Z","createTime":"2024-12-31T23:59:59Z","updateTime":"2025-01-01T00:00:00Z"}`,
 			wantErr: false,
 			target:  "File",
 		},
@@ -588,9 +625,28 @@ func TestMarshalJSON(t *testing.T) {
 				TriggerTokens: Ptr[int64](1024),
 				SlidingWindow: &SlidingWindow{TargetTokens: Ptr[int64](1024)},
 			},
-			want:    `{"slidingWindow":{"targetTokens":"1024"},"triggerTokens":"1024"}`,
+			want:    `{"triggerTokens":"1024","slidingWindow":{"targetTokens":"1024"}}`,
 			wantErr: false,
 			target:  "ContextWindowCompressionConfig",
+		},
+		// Checkpoint tests
+		{
+			name:    "Checkpoint empty",
+			input:   &Checkpoint{},
+			want:    `{}`,
+			wantErr: false,
+			target:  "Checkpoint",
+		},
+		{
+			name: "Checkpoint all fields",
+			input: &Checkpoint{
+				CheckpointID: "id123",
+				Epoch:        10,
+				Step:         100,
+			},
+			want:    `{"checkpointId":"id123","epoch":"10","step":"100"}`,
+			wantErr: false,
+			target:  "Checkpoint",
 		},
 	}
 	for _, tt := range tests {
@@ -622,6 +678,8 @@ func TestMarshalJSON(t *testing.T) {
 				got, err = json.Marshal(tt.input.(*SlidingWindow))
 			case "ContextWindowCompressionConfig":
 				got, err = json.Marshal(tt.input.(*ContextWindowCompressionConfig))
+			case "Checkpoint":
+				got, err = json.Marshal(tt.input.(*Checkpoint))
 			default:
 				t.Fatalf("unknown target: %s", tt.target)
 			}

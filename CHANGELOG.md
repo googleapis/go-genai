@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.0](https://github.com/googleapis/go-genai/compare/v1.7.0...v1.8.0) (2025-05-30)
+
+
+### Features
+
+* Adding `thought_signature` field to the `Part` to store the signature for thoughts. ([080fd90](https://github.com/googleapis/go-genai/commit/080fd90ce79acdf77cb74f803f721e643e711740))
+* include UNEXPECTED_TOOL_CALL enum value to FinishReason for Vertex AI APIs. ([03f0ea1](https://github.com/googleapis/go-genai/commit/03f0ea1c1bd94b8848c0e4abfa1c63a765ba7673))
+
+
+### Bug Fixes
+
+* Rename LiveEphemeralParameters to LiveConnectConstraints. ([e7c5ee7](https://github.com/googleapis/go-genai/commit/e7c5ee71b6d028ded68826c0b3358372a8d38f13))
+
 ## [1.7.0](https://github.com/googleapis/go-genai/compare/v1.6.0...v1.7.0) (2025-05-28)
 
 

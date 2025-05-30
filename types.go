@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -925,19 +924,19 @@ type Schema struct {
 	// Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.
 	Items *Schema `json:"items,omitempty"`
 	// Optional. Maximum number of the elements for Type.ARRAY.
-	MaxItems *int64 `json:"maxItems,omitempty"`
+	MaxItems *int64 `json:"maxItems,omitempty,string"`
 	// Optional. Maximum length of the Type.STRING
-	MaxLength *int64 `json:"maxLength,omitempty"`
+	MaxLength *int64 `json:"maxLength,omitempty,string"`
 	// Optional. Maximum number of the properties for Type.OBJECT.
-	MaxProperties *int64 `json:"maxProperties,omitempty"`
+	MaxProperties *int64 `json:"maxProperties,omitempty,string"`
 	// Optional. Maximum value of the Type.INTEGER and Type.NUMBER
 	Maximum *float64 `json:"maximum,omitempty"`
 	// Optional. Minimum number of the elements for Type.ARRAY.
-	MinItems *int64 `json:"minItems,omitempty"`
+	MinItems *int64 `json:"minItems,omitempty,string"`
 	// Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING
-	MinLength *int64 `json:"minLength,omitempty"`
+	MinLength *int64 `json:"minLength,omitempty,string"`
 	// Optional. Minimum number of the properties for Type.OBJECT.
-	MinProperties *int64 `json:"minProperties,omitempty"`
+	MinProperties *int64 `json:"minProperties,omitempty,string"`
 	// Optional. Minimum value of the Type.INTEGER and Type.NUMBER.
 	Minimum *float64 `json:"minimum,omitempty"`
 	// Optional. Indicates if the value may be null.
@@ -955,110 +954,6 @@ type Schema struct {
 	Title string `json:"title,omitempty"`
 	// Optional. The type of the data.
 	Type Type `json:"type,omitempty"`
-}
-
-func (s *Schema) UnmarshalJSON(data []byte) error {
-	type Alias Schema
-	aux := &struct {
-		MaxLength     string `json:"maxLength,omitempty"`
-		MinLength     string `json:"minLength,omitempty"`
-		MinProperties string `json:"minProperties,omitempty"`
-		MaxProperties string `json:"maxProperties,omitempty"`
-		MaxItems      string `json:"maxItems,omitempty"`
-		MinItems      string `json:"minItems,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(s),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	if aux.MaxLength != "" {
-		maxLength, err := strconv.ParseInt(aux.MaxLength, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing MaxLength: %w", err)
-		}
-		s.MaxLength = &maxLength
-	}
-
-	if aux.MinLength != "" {
-		minLength, err := strconv.ParseInt(aux.MinLength, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing MinLength: %w", err)
-		}
-		s.MinLength = &minLength
-	}
-
-	if aux.MinProperties != "" {
-		minProperties, err := strconv.ParseInt(aux.MinProperties, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing MinProperties: %w", err)
-		}
-		s.MinProperties = &minProperties
-	}
-
-	if aux.MaxProperties != "" {
-		maxProperties, err := strconv.ParseInt(aux.MaxProperties, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing MaxProperties: %w", err)
-		}
-		s.MaxProperties = &maxProperties
-	}
-
-	if aux.MaxItems != "" {
-		maxItems, err := strconv.ParseInt(aux.MaxItems, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing MaxItems: %w", err)
-		}
-		s.MaxItems = &maxItems
-	}
-
-	if aux.MinItems != "" {
-		minItems, err := strconv.ParseInt(aux.MinItems, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing MinItems: %w", err)
-		}
-		s.MinItems = &minItems
-	}
-
-	return nil
-}
-
-func (s *Schema) MarshalJSON() ([]byte, error) {
-	type Alias Schema
-	aux := struct {
-		MaxLength     string `json:"maxLength,omitempty"`
-		MinLength     string `json:"minLength,omitempty"`
-		MinProperties string `json:"minProperties,omitempty"`
-		MaxProperties string `json:"maxProperties,omitempty"`
-		MaxItems      string `json:"maxItems,omitempty"`
-		MinItems      string `json:"minItems,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(s),
-	}
-
-	if s.MaxLength != nil {
-		aux.MaxLength = strconv.FormatInt(*s.MaxLength, 10)
-	}
-	if s.MinLength != nil {
-		aux.MinLength = strconv.FormatInt(*s.MinLength, 10)
-	}
-	if s.MinProperties != nil {
-		aux.MinProperties = strconv.FormatInt(*s.MinProperties, 10)
-	}
-	if s.MaxProperties != nil {
-		aux.MaxProperties = strconv.FormatInt(*s.MaxProperties, 10)
-	}
-	if s.MaxItems != nil {
-		aux.MaxItems = strconv.FormatInt(*s.MaxItems, 10)
-	}
-	if s.MinItems != nil {
-		aux.MinItems = strconv.FormatInt(*s.MinItems, 10)
-	}
-	return json.Marshal(aux)
 }
 
 // Config for model selection.
@@ -2413,57 +2308,9 @@ type Checkpoint struct {
 	// Optional. The ID of the checkpoint.
 	CheckpointID string `json:"checkpointId,omitempty"`
 	// Optional. The epoch of the checkpoint.
-	Epoch int64 `json:"epoch,omitempty"`
+	Epoch int64 `json:"epoch,omitempty,string"`
 	// Optional. The step of the checkpoint.
-	Step int64 `json:"step,omitempty"`
-}
-
-func (c *Checkpoint) UnmarshalJSON(data []byte) error {
-	type Alias Checkpoint
-	aux := &struct {
-		Epoch string `json:"epoch,omitempty"`
-		Step  string `json:"step,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	if aux.Epoch != "" {
-		epoch, err := strconv.ParseInt(aux.Epoch, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing Epoch: %w", err)
-		}
-		c.Epoch = epoch
-	}
-
-	if aux.Step != "" {
-		step, err := strconv.ParseInt(aux.Step, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing Step: %w", err)
-		}
-		c.Step = step
-	}
-
-	return nil
-}
-
-func (c *Checkpoint) MarshalJSON() ([]byte, error) {
-	type Alias Checkpoint
-	aux := struct {
-		Epoch string `json:"epoch,omitempty"`
-		Step  string `json:"step,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	aux.Epoch = strconv.FormatInt(c.Epoch, 10)
-	aux.Step = strconv.FormatInt(c.Step, 10)
-	return json.Marshal(aux)
+	Step int64 `json:"step,omitempty,string"`
 }
 
 // A trained machine learning model.
@@ -2650,7 +2497,7 @@ type TokensInfo struct {
 func (ti *TokensInfo) UnmarshalJSON(data []byte) error {
 	type Alias TokensInfo
 	aux := struct {
-		TokenIDs []string `json:"tokenIds,omitempty"`
+		TokenIDs int64sFromStringSlice `json:"tokenIds,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(ti),
@@ -2659,35 +2506,19 @@ func (ti *TokensInfo) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Convert the string value to int64
-	if aux.TokenIDs != nil {
-		tokenIDs := []int64{}
-		for _, tokenID := range aux.TokenIDs {
-			tokenIDInt, err := strconv.ParseInt(tokenID, 10, 64)
-			if err != nil {
-				return err
-			}
-			tokenIDs = append(tokenIDs, tokenIDInt)
-		}
-		ti.TokenIDs = tokenIDs
-	}
+	ti.TokenIDs = aux.TokenIDs
 	return nil
 }
 
 func (ti *TokensInfo) MarshalJSON() ([]byte, error) {
 	type Alias TokensInfo
 	aux := struct {
-		TokenIDs []string `json:"tokenIds,omitempty"`
+		TokenIDs int64sFromStringSlice `json:"tokenIds,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(ti),
 	}
-
-	if ti.TokenIDs != nil {
-		for _, tokenID := range ti.TokenIDs {
-			aux.TokenIDs = append(aux.TokenIDs, strconv.FormatInt(tokenID, 10))
-		}
-	}
+	aux.TokenIDs = ti.TokenIDs
 
 	return json.Marshal(aux)
 }
@@ -3057,7 +2888,7 @@ type File struct {
 	// Optional. Output only. MIME type of the file.
 	MIMEType string `json:"mimeType,omitempty"`
 	// Optional. Output only. Size of the file in bytes.
-	SizeBytes *int64 `json:"sizeBytes,omitempty"`
+	SizeBytes *int64 `json:"sizeBytes,omitempty,string"`
 	// Optional. Output only. The timestamp of when the `File` was created.
 	CreateTime time.Time `json:"createTime,omitempty"`
 	// Optional. Output only. The timestamp of when the `File` will be deleted. Only set
@@ -3123,44 +2954,15 @@ func (f *File) setVideoBytes(b []byte) bool {
 	return false
 }
 
-func (f *File) UnmarshalJSON(data []byte) error {
-	type Alias File
-	aux := &struct {
-		*Alias
-		SizeBytes string `json:"sizeBytes,omitempty"`
-	}{
-		Alias: (*Alias)(f),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	if aux.SizeBytes != "" {
-		sizeBytes, err := strconv.ParseInt(aux.SizeBytes, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing SizeBytes: %w", err)
-		}
-		f.SizeBytes = &sizeBytes
-	}
-
-	return nil
-}
-
 func (f *File) MarshalJSON() ([]byte, error) {
 	type Alias File
 	aux := struct {
 		*Alias
-		SizeBytes      string     `json:"sizeBytes,omitempty"`
 		ExpirationTime *time.Time `json:"expirationTime,omitempty"`
 		CreateTime     *time.Time `json:"createTime,omitempty"`
 		UpdateTime     *time.Time `json:"updateTime,omitempty"`
 	}{
 		Alias: (*Alias)(f),
-	}
-
-	if f.SizeBytes != nil {
-		aux.SizeBytes = strconv.FormatInt(*f.SizeBytes, 10)
 	}
 
 	if !f.ExpirationTime.IsZero() {
@@ -3611,46 +3413,7 @@ type LiveServerSessionResumptionUpdate struct {
 	// enable them to limit buffering (avoid keeping all requests in RAM).
 	// Note: This should not be used for when resuming a session at some time later -- in
 	// those cases partial audio and video frames arelikely not needed.
-	LastConsumedClientMessageIndex int64 `json:"lastConsumedClientMessageIndex,omitempty"`
-}
-
-func (s *LiveServerSessionResumptionUpdate) UnmarshalJSON(data []byte) error {
-	type Alias LiveServerSessionResumptionUpdate
-	aux := &struct {
-		LastConsumedClientMessageIndex string `json:"lastConsumedClientMessageIndex,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(s),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	if aux.LastConsumedClientMessageIndex != "" {
-		LastConsumedClientMessageIndex, err := strconv.ParseInt(aux.LastConsumedClientMessageIndex, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing LastConsumedClientMessageIndex: %w", err)
-		}
-		s.LastConsumedClientMessageIndex = LastConsumedClientMessageIndex
-	}
-
-	return nil
-}
-
-func (s *LiveServerSessionResumptionUpdate) MarshalJSON() ([]byte, error) {
-	type Alias LiveServerSessionResumptionUpdate
-	aux := struct {
-		LastConsumedClientMessageIndex string `json:"maxLength,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(s),
-	}
-
-	if s.LastConsumedClientMessageIndex != 0 {
-		aux.LastConsumedClientMessageIndex = strconv.FormatInt(s.LastConsumedClientMessageIndex, 10)
-	}
-	return json.Marshal(aux)
+	LastConsumedClientMessageIndex int64 `json:"lastConsumedClientMessageIndex,omitempty,string"`
 }
 
 // Response message for API call.
@@ -3727,47 +3490,7 @@ type SlidingWindow struct {
 	// Optional. Session reduction target -- how many tokens we should keep. Window shortening
 	// operation has some latency costs, so we should avoid running it on every turn. Should
 	// be < trigger_tokens. If not set, trigger_tokens/2 is assumed.
-	TargetTokens *int64 `json:"targetTokens,omitempty"`
-}
-
-func (s *SlidingWindow) UnmarshalJSON(data []byte) error {
-	type Alias SlidingWindow
-	aux := &struct {
-		*Alias
-		TargetTokens string `json:"targetTokens,omitempty"`
-	}{
-		Alias: (*Alias)(s),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	if aux.TargetTokens != "" {
-		targetTokens, err := strconv.ParseInt(aux.TargetTokens, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing TargetTokens: %w", err)
-		}
-		s.TargetTokens = &targetTokens
-	}
-
-	return nil
-}
-
-func (s *SlidingWindow) MarshalJSON() ([]byte, error) {
-	type Alias SlidingWindow
-	aux := &struct {
-		*Alias
-		TargetTokens string `json:"targetTokens,omitempty"`
-	}{
-		Alias: (*Alias)(s),
-	}
-
-	if s.TargetTokens != nil {
-		aux.TargetTokens = strconv.FormatInt(*s.TargetTokens, 10)
-	}
-
-	return json.Marshal(aux)
+	TargetTokens *int64 `json:"targetTokens,omitempty,string"`
 }
 
 // Enables context window compression -- mechanism managing model context window so
@@ -3775,49 +3498,9 @@ func (s *SlidingWindow) MarshalJSON() ([]byte, error) {
 type ContextWindowCompressionConfig struct {
 	// Optional. Number of tokens (before running turn) that triggers context window compression
 	// mechanism.
-	TriggerTokens *int64 `json:"triggerTokens,omitempty"`
+	TriggerTokens *int64 `json:"triggerTokens,omitempty,string"`
 	// Optional. Sliding window compression mechanism.
 	SlidingWindow *SlidingWindow `json:"slidingWindow,omitempty"`
-}
-
-func (c *ContextWindowCompressionConfig) UnmarshalJSON(data []byte) error {
-	type Alias ContextWindowCompressionConfig
-	aux := &struct {
-		*Alias
-		TriggerTokens string `json:"triggerTokens,omitempty"`
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	if aux.TriggerTokens != "" {
-		triggerTokens, err := strconv.ParseInt(aux.TriggerTokens, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing TriggerTokens: %w", err)
-		}
-		c.TriggerTokens = &triggerTokens
-	}
-
-	return nil
-}
-
-func (c *ContextWindowCompressionConfig) MarshalJSON() ([]byte, error) {
-	type Alias ContextWindowCompressionConfig
-	aux := &struct {
-		*Alias
-		TriggerTokens string `json:"triggerTokens,omitempty"`
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	if c.TriggerTokens != nil {
-		aux.TriggerTokens = strconv.FormatInt(*c.TriggerTokens, 10)
-	}
-
-	return json.Marshal(aux)
 }
 
 // The audio transcription configuration in Setup.

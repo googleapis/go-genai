@@ -4061,8 +4061,8 @@ func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage
 	}
 }
 
-// Config for LiveEphemeralParameters for Auth Token creation.
-type LiveEphemeralParameters struct {
+// Config for LiveConnectConstraints for Auth Token creation.
+type LiveConnectConstraints struct {
 	// Optional. ID of the model to configure in the ephemeral token for Live API.
 	// For a list of models, see `Gemini models
 	// <https://ai.google.dev/gemini-api/docs/models>`.
@@ -4091,7 +4091,7 @@ type CreateAuthTokenConfig struct {
 	// not count as a use.
 	Uses int32 `json:"uses,omitempty"`
 	// Optional. Configuration specific to Live API connections created using this token.
-	LiveEphemeralParameters *LiveEphemeralParameters `json:"liveEphemeralParameters,omitempty"`
+	LiveConnectConstraints *LiveConnectConstraints `json:"liveConnectConstraints,omitempty"`
 	// Optional. Additional fields to lock in the effective LiveConnectParameters.
 	LockAdditionalFields []string `json:"lockAdditionalFields,omitempty"`
 }

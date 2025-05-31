@@ -433,6 +433,82 @@ func TestNewClient(t *testing.T) {
 
 }
 
+func TestCustomCredentialsWithGeminiAPI(t *testing.T) {
+	// This test verifies that custom credentials are properly used when creating a client
+	// with the Gemini API backend.
+	ctx := context.Background()
+
+	// Create mock credentials
+	mockCreds := &auth.Credentials{}
+
+	// Test case: Gemini API with custom credentials
+	t.Run("GeminiAPI with custom credentials", func(t *testing.T) {
+		client, err := NewClient(ctx, &ClientConfig{
+			Backend:     BackendGeminiAPI,
+			APIKey:      "test-api-key",
+			Credentials: mockCreds,
+		})
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+
+		// Verify the credentials were correctly passed to the client config
+		if client.clientConfig.Credentials != mockCreds {
+			t.Errorf("Credentials were not properly set in client config")
+		}
+
+		// Verify that HTTPClient is not nil (it should have been created)
+		if client.clientConfig.HTTPClient == nil {
+			t.Errorf("Expected HTTPClient to be created, got nil")
+		}
+	})
+
+	// Test case: Custom HTTP options with Gemini API
+	t.Run("GeminiAPI with custom HTTP options", func(t *testing.T) {
+		customOptions := HTTPOptions{
+			APIVersion: "custom-version",
+			BaseURL:    "https://custom-url.example.com/",
+		}
+
+		client, err := NewClient(ctx, &ClientConfig{
+			Backend:     BackendGeminiAPI,
+			APIKey:      "test-api-key",
+			HTTPOptions: customOptions,
+		})
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+
+		// Verify HTTP options were correctly passed to the client config
+		if client.clientConfig.HTTPOptions.APIVersion != customOptions.APIVersion {
+			t.Errorf("Expected APIVersion %q, got %q", customOptions.APIVersion, client.clientConfig.HTTPOptions.APIVersion)
+		}
+		if client.clientConfig.HTTPOptions.BaseURL != customOptions.BaseURL {
+			t.Errorf("Expected BaseURL %q, got %q", customOptions.BaseURL, client.clientConfig.HTTPOptions.BaseURL)
+		}
+	})
+
+	// Test case: Gemini API with custom credentials and HTTP client
+	t.Run("GeminiAPI with custom credentials and HTTP client", func(t *testing.T) {
+		customHTTPClient := &http.Client{Timeout: 10 * time.Second}
+
+		client, err := NewClient(ctx, &ClientConfig{
+			Backend:     BackendGeminiAPI,
+			APIKey:      "test-api-key",
+			Credentials: mockCreds,
+			HTTPClient:  customHTTPClient,
+		})
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+
+		// Verify custom HTTP client was used
+		if client.clientConfig.HTTPClient != customHTTPClient {
+			t.Errorf("Expected custom HTTP client to be used")
+		}
+	})
+}
+
 func TestClientConfigHTTPOptions(t *testing.T) {
 	tests := []struct {
 		name               string

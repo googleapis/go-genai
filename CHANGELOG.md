@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.8.0](https://github.com/googleapis/go-genai/compare/v1.7.0...v1.8.0) (2025-05-30)
+
+
+### Features
+
+* Adding `thought_signature` field to the `Part` to store the signature for thoughts. ([080fd90](https://github.com/googleapis/go-genai/commit/080fd90ce79acdf77cb74f803f721e643e711740))
+* include UNEXPECTED_TOOL_CALL enum value to FinishReason for Vertex AI APIs. ([03f0ea1](https://github.com/googleapis/go-genai/commit/03f0ea1c1bd94b8848c0e4abfa1c63a765ba7673))
+
+
+### Bug Fixes
+
+* Rename LiveEphemeralParameters to LiveConnectConstraints. ([e7c5ee7](https://github.com/googleapis/go-genai/commit/e7c5ee71b6d028ded68826c0b3358372a8d38f13))
+
+## [1.7.0](https://github.com/googleapis/go-genai/compare/v1.6.0...v1.7.0) (2025-05-28)
+
+
+### Features
+
+* Add generate_audio field for private testing of video generation ([d48d6f3](https://github.com/googleapis/go-genai/commit/d48d6f354e8d914c65f65244d87046d59167db3b))
+* support new fields in FileData, GenerationConfig, GroundingChunkRetrievedContext, RetrievalConfig, Schema, TuningJob, VertexAISearch, ([9331c82](https://github.com/googleapis/go-genai/commit/9331c8285a9be325226ab32307db2e3fdb007652))
+
+
+### Bug Fixes
+
+* use correct mimetype for image content ([#301](https://github.com/googleapis/go-genai/issues/301)) ([ddc69b8](https://github.com/googleapis/go-genai/commit/ddc69b8a3d6eca1130964dcf838764b8c8de41d7))
+
 ## [1.6.0](https://github.com/googleapis/go-genai/compare/v1.5.0...v1.6.0) (2025-05-19)
 
 

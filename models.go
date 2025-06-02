@@ -120,6 +120,11 @@ func partToMldev(ac *apiClient, fromObject map[string]any, parentObject map[stri
 		setValueByPath(toObject, []string{"fileData"}, fromFileData)
 	}
 
+	fromThoughtSignature := getValueByPath(fromObject, []string{"thoughtSignature"})
+	if fromThoughtSignature != nil {
+		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
+	}
+
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -1408,6 +1413,10 @@ func generateVideosConfigToMldev(ac *apiClient, fromObject map[string]any, paren
 		return nil, fmt.Errorf("enhancePrompt parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"generateAudio"}) != nil {
+		return nil, fmt.Errorf("generateAudio parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -1551,6 +1560,11 @@ func partToVertex(ac *apiClient, fromObject map[string]any, parentObject map[str
 		}
 
 		setValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	fromThoughtSignature := getValueByPath(fromObject, []string{"thoughtSignature"})
+	if fromThoughtSignature != nil {
+		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
 	}
 
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
@@ -3245,6 +3259,11 @@ func generateVideosConfigToVertex(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
 	}
 
+	fromGenerateAudio := getValueByPath(fromObject, []string{"generateAudio"})
+	if fromGenerateAudio != nil {
+		setValueByPath(parentObject, []string{"parameters", "generateAudio"}, fromGenerateAudio)
+	}
+
 	return toObject, nil
 }
 
@@ -3378,6 +3397,11 @@ func partFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[st
 		}
 
 		setValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	fromThoughtSignature := getValueByPath(fromObject, []string{"thoughtSignature"})
+	if fromThoughtSignature != nil {
+		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
 	}
 
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
@@ -4057,6 +4081,11 @@ func partFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[s
 		}
 
 		setValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	fromThoughtSignature := getValueByPath(fromObject, []string{"thoughtSignature"})
+	if fromThoughtSignature != nil {
+		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
 	}
 
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})

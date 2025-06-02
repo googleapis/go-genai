@@ -20,7 +20,7 @@ import (
 	"fmt"
 )
 
-func liveEphemeralParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectConstraintsToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
@@ -46,7 +46,7 @@ func liveEphemeralParametersToMldev(ac *apiClient, fromObject map[string]any, pa
 	return toObject, nil
 }
 
-func liveEphemeralParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectConstraintsToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 	if getValueByPath(fromObject, []string{"model"}) != nil {
 		return nil, fmt.Errorf("model parameter is not supported in Vertex AI")
@@ -77,14 +77,14 @@ func createAuthTokenConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(parentObject, []string{"uses"}, fromUses)
 	}
 
-	fromLiveEphemeralParameters := getValueByPath(fromObject, []string{"liveEphemeralParameters"})
-	if fromLiveEphemeralParameters != nil {
-		fromLiveEphemeralParameters, err = liveEphemeralParametersToMldev(ac, fromLiveEphemeralParameters.(map[string]any), toObject)
+	fromLiveConnectConstraints := getValueByPath(fromObject, []string{"liveConnectConstraints"})
+	if fromLiveConnectConstraints != nil {
+		fromLiveConnectConstraints, err = liveConnectConstraintsToMldev(ac, fromLiveConnectConstraints.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"bidiGenerateContentSetup"}, fromLiveEphemeralParameters)
+		setValueByPath(parentObject, []string{"bidiGenerateContentSetup"}, fromLiveConnectConstraints)
 	}
 
 	fromLockAdditionalFields := getValueByPath(fromObject, []string{"lockAdditionalFields"})
@@ -110,8 +110,8 @@ func createAuthTokenConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		return nil, fmt.Errorf("uses parameter is not supported in Vertex AI")
 	}
 
-	if getValueByPath(fromObject, []string{"liveEphemeralParameters"}) != nil {
-		return nil, fmt.Errorf("liveEphemeralParameters parameter is not supported in Vertex AI")
+	if getValueByPath(fromObject, []string{"liveConnectConstraints"}) != nil {
+		return nil, fmt.Errorf("liveConnectConstraints parameter is not supported in Vertex AI")
 	}
 
 	if getValueByPath(fromObject, []string{"lockAdditionalFields"}) != nil {

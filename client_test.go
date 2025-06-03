@@ -291,7 +291,7 @@ func TestNewClient(t *testing.T) {
 			}
 		})
 
-		t.Run("API Key from environment", func(t *testing.T) {
+		t.Run("API Key from GOOGLE_API_KEY only", func(t *testing.T) {
 			apiKey := "test-api-key-env"
 			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI,
 				envVarProvider: func() map[string]string {
@@ -305,6 +305,59 @@ func TestNewClient(t *testing.T) {
 			}
 			if client.clientConfig.APIKey != apiKey {
 				t.Errorf("Expected API key %q, got %q", apiKey, client.clientConfig.APIKey)
+			}
+		})
+		t.Run("API Key from GEMINI_API_KEY only", func(t *testing.T) {
+			apiKey := "test-api-key-env"
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI,
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GEMINI_API_KEY": apiKey,
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.APIKey != apiKey {
+				t.Errorf("Expected API key %q, got %q", apiKey, client.clientConfig.APIKey)
+			}
+		})
+
+		t.Run("API Key from GEMINI_API_KEY and GOOGLE_API_KEY as empty string", func(t *testing.T) {
+			apiKey := "test-api-key-env"
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI,
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_API_KEY": "",
+						"GEMINI_API_KEY": apiKey,
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.APIKey != apiKey {
+				t.Errorf("Expected API key %q, got %q", apiKey, client.clientConfig.APIKey)
+			}
+		})
+
+		t.Run("API Key both GEMINI_API_KEY and GOOGLE_API_KEY", func(t *testing.T) {
+			geminiAPIKey := "gemini-api-key-env"
+			googleAPIKey := "google-api-key-env"
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI,
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_API_KEY": googleAPIKey,
+						"GEMINI_API_KEY": geminiAPIKey,
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.APIKey != googleAPIKey {
+				t.Errorf("Expected APIggcg key %q, got %q", googleAPIKey, client.clientConfig.APIKey)
 			}
 		})
 

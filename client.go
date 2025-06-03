@@ -17,6 +17,7 @@ package genai
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -74,7 +75,7 @@ func (t Backend) String() string {
 // ClientConfig is the configuration for the GenAI client.
 type ClientConfig struct {
 	// Optional. API Key for GenAI. Required for BackendGeminiAPI.
-	// Can also be set via the GOOGLE_API_KEY environment variable.
+	// Can also be set via the GOOGLE_API_KEY or GEMINI_API_KEY environment variable.
 	// Get a Gemini API key: https://ai.google.dev/gemini-api/docs/api-key
 	APIKey string
 
@@ -115,6 +116,9 @@ func defaultEnvVarProvider() map[string]string {
 	if v, ok := os.LookupEnv("GOOGLE_API_KEY"); ok {
 		vars["GOOGLE_API_KEY"] = v
 	}
+	if v, ok := os.LookupEnv("GEMINI_API_KEY"); ok {
+		vars["GEMINI_API_KEY"] = v
+	}
 	if v, ok := os.LookupEnv("GOOGLE_CLOUD_PROJECT"); ok {
 		vars["GOOGLE_CLOUD_PROJECT"] = v
 	}
@@ -133,6 +137,18 @@ func defaultEnvVarProvider() map[string]string {
 	return vars
 }
 
+func getAPIKeyFromEnv(envVars map[string]string) string {
+	googleAPIKey := envVars["GOOGLE_API_KEY"]
+	geminiAPIKey := envVars["GEMINI_API_KEY"]
+	if googleAPIKey != "" && geminiAPIKey != "" {
+		log.Printf("Warning: Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.")
+	}
+	if googleAPIKey != "" {
+		return googleAPIKey
+	}
+	return geminiAPIKey
+}
+
 // NewClient creates a new GenAI client.
 //
 // You can configure the client by passing in a ClientConfig struct.
@@ -142,7 +158,10 @@ func defaultEnvVarProvider() map[string]string {
 //
 //   - Environment Variables for BackendGeminiAPI:
 //
-//   - GOOGLE_API_KEY: Required. Specifies the API key for the Gemini API.
+//   - GEMINI_API_KEY: Specifies the API key for the Gemini API.
+//
+//   - GOOGLE_API_KEY: Can also be used to specify the API key for the Gemini API.
+//     If both GOOGLE_API_KEY and GEMINI_API_KEY are set, GOOGLE_API_KEY will be used.
 //
 //   - Environment Variables for BackendVertexAI:
 //
@@ -188,7 +207,9 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 
 	// Only set the API key for MLDev API.
 	if cc.APIKey == "" && cc.Backend == BackendGeminiAPI {
-		cc.APIKey = envVars["GOOGLE_API_KEY"]
+		if apiKey := getAPIKeyFromEnv(envVars); apiKey != "" {
+			cc.APIKey = apiKey
+		}
 	}
 	if cc.Project == "" {
 		cc.Project = envVars["GOOGLE_CLOUD_PROJECT"]

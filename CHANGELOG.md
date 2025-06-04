@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.9.0](https://github.com/googleapis/go-genai/compare/v1.8.0...v1.9.0) (2025-06-04)
+
+
+### Features
+
+* Add enhance_prompt field for Gemini Developer API generate_videos ([04c9207](https://github.com/googleapis/go-genai/commit/04c92074d3c12b4cd2b00834086eb33c57c11a31))
+* Enable url_context for Vertex ([6ca5b9c](https://github.com/googleapis/go-genai/commit/6ca5b9c20f41d54e5ef0856f008cd15b065ca5d0))
+* **go:** Support `GEMINI_API_KEY` as environment variable for setting API key. ([83ba1e0](https://github.com/googleapis/go-genai/commit/83ba1e01082521c6160f8f7f87eefe32e66a6c2b))
+
 ## [1.8.0](https://github.com/googleapis/go-genai/compare/v1.7.0...v1.8.0) (2025-05-30)
 
 

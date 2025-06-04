@@ -126,6 +126,10 @@ func buildRequest(ctx context.Context, ac *apiClient, path string, body map[stri
 	if err != nil {
 		return nil, err
 	}
+	if httpOptions.ExtrasRequestProvider != nil {
+		body = httpOptions.ExtrasRequestProvider(body)
+	}
+
 	b := new(bytes.Buffer)
 	if len(body) > 0 {
 		if err := json.NewEncoder(b).Encode(body); err != nil {

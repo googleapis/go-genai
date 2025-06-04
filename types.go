@@ -896,7 +896,15 @@ type HTTPOptions struct {
 	APIVersion string `json:"apiVersion,omitempty"`
 	// Optional. Additional HTTP headers to be sent with the request.
 	Headers http.Header `json:"headers,omitempty"`
+	// Optional. ExtrasRequestProvider is a function that allows users to add extra fields
+	// to the request body.
+	// This is useful for adding fields that are not yet supported by the SDK.
+	ExtrasRequestProvider *ExtrasRequestProvider `json:"extrasRequestProvider,omitempty"`
 }
+
+// ExtrasRequestProvider is a function type that allows users to add extra fields
+// to the request body. This is useful for adding fields that are not yet supported by the SDK.
+type ExtrasRequestProvider = func(body map[string]any) map[string]any
 
 // Schema is used to define the format of input/output data.
 // Represents a select subset of an [OpenAPI 3.0 schema

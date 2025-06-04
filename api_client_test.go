@@ -783,6 +783,41 @@ func TestBuildRequest(t *testing.T) {
 			wantErr:       true,
 			expectedError: "buildRequest: error encoding body",
 		},
+		{
+			name: "With ExtrasRequestProvider",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"original_key": "original_value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				ExtrasRequestProvider: func(body map[string]any) map[string]any {
+					body["extra_key"] = "extra_value"
+					return body
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"extra_key\":\"extra_value\",\"original_key\":\"original_value\"}\n")),
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {

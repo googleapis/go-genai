@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.10.0](https://github.com/googleapis/go-genai/compare/v1.9.0...v1.10.0) (2025-06-05)
+
+
+### Features
+
+* add extras request provider to the HTTP options ([7a00367](https://github.com/googleapis/go-genai/commit/7a00367377e00d41a6b599fbd0a9cc08ba03ab81))
+
+
+### Bug Fixes
+
+* Merge ExtrasRequestProvider for client level config and function level config ([f63de00](https://github.com/googleapis/go-genai/commit/f63de00a51227fb5aec4bd72a738ae60b94d499e))
+
 ## [1.9.0](https://github.com/googleapis/go-genai/compare/v1.8.0...v1.9.0) (2025-06-04)
 
 

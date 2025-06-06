@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/googleapis/go-genai/compare/v1.10.0...v1.11.0) (2025-06-06)
+
+
+### Features
+
+* RAG - Introducing context storing for Gemini Live API. ([b752aa0](https://github.com/googleapis/go-genai/commit/b752aa0656bb72ccf9d2eeb4d12585d0ec04743e))
+
 ## [1.10.0](https://github.com/googleapis/go-genai/compare/v1.9.0...v1.10.0) (2025-06-05)
 
 

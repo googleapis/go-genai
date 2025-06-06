@@ -219,7 +219,7 @@ func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			operation, err := client.Models.GenerateVideos(ctx, "veo-2.0-generate-001", "A neon hologram of a cat driving at top speed", nil, nil)
+			operation, err := client.Models.GenerateVideos(ctx, "veo-2.0-generate-001", "A neon hologram of a cat driving at top speed", nil, nil, nil)
 			if err != nil {
 				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
 			}

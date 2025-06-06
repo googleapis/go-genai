@@ -2543,6 +2543,25 @@ type ComputeTokensResponse struct {
 	TokensInfo []*TokensInfo `json:"tokensInfo,omitempty"`
 }
 
+// A generated video.
+type Video struct {
+	// Optional. Path to another storage.
+	URI string `json:"uri,omitempty"`
+	// Optional. Video bytes.
+	VideoBytes []byte `json:"videoBytes,omitempty"`
+	// Optional. Video encoding, for example "video/mp4".
+	MIMEType string `json:"mimeType,omitempty"`
+}
+
+func (v *Video) uri() string {
+	return v.URI
+}
+
+func (v *Video) setVideoBytes(b []byte) bool {
+	v.VideoBytes = b
+	return true
+}
+
 // You can find API default values and more details at VertexAI: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation.
 type GenerateVideosConfig struct {
 	// Optional. Used to override HTTP request options.
@@ -2576,25 +2595,9 @@ type GenerateVideosConfig struct {
 	EnhancePrompt bool `json:"enhancePrompt,omitempty"`
 	// Optional. Whether to generate audio along with the video.
 	GenerateAudio *bool `json:"generateAudio,omitempty"`
-}
-
-// A generated video.
-type Video struct {
-	// Optional. Path to another storage.
-	URI string `json:"uri,omitempty"`
-	// Optional. Video bytes.
-	VideoBytes []byte `json:"videoBytes,omitempty"`
-	// Optional. Video encoding, for example "video/mp4".
-	MIMEType string `json:"mimeType,omitempty"`
-}
-
-func (v *Video) uri() string {
-	return v.URI
-}
-
-func (v *Video) setVideoBytes(b []byte) bool {
-	v.VideoBytes = b
-	return true
+	// Optional. Image to use as the last frame of generated videos. Only supported for
+	// image to video use cases.
+	LastFrame *Image `json:"lastFrame,omitempty"`
 }
 
 // A generated video.

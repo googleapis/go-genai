@@ -1361,6 +1361,32 @@ func imageToMldev(ac *apiClient, fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
+func videoToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromUri := getValueByPath(fromObject, []string{"uri"})
+	if fromUri != nil {
+		setValueByPath(toObject, []string{"video", "uri"}, fromUri)
+	}
+
+	fromVideoBytes := getValueByPath(fromObject, []string{"videoBytes"})
+	if fromVideoBytes != nil {
+		fromVideoBytes, err = tBytes(ac, fromVideoBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"video", "encodedVideo"}, fromVideoBytes)
+	}
+
+	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"encoding"}, fromMimeType)
+	}
+
+	return toObject, nil
+}
+
 func generateVideosConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1418,6 +1444,10 @@ func generateVideosConfigToMldev(ac *apiClient, fromObject map[string]any, paren
 		return nil, fmt.Errorf("generateAudio parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"lastFrame"}) != nil {
+		return nil, fmt.Errorf("lastFrame parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -1447,6 +1477,10 @@ func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, p
 		}
 
 		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	if getValueByPath(fromObject, []string{"video"}) != nil {
+		return nil, fmt.Errorf("video parameter is not supported in Gemini API")
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
@@ -3208,6 +3242,32 @@ func computeTokensParametersToVertex(ac *apiClient, fromObject map[string]any, p
 	return toObject, nil
 }
 
+func videoToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromUri := getValueByPath(fromObject, []string{"uri"})
+	if fromUri != nil {
+		setValueByPath(toObject, []string{"gcsUri"}, fromUri)
+	}
+
+	fromVideoBytes := getValueByPath(fromObject, []string{"videoBytes"})
+	if fromVideoBytes != nil {
+		fromVideoBytes, err = tBytes(ac, fromVideoBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"bytesBase64Encoded"}, fromVideoBytes)
+	}
+
+	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+	}
+
+	return toObject, nil
+}
+
 func generateVideosConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3271,6 +3331,16 @@ func generateVideosConfigToVertex(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(parentObject, []string{"parameters", "generateAudio"}, fromGenerateAudio)
 	}
 
+	fromLastFrame := getValueByPath(fromObject, []string{"lastFrame"})
+	if fromLastFrame != nil {
+		fromLastFrame, err = imageToVertex(ac, fromLastFrame.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
+	}
+
 	return toObject, nil
 }
 
@@ -3300,6 +3370,16 @@ func generateVideosParametersToVertex(ac *apiClient, fromObject map[string]any, 
 		}
 
 		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	fromVideo := getValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = videoToVertex(ac, fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
@@ -5645,10 +5725,10 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 }
 
 // GenerateVideos creates a long-running video generation operation.
-func (m Models) GenerateVideos(ctx context.Context, model string, prompt string, image *Image, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+func (m Models) GenerateVideos(ctx context.Context, model string, prompt string, image *Image, video *Video, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
 	parameterMap := make(map[string]any)
 
-	kwargs := map[string]any{"model": model, "prompt": prompt, "image": image, "config": config}
+	kwargs := map[string]any{"model": model, "prompt": prompt, "image": image, "video": video, "config": config}
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions

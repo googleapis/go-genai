@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.11.0](https://github.com/googleapis/go-genai/compare/v1.10.0...v1.11.0) (2025-06-11)
+
+
+### Features
+
+* Add datastore_spec field for VertexAISearch ([489ee80](https://github.com/googleapis/go-genai/commit/489ee809e71b5dbbf49757e2d68c29f0295445a1))
+* Add support for Veo frame interpolation and video extension ([eae965b](https://github.com/googleapis/go-genai/commit/eae965bbdb60befee32b7496ca01aa172890cb9b))
+* RAG - Introducing context storing for Gemini Live API. ([b752aa0](https://github.com/googleapis/go-genai/commit/b752aa0656bb72ccf9d2eeb4d12585d0ec04743e))
+* Support API keys for VertexAI mode for Go SDK ([3b4aadf](https://github.com/googleapis/go-genai/commit/3b4aadf46f3ac4b075bec608657e81f2c8163069))
+
+
+### Bug Fixes
+
+* handle structured error in the stream chunk. fixes [#355](https://github.com/googleapis/go-genai/issues/355) ([fb361ac](https://github.com/googleapis/go-genai/commit/fb361acd2705a19a113aa192aee9205d3542cdd3))
+
 ## [1.10.0](https://github.com/googleapis/go-genai/compare/v1.9.0...v1.10.0) (2025-06-05)
 
 

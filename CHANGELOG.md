@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.11.1](https://github.com/googleapis/go-genai/compare/v1.11.0...v1.11.1) (2025-06-13)
+
+
+### Bug Fixes
+
+* Exclude video field from GenerateVideos to restore backwards compatibility in Go SDK ([a868b8b](https://github.com/googleapis/go-genai/commit/a868b8b1f989a486ff183e48ecc76891def14c41))
+* Fix precedence when reading from environment variables api key and project for Go SDK ([46bf8cc](https://github.com/googleapis/go-genai/commit/46bf8ccc2b0f88ee50f352ef04bb8ae73f0feb43))
+
 ## [1.11.0](https://github.com/googleapis/go-genai/compare/v1.10.0...v1.11.0) (2025-06-11)
 
 

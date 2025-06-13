@@ -170,7 +170,7 @@ func sdkHeader(ctx context.Context, ac *apiClient) http.Header {
 func inferTimeout(ctx context.Context, ac *apiClient) time.Duration {
 	// ac.clientConfig.HTTPClient is not nil because it's initialized in the NewClient function.
 	requestTimeout := ac.clientConfig.HTTPClient.Timeout
-	contextTimeout := 0 * time.Second
+	contextTimeout := 5 * time.Minute
 	if deadline, ok := ctx.Deadline(); ok {
 		contextTimeout = time.Until(deadline)
 	}

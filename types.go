@@ -2432,8 +2432,7 @@ type GenerationConfigThinkingConfig struct {
 	// Optional. Indicates whether to include thoughts in the response. If true, thoughts
 	// are returned only when available.
 	IncludeThoughts bool `json:"includeThoughts,omitempty"`
-	// Optional. Indicates the thinking budget in tokens. This is only applied when enable_thinking
-	// is true.
+	// Optional. Indicates the thinking budget in tokens.
 	ThinkingBudget *int32 `json:"thinkingBudget,omitempty"`
 }
 

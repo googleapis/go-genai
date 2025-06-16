@@ -126,9 +126,30 @@ func buildRequest(ctx context.Context, ac *apiClient, path string, body map[stri
 	if err != nil {
 		return nil, err
 	}
-	if httpOptions.ExtrasRequestProvider != nil {
-		log.Printf("Warning: Usage of ExtrasRequestProvider is strongly discouraged. No forward compatibility is guaranteed.")
-		body = httpOptions.ExtrasRequestProvider(body)
+	defaultTimeout := time.Duration(5) * time.Minute
+	var effectiveTimeout *time.Duration = nil
+
+	if ac.clientConfig.HTTPOptions.Timeout != nil {
+		convertedTimeout := time.Duration(*ac.clientConfig.HTTPOptions.Timeout) * time.Millisecond
+		effectiveTimeout = &convertedTimeout
+	}
+
+	effectiveContext := ctx
+
+	if httpOptions != nil {
+		if httpOptions.ExtrasRequestProvider != nil {
+			log.Printf("Warning: Usage of ExtrasRequestProvider is strongly discouraged. No forward compatibility is guaranteed.")
+			body = httpOptions.ExtrasRequestProvider(body)
+		}
+
+		if httpOptions.Timeout != nil {
+			convertedTimeout := time.Duration(*httpOptions.Timeout) * time.Millisecond
+			effectiveTimeout = &convertedTimeout
+		}
+	}
+
+	if effectiveTimeout == nil {
+		effectiveTimeout = &defaultTimeout
 	}
 
 	b := new(bytes.Buffer)
@@ -138,18 +159,35 @@ func buildRequest(ctx context.Context, ac *apiClient, path string, body map[stri
 		}
 	}
 
+	var cancel context.CancelFunc
+	if effectiveTimeout != nil && *effectiveTimeout > 0 && isTimeoutBeforeDeadline(ctx, *effectiveTimeout) {
+		effectiveContext, cancel = context.WithTimeout(ctx, *effectiveTimeout)
+		defer func() {
+			if cancel != nil {
+				cancel()
+			}
+		}()
+	}
 	// Create a new HTTP request
-	req, err := http.NewRequestWithContext(ctx, method, url.String(), b)
+	req, err := http.NewRequestWithContext(effectiveContext, method, url.String(), b)
 	if err != nil {
 		return nil, err
 	}
 	// Set headers
 	doMergeHeaders(httpOptions.Headers, &req.Header)
-	doMergeHeaders(sdkHeader(ctx, ac), &req.Header)
+	doMergeHeaders(sdkHeader(ctx, ac, effectiveTimeout), &req.Header)
 	return req, nil
 }
 
-func sdkHeader(ctx context.Context, ac *apiClient) http.Header {
+func isTimeoutBeforeDeadline(ctx context.Context, timeout time.Duration) bool {
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		return true
+	}
+	return timeout < time.Until(deadline)
+}
+
+func sdkHeader(ctx context.Context, ac *apiClient, requestTimeout *time.Duration) http.Header {
 	header := make(http.Header)
 	header.Set("Content-Type", "application/json")
 	if ac.clientConfig.APIKey != "" {
@@ -160,27 +198,33 @@ func sdkHeader(ctx context.Context, ac *apiClient) http.Header {
 	versionHeaderValue := fmt.Sprintf("%s %s", libraryLabel, languageLabel)
 	header.Set("user-agent", versionHeaderValue)
 	header.Set("x-goog-api-client", versionHeaderValue)
-	timeoutSeconds := inferTimeout(ctx, ac).Seconds()
+	timeoutSeconds := inferTimeout(ctx, ac, requestTimeout).Seconds()
 	if timeoutSeconds > 0 {
 		header.Set("x-server-timeout", strconv.FormatInt(int64(timeoutSeconds), 10))
 	}
 	return header
 }
 
-func inferTimeout(ctx context.Context, ac *apiClient) time.Duration {
+func inferTimeout(ctx context.Context, ac *apiClient, requestTimeout *time.Duration) time.Duration {
 	// ac.clientConfig.HTTPClient is not nil because it's initialized in the NewClient function.
-	requestTimeout := ac.clientConfig.HTTPClient.Timeout
+	httpClientTimeout := ac.clientConfig.HTTPClient.Timeout
 	contextTimeout := 0 * time.Second
+	effectiveTimeout := 0 * time.Second
+
 	if deadline, ok := ctx.Deadline(); ok {
 		contextTimeout = time.Until(deadline)
 	}
-	if requestTimeout != 0 && contextTimeout != 0 {
-		return min(requestTimeout, contextTimeout)
+
+	if requestTimeout != nil {
+		effectiveTimeout = *requestTimeout
 	}
-	if requestTimeout != 0 {
-		return requestTimeout
+	if effectiveTimeout == 0 || (httpClientTimeout != 0 && httpClientTimeout < effectiveTimeout) {
+		effectiveTimeout = httpClientTimeout
 	}
-	return contextTimeout
+	if effectiveTimeout == 0 || (contextTimeout != 0 && contextTimeout < effectiveTimeout) {
+		effectiveTimeout = contextTimeout
+	}
+	return effectiveTimeout
 }
 
 func doRequest(ac *apiClient, req *http.Request) (*http.Response, error) {
@@ -404,7 +448,7 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 				return nil, fmt.Errorf("Failed to create upload request for chunk at offset %d: %w", offset, err)
 			}
 			doMergeHeaders(httpOptions.Headers, &req.Header)
-			doMergeHeaders(sdkHeader(ctx, ac), &req.Header)
+			doMergeHeaders(sdkHeader(ctx, ac, nil), &req.Header)
 
 			req.Header.Set("X-Goog-Upload-Command", uploadCommand)
 			req.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))

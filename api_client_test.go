@@ -5,21 +5,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"reflect"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/civil"
 	"github.com/google/go-cmp/cmp"
 )
 
-// TODO(b/384580303): Add streaming request tests.
 func TestSendRequest(t *testing.T) {
 	ctx := context.Background()
 	// Setup test cases
@@ -241,13 +245,12 @@ func TestSendStreamRequest(t *testing.T) {
 			wantErrorMessage: "error unmarshalling data data:invalid. error: invalid character 'i' looking for beginning of value",
 		},
 		{
-			name:           "Stream with Invalid Seperator",
-			method:         "POST",
-			path:           "test",
-			body:           map[string]any{"key": "value"},
-			mockResponse:   "data:{\"key1\":\"value1\"}\t\tdata:{\"key2\":\"value2\"}",
-			mockStatusCode: http.StatusOK,
-			// converterErr:     fmt.Errorf("converter error"),
+			name:             "Stream with Invalid Seperator",
+			method:           "POST",
+			path:             "test",
+			body:             map[string]any{"key": "value"},
+			mockResponse:     "data:{\"key1\":\"value1\"}\t\tdata:{\"key2\":\"value2\"}",
+			mockStatusCode:   http.StatusOK,
 			wantResponse:     nil,
 			wantErr:          true,
 			wantErrorMessage: "iterateResponseStream: error unmarshalling data data:{\"key1\":\"value1\"}\t\tdata:{\"key2\":\"value2\"}. error: invalid character 'd' after top-level value",
@@ -317,7 +320,7 @@ func TestSendStreamRequest(t *testing.T) {
 			mockResponse:     `invalid json`,
 			mockStatusCode:   http.StatusBadRequest,
 			wantErr:          true,
-			wantErrorMessage: "newAPIError: unmarshal response to error failed: invalid character 'i' looking for beginning of value. Response: invalid json",
+			wantErrorMessage: "Error 400, Message: invalid json, Status: 400 Bad Request, Details: []",
 		},
 		{
 			name:             "Error Response with server error",
@@ -347,7 +350,17 @@ func TestSendStreamRequest(t *testing.T) {
 			mockResponse:     `invalid json`,
 			mockStatusCode:   http.StatusInternalServerError,
 			wantErr:          true,
-			wantErrorMessage: "newAPIError: unmarshal response to error failed: invalid character 'i' looking for beginning of value. Response: invalid json",
+			wantErrorMessage: "Error 500, Message: invalid json, Status: 500 Internal Server Error, Details: []",
+		},
+		{
+			name:             "Error Response with status ok but error stream chunk",
+			method:           "POST",
+			path:             "test",
+			body:             map[string]any{"key": "value"},
+			mockResponse:     `{"error": {"code": 500, "message": "internal server error", "status": "INTERNAL_SERVER_ERROR"}}`,
+			mockStatusCode:   http.StatusOK,
+			wantErr:          true,
+			wantErrorMessage: "Error 500, Message: internal server error, Status: INTERNAL_SERVER_ERROR, Details: []",
 		},
 		{
 			name:           "Request Error",
@@ -545,8 +558,9 @@ func TestBuildRequest(t *testing.T) {
 		{
 			name: "MLDev API with API Key",
 			clientConfig: &ClientConfig{
-				APIKey:  "test-api-key",
-				Backend: BackendGeminiAPI,
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
 			},
 			path:   "models/test-model:generateContent",
 			body:   map[string]any{"key": "value"},
@@ -582,6 +596,7 @@ func TestBuildRequest(t *testing.T) {
 				Project:     "test-project",
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
 				Credentials: &auth.Credentials{},
 			},
 			path:   "models/test-model:generateContent",
@@ -617,6 +632,7 @@ func TestBuildRequest(t *testing.T) {
 				Project:     "test-project",
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
 				Credentials: &auth.Credentials{},
 			},
 			path:   "projects/test-project/locations/test-location/models/test-model:generateContent",
@@ -652,6 +668,7 @@ func TestBuildRequest(t *testing.T) {
 				Project:     "test-project",
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
 				Credentials: &auth.Credentials{},
 			},
 			path:   "publishers/google/models/model-name",
@@ -680,8 +697,9 @@ func TestBuildRequest(t *testing.T) {
 		{
 			name: "MLDev with empty body",
 			clientConfig: &ClientConfig{
-				APIKey:  "test-api-key",
-				Backend: BackendGeminiAPI,
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
 			},
 			path:   "models/test-model:generateContent",
 			body:   map[string]any{},
@@ -713,6 +731,7 @@ func TestBuildRequest(t *testing.T) {
 				Project:     "test-project",
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
 				Credentials: &auth.Credentials{},
 			},
 			path:   "models/test-model:generateContent",
@@ -741,8 +760,9 @@ func TestBuildRequest(t *testing.T) {
 		{
 			name: "Invalid URL",
 			clientConfig: &ClientConfig{
-				APIKey:  "test-api-key",
-				Backend: BackendGeminiAPI,
+				APIKey:     "test-api-key",
+				HTTPClient: &http.Client{},
+				Backend:    BackendGeminiAPI,
 			},
 			path:   ":invalid",
 			body:   map[string]any{},
@@ -757,8 +777,9 @@ func TestBuildRequest(t *testing.T) {
 		{
 			name: "Invalid json",
 			clientConfig: &ClientConfig{
-				APIKey:  "test-api-key",
-				Backend: BackendGeminiAPI,
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
 			},
 			path:   "models/test-model:generateContent",
 			body:   map[string]any{"key": make(chan int)},
@@ -769,6 +790,41 @@ func TestBuildRequest(t *testing.T) {
 			},
 			wantErr:       true,
 			expectedError: "buildRequest: error encoding body",
+		},
+		{
+			name: "With ExtrasRequestProvider",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"original_key": "original_value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				ExtrasRequestProvider: func(body map[string]any) map[string]any {
+					body["extra_key"] = "extra_value"
+					return body
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"extra_key\":\"extra_value\",\"original_key\":\"original_value\"}\n")),
+			},
+			wantErr: false,
 		},
 	}
 
@@ -824,13 +880,14 @@ func Test_sdkHeader(t *testing.T) {
 		ac *apiClient
 	}
 	tests := []struct {
-		name string
-		args args
-		want http.Header
+		name           string
+		args           args
+		contextTimeout time.Duration
+		want           http.Header
 	}{
 		{
 			name: "with_api_key",
-			args: args{&apiClient{clientConfig: &ClientConfig{APIKey: "test_api_key"}}},
+			args: args{&apiClient{clientConfig: &ClientConfig{APIKey: "test_api_key", HTTPClient: &http.Client{}}}},
 			want: http.Header{
 				"Content-Type":      []string{"application/json"},
 				"X-Goog-Api-Key":    []string{"test_api_key"},
@@ -840,19 +897,330 @@ func Test_sdkHeader(t *testing.T) {
 		},
 		{
 			name: "without_api_key",
-			args: args{&apiClient{clientConfig: &ClientConfig{}}},
+			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}},
 			want: http.Header{
 				"Content-Type":      []string{"application/json"},
 				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
 				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
 			},
 		},
+		{
+			name:           "with_context_timeout",
+			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}},
+			contextTimeout: 1 * time.Minute,
+			want: http.Header{
+				"Content-Type":      []string{"application/json"},
+				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Server-Timeout":  []string{"59"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
+			},
+		},
+		{
+			name: "with_request_timeout",
+			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}},
+			want: http.Header{
+				"Content-Type":      []string{"application/json"},
+				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Server-Timeout":  []string{"60"}, // request timeout is exact match because it's native to the HTTPClient.
+			},
+		},
+		{
+			name:           "with_request_context_timeout",
+			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}},
+			contextTimeout: 30 * time.Second,
+			want: http.Header{
+				"Content-Type":      []string{"application/json"},
+				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Server-Timeout":  []string{"29"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
+			},
+		},
 	}
+
 	for _, tt := range tests {
+		ctx := context.Background()
+		var cancel context.CancelFunc
+		if tt.contextTimeout != 0 {
+			ctx, cancel = context.WithTimeout(ctx, tt.contextTimeout)
+			defer cancel()
+		}
+
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := cmp.Diff(sdkHeader(tt.args.ac), tt.want); diff != "" {
+			if diff := cmp.Diff(sdkHeader(ctx, tt.args.ac), tt.want, cmp.Comparer(compareHeadersWithTolerance)); diff != "" {
 				t.Errorf("sdkHeader() mismatch (-want +got):\n%s", diff)
 			}
+		})
+	}
+}
+
+func compareHeadersWithTolerance(want, got http.Header) bool {
+	wantClone := want.Clone()
+	gotClone := got.Clone()
+
+	wantTimeoutStr := wantClone.Get("X-Server-Timeout")
+	gotTimeoutStr := gotClone.Get("X-Server-Timeout")
+	wantClone.Del("X-Server-Timeout")
+	gotClone.Del("X-Server-Timeout")
+
+	if !cmp.Equal(wantClone, gotClone) {
+		return false
+	}
+	if wantTimeoutStr == "" && gotTimeoutStr == "" {
+		return true
+	}
+	if wantTimeoutStr == "" || gotTimeoutStr == "" {
+		return false
+	}
+
+	gotTimeoutVal, err := strconv.ParseInt(gotTimeoutStr, 10, 64)
+	if err != nil {
+		fmt.Printf("Warning: Could not parse got X-Server-Timeout value '%s'\n", gotTimeoutStr)
+		return false
+	}
+
+	wantTimeoutVal, err := strconv.ParseInt(wantTimeoutStr, 10, 64)
+	if err != nil {
+		fmt.Printf("Warning: Could not parse got X-Server-Timeout value '%s'\n", wantTimeoutStr)
+		return false
+	}
+
+	return math.Abs(float64(wantTimeoutVal-gotTimeoutVal)) <= 1
+}
+
+// createTestFile creates a temporary file with the specified size containing dummy text data.
+// It returns the file path and a cleanup function to remove the file.
+func createTestFile(t *testing.T, size int64) (string, func()) {
+	t.Helper()
+	tmpfile, err := os.CreateTemp("", "upload-test-*.txt")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+
+	buf := make([]byte, 1024*1024) // 1MB buffer
+	pattern := []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()")
+	for i := 0; i < len(buf); i++ {
+		buf[i] = pattern[i%len(pattern)]
+	}
+
+	var written int64
+	for written < size {
+		bytesToWrite := int64(len(buf))
+		if written+bytesToWrite > size {
+			bytesToWrite = size - written
+		}
+		n, err := tmpfile.Write(buf[:bytesToWrite])
+		if err != nil {
+			tmpfile.Close()
+			os.Remove(tmpfile.Name())
+			t.Fatalf("Failed to write to temp file: %v", err)
+		}
+		written += int64(n)
+	}
+
+	if err := tmpfile.Close(); err != nil {
+		os.Remove(tmpfile.Name())
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+
+	cleanup := func() {
+		os.Remove(tmpfile.Name())
+	}
+	return tmpfile.Name(), cleanup
+}
+
+// mockUploadServer simulates the resumable upload endpoint.
+func mockUploadServer(t *testing.T, expectedSize int64, headers []http.Header) (*httptest.Server, *sync.Map) {
+	t.Helper()
+	var totalReceived int64
+	var mu sync.Mutex
+	currentIndex := 0
+	// Use sync.Map to store received data per upload URL (though in this test we only use one)
+	receivedData := &sync.Map{}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+			return
+		}
+		uploadCommand := r.Header.Get("X-Goog-Upload-Command")
+		uploadOffsetStr := r.Header.Get("X-Goog-Upload-Offset")
+		contentLengthStr := r.Header.Get("Content-Length")
+		uploadOffset, err := strconv.ParseInt(uploadOffsetStr, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid X-Goog-Upload-Offset", http.StatusBadRequest)
+			return
+		}
+
+		contentLength, err := strconv.ParseInt(contentLengthStr, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid Content-Length", http.StatusBadRequest)
+			return
+		}
+
+		mu.Lock()
+		if uploadOffset != totalReceived {
+			mu.Unlock()
+			t.Errorf("Offset mismatch: expected %d, got %d", totalReceived, uploadOffset)
+			http.Error(w, "Offset mismatch", http.StatusBadRequest)
+			return
+		}
+		mu.Unlock()
+
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Failed to read body", http.StatusInternalServerError)
+			return
+		}
+		if int64(len(bodyBytes)) != contentLength {
+			t.Errorf("Content-Length mismatch: header %d, body %d", contentLength, len(bodyBytes))
+			http.Error(w, "Content-Length mismatch", http.StatusBadRequest)
+			return
+		}
+
+		// Store received data chunk (optional, but useful for verification)
+		mu.Lock()
+		for key, value := range headers[currentIndex] {
+			w.Header().Set(key, value[0])
+		}
+		currentTotal := totalReceived
+		isEmptyUploadStatus := headers[currentIndex].Get("X-Goog-Upload-Status") == ""
+		if !isEmptyUploadStatus {
+			totalReceived += contentLength
+			currentTotal = totalReceived
+		}
+		currentIndex++
+		mu.Unlock()
+		isFinal := strings.Contains(uploadCommand, "finalize")
+
+		if isFinal && !isEmptyUploadStatus {
+			if currentTotal != expectedSize {
+				t.Errorf("Final size mismatch: expected %d, received %d", expectedSize, currentTotal)
+				http.Error(w, "Final size mismatch", http.StatusBadRequest)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			finalFile := map[string]any{
+				"file": map[string]any{
+					"name":      fmt.Sprintf("files/upload-%d", time.Now().UnixNano()),
+					"sizeBytes": strconv.FormatInt(currentTotal, 10),
+					"mimeType":  "text/plain", // Assuming text for simplicity
+				},
+			}
+			if err := json.NewEncoder(w).Encode(finalFile); err != nil {
+				t.Errorf("Failed to encode final file: %v", err)
+				http.Error(w, "Failed to encode final file", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+
+	return server, receivedData
+}
+
+func TestUploadFile(t *testing.T) {
+	ctx := context.Background()
+
+	testSizes := []struct {
+		name    string
+		size    int64 // Size in bytes
+		headers []http.Header
+	}{
+		{"1MB", 1 * 1024 * 1024, []http.Header{
+			{
+				"Content-Type":         []string{"application/json"},
+				"X-Goog-Upload-Status": []string{"final"},
+			},
+		}},
+		{"8MB", 8 * 1024 * 1024, []http.Header{
+			{
+				"X-Goog-Upload-Status": []string{"active"},
+			},
+			{
+				"Content-Type":         []string{"application/json"},
+				"X-Goog-Upload-Status": []string{"final"},
+			},
+		}}, // Exactly maxChunkSize
+		{"9MB", 9 * 1024 * 1024, []http.Header{
+			{
+				"X-Goog-Upload-Status": []string{"active"},
+			},
+			{
+				"Content-Type":         []string{"application/json"},
+				"X-Goog-Upload-Status": []string{"final"},
+			},
+		}}, // Requires multiple chunks
+		{"9MB-missing-header", 9 * 1024 * 1024, []http.Header{
+			{
+				"X-Goog-Upload-Status": []string{"active"},
+			},
+			{
+				"X-Goog-Upload-Status": []string{""},
+			},
+			{
+				"Content-Type":         []string{"application/json"},
+				"X-Goog-Upload-Status": []string{"final"},
+			},
+		}}, // Requires multiple chunks
+	}
+
+	for _, ts := range testSizes {
+		t.Run(ts.name, func(t *testing.T) {
+			filePath, cleanup := createTestFile(t, ts.size)
+			defer cleanup()
+
+			server, _ := mockUploadServer(t, ts.size, ts.headers)
+			defer server.Close()
+
+			ac := &apiClient{
+				clientConfig: &ClientConfig{
+					HTTPClient: server.Client(),
+					APIKey:     "test-key-upload",
+				},
+			}
+
+			httpOpts := &HTTPOptions{
+				Headers: http.Header{},
+			}
+
+			fileReader, err := os.Open(filePath)
+			if err != nil {
+				t.Fatalf("Failed to open test file %s: %v", filePath, err)
+			}
+			defer fileReader.Close()
+
+			uploadURL := server.URL + "/upload"
+
+			uploadedFile, err := ac.uploadFile(ctx, fileReader, uploadURL, httpOpts)
+
+			if err != nil {
+				t.Fatalf("uploadFile failed: %v", err)
+			}
+
+			if uploadedFile == nil {
+				t.Fatal("uploadFile returned nil File, expected a valid File object")
+			}
+
+			if uploadedFile.Name == "" {
+				t.Error("uploadedFile.Name is empty")
+			}
+			// Convert SizeBytes to int64 if it's a pointer
+			var gotSizeBytes int64
+			if uploadedFile.SizeBytes != nil {
+				gotSizeBytes = *uploadedFile.SizeBytes
+			} else {
+				t.Error("uploadedFile.SizeBytes is nil")
+			}
+
+			if gotSizeBytes != ts.size {
+				t.Errorf("uploadedFile.SizeBytes mismatch: want %d, got %d", ts.size, gotSizeBytes)
+			}
+			if uploadedFile.MIMEType != "text/plain" { // Matches mock server response
+				t.Errorf("uploadedFile.MIMEType mismatch: want 'text/plain', got '%s'", uploadedFile.MIMEType)
+			}
+
 		})
 	}
 }

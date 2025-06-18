@@ -273,6 +273,26 @@ func TestNewPartFromURI(t *testing.T) {
 	}
 }
 
+func TestNewPartFromFile(t *testing.T) {
+	fileURI := "http://example.com/video.mp4"
+	mimeType := "video/mp4"
+	file := File{
+		URI:      fileURI,
+		MIMEType: mimeType,
+	}
+	expected := &Part{
+		FileData: &FileData{
+			FileURI:  fileURI,
+			MIMEType: mimeType,
+		},
+	}
+
+	result := NewPartFromFile(file)
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("expected %v, got %v", expected, result)
+	}
+}
+
 func TestNewPartFromText(t *testing.T) {
 	text := "Hello, world!"
 	expected := &Part{

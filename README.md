@@ -5,9 +5,17 @@
 
 ### Google Gemini Multimodal Live support
 
-Introducing support for the Gemini Multimodal Live feature. Here's an example Multimodal Live server showing realtime conversation and video streaming: [code](./samples/live_streaming_server.go)
+Introducing support for the Gemini Multimodal Live feature. Here's an example
+Multimodal Live server showing realtime conversation and video streaming:
+[code](./examples/live/live_streaming_server.go)
 
 # Google Gen AI Go SDK
+
+The Google Gen AI Go SDK provides an interface for developers to integrate
+Google's generative models into their Go applications. It supports the
+[Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
+[Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
+APIs.
 
 The Google Gen AI Go SDK enables developers to use Google's state-of-the-art
 generative AI models (like Gemini) to build AI-powered features and applications.
@@ -53,6 +61,31 @@ client, err := genai.NewClient(ctx, &genai.ClientConfig{
 	Location: location,
 	Backend:  genai.BackendVertexAI,
 })
+```
+
+### (Optional) Using environment variables:
+
+You can create a client by configuring the necessary environment variables.
+Configuration setup instructions depends on whether you're using the Gemini
+Developer API or the Gemini API in Vertex AI.
+
+**Gemini Developer API:** Set `GOOGLE_API_KEY` as shown below:
+
+```bash
+export GOOGLE_API_KEY='your-api-key'
+```
+
+**Gemini API on Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`,
+`GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`, as shown below:
+
+```bash
+export GOOGLE_GENAI_USE_VERTEXAI=true
+export GOOGLE_CLOUD_PROJECT='your-project-id'
+export GOOGLE_CLOUD_LOCATION='us-central1'
+```
+
+```go
+client, err := genai.NewClient(ctx, &genai.ClientConfig{})
 ```
 
 ## License

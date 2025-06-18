@@ -15,7 +15,6 @@
 package genai
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -118,60 +117,27 @@ func tTools(_ *apiClient, tools any) (any, error) {
 	return tools, nil
 }
 
-func processSchema(apiClient *apiClient, schema map[string]any) error {
-	if apiClient.clientConfig.Backend == BackendGeminiAPI {
-		if _, ok := schema["default"]; ok {
-			return errors.New("default value is not supported in the response schema for the Gemini API")
-		}
-	}
-
-	if anyOf, ok := schema["anyOf"].([]any); ok {
-		for _, subSchema := range anyOf {
-			if subSchema, ok := subSchema.(map[string]any); ok {
-				if err := processSchema(apiClient, subSchema); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	if items, ok := schema["items"]; ok {
-		if items, ok := items.(map[string]any); ok {
-			if err := processSchema(apiClient, items); err != nil {
-				return err
-			}
-		}
-	}
-
-	if properties, ok := schema["properties"]; ok {
-		if properties, ok := properties.(map[string]any); ok {
-			for _, subSchema := range properties {
-				if subSchema, ok := subSchema.(map[string]any); ok {
-					if err := processSchema(apiClient, subSchema); err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
 func tSchema(apiClient *apiClient, origin any) (any, error) {
-	if schema, ok := origin.(map[string]any); ok {
-		err := processSchema(apiClient, schema)
-		if err != nil {
-			return nil, err
-		}
-		return schema, nil
-	}
-	return nil, fmt.Errorf("input is not a map[string]any")
+	return origin, nil
 }
 
 func tSpeechConfig(_ *apiClient, speechConfig any) (any, error) {
 	return speechConfig, nil
 }
 
+func tLiveSpeechConfig(_ *apiClient, speechConfig any) (any, error) {
+	switch config := speechConfig.(type) {
+	case map[string]any:
+		if _, ok := config["multiSpeakerVoiceConfig"]; ok {
+			return nil, fmt.Errorf("multiSpeakerVoiceConfig is not supported in the live API")
+		}
+		return config, nil
+	case nil:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unsupported speechConfig type: %T", speechConfig)
+	}
+}
 func tBytes(_ *apiClient, fromImageBytes any) (any, error) {
 	// TODO(b/389133914): Remove dummy bytes converter.
 	return fromImageBytes, nil
@@ -259,5 +225,51 @@ func tFileName(ac *apiClient, name any) (string, error) {
 		}
 	default:
 		return "", fmt.Errorf("tFileName: name is not a string")
+	}
+}
+
+func tBlobs(ac *apiClient, blobs any) (any, error) {
+	switch blobs := blobs.(type) {
+	case []any:
+		// The only use case of this tBlobs function is for LiveSendRealtimeInputParameters.Media field.
+		// The Media field is a Blob type, not a list of Blob. So this branch will never be executed.
+		// If tBlobs function is used for other purposes in the future, uncomment the following line to
+		// enable this branch.
+		// applyConverterToSlice(ac, blobs, tBlob)
+		return nil, fmt.Errorf("unimplemented")
+	default:
+		blob, err := tBlob(ac, blobs)
+		if err != nil {
+			return nil, err
+		}
+		return []any{blob}, nil
+	}
+}
+
+func tBlob(ac *apiClient, blob any) (any, error) {
+	return blob, nil
+}
+
+func tImageBlob(ac *apiClient, blob any) (any, error) {
+	switch blob := blob.(type) {
+	case map[string]any:
+		if strings.HasPrefix(blob["mimeType"].(string), "image/") {
+			return blob, nil
+		}
+		return nil, fmt.Errorf("Unsupported mime type: %s", blob["mimeType"])
+	default:
+		return nil, fmt.Errorf("tImageBlob: blob is not a map")
+	}
+}
+
+func tAudioBlob(ac *apiClient, blob any) (any, error) {
+	switch blob := blob.(type) {
+	case map[string]any:
+		if strings.HasPrefix(blob["mimeType"].(string), "audio/") {
+			return blob, nil
+		}
+		return nil, fmt.Errorf("Unsupported mime type: %s", blob["mimeType"])
+	default:
+		return nil, fmt.Errorf("tAudioBlob: blob is not a map")
 	}
 }

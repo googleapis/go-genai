@@ -28,9 +28,13 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const maxChunkSize = 8 * 1024 * 1024 // 8 MB chunk size
+const maxRetryCount = 3
+const initialRetryDelay = time.Second
+const delayMultiplier = 2
 
 type apiClient struct {
 	clientConfig *ClientConfig
@@ -122,6 +126,11 @@ func buildRequest(ctx context.Context, ac *apiClient, path string, body map[stri
 	if err != nil {
 		return nil, err
 	}
+	if httpOptions.ExtrasRequestProvider != nil {
+		log.Printf("Warning: Usage of ExtrasRequestProvider is strongly discouraged. No forward compatibility is guaranteed.")
+		body = httpOptions.ExtrasRequestProvider(body)
+	}
+
 	b := new(bytes.Buffer)
 	if len(body) > 0 {
 		if err := json.NewEncoder(b).Encode(body); err != nil {
@@ -136,11 +145,11 @@ func buildRequest(ctx context.Context, ac *apiClient, path string, body map[stri
 	}
 	// Set headers
 	doMergeHeaders(httpOptions.Headers, &req.Header)
-	doMergeHeaders(sdkHeader(ac), &req.Header)
+	doMergeHeaders(sdkHeader(ctx, ac), &req.Header)
 	return req, nil
 }
 
-func sdkHeader(ac *apiClient) http.Header {
+func sdkHeader(ctx context.Context, ac *apiClient) http.Header {
 	header := make(http.Header)
 	header.Set("Content-Type", "application/json")
 	if ac.clientConfig.APIKey != "" {
@@ -151,7 +160,27 @@ func sdkHeader(ac *apiClient) http.Header {
 	versionHeaderValue := fmt.Sprintf("%s %s", libraryLabel, languageLabel)
 	header.Set("user-agent", versionHeaderValue)
 	header.Set("x-goog-api-client", versionHeaderValue)
+	timeoutSeconds := inferTimeout(ctx, ac).Seconds()
+	if timeoutSeconds > 0 {
+		header.Set("x-server-timeout", strconv.FormatInt(int64(timeoutSeconds), 10))
+	}
 	return header
+}
+
+func inferTimeout(ctx context.Context, ac *apiClient) time.Duration {
+	// ac.clientConfig.HTTPClient is not nil because it's initialized in the NewClient function.
+	requestTimeout := ac.clientConfig.HTTPClient.Timeout
+	contextTimeout := 0 * time.Second
+	if deadline, ok := ctx.Deadline(); ok {
+		contextTimeout = time.Until(deadline)
+	}
+	if requestTimeout != 0 && contextTimeout != 0 {
+		return min(requestTimeout, contextTimeout)
+	}
+	if requestTimeout != 0 {
+		return requestTimeout
+	}
+	return contextTimeout
 }
 
 func doRequest(ac *apiClient, req *http.Request) (*http.Response, error) {
@@ -230,8 +259,22 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 					return
 				}
 			default:
-				// Stream chunk not started with "data" is treated as an error.
-				if !yield(nil, fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))) {
+				var err error
+				if len(line) > 0 {
+					var respWithError = new(responseWithError)
+					// Stream chunk that doesn't matches error format.
+					if marshalErr := json.Unmarshal(line, respWithError); marshalErr != nil {
+						err = fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))
+					}
+					// Stream chunk that matches error format.
+					if respWithError.ErrorInfo != nil {
+						err = *respWithError.ErrorInfo
+					}
+				}
+				if err == nil {
+					err = fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))
+				}
+				if !yield(nil, err) {
 					return
 				}
 			}
@@ -270,7 +313,8 @@ func newAPIError(resp *http.Response) error {
 
 	if len(body) > 0 {
 		if err := json.Unmarshal(body, respWithError); err != nil {
-			return fmt.Errorf("newAPIError: unmarshal response to error failed: %w. Response: %v", err, string(body))
+			// Handle plain text error message. File upload backend doesn't return json error message.
+			return APIError{Code: resp.StatusCode, Status: resp.Status, Message: string(body)}
 		}
 		return *respWithError.ErrorInfo
 	}
@@ -343,49 +387,43 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 	var respBody map[string]any
 	var uploadCommand = "upload"
 
-	// A Reader(io.Reader) returning a non-zero number of bytes at the end of the input stream may return
-	// either err == EOF or err == nil. The next Read should return 0, EOF.
-	// But backend requires to attach "finalize" command at the same call to allow uploading bytes that's a multiple of the 8M byte chunk granularity.
-	// So we use two buffer slice here to pre-execute the next call in order to get next call's (0, EOF) returns.
-	nextBuffer := make([]byte, maxChunkSize)
-	curBuffer := make([]byte, maxChunkSize)
-	bytesRead, nextIOErr := r.Read(nextBuffer)
-
+	buffer := make([]byte, maxChunkSize)
 	for {
-		// Copy data from next Read to current.
-		copy(curBuffer, nextBuffer)
-		curBytesRead := bytesRead
-		curIOError := nextIOErr
-
-		// Execute the next Read call when the previous Read success.
-		if curIOError == nil {
-			bytesRead, nextIOErr = r.Read(nextBuffer)
-		}
-
-		// If io.Read returns io.EOF at the current(EOF error) or next call(0 bytes read and EOF error),
-		// we need to append finalize command now.
-		if curIOError == io.EOF || (nextIOErr == io.EOF && bytesRead == 0) {
+		bytesRead, err := io.ReadFull(r, buffer)
+		// Check both EOF and UnexpectedEOF errors.
+		// ErrUnexpectedEOF: Reading a file file_size%maxChunkSize<len(buffer).
+		// EOF: Reading a file file_size%maxChunkSize==0. The underlying reader return 0 bytes buffer and EOF at next call.
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			uploadCommand += ", finalize"
-		} else if curIOError != nil {
-			// If previous Read returns other errors, return the error.
-			// nextIOErr != nil will be handled at the next iteration, so no need to check it here.
-			return nil, fmt.Errorf("Failed to read bytes from file at offset %d: %w. Bytes actually read: %d", offset, curIOError, curBytesRead)
+		} else if err != nil {
+			return nil, fmt.Errorf("Failed to read bytes from file at offset %d: %w. Bytes actually read: %d", offset, err, bytesRead)
 		}
+		for attempt := 0; attempt < maxRetryCount; attempt++ {
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, uploadURL, bytes.NewReader(buffer[:bytesRead]))
+			if err != nil {
+				return nil, fmt.Errorf("Failed to create upload request for chunk at offset %d: %w", offset, err)
+			}
+			doMergeHeaders(httpOptions.Headers, &req.Header)
+			doMergeHeaders(sdkHeader(ctx, ac), &req.Header)
 
-		req, err := http.NewRequestWithContext(ctx, http.MethodPost, uploadURL, bytes.NewReader(curBuffer[:curBytesRead]))
-		if err != nil {
-			return nil, fmt.Errorf("Failed to create upload request for chunk at offset %d: %w", offset, err)
-		}
-		doMergeHeaders(httpOptions.Headers, &req.Header)
-		doMergeHeaders(sdkHeader(ac), &req.Header)
+			req.Header.Set("X-Goog-Upload-Command", uploadCommand)
+			req.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))
+			req.Header.Set("Content-Length", strconv.FormatInt(int64(bytesRead), 10))
+			resp, err = doRequest(ac, req)
+			if err != nil {
+				return nil, fmt.Errorf("upload request failed for chunk at offset %d: %w", offset, err)
+			}
+			if resp.Header.Get("X-Goog-Upload-Status") != "" {
+				break
+			}
+			resp.Body.Close()
 
-		req.Header.Set("X-Goog-Upload-Command", uploadCommand)
-		req.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))
-		req.Header.Set("Content-Length", strconv.FormatInt(int64(curBytesRead), 10))
-
-		resp, err = doRequest(ac, req)
-		if err != nil {
-			return nil, fmt.Errorf("upload request failed for chunk at offset %d: %w", offset, err)
+			select {
+			case <-ctx.Done():
+				return nil, fmt.Errorf("upload aborted while waiting to retry (attempt %d, offset %d): %w", attempt+1, offset, ctx.Err())
+			case <-time.After(initialRetryDelay * time.Duration(delayMultiplier^attempt)):
+				// Sleep completed, continue to the next attempt.
+			}
 		}
 		defer resp.Body.Close()
 
@@ -394,11 +432,12 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 			return nil, fmt.Errorf("response body is invalid for chunk at offset %d: %w", offset, err)
 		}
 
-		offset += int64(curBytesRead)
+		offset += int64(bytesRead)
 
 		uploadStatus := resp.Header.Get("X-Goog-Upload-Status")
-		if uploadStatus != "final" && strings.Contains(uploadStatus, "finalize") {
-			return nil, fmt.Errorf("send finalize command but doesn't receive final status. Offset %d, Bytes read: %d, Upload status: %s", offset, curBytesRead, uploadStatus)
+
+		if uploadStatus != "final" && strings.Contains(uploadCommand, "finalize") {
+			return nil, fmt.Errorf("send finalize command but doesn't receive final status. Offset %d, Bytes read: %d, Upload status: %s", offset, bytesRead, uploadStatus)
 		}
 		if uploadStatus != "active" {
 			// Upload is complete ('final') or interrupted ('cancelled', etc.)

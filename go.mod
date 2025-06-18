@@ -3,6 +3,10 @@ module google.golang.org/genai
 go 1.23
 toolchain go1.24.1
 
+retract (
+	v1.11.0 // Retracted due to breaking change on GenerateVideos
+)
+
 require (
 	cloud.google.com/go v0.116.0
 	cloud.google.com/go/auth v0.9.3

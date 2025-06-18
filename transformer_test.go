@@ -156,8 +156,16 @@ func TestSchemaTransformer(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
-			wantErr: true,
+			want: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"name": map[string]any{
+						"type":    "STRING",
+						"default": "test",
+					},
+				},
+			},
+			wantErr: false,
 		},
 		{
 			name:    "VertexAI_Schema_With_Default",

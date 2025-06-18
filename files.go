@@ -748,7 +748,7 @@ func (m Files) Upload(ctx context.Context, r io.Reader, config *UploadFileConfig
 
 	httpOptions := HTTPOptions{Headers: http.Header{}}
 	if config != nil && config.HTTPOptions != nil {
-		httpOptions = *config.HTTPOptions
+		deepCopy(*config.HTTPOptions, &httpOptions)
 	}
 	if httpOptions.Headers == nil {
 		httpOptions.Headers = http.Header{}
@@ -789,27 +789,27 @@ func (m Files) UploadFromPath(ctx context.Context, path string, config *UploadFi
 	}
 	defer osf.Close()
 
-	var fileToUpload File
-	fileToUpload.SizeBytes = Ptr[int64](fileInfo.Size())
+	if config == nil {
+		config = &UploadFileConfig{}
+	}
 
-	if fileToUpload.MIMEType == "" {
-		fileToUpload.MIMEType = mime.TypeByExtension(filepath.Ext(path))
-		if fileToUpload.MIMEType == "" {
+	var copiedCfg UploadFileConfig
+	deepCopy(*config, &copiedCfg)
+
+	if copiedCfg.MIMEType == "" {
+		copiedCfg.MIMEType = mime.TypeByExtension(filepath.Ext(path))
+		if copiedCfg.MIMEType == "" {
 			return nil, fmt.Errorf("Unknown mime type: Could not determine the mimetype for your file please set the `MIMEType` argument")
 		}
 	}
 
-	if config == nil {
-		config = &UploadFileConfig{}
+	if copiedCfg.HTTPOptions == nil {
+		copiedCfg.HTTPOptions = &HTTPOptions{Headers: http.Header{}}
 	}
-	config.MIMEType = fileToUpload.MIMEType
-	if config.HTTPOptions == nil {
-		config.HTTPOptions = &HTTPOptions{Headers: http.Header{}}
+	if copiedCfg.HTTPOptions.Headers == nil {
+		copiedCfg.HTTPOptions.Headers = http.Header{}
 	}
-	if config.HTTPOptions.Headers == nil {
-		config.HTTPOptions.Headers = http.Header{}
-	}
-	config.HTTPOptions.Headers.Add("X-Goog-Upload-Header-Content-Length", strconv.FormatInt(*fileToUpload.SizeBytes, 10))
+	copiedCfg.HTTPOptions.Headers.Add("X-Goog-Upload-Header-Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
 
-	return m.Upload(ctx, osf, config)
+	return m.Upload(ctx, osf, &copiedCfg)
 }

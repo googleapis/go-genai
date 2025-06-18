@@ -21,6 +21,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+var (
+	dummyExtrasProvider = func(body map[string]any) map[string]any { return body }
+)
+
 func TestMergeHTTPOptions(t *testing.T) {
 	tests := []struct {
 		name               string
@@ -167,12 +171,66 @@ func TestMergeHTTPOptions(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "ExtrasRequestProvider in request only",
+			requestHTTPOptions: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+			},
+			want: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+				Headers:               http.Header{},
+			},
+		},
+		{
+			name: "ExtrasRequestProvider in client config only",
+			clientConfig: &ClientConfig{
+				HTTPOptions: HTTPOptions{
+					ExtrasRequestProvider: dummyExtrasProvider,
+				},
+			},
+			requestHTTPOptions: &HTTPOptions{},
+			want: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+				Headers:               http.Header{},
+			},
+		},
+		{
+			name: "ExtrasRequestProvider in both, request overrides",
+			clientConfig: &ClientConfig{
+				HTTPOptions: HTTPOptions{
+					ExtrasRequestProvider: func(body map[string]any) map[string]any { return nil }, // Different provider
+				},
+			},
+			requestHTTPOptions: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+			},
+			want: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+				Headers:               http.Header{},
+			},
+		},
+		{
+			name: "ExtrasRequestProvider in neither",
+			clientConfig: &ClientConfig{
+				HTTPOptions: HTTPOptions{},
+			},
+			requestHTTPOptions: &HTTPOptions{},
+			want: &HTTPOptions{
+				ExtrasRequestProvider: nil,
+				Headers:               http.Header{},
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := mergeHTTPOptions(tt.clientConfig, tt.requestHTTPOptions)
-			if diff := cmp.Diff(tt.want, got); diff != "" {
+			// Compare ExtrasRequestProvider by checking if they are both nil or both non-nil
+			// as direct comparison of func pointers might not be reliable.
+			opt := cmp.Comparer(func(x, y ExtrasRequestProvider) bool {
+				return (x == nil && y == nil) || (x != nil && y != nil)
+			})
+			if diff := cmp.Diff(tt.want, got, opt); diff != "" {
 				t.Errorf("mergeHTTPOptions() mismatch (-want +got):\n%s", diff)
 			}
 		})

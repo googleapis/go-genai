@@ -65,15 +65,10 @@ func (c *Chat) recordHistory(ctx context.Context, inputContent *Content, outputC
 }
 
 // copySanitizedModelContent creates a (shallow) copy of modelContent with role set to
-// model and empty text parts removed.
+// model and all Parts copied verbatim.
 func copySanitizedModelContent(modelContent *Content) *Content {
 	newContent := &Content{Role: RoleModel}
-	for _, part := range modelContent.Parts {
-		text := (*part).Text
-		if len(string(text)) > 0 {
-			newContent.Parts = append(newContent.Parts, part)
-		}
-	}
+	newContent.Parts = append(newContent.Parts, modelContent.Parts...)
 	return newContent
 }
 
@@ -86,14 +81,19 @@ func (c *Chat) History(curated bool) []*Content {
 	return c.comprehensiveHistory
 }
 
-// SendMessage sends the conversation history with the additional user's message and returns the model's response.
+// SendMessage is a wrapper around Send.
 func (c *Chat) SendMessage(ctx context.Context, parts ...Part) (*GenerateContentResponse, error) {
 	// Transform Parts to single Content
 	p := make([]*Part, len(parts))
 	for i, part := range parts {
 		p[i] = &part
 	}
-	inputContent := &Content{Parts: p, Role: RoleUser}
+	return c.Send(ctx, p...)
+}
+
+// Send function sends the conversation history with the additional user's message and returns the model's response.
+func (c *Chat) Send(ctx context.Context, parts ...*Part) (*GenerateContentResponse, error) {
+	inputContent := &Content{Parts: parts, Role: RoleUser}
 
 	// Combine history with input content to send to model
 	contents := append(c.comprehensiveHistory, inputContent)
@@ -114,14 +114,19 @@ func (c *Chat) SendMessage(ctx context.Context, parts ...Part) (*GenerateContent
 	return modelOutput, err
 }
 
-// SendMessageStream sends the conversation history with the additional user's message and returns the model's response.
+// SendMessageStream is a wrapper around SendStream.
 func (c *Chat) SendMessageStream(ctx context.Context, parts ...Part) iter.Seq2[*GenerateContentResponse, error] {
 	// Transform Parts to single Content
 	p := make([]*Part, len(parts))
 	for i, part := range parts {
 		p[i] = &part
 	}
-	inputContent := &Content{Parts: p, Role: "user"}
+	return c.SendStream(ctx, p...)
+}
+
+// SendStream function sends the conversation history with the additional user's message and returns the model's response.
+func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*GenerateContentResponse, error] {
+	inputContent := &Content{Parts: parts, Role: RoleUser}
 
 	// Combine history with input content to send to model
 	contents := append(c.comprehensiveHistory, inputContent)
@@ -143,7 +148,9 @@ func (c *Chat) SendMessageStream(ctx context.Context, parts ...Part) iter.Seq2[*
 			if len(chunk.Candidates) > 0 && chunk.Candidates[0].Content != nil {
 				outputContents = append(outputContents, chunk.Candidates[0].Content)
 			}
-			yield(chunk, nil)
+			if !yield(chunk, nil) {
+				return
+			}
 		}
 		// Record history. By default, use the first candidate for history.
 		c.recordHistory(ctx, inputContent, outputContents)

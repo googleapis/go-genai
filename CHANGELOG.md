@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/googleapis/go-genai/compare/v1.11.1...v1.12.0) (2025-06-18)
+
+
+### Features
+
+* enable json schema for controlled output and function declaration. ([f2abe6b](https://github.com/googleapis/go-genai/commit/f2abe6b739b57ef46b1f7b459b9ce1fed3a6956c))
+
 ## [1.11.1](https://github.com/googleapis/go-genai/compare/v1.11.0...v1.11.1) (2025-06-13)
 
 

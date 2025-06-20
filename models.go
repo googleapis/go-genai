@@ -3663,6 +3663,11 @@ func candidateFromMldev(ac *apiClient, fromObject map[string]any, parentObject m
 func generateContentResponseFromMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromHttpHeaders := getValueByPath(fromObject, []string{"httpHeaders"})
+	if fromHttpHeaders != nil {
+		setValueByPath(toObject, []string{"httpHeaders"}, fromHttpHeaders)
+	}
+
 	fromCandidates := getValueByPath(fromObject, []string{"candidates"})
 	if fromCandidates != nil {
 		fromCandidates, err = applyConverterToSlice(ac, fromCandidates.([]any), candidateFromMldev)
@@ -4346,6 +4351,11 @@ func candidateFromVertex(ac *apiClient, fromObject map[string]any, parentObject 
 
 func generateContentResponseFromVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromHttpHeaders := getValueByPath(fromObject, []string{"httpHeaders"})
+	if fromHttpHeaders != nil {
+		setValueByPath(toObject, []string{"httpHeaders"}, fromHttpHeaders)
+	}
 
 	fromCandidates := getValueByPath(fromObject, []string{"candidates"})
 	if fromCandidates != nil {

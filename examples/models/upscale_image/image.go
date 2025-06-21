@@ -67,8 +67,10 @@ func run(ctx context.Context) {
 		&genai.Image{ImageBytes: data},
 		/*upscaleFactor=*/ "x2",
 		&genai.UpscaleImageConfig{
-			IncludeRAIReason: true,
-			OutputMIMEType:   "image/jpeg",
+			IncludeRAIReason:        true,
+			OutputMIMEType:          "image/jpeg",
+			EnhanceInputImage:       true,
+			ImagePreservationFactor: genai.Ptr[float32](0.6),
 		})
 	if err != nil {
 		log.Fatal(err)

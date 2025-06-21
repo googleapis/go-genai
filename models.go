@@ -2955,6 +2955,16 @@ func upscaleImageAPIConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
 	}
 
+	fromEnhanceInputImage := getValueByPath(fromObject, []string{"enhanceInputImage"})
+	if fromEnhanceInputImage != nil {
+		setValueByPath(parentObject, []string{"parameters", "upscaleConfig", "enhanceInputImage"}, fromEnhanceInputImage)
+	}
+
+	fromImagePreservationFactor := getValueByPath(fromObject, []string{"imagePreservationFactor"})
+	if fromImagePreservationFactor != nil {
+		setValueByPath(parentObject, []string{"parameters", "upscaleConfig", "imagePreservationFactor"}, fromImagePreservationFactor)
+	}
+
 	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
 	if fromNumberOfImages != nil {
 		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
@@ -5905,6 +5915,8 @@ func (m Models) UpscaleImage(ctx context.Context, model string, image *Image, up
 		apiConfig.OutputMIMEType = config.OutputMIMEType
 		apiConfig.OutputCompressionQuality = config.OutputCompressionQuality
 		apiConfig.IncludeRAIReason = config.IncludeRAIReason
+		apiConfig.EnhanceInputImage = config.EnhanceInputImage
+		apiConfig.ImagePreservationFactor = config.ImagePreservationFactor
 	}
 
 	return m.upscaleImage(ctx, model, image, upscaleFactor, apiConfig)

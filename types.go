@@ -2285,6 +2285,15 @@ type upscaleImageAPIConfig struct {
 	// Optional. The level of compression if the ``output_mime_type`` is
 	// ``image/jpeg``.
 	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
+	// Optional. Whether to add an image enhancing step before upscaling.
+	// It is expected to suppress the noise and JPEG compression artifact from
+	// the input image.
+	EnhanceInputImage bool `json:"enhanceInputImage,omitempty"`
+	// Optional. With a higher image preservation factor, the original image pixels
+	// are more respected. With a lower image preservation factor, the output
+	// image will have be more different from the input image, but maybe with
+	// finer details and fewer noises.
+	ImagePreservationFactor *float32 `json:"imagePreservationFactor,omitempty"`
 	// Optional.
 	NumberOfImages int32 `json:"numberOfImages,omitempty"`
 	// Optional.
@@ -3180,6 +3189,15 @@ type UpscaleImageConfig struct {
 	OutputMIMEType string `json:"outputMimeType,omitempty"`
 	// Optional. The level of compression if the OutputMIMEType is image/jpeg.
 	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
+	// Optional. Whether to add an image enhancing step before upscaling.
+	// It is expected to suppress the noise and JPEG compression artifact from
+	// the input image.
+	EnhanceInputImage bool `json:"enhanceInputImage,omitempty"`
+	// Optional. With a higher image preservation factor, the original image pixels
+	// are more respected. With a lower image preservation factor, the output
+	// image will have be more different from the input image, but maybe with
+	// finer details and fewer noises.
+	ImagePreservationFactor *float32 `json:"imagePreservationFactor,omitempty"`
 }
 
 // A raw reference image.

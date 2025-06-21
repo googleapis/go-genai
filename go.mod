@@ -2,9 +2,7 @@ module google.golang.org/genai
 
 go 1.23
 
-retract (
-	v1.11.0 // Retracted due to breaking change on GenerateVideos
-)
+retract v1.11.0 // Retracted due to breaking change on GenerateVideos
 
 require (
 	cloud.google.com/go v0.116.0

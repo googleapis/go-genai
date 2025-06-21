@@ -896,6 +896,8 @@ type HTTPOptions struct {
 	APIVersion string `json:"apiVersion,omitempty"`
 	// Optional. Additional HTTP headers to be sent with the request.
 	Headers http.Header `json:"headers,omitempty"`
+	// Optional. Timeout for the request in milliseconds.
+	Timeout *int32 `json:"timeout,omitempty"`
 	// Optional. [Experimental] No forward compatibility is guaranteed for this feature.
 	// Usage of this field is strongly discouraged.
 	ExtrasRequestProvider ExtrasRequestProvider `json:"-"`

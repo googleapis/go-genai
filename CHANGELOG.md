@@ -8,7 +8,6 @@
 * Add compressionQuality enum for generate_videos ([061e567](https://github.com/googleapis/go-genai/commit/061e5674e1744d3bdaade62d3fb8f94c65e77c4c))
 * Add enhance_input_image and image_preservation_factor fields for upscale_image ([6b9e07f](https://github.com/googleapis/go-genai/commit/6b9e07fee4864b54690e84ee9b67cf8a588d89d9))
 * Batches support in Go ([dcae33f](https://github.com/googleapis/go-genai/commit/dcae33f83abfbad8b3cd14930ca0514a61a217d8))
-* Batches support in Java ([84ad746](https://github.com/googleapis/go-genai/commit/84ad7461e89d227926c2dc20306fed921fcd09c2))
 * expose the responseJsonSchema in GenerateContentConfig ([611adde](https://github.com/googleapis/go-genai/commit/611adde2f1989e66b6e5d029f7d077e7630ada71))
 
 ## [1.12.0](https://github.com/googleapis/go-genai/compare/v1.11.1...v1.12.0) (2025-06-18)

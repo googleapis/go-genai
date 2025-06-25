@@ -60,7 +60,7 @@ func live(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	// Create a new GenAI client instance.
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{Backend: genai.BackendGeminiAPI, HTTPOptions: genai.HTTPOptions{APIVersion: "v1beta"}})
-	model := "gemini-2.0-flash-live-001"
+	model := "gemini-live-2.5-flash-preview"
 	// Vertex AI client.
 	// client, err := genai.NewClient(ctx, &genai.ClientConfig{Backend: genai.BackendVertexAI, HTTPOptions: genai.HTTPOptions{APIVersion: "v1beta"}})
 	// model = "gemini-2.0-flash-live-preview-04-09"

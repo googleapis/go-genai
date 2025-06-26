@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"iter"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -102,7 +103,50 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 		}
 	}
 
-	data[keys[len(keys)-1]] = value
+	finalKey := keys[len(keys)-1]
+	existingValue, exists := data[finalKey]
+
+	if exists {
+		// 1. Check if the new value is "empty" (nil, zero value, or empty collection)
+		isNewValueEmpty := false
+		if value == nil {
+			isNewValueEmpty = true
+		} else {
+			valReflect := reflect.ValueOf(value)
+			if valReflect.Kind() == reflect.Invalid { // Handles nil interface{}
+				isNewValueEmpty = true
+			} else if valReflect.IsZero() { // Covers zero values for primitives, nil for pointers/interfaces
+				isNewValueEmpty = true
+			} else if (valReflect.Kind() == reflect.Map || valReflect.Kind() == reflect.Slice) && valReflect.Len() == 0 {
+				isNewValueEmpty = true
+			}
+		}
+
+		if isNewValueEmpty {
+			// If new value is empty, do not overwrite existing non-empty value.
+			// This is triggered when handling tuning datasets.
+			return
+		}
+		if reflect.DeepEqual(value, existingValue) {
+			// Don't fail when overwriting value with same value
+			return
+		}
+		if existingMap, ok1 := existingValue.(map[string]any); ok1 {
+			if newMap, ok2 := value.(map[string]any); ok2 {
+				// Instead of overwriting dictionary with another dictionary, merge them.
+				// This is important for handling training and validation datasets in tuning.
+				for k, v := range newMap {
+					existingMap[k] = v
+				}
+				data[finalKey] = existingMap // Assign the updated map back
+			}
+		} else {
+			log.Println("Error. Cannot set value for an existing key. Key: ", finalKey, "; Existing value: ", existingValue, "; New value: ", value)
+		}
+	} else {
+		// If existing_data is None (or key doesn't exist), set the value directly.
+		data[finalKey] = value
+	}
 }
 
 // getValueByPath retrieves a value from a nested map or slice or struct based on a path of keys.

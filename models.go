@@ -5831,7 +5831,7 @@ func (m Models) GenerateVideos(ctx context.Context, model string, prompt string,
 }
 
 // GenerateContent generates content based on the provided model, contents, and configuration.
-func (m Models) GenerateContent(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) (*GenerateContentResponse, error) {
+func (m Models) GenerateContent(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig, v string) (*GenerateContentResponse, error) {
 	if config != nil {
 		config.setDefaults()
 	}

@@ -183,6 +183,10 @@ func extractMethod(t *testing.T, testTableFile *testTableFile, client *Client) r
 	}
 	moduleName, methodName := moduleAndMethodName(t, testTableFile)
 
+	if methodName == "tune" && client.clientConfig.Backend != BackendVertexAI {
+		methodName = "tuneMldev"
+	}
+
 	// Finds the module and method.
 	module := reflect.ValueOf(*client).FieldByName(snakeToPascal(moduleName))
 	if !module.IsValid() {
@@ -196,10 +200,16 @@ func extractMethod(t *testing.T, testTableFile *testTableFile, client *Client) r
 }
 
 func extractWantException(testTableItem *testTableItem, backend Backend) string {
+	exception := testTableItem.ExceptionIfMLDev
 	if backend == BackendVertexAI {
-		return testTableItem.ExceptionIfVertex
+		exception = testTableItem.ExceptionIfVertex
 	}
-	return testTableItem.ExceptionIfMLDev
+	parts := strings.SplitN(exception, " ", 2)
+	if len(parts) > 1 && strings.Contains(parts[0], "_") {
+		parts[0] = snakeToCamel(parts[0])
+		return strings.Join(parts, " ")
+	}
+	return exception
 }
 
 func createReplayAPIClient(t *testing.T, testTableDirectory string, testTableItem *testTableItem, backendName string) *replayAPIClient {

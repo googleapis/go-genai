@@ -44,6 +44,8 @@ type Client struct {
 	Operations *Operations
 	// Batches provides access to the Batch service.
 	Batches *Batches
+	// Tunings provides access to the Tunings service.
+	Tunings *Tunings
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -326,6 +328,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		Operations:   &Operations{apiClient: ac},
 		Files:        &Files{apiClient: ac},
 		Batches:      &Batches{apiClient: ac},
+		Tunings:      &Tunings{apiClient: ac},
 	}
 	return c, nil
 }

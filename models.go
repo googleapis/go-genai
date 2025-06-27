@@ -5847,7 +5847,7 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 }
 
 // List retrieves a paginated list of models resources.
-func (m Models) List(ctx context.Context, config *ListModelsConfig) (Page[Model], error) {
+func (m Models) List(ctx context.Context, config *ListModelsConfig, v string) (Page[Model], error) {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*Model, string, error) {
 		var c ListModelsConfig
 		if err := mapToStruct(config, &c); err != nil {

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/googleapis/go-genai/compare/v1.13.0...v1.14.0) (2025-06-27)
+
+
+### Features
+
+* Enable HttpOptions timeout ([1ca3aaf](https://github.com/googleapis/go-genai/commit/1ca3aaf8f4cfa786226eba1dbfb361dda574f2f7))
+
 ## [1.13.0](https://github.com/googleapis/go-genai/compare/v1.12.0...v1.13.0) (2025-06-25)
 
 

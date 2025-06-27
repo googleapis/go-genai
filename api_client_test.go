@@ -28,14 +28,17 @@ func TestSendRequest(t *testing.T) {
 	ctx := context.Background()
 	// Setup test cases
 	tests := []struct {
-		desc         string
-		path         string
-		method       string
-		requestBody  map[string]any
-		responseCode int
-		responseBody string
-		want         map[string]any
-		wantErr      error
+		desc           string
+		path           string
+		method         string
+		requestBody    map[string]any
+		clientTimeout  *time.Duration
+		requestTimeout *time.Duration
+		serverLatency  time.Duration
+		responseCode   int
+		responseBody   string
+		want           map[string]any
+		wantErr        error
 	}{
 		{
 			desc:         "successful post request",
@@ -99,7 +102,41 @@ func TestSendRequest(t *testing.T) {
 			method:       http.MethodPut,
 			responseCode: http.StatusOK,
 			responseBody: `invalid json`,
-			wantErr:      fmt.Errorf("newAPIError: unmarshal response to error failed"),
+			wantErr:      fmt.Errorf("deserializeUnaryResponse: error unmarshalling response: invalid character"),
+		},
+		{
+			desc:          "client timeout",
+			path:          "foo",
+			method:        http.MethodPost,
+			clientTimeout: Ptr(600 * time.Millisecond),
+			requestBody:   map[string]any{"key": "value"},
+			responseCode:  http.StatusOK,
+			responseBody:  `{"response": "ok"}`,
+			serverLatency: 700 * time.Millisecond,
+			wantErr:       fmt.Errorf("context deadline exceeded"),
+		},
+		{
+			desc:           "request timeout",
+			path:           "foo",
+			method:         http.MethodPost,
+			requestTimeout: Ptr(500 * time.Millisecond),
+			requestBody:    map[string]any{"key": "value"},
+			responseCode:   http.StatusOK,
+			responseBody:   `{"response": "ok"}`,
+			serverLatency:  700 * time.Millisecond,
+			wantErr:        fmt.Errorf("context deadline exceeded"),
+		},
+		{
+			desc:           "client timeout with request timeout",
+			path:           "foo",
+			method:         http.MethodPost,
+			clientTimeout:  Ptr(600 * time.Millisecond),
+			requestTimeout: Ptr(500 * time.Millisecond),
+			requestBody:    map[string]any{"key": "value"},
+			responseCode:   http.StatusOK,
+			responseBody:   `{"response": "ok"}`,
+			serverLatency:  550 * time.Millisecond,
+			wantErr:        fmt.Errorf("context deadline exceeded"),
 		},
 	}
 
@@ -107,6 +144,9 @@ func TestSendRequest(t *testing.T) {
 		t.Run(tt.desc, func(t *testing.T) {
 			// Create a test server
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tt.serverLatency > 0 {
+					time.Sleep(tt.serverLatency)
+				}
 				w.WriteHeader(tt.responseCode)
 				fmt.Fprintln(w, tt.responseBody)
 			}))
@@ -117,12 +157,13 @@ func TestSendRequest(t *testing.T) {
 				clientConfig: &ClientConfig{
 					HTTPOptions: HTTPOptions{
 						BaseURL: ts.URL,
+						Timeout: tt.clientTimeout,
 					},
 					HTTPClient: ts.Client(),
 				},
 			}
 
-			got, err := sendRequest(ctx, ac, tt.path, tt.method, tt.requestBody, &HTTPOptions{BaseURL: ts.URL})
+			got, err := sendRequest(ctx, ac, tt.path, tt.method, tt.requestBody, &HTTPOptions{BaseURL: ts.URL, Timeout: tt.requestTimeout})
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("sendRequest() error = %v, wantErr %v", err, tt.wantErr)
@@ -135,17 +176,11 @@ func TestSendRequest(t *testing.T) {
 					if !ok {
 						t.Errorf("want Error, got %T(%s)", err, err.Error())
 					}
-				} else if tt.path == "" { // build request error
+				} else { // build request error
 					if !strings.Contains(err.Error(), tt.wantErr.Error()) {
-						t.Errorf("unexpected error, want error that contains 'createAPIURL: error parsing', got: %v", err)
-					}
-
-				} else { // deserialize error
-					if !strings.Contains(err.Error(), "deserializeUnaryResponse: error unmarshalling response") {
-						t.Errorf("unexpected error, want error that contains 'deserializeUnaryResponse: error unmarshalling response', got: %v", err)
+						t.Errorf("unexpected error, want: %v, got: %v", tt.wantErr, err)
 					}
 				}
-
 			}
 
 			if tt.wantErr != nil && !cmp.Equal(got, tt.want) {
@@ -166,6 +201,9 @@ func TestSendStreamRequest(t *testing.T) {
 		mockStatusCode   int
 		converterErr     error
 		maxIteration     *int
+		clientTimeout    *time.Duration
+		requestTimeout   *time.Duration
+		serverLatency    time.Duration
 		wantResponse     []map[string]any
 		wantErr          bool
 		wantErrorMessage string
@@ -375,11 +413,112 @@ func TestSendStreamRequest(t *testing.T) {
 			wantErr:          true,
 			wantErrorMessage: "doRequest: error sending request: Post \"invalid-url//test\": unsupported protocol scheme",
 		},
+		{
+			name:           "With client timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			clientTimeout:    Ptr(100 * time.Millisecond),
+			serverLatency:    150 * time.Millisecond,
+			wantErr:          true,
+			wantErrorMessage: "context deadline exceeded",
+		},
+		{
+			name:           "With request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			requestTimeout:   Ptr(100 * time.Millisecond),
+			serverLatency:    150 * time.Millisecond,
+			wantErr:          true,
+			wantErrorMessage: "context deadline exceeded",
+		},
+		{
+			name:           "With client timeout and request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			clientTimeout:    Ptr(200 * time.Millisecond),
+			requestTimeout:   Ptr(100 * time.Millisecond),
+			serverLatency:    150 * time.Millisecond,
+			wantErr:          true,
+			wantErrorMessage: "context deadline exceeded",
+		},
+		{
+			name:           "With 0 client timeout and request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			clientTimeout:    Ptr(0 * time.Millisecond),
+			requestTimeout:   Ptr(100 * time.Millisecond),
+			serverLatency:    150 * time.Millisecond,
+			wantErr:          true,
+			wantErrorMessage: "context deadline exceeded",
+		},
+		{
+			name:           "With client timeout and 0 request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			clientTimeout:  Ptr(200 * time.Millisecond),
+			requestTimeout: Ptr(0 * time.Millisecond),
+			serverLatency:  250 * time.Millisecond,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "With 0 client timeout and 0 request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			clientTimeout:  Ptr(0 * time.Millisecond),
+			requestTimeout: Ptr(0 * time.Millisecond),
+			serverLatency:  150 * time.Millisecond,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tt.serverLatency > 0 {
+					time.Sleep(tt.serverLatency)
+				}
 				if r.Method != tt.method {
 					t.Errorf("Expected method %s, got %s", tt.method, r.Method)
 				}
@@ -419,16 +558,18 @@ func TestSendStreamRequest(t *testing.T) {
 						"User-Agent":     []string{"test-user-agent"},
 						"X-Goog-Api-Key": []string{"test-api-key"},
 					},
+					Timeout: tt.clientTimeout,
 				},
 				HTTPClient: ts.Client(),
 			}
+
 			if tt.httpOptions != nil {
 				clientConfig.HTTPOptions = *tt.httpOptions
 			}
 
 			ac := &apiClient{clientConfig: clientConfig}
 			var output responseStream[map[string]any]
-			err := sendStreamRequest(context.Background(), ac, tt.path, tt.method, tt.body, &clientConfig.HTTPOptions, &output)
+			err := sendStreamRequest(context.Background(), ac, tt.path, tt.method, tt.body, &HTTPOptions{Timeout: tt.requestTimeout, BaseURL: clientConfig.HTTPOptions.BaseURL}, &output)
 
 			if err != nil && tt.wantErr {
 				if tt.wantErrorMessage != "" && !strings.Contains(err.Error(), tt.wantErrorMessage) {
@@ -544,16 +685,18 @@ func TestMapToStruct(t *testing.T) {
 }
 
 func TestBuildRequest(t *testing.T) {
+	timeout := 10 * time.Second
 	tests := []struct {
-		name          string
-		clientConfig  *ClientConfig
-		path          string
-		body          map[string]any
-		method        string
-		httpOptions   *HTTPOptions
-		want          *http.Request
-		wantErr       bool
-		expectedError string
+		name            string
+		clientConfig    *ClientConfig
+		path            string
+		body            map[string]any
+		method          string
+		httpOptions     *HTTPOptions
+		want            *http.Request
+		wantErr         bool
+		expectedError   string
+		expectedTimeout *time.Duration
 	}{
 		{
 			name: "MLDev API with API Key",
@@ -826,13 +969,50 @@ func TestBuildRequest(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "With timeout",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"key": "value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				Headers: http.Header{
+					"X-Test-Header": []string{"test-value"},
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"X-Test-Header":     []string{"test-value"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Server-Timeout":  []string{"10"},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"key\":\"value\"}\n")),
+			},
+			wantErr:         false,
+			expectedTimeout: &timeout,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ac := &apiClient{clientConfig: tt.clientConfig}
 
-			req, err := buildRequest(context.Background(), ac, tt.path, tt.body, tt.method, tt.httpOptions)
+			req, err := buildRequest(context.Background(), ac, tt.path, tt.body, tt.method, tt.httpOptions, tt.expectedTimeout)
 
 			if tt.wantErr {
 				if err == nil {
@@ -867,17 +1047,15 @@ func TestBuildRequest(t *testing.T) {
 			if diff := cmp.Diff(string(wantBodyBytes), string(gotBodyBytes)); diff != "" {
 				t.Errorf("buildRequest() body mismatch (-want +got):\n%s", diff)
 			}
-
-			if !reflect.DeepEqual(req.Context(), tt.want.Context()) {
-				t.Errorf("buildRequest() Context mismatch got %+v, want %+v", req.Context(), tt.want.Context())
-			}
 		})
 	}
 }
 
 func Test_sdkHeader(t *testing.T) {
+	timeout := time.Second * 10
 	type args struct {
-		ac *apiClient
+		ac      *apiClient
+		timeout *time.Duration
 	}
 	tests := []struct {
 		name           string
@@ -887,7 +1065,7 @@ func Test_sdkHeader(t *testing.T) {
 	}{
 		{
 			name: "with_api_key",
-			args: args{&apiClient{clientConfig: &ClientConfig{APIKey: "test_api_key", HTTPClient: &http.Client{}}}},
+			args: args{&apiClient{clientConfig: &ClientConfig{APIKey: "test_api_key", HTTPClient: &http.Client{}}}, nil},
 			want: http.Header{
 				"Content-Type":      []string{"application/json"},
 				"X-Goog-Api-Key":    []string{"test_api_key"},
@@ -897,7 +1075,7 @@ func Test_sdkHeader(t *testing.T) {
 		},
 		{
 			name: "without_api_key",
-			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}},
+			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}, nil},
 			want: http.Header{
 				"Content-Type":      []string{"application/json"},
 				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
@@ -906,7 +1084,7 @@ func Test_sdkHeader(t *testing.T) {
 		},
 		{
 			name:           "with_context_timeout",
-			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}},
+			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}, nil},
 			contextTimeout: 1 * time.Minute,
 			want: http.Header{
 				"Content-Type":      []string{"application/json"},
@@ -917,7 +1095,7 @@ func Test_sdkHeader(t *testing.T) {
 		},
 		{
 			name: "with_request_timeout",
-			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}},
+			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}, nil},
 			want: http.Header{
 				"Content-Type":      []string{"application/json"},
 				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
@@ -927,13 +1105,34 @@ func Test_sdkHeader(t *testing.T) {
 		},
 		{
 			name:           "with_request_context_timeout",
-			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}},
+			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}, nil},
 			contextTimeout: 30 * time.Second,
 			want: http.Header{
 				"Content-Type":      []string{"application/json"},
 				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
 				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
 				"X-Server-Timeout":  []string{"29"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
+			},
+		},
+		{
+			name: "with_http_options_timeout",
+			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}, &timeout},
+			want: http.Header{
+				"Content-Type":      []string{"application/json"},
+				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Server-Timeout":  []string{"9"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
+			},
+		},
+		{
+			name:           "with_ctx_http_options_and_client_timeout",
+			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}, &timeout},
+			contextTimeout: 30 * time.Second,
+			want: http.Header{
+				"Content-Type":      []string{"application/json"},
+				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				"X-Server-Timeout":  []string{"9"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
 			},
 		},
 	}
@@ -947,7 +1146,7 @@ func Test_sdkHeader(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := cmp.Diff(sdkHeader(ctx, tt.args.ac), tt.want, cmp.Comparer(compareHeadersWithTolerance)); diff != "" {
+			if diff := cmp.Diff(sdkHeader(ctx, tt.args.ac, tt.args.timeout), tt.want, cmp.Comparer(compareHeadersWithTolerance)); diff != "" {
 				t.Errorf("sdkHeader() mismatch (-want +got):\n%s", diff)
 			}
 		})

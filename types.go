@@ -275,6 +275,58 @@ const (
 	MediaResolutionHigh MediaResolution = "MEDIA_RESOLUTION_HIGH"
 )
 
+// Job state.
+type JobState string
+
+const (
+	// The job state is unspecified.
+	JobStateUnspecified JobState = "JOB_STATE_UNSPECIFIED"
+	// The job has been just created or resumed and processing has not yet begun.
+	JobStateQueued JobState = "JOB_STATE_QUEUED"
+	// The service is preparing to run the job.
+	JobStatePending JobState = "JOB_STATE_PENDING"
+	// The job is in progress.
+	JobStateRunning JobState = "JOB_STATE_RUNNING"
+	// The job completed successfully.
+	JobStateSucceeded JobState = "JOB_STATE_SUCCEEDED"
+	// The job failed.
+	JobStateFailed JobState = "JOB_STATE_FAILED"
+	// The job is being cancelled. From this state the job may only go to either `JOB_STATE_SUCCEEDED`,
+	// `JOB_STATE_FAILED` or `JOB_STATE_CANCELLED`.
+	JobStateCancelling JobState = "JOB_STATE_CANCELLING"
+	// The job has been cancelled.
+	JobStateCancelled JobState = "JOB_STATE_CANCELLED"
+	// The job has been stopped, and can be resumed.
+	JobStatePaused JobState = "JOB_STATE_PAUSED"
+	// The job has expired.
+	JobStateExpired JobState = "JOB_STATE_EXPIRED"
+	// The job is being updated. Only jobs in the `JOB_STATE_RUNNING` state can be updated.
+	// After updating, the job goes back to the `JOB_STATE_RUNNING` state.
+	JobStateUpdating JobState = "JOB_STATE_UPDATING"
+	// The job is partially succeeded, some results may be missing due to errors.
+	JobStatePartiallySucceeded JobState = "JOB_STATE_PARTIALLY_SUCCEEDED"
+)
+
+// Adapter size for tuning.
+type AdapterSize string
+
+const (
+	// Adapter size is unspecified.
+	AdapterSizeUnspecified AdapterSize = "ADAPTER_SIZE_UNSPECIFIED"
+	// Adapter size 1.
+	AdapterSizeOne AdapterSize = "ADAPTER_SIZE_ONE"
+	// Adapter size 2.
+	AdapterSizeTwo AdapterSize = "ADAPTER_SIZE_TWO"
+	// Adapter size 4.
+	AdapterSizeFour AdapterSize = "ADAPTER_SIZE_FOUR"
+	// Adapter size 8.
+	AdapterSizeEight AdapterSize = "ADAPTER_SIZE_EIGHT"
+	// Adapter size 16.
+	AdapterSizeSixteen AdapterSize = "ADAPTER_SIZE_SIXTEEN"
+	// Adapter size 32.
+	AdapterSizeThirtyTwo AdapterSize = "ADAPTER_SIZE_THIRTY_TWO"
+)
+
 // Options for feature selection preference.
 type FeatureSelectionPreference string
 
@@ -447,38 +499,6 @@ const (
 	FileSourceUnspecified FileSource = "SOURCE_UNSPECIFIED"
 	FileSourceUploaded    FileSource = "UPLOADED"
 	FileSourceGenerated   FileSource = "GENERATED"
-)
-
-// Job state.
-type JobState string
-
-const (
-	// The job state is unspecified.
-	JobStateUnspecified JobState = "JOB_STATE_UNSPECIFIED"
-	// The job has been just created or resumed and processing has not yet begun.
-	JobStateQueued JobState = "JOB_STATE_QUEUED"
-	// The service is preparing to run the job.
-	JobStatePending JobState = "JOB_STATE_PENDING"
-	// The job is in progress.
-	JobStateRunning JobState = "JOB_STATE_RUNNING"
-	// The job completed successfully.
-	JobStateSucceeded JobState = "JOB_STATE_SUCCEEDED"
-	// The job failed.
-	JobStateFailed JobState = "JOB_STATE_FAILED"
-	// The job is being cancelled. From this state the job may only go to either `JOB_STATE_SUCCEEDED`,
-	// `JOB_STATE_FAILED` or `JOB_STATE_CANCELLED`.
-	JobStateCancelling JobState = "JOB_STATE_CANCELLING"
-	// The job has been cancelled.
-	JobStateCancelled JobState = "JOB_STATE_CANCELLED"
-	// The job has been stopped, and can be resumed.
-	JobStatePaused JobState = "JOB_STATE_PAUSED"
-	// The job has expired.
-	JobStateExpired JobState = "JOB_STATE_EXPIRED"
-	// The job is being updated. Only jobs in the `JOB_STATE_RUNNING` state can be updated.
-	// After updating, the job goes back to the `JOB_STATE_RUNNING` state.
-	JobStateUpdating JobState = "JOB_STATE_UPDATING"
-	// The job is partially succeeded, some results may be missing due to errors.
-	JobStatePartiallySucceeded JobState = "JOB_STATE_PARTIALLY_SUCCEEDED"
 )
 
 // Server content modalities.
@@ -2758,6 +2778,421 @@ type GenerateVideosOperation struct {
 	Error map[string]any `json:"error,omitempty"`
 	// Optional. The generated videos.
 	Response *GenerateVideosResponse `json:"response,omitempty"`
+}
+
+// Optional parameters for tunings.get method.
+type GetTuningJobConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+}
+
+// TunedModelCheckpoint for the Tuned Model of a Tuning Job.
+type TunedModelCheckpoint struct {
+	// Optional. The ID of the checkpoint.
+	CheckpointID string `json:"checkpointId,omitempty"`
+	// Optional. The epoch of the checkpoint.
+	Epoch int64 `json:"epoch,omitempty,string"`
+	// Optional. The step of the checkpoint.
+	Step int64 `json:"step,omitempty,string"`
+	// Optional. The Endpoint resource name that the checkpoint is deployed to.
+	// Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+	Endpoint string `json:"endpoint,omitempty"`
+}
+
+type TunedModel struct {
+	// Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}`.
+	Model string `json:"model,omitempty"`
+	// Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+	Endpoint string `json:"endpoint,omitempty"`
+	// The checkpoints associated with this TunedModel.
+	// This field is only populated for tuning jobs that enable intermediate
+	// checkpoints.
+	Checkpoints []*TunedModelCheckpoint `json:"checkpoints,omitempty"`
+}
+
+// The `Status` type defines a logical error model that is suitable for different programming
+// environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc).
+// Each `Status` message contains three pieces of data: error code, error message, and
+// error details. You can find out more about this error model and how to work with
+// it in the [API Design Guide](https://cloud.google.com/apis/design/errors).
+type GoogleRpcStatus struct {
+	// The status code, which should be an enum value of google.rpc.Code.
+	Code int32 `json:"code,omitempty"`
+	// A list of messages that carry the error details. There is a common set of message
+	// types for APIs to use.
+	Details []map[string]any `json:"details,omitempty"`
+	// A developer-facing error message, which should be in English. Any user-facing error
+	// message should be localized and sent in the google.rpc.Status.details field, or localized
+	// by the client.
+	Message string `json:"message,omitempty"`
+}
+
+// Hyperparameters for SFT.
+type SupervisedHyperParameters struct {
+	// Optional. Adapter size for tuning.
+	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
+	// Optional. Number of complete passes the model makes over the entire training dataset
+	// during training.
+	EpochCount int64 `json:"epochCount,omitempty,string"`
+	// Optional. Multiplier for adjusting the default learning rate.
+	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
+}
+
+// Tuning Spec for Supervised Tuning for first party models.
+type SupervisedTuningSpec struct {
+	// Optional. If set to true, disable intermediate checkpoints for SFT and only the last
+	// checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT.
+	// Default is false.
+	ExportLastCheckpointOnly bool `json:"exportLastCheckpointOnly,omitempty"`
+	// Optional. Hyperparameters for SFT.
+	HyperParameters *SupervisedHyperParameters `json:"hyperParameters,omitempty"`
+	// Required. Cloud Storage path to file containing training dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
+	// Optional. Cloud Storage path to file containing validation dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
+}
+
+// Dataset bucket used to create a histogram for the distribution given a population
+// of values.
+type DatasetDistributionDistributionBucket struct {
+	// Output only. Number of values in the bucket.
+	Count int64 `json:"count,omitempty,string"`
+	// Output only. Left bound of the bucket.
+	Left float64 `json:"left,omitempty"`
+	// Output only. Right bound of the bucket.
+	Right float64 `json:"right,omitempty"`
+}
+
+// Distribution computed over a tuning dataset.
+type DatasetDistribution struct {
+	// Output only. Defines the histogram bucket.
+	Buckets []*DatasetDistributionDistributionBucket `json:"buckets,omitempty"`
+	// Output only. The maximum of the population values.
+	Max float64 `json:"max,omitempty"`
+	// Output only. The arithmetic mean of the values in the population.
+	Mean float64 `json:"mean,omitempty"`
+	// Output only. The median of the values in the population.
+	Median float64 `json:"median,omitempty"`
+	// Output only. The minimum of the population values.
+	Min float64 `json:"min,omitempty"`
+	// Output only. The 5th percentile of the values in the population.
+	P5 float64 `json:"p5,omitempty"`
+	// Output only. The 95th percentile of the values in the population.
+	P95 float64 `json:"p95,omitempty"`
+	// Output only. Sum of a given population of values.
+	Sum float64 `json:"sum,omitempty"`
+}
+
+// Statistics computed over a tuning dataset.
+type DatasetStats struct {
+	// Output only. Number of billable characters in the tuning dataset.
+	TotalBillableCharacterCount int64 `json:"totalBillableCharacterCount,omitempty,string"`
+	// Output only. Number of tuning characters in the tuning dataset.
+	TotalTuningCharacterCount int64 `json:"totalTuningCharacterCount,omitempty,string"`
+	// Output only. Number of examples in the tuning dataset.
+	TuningDatasetExampleCount int64 `json:"tuningDatasetExampleCount,omitempty,string"`
+	// Output only. Number of tuning steps for this Tuning Job.
+	TuningStepCount int64 `json:"tuningStepCount,omitempty,string"`
+	// Output only. Sample user messages in the training dataset uri.
+	UserDatasetExamples []*Content `json:"userDatasetExamples,omitempty"`
+	// Output only. Dataset distributions for the user input tokens.
+	UserInputTokenDistribution *DatasetDistribution `json:"userInputTokenDistribution,omitempty"`
+	// Output only. Dataset distributions for the messages per example.
+	UserMessagePerExampleDistribution *DatasetDistribution `json:"userMessagePerExampleDistribution,omitempty"`
+	// Output only. Dataset distributions for the user output tokens.
+	UserOutputTokenDistribution *DatasetDistribution `json:"userOutputTokenDistribution,omitempty"`
+}
+
+// Statistics computed for datasets used for distillation.
+type DistillationDataStats struct {
+	// Output only. Statistics computed for the training dataset.
+	TrainingDatasetStats *DatasetStats `json:"trainingDatasetStats,omitempty"`
+}
+
+// Dataset bucket used to create a histogram for the distribution given a population
+// of values.
+type SupervisedTuningDatasetDistributionDatasetBucket struct {
+	// Output only. Number of values in the bucket.
+	Count float64 `json:"count,omitempty"`
+	// Output only. Left bound of the bucket.
+	Left float64 `json:"left,omitempty"`
+	// Output only. Right bound of the bucket.
+	Right float64 `json:"right,omitempty"`
+}
+
+// Dataset distribution for Supervised Tuning.
+type SupervisedTuningDatasetDistribution struct {
+	// Output only. Sum of a given population of values that are billable.
+	BillableSum int64 `json:"billableSum,omitempty,string"`
+	// Output only. Defines the histogram bucket.
+	Buckets []*SupervisedTuningDatasetDistributionDatasetBucket `json:"buckets,omitempty"`
+	// Output only. The maximum of the population values.
+	Max float64 `json:"max,omitempty"`
+	// Output only. The arithmetic mean of the values in the population.
+	Mean float64 `json:"mean,omitempty"`
+	// Output only. The median of the values in the population.
+	Median float64 `json:"median,omitempty"`
+	// Output only. The minimum of the population values.
+	Min float64 `json:"min,omitempty"`
+	// Output only. The 5th percentile of the values in the population.
+	P5 float64 `json:"p5,omitempty"`
+	// Output only. The 95th percentile of the values in the population.
+	P95 float64 `json:"p95,omitempty"`
+	// Output only. Sum of a given population of values.
+	Sum int64 `json:"sum,omitempty,string"`
+}
+
+// Tuning data statistics for Supervised Tuning.
+type SupervisedTuningDataStats struct {
+	// Output only. For each index in `truncated_example_indices`, the user-facing reason
+	// why the example was dropped.
+	DroppedExampleReasons []string `json:"droppedExampleReasons,omitempty"`
+	// Output only. Number of billable characters in the tuning dataset.
+	TotalBillableCharacterCount int64 `json:"totalBillableCharacterCount,omitempty,string"`
+	// Output only. Number of billable tokens in the tuning dataset.
+	TotalBillableTokenCount int64 `json:"totalBillableTokenCount,omitempty,string"`
+	// Output only. The number of examples in the dataset that have been dropped. An example
+	// can be dropped for reasons including: too many tokens, contains an invalid image,
+	// contains too many images, etc.
+	TotalTruncatedExampleCount int64 `json:"totalTruncatedExampleCount,omitempty,string"`
+	// Output only. Number of tuning characters in the tuning dataset.
+	TotalTuningCharacterCount int64 `json:"totalTuningCharacterCount,omitempty,string"`
+	// Output only. A partial sample of the indices (starting from 1) of the dropped examples.
+	TruncatedExampleIndices []int64 `json:"truncatedExampleIndices,omitempty"`
+	// Output only. Number of examples in the tuning dataset.
+	TuningDatasetExampleCount int64 `json:"tuningDatasetExampleCount,omitempty,string"`
+	// Output only. Number of tuning steps for this Tuning Job.
+	TuningStepCount int64 `json:"tuningStepCount,omitempty,string"`
+	// Output only. Sample user messages in the training dataset uri.
+	UserDatasetExamples []*Content `json:"userDatasetExamples,omitempty"`
+	// Output only. Dataset distributions for the user input tokens.
+	UserInputTokenDistribution *SupervisedTuningDatasetDistribution `json:"userInputTokenDistribution,omitempty"`
+	// Output only. Dataset distributions for the messages per example.
+	UserMessagePerExampleDistribution *SupervisedTuningDatasetDistribution `json:"userMessagePerExampleDistribution,omitempty"`
+	// Output only. Dataset distributions for the user output tokens.
+	UserOutputTokenDistribution *SupervisedTuningDatasetDistribution `json:"userOutputTokenDistribution,omitempty"`
+}
+
+// The tuning data statistic values for TuningJob.
+type TuningDataStats struct {
+	// Output only. Statistics for distillation.
+	DistillationDataStats *DistillationDataStats `json:"distillationDataStats,omitempty"`
+	// The SFT Tuning data stats.
+	SupervisedTuningDataStats *SupervisedTuningDataStats `json:"supervisedTuningDataStats,omitempty"`
+}
+
+// Represents a customer-managed encryption key spec that can be applied to a top-level
+// resource.
+type EncryptionSpec struct {
+	// Required. The Cloud KMS resource identifier of the customer managed encryption key
+	// used to protect a resource. Has the form: `projects/my-project/locations/my-region/keyRings/my-kr/cryptoKeys/my-key`.
+	// The key needs to be in the same region as where the compute resource is created.
+	KmsKeyName string `json:"kmsKeyName,omitempty"`
+}
+
+// Tuning spec for Partner models.
+type PartnerModelTuningSpec struct {
+	// Hyperparameters for tuning. The accepted hyper_parameters and their valid range of
+	// values will differ depending on the base model.
+	HyperParameters map[string]any `json:"hyperParameters,omitempty"`
+	// Required. Cloud Storage path to file containing training dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
+	// Optional. Cloud Storage path to file containing validation dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
+}
+
+// Hyperparameters for Distillation.
+type DistillationHyperParameters struct {
+	// Optional. Adapter size for distillation.
+	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
+	// Optional. Number of complete passes the model makes over the entire training dataset
+	// during training.
+	EpochCount int64 `json:"epochCount,omitempty,string"`
+	// Optional. Multiplier for adjusting the default learning rate.
+	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
+}
+
+// Tuning Spec for Distillation.
+type DistillationSpec struct {
+	// The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).
+	BaseTeacherModel string `json:"baseTeacherModel,omitempty"`
+	// Optional. Hyperparameters for Distillation.
+	HyperParameters *DistillationHyperParameters `json:"hyperParameters,omitempty"`
+	// Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output
+	// directory of the distillation pipeline. It is used by the system to generate the
+	// paths of output artifacts.
+	PipelineRootDirectory string `json:"pipelineRootDirectory,omitempty"`
+	// The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated.
+	// Use base_model instead.
+	StudentModel string `json:"studentModel,omitempty"`
+	// Deprecated. Cloud Storage path to file containing training dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
+	// The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`.
+	TunedTeacherModelSource string `json:"tunedTeacherModelSource,omitempty"`
+	// Optional. Cloud Storage path to file containing validation dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
+}
+
+// A tuning job.
+type TuningJob struct {
+	// Output only. Identifier. Resource name of a TuningJob. Format: `projects/{project}/locations/{location}/tuningJobs/{tuning_job}`
+	Name string `json:"name,omitempty"`
+	// Output only. The detailed state of the job.
+	State JobState `json:"state,omitempty"`
+	// Output only. Time when the TuningJob was created.
+	CreateTime time.Time `json:"createTime,omitempty"`
+	// Output only. Time when the TuningJob for the first time entered the `JOB_STATE_RUNNING`
+	// state.
+	StartTime time.Time `json:"startTime,omitempty"`
+	// Output only. Time when the TuningJob entered any of the following JobStates: `JOB_STATE_SUCCEEDED`,
+	// `JOB_STATE_FAILED`, `JOB_STATE_CANCELLED`, `JOB_STATE_EXPIRED`.
+	EndTime time.Time `json:"endTime,omitempty"`
+	// Output only. Time when the TuningJob was most recently updated.
+	UpdateTime time.Time `json:"updateTime,omitempty"`
+	// Output only. Only populated when job's state is `JOB_STATE_FAILED` or `JOB_STATE_CANCELLED`.
+	Error *GoogleRpcStatus `json:"error,omitempty"`
+	// Optional. The description of the TuningJob.
+	Description string `json:"description,omitempty"`
+	// The base model that is being tuned. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).
+	BaseModel string `json:"baseModel,omitempty"`
+	// Output only. The tuned model resources associated with this TuningJob.
+	TunedModel *TunedModel `json:"tunedModel,omitempty"`
+	// Tuning Spec for Supervised Fine Tuning.
+	SupervisedTuningSpec *SupervisedTuningSpec `json:"supervisedTuningSpec,omitempty"`
+	// Output only. The tuning data statistics associated with this TuningJob.
+	TuningDataStats *TuningDataStats `json:"tuningDataStats,omitempty"`
+	// Customer-managed encryption key options for a TuningJob. If this is set, then all
+	// resources created by the TuningJob will be encrypted with the provided encryption
+	// key.
+	EncryptionSpec *EncryptionSpec `json:"encryptionSpec,omitempty"`
+	// Tuning Spec for open sourced and third party Partner models.
+	PartnerModelTuningSpec *PartnerModelTuningSpec `json:"partnerModelTuningSpec,omitempty"`
+	// Tuning Spec for Distillation.
+	DistillationSpec *DistillationSpec `json:"distillationSpec,omitempty"`
+	// Output only. The Experiment associated with this TuningJob.
+	Experiment string `json:"experiment,omitempty"`
+	// Optional. The labels with user-defined metadata to organize TuningJob and generated
+	// resources such as Model and Endpoint. Label keys and values can be no longer than
+	// 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters,
+	// underscores and dashes. International characters are allowed. See https://goo.gl/xmQnxf
+	// for more information and examples of labels.
+	Labels map[string]string `json:"labels,omitempty"`
+	// Output only. The resource name of the PipelineJob associated with the TuningJob.
+	// Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.
+	PipelineJob string `json:"pipelineJob,omitempty"`
+	// The service account that the tuningJob workload runs as. If not specified, the Vertex
+	// AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent
+	// Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission
+	// on this service account.
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+	// Optional. The display name of the TunedModel. The name can be up to 128 characters
+	// long and can consist of any UTF-8 characters.
+	TunedModelDisplayName string `json:"tunedModelDisplayName,omitempty"`
+}
+
+// Configuration for the list tuning jobs method.
+type ListTuningJobsConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. PageSize specifies the maximum number of cached contents to return per
+	// API call. If zero, the server will use a default value.
+	PageSize int32 `json:"pageSize,omitempty"`
+	// Optional. PageToken represents a token used for pagination in API responses. It's
+	// an opaque string that should be passed to subsequent requests to retrieve the next
+	// page of results. An empty PageToken typically indicates that there are no further
+	// pages available.
+	PageToken string `json:"pageToken,omitempty"`
+	// Optional.
+	Filter string `json:"filter,omitempty"`
+}
+
+// Response for the list tuning jobs method.
+type ListTuningJobsResponse struct {
+	// A token to retrieve the next page of results. Pass to ListTuningJobsRequest.page_token
+	// to obtain that page.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+	// List of TuningJobs in the requested page.
+	TuningJobs []*TuningJob `json:"tuningJobs,omitempty"`
+}
+
+type TuningExample struct {
+	// Optional. Text model input.
+	TextInput string `json:"textInput,omitempty"`
+	// Optional. The expected model output.
+	Output string `json:"output,omitempty"`
+}
+
+// Supervised fine-tuning training dataset.
+type TuningDataset struct {
+	// Optional. GCS URI of the file containing training dataset in JSONL format.
+	GCSURI string `json:"gcsUri,omitempty"`
+	// Optional. The resource name of the Vertex Multimodal Dataset that is used as training
+	// dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.
+	VertexDatasetResource string `json:"vertexDatasetResource,omitempty"`
+	// Optional. Inline examples with simple input/output text.
+	Examples []*TuningExample `json:"examples,omitempty"`
+}
+
+type TuningValidationDataset struct {
+	// Optional. GCS URI of the file containing validation dataset in JSONL format.
+	GCSURI string `json:"gcsUri,omitempty"`
+	// Optional. The resource name of the Vertex Multimodal Dataset that is used as training
+	// dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.
+	VertexDatasetResource string `json:"vertexDatasetResource,omitempty"`
+}
+
+// Supervised fine-tuning job creation request - optional fields.
+type CreateTuningJobConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. Cloud Storage path to file containing training dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	ValidationDataset *TuningValidationDataset `json:"validationDataset,omitempty"`
+	// Optional. The display name of the tuned Model. The name can be up to 128 characters
+	// long and can consist of any UTF-8 characters.
+	TunedModelDisplayName string `json:"tunedModelDisplayName,omitempty"`
+	// Optional. The description of the TuningJob
+	Description string `json:"description,omitempty"`
+	// Optional. Number of complete passes the model makes over the entire training dataset
+	// during training.
+	EpochCount *int32 `json:"epochCount,omitempty"`
+	// Optional. Multiplier for adjusting the default learning rate.
+	LearningRateMultiplier *float32 `json:"learningRateMultiplier,omitempty"`
+	// Optional. If set to true, disable intermediate checkpoints for SFT and only the last
+	// checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT.
+	ExportLastCheckpointOnly *bool `json:"exportLastCheckpointOnly,omitempty"`
+	// Optional. Adapter size for tuning.
+	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
+	// Optional. The batch size hyperparameter for tuning. If not set, a default of 4 or
+	// 16 will be used based on the number of training examples.
+	BatchSize *int32 `json:"batchSize,omitempty"`
+	// Optional. The learning rate hyperparameter for tuning. If not set, a default of 0.001
+	// or 0.0002 will be calculated based on the number of training examples.
+	LearningRate *float32 `json:"learningRate,omitempty"`
+}
+
+// A long-running operation.
+type Operation struct {
+	// The server-assigned name, which is only unique within the same service that originally
+	// returns it. If you use the default HTTP mapping, the `name` should be a resource
+	// name ending with `operations/{unique_id}`.
+	Name string `json:"name,omitempty"`
+	// Optional. Service-specific metadata associated with the operation. It typically contains
+	// progress information and common metadata such as create time. Some services might
+	// not provide such metadata. Any method that returns a long-running operation should
+	// document the metadata type, if any.
+	Metadata map[string]any `json:"metadata,omitempty"`
+	// If the value is `false`, it means the operation is still in progress. If `true`,
+	// the operation is completed, and either `error` or `response` is available.
+	Done bool `json:"done,omitempty"`
+	// Optional. The error result of the operation in case of failure or cancellation.
+	Error map[string]any `json:"error,omitempty"`
 }
 
 // Optional configuration for cached content creation.

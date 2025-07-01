@@ -2858,11 +2858,13 @@ func (m Batches) create(ctx context.Context, model string, src *BatchJobSource, 
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(BatchJob)
 	var responseMap map[string]any
@@ -2929,11 +2931,13 @@ func (m Batches) Get(ctx context.Context, name string, config *GetBatchJobConfig
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(BatchJob)
 	var responseMap map[string]any
@@ -3000,11 +3004,13 @@ func (m Batches) Cancel(ctx context.Context, name string, config *CancelBatchJob
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
@@ -3059,11 +3065,13 @@ func (m Batches) list(ctx context.Context, config *ListBatchJobsConfig) (*ListBa
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(ListBatchJobsResponse)
 	var responseMap map[string]any

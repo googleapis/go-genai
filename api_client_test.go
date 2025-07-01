@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -22,6 +21,7 @@ import (
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/civil"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestSendRequest(t *testing.T) {
@@ -137,6 +137,40 @@ func TestSendRequest(t *testing.T) {
 			responseBody:   `{"response": "ok"}`,
 			serverLatency:  550 * time.Millisecond,
 			wantErr:        fmt.Errorf("context deadline exceeded"),
+		},
+		{
+			desc:           "With 0 client timeout and request timeout",
+			method:         "POST",
+			path:           "test",
+			requestBody:    map[string]any{"key": "value"},
+			responseBody:   `{"response": "ok"}`,
+			responseCode:   http.StatusOK,
+			clientTimeout:  Ptr(0 * time.Millisecond),
+			requestTimeout: Ptr(100 * time.Millisecond),
+			serverLatency:  150 * time.Millisecond,
+			wantErr:        fmt.Errorf("context deadline exceeded"),
+		},
+		{
+			desc:           "With client timeout and 0 request timeout",
+			method:         "POST",
+			path:           "test",
+			requestBody:    map[string]any{"key": "value"},
+			responseBody:   `{"response": "ok"}`,
+			responseCode:   http.StatusOK,
+			clientTimeout:  Ptr(200 * time.Millisecond),
+			requestTimeout: Ptr(0 * time.Millisecond),
+			serverLatency:  250 * time.Millisecond,
+		},
+		{
+			desc:           "With 0 client timeout and 0 request timeout",
+			method:         "POST",
+			path:           "test",
+			requestBody:    map[string]any{"key": "value"},
+			responseBody:   `{"response": "ok"}`,
+			responseCode:   http.StatusOK,
+			clientTimeout:  Ptr(0 * time.Millisecond),
+			requestTimeout: Ptr(0 * time.Millisecond),
+			serverLatency:  150 * time.Millisecond,
 		},
 	}
 
@@ -693,6 +727,7 @@ func TestBuildRequest(t *testing.T) {
 		body            map[string]any
 		method          string
 		httpOptions     *HTTPOptions
+		contextTimeout  time.Duration
 		want            *http.Request
 		wantErr         bool
 		expectedError   string
@@ -985,6 +1020,7 @@ func TestBuildRequest(t *testing.T) {
 				Headers: http.Header{
 					"X-Test-Header": []string{"test-value"},
 				},
+				Timeout: &timeout,
 			},
 			want: &http.Request{
 				Method: "POST",
@@ -1003,16 +1039,99 @@ func TestBuildRequest(t *testing.T) {
 				},
 				Body: io.NopCloser(strings.NewReader("{\"key\":\"value\"}\n")),
 			},
-			wantErr:         false,
-			expectedTimeout: &timeout,
+			wantErr: false,
+		},
+		{
+			name: "Header merging",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+				HTTPOptions: HTTPOptions{
+					Headers: http.Header{
+						"X-Client-Header": []string{"client-value"},
+						"X-Common-Header": []string{"client-common"},
+					},
+				},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"key": "value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				Headers: http.Header{
+					"X-Request-Header": []string{"request-value"},
+					"X-Common-Header":  []string{"request-common"},
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"X-Client-Header":   []string{"client-value"},
+					"X-Common-Header":   []string{"request-common"},
+					"X-Request-Header":  []string{"request-value"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"key\":\"value\"}\n")),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Custom User-Agent",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"key": "value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				Headers: http.Header{
+					"User-Agent": []string{"my-custom-agent/1.0"},
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"User-Agent":        []string{"my-custom-agent/1.0", fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"key\":\"value\"}\n")),
+			},
+			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ac := &apiClient{clientConfig: tt.clientConfig}
+			ctx := context.Background()
+			var cancel context.CancelFunc
+			if tt.contextTimeout != 0 {
+				ctx, cancel = context.WithTimeout(ctx, tt.contextTimeout)
+				defer cancel()
+			}
 
-			req, err := buildRequest(context.Background(), ac, tt.path, tt.body, tt.method, tt.httpOptions, tt.expectedTimeout)
+			req, _, err := buildRequest(ctx, ac, tt.path, tt.body, tt.method, tt.httpOptions)
 
 			if tt.wantErr {
 				if err == nil {
@@ -1051,140 +1170,130 @@ func TestBuildRequest(t *testing.T) {
 	}
 }
 
-func Test_sdkHeader(t *testing.T) {
-	timeout := time.Second * 10
-	type args struct {
-		ac      *apiClient
-		timeout *time.Duration
-	}
+func TestPatchHTTPOptions(t *testing.T) {
+	timeout1 := 10 * time.Second
+	timeout2 := 20 * time.Second
+	dummyExtrasProvider1 := func(body map[string]any) map[string]any { body["p1"] = 1; return body }
+	dummyExtrasProvider2 := func(body map[string]any) map[string]any { body["p2"] = 2; return body }
+
 	tests := []struct {
-		name           string
-		args           args
-		contextTimeout time.Duration
-		want           http.Header
+		name         string
+		options      HTTPOptions
+		patchOptions HTTPOptions
+		want         *HTTPOptions
 	}{
 		{
-			name: "with_api_key",
-			args: args{&apiClient{clientConfig: &ClientConfig{APIKey: "test_api_key", HTTPClient: &http.Client{}}}, nil},
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"X-Goog-Api-Key":    []string{"test_api_key"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+			name: "patch empty",
+			options: HTTPOptions{
+				BaseURL:    "base",
+				APIVersion: "v1",
+				Headers:    http.Header{"H1": []string{"v1"}},
+				Timeout:    &timeout1,
+			},
+			patchOptions: HTTPOptions{},
+			want: &HTTPOptions{
+				BaseURL:    "base",
+				APIVersion: "v1",
+				Headers:    http.Header{"H1": []string{"v1"}, "User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
+				Timeout:    &timeout1,
 			},
 		},
 		{
-			name: "without_api_key",
-			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}, nil},
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+			name: "patch all fields",
+			options: HTTPOptions{
+				BaseURL:               "base",
+				APIVersion:            "v1",
+				Headers:               http.Header{"H1": []string{"v1"}, "H2": []string{"v2"}},
+				Timeout:               &timeout1,
+				ExtrasRequestProvider: dummyExtrasProvider1,
+			},
+			patchOptions: HTTPOptions{
+				BaseURL:               "patched",
+				APIVersion:            "v2",
+				Headers:               http.Header{"H2": []string{"v2-patched"}, "H3": []string{"v3"}},
+				Timeout:               &timeout2,
+				ExtrasRequestProvider: dummyExtrasProvider2,
+			},
+			want: &HTTPOptions{
+				BaseURL:               "patched",
+				APIVersion:            "v2",
+				Headers:               http.Header{"H1": []string{"v1"}, "H2": []string{"v2-patched"}, "H3": []string{"v3"}, "User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
+				Timeout:               &timeout2,
+				ExtrasRequestProvider: dummyExtrasProvider2,
 			},
 		},
 		{
-			name:           "with_context_timeout",
-			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}, nil},
-			contextTimeout: 1 * time.Minute,
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Server-Timeout":  []string{"59"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
+			name:    "empty options",
+			options: HTTPOptions{},
+			patchOptions: HTTPOptions{
+				BaseURL:    "patched",
+				APIVersion: "v2",
+				Headers:    http.Header{"H1": []string{"v1"}},
+				Timeout:    &timeout2,
+			},
+			want: &HTTPOptions{
+				BaseURL:    "patched",
+				APIVersion: "v2",
+				Headers:    http.Header{"H1": []string{"v1"}, "User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
+				Timeout:    &timeout2,
 			},
 		},
 		{
-			name: "with_request_timeout",
-			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}, nil},
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Server-Timeout":  []string{"60"}, // request timeout is exact match because it's native to the HTTPClient.
+			name: "patch with nil timeout",
+			options: HTTPOptions{
+				Timeout: &timeout1,
+			},
+			patchOptions: HTTPOptions{
+				Timeout: nil,
+			},
+			want: &HTTPOptions{
+				Timeout: &timeout1,
+				Headers: http.Header{"User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
 			},
 		},
 		{
-			name:           "with_request_context_timeout",
-			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}, nil},
-			contextTimeout: 30 * time.Second,
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Server-Timeout":  []string{"29"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
+			name: "patch with zero timeout",
+			options: HTTPOptions{
+				Timeout: &timeout1,
 			},
-		},
-		{
-			name: "with_http_options_timeout",
-			args: args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{}}}, &timeout},
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Server-Timeout":  []string{"9"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
+			patchOptions: HTTPOptions{
+				Timeout: Ptr(0 * time.Second),
 			},
-		},
-		{
-			name:           "with_ctx_http_options_and_client_timeout",
-			args:           args{&apiClient{clientConfig: &ClientConfig{HTTPClient: &http.Client{Timeout: 1 * time.Minute}}}, &timeout},
-			contextTimeout: 30 * time.Second,
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Server-Timeout":  []string{"9"}, // Not exact match contextTimeout because the result is subtracting the time elapsed.
+			want: &HTTPOptions{
+				Timeout: Ptr(0 * time.Second),
+				Headers: http.Header{"User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
 			},
 		},
 	}
 
 	for _, tt := range tests {
-		ctx := context.Background()
-		var cancel context.CancelFunc
-		if tt.contextTimeout != 0 {
-			ctx, cancel = context.WithTimeout(ctx, tt.contextTimeout)
-			defer cancel()
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := cmp.Diff(sdkHeader(ctx, tt.args.ac, tt.args.timeout), tt.want, cmp.Comparer(compareHeadersWithTolerance)); diff != "" {
-				t.Errorf("sdkHeader() mismatch (-want +got):\n%s", diff)
+			got, err := patchHTTPOptions(tt.options, tt.patchOptions)
+			if err != nil {
+				t.Errorf("patchHTTPOptions() returned an unexpected error: %v", err)
+			}
+
+			// Can't compare functions directly.
+			opt := cmpopts.IgnoreFields(HTTPOptions{}, "ExtrasRequestProvider")
+			if diff := cmp.Diff(tt.want, got, opt); diff != "" {
+				t.Errorf("patchHTTPOptions() mismatch (-want +got):\n%s", diff)
+			}
+
+			if tt.want.ExtrasRequestProvider != nil {
+				if got.ExtrasRequestProvider == nil {
+					t.Error("ExtrasRequestProvider: got nil, want non-nil")
+				}
+				// check if they are the same function
+				gotResult := got.ExtrasRequestProvider(make(map[string]any))
+				wantResult := tt.want.ExtrasRequestProvider(make(map[string]any))
+				if diff := cmp.Diff(wantResult, gotResult); diff != "" {
+					t.Errorf("ExtrasRequestProvider function produced different results (-want +got):\n%s", diff)
+				}
+			} else if got.ExtrasRequestProvider != nil {
+				t.Error("ExtrasRequestProvider: got non-nil, want nil")
 			}
 		})
 	}
-}
-
-func compareHeadersWithTolerance(want, got http.Header) bool {
-	wantClone := want.Clone()
-	gotClone := got.Clone()
-
-	wantTimeoutStr := wantClone.Get("X-Server-Timeout")
-	gotTimeoutStr := gotClone.Get("X-Server-Timeout")
-	wantClone.Del("X-Server-Timeout")
-	gotClone.Del("X-Server-Timeout")
-
-	if !cmp.Equal(wantClone, gotClone) {
-		return false
-	}
-	if wantTimeoutStr == "" && gotTimeoutStr == "" {
-		return true
-	}
-	if wantTimeoutStr == "" || gotTimeoutStr == "" {
-		return false
-	}
-
-	gotTimeoutVal, err := strconv.ParseInt(gotTimeoutStr, 10, 64)
-	if err != nil {
-		fmt.Printf("Warning: Could not parse got X-Server-Timeout value '%s'\n", gotTimeoutStr)
-		return false
-	}
-
-	wantTimeoutVal, err := strconv.ParseInt(wantTimeoutStr, 10, 64)
-	if err != nil {
-		fmt.Printf("Warning: Could not parse got X-Server-Timeout value '%s'\n", wantTimeoutStr)
-		return false
-	}
-
-	return math.Abs(float64(wantTimeoutVal-gotTimeoutVal)) <= 1
 }
 
 // createTestFile creates a temporary file with the specified size containing dummy text data.
@@ -1420,6 +1529,129 @@ func TestUploadFile(t *testing.T) {
 				t.Errorf("uploadedFile.MIMEType mismatch: want 'text/plain', got '%s'", uploadedFile.MIMEType)
 			}
 
+		})
+	}
+}
+
+func TestInferTimeout(t *testing.T) {
+	tests := []struct {
+		name              string
+		requestTimeout    *time.Duration
+		httpClientTimeout time.Duration
+		contextTimeout    time.Duration // 0 means no deadline
+		want              time.Duration
+		tolerance         time.Duration // for context timeout
+	}{
+		{
+			name:              "no timeouts",
+			requestTimeout:    nil,
+			httpClientTimeout: 0,
+			contextTimeout:    0,
+			want:              0,
+		},
+		{
+			name:              "only request timeout",
+			requestTimeout:    Ptr(10 * time.Second),
+			httpClientTimeout: 0,
+			contextTimeout:    0,
+			want:              10 * time.Second,
+		},
+		{
+			name:              "only http client timeout",
+			requestTimeout:    nil,
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    0,
+			want:              20 * time.Second,
+		},
+		{
+			name:              "only context timeout",
+			requestTimeout:    nil,
+			httpClientTimeout: 0,
+			contextTimeout:    30 * time.Second,
+			want:              30 * time.Second,
+			tolerance:         100 * time.Millisecond,
+		},
+		{
+			name:              "request timeout is smallest",
+			requestTimeout:    Ptr(10 * time.Second),
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    30 * time.Second,
+			want:              10 * time.Second,
+		},
+		{
+			name:              "http client timeout is smallest",
+			requestTimeout:    Ptr(20 * time.Second),
+			httpClientTimeout: 10 * time.Second,
+			contextTimeout:    30 * time.Second,
+			want:              10 * time.Second,
+		},
+		{
+			name:              "context timeout is smallest",
+			requestTimeout:    Ptr(30 * time.Second),
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    10 * time.Second,
+			want:              10 * time.Second,
+			tolerance:         100 * time.Millisecond,
+		},
+		{
+			name:              "request timeout is zero",
+			requestTimeout:    Ptr(0 * time.Second),
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    30 * time.Second,
+			want:              20 * time.Second,
+		},
+		{
+			name:              "request timeout is zero, no other timeouts",
+			requestTimeout:    Ptr(0 * time.Second),
+			httpClientTimeout: 0,
+			contextTimeout:    0,
+			want:              0,
+		},
+		{
+			name:              "request timeout is zero, only context timeout",
+			requestTimeout:    Ptr(0 * time.Second),
+			httpClientTimeout: 0,
+			contextTimeout:    30 * time.Second,
+			want:              30 * time.Second,
+			tolerance:         100 * time.Millisecond,
+		},
+		{
+			name:              "request timeout is zero, only http client timeout",
+			requestTimeout:    Ptr(0 * time.Second),
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    0,
+			want:              20 * time.Second,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ac := &apiClient{
+				clientConfig: &ClientConfig{
+					HTTPClient: &http.Client{
+						Timeout: tt.httpClientTimeout,
+					},
+				},
+			}
+
+			ctx := context.Background()
+			if tt.contextTimeout > 0 {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, tt.contextTimeout)
+				defer cancel()
+			}
+
+			got := inferTimeout(ctx, ac, tt.requestTimeout)
+
+			if tt.tolerance > 0 {
+				if got > tt.want || got < tt.want-tt.tolerance {
+					t.Errorf("inferTimeout() got = %v, want around %v (with tolerance %v)", got, tt.want, tt.tolerance)
+				}
+			} else {
+				if got != tt.want {
+					t.Errorf("inferTimeout() got = %v, want %v", got, tt.want)
+				}
+			}
 		})
 	}
 }

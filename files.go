@@ -377,11 +377,13 @@ func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesRes
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(ListFilesResponse)
 	var responseMap map[string]any
@@ -448,11 +450,13 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(CreateFileResponse)
 	var responseMap map[string]any
@@ -519,11 +523,13 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(File)
 	var responseMap map[string]any
@@ -590,11 +596,13 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(DeleteFileResponse)
 	var responseMap map[string]any

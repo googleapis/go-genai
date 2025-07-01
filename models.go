@@ -4935,11 +4935,13 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(GenerateContentResponse)
 	var responseMap map[string]any
@@ -5005,11 +5007,13 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var rs responseStream[GenerateContentResponse]
 	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
@@ -5068,11 +5072,13 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(EmbedContentResponse)
 	var responseMap map[string]any
@@ -5138,11 +5144,13 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(GenerateImagesResponse)
 	var responseMap map[string]any
@@ -5208,11 +5216,13 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(EditImageResponse)
 	var responseMap map[string]any
@@ -5279,11 +5289,13 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(UpscaleImageResponse)
 	var responseMap map[string]any
@@ -5351,11 +5363,13 @@ func (m Models) Get(ctx context.Context, model string, config *GetModelConfig) (
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(Model)
 	var responseMap map[string]any
@@ -5421,11 +5435,13 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(ListModelsResponse)
 	var responseMap map[string]any
@@ -5492,11 +5508,13 @@ func (m Models) Update(ctx context.Context, model string, config *UpdateModelCon
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(Model)
 	var responseMap map[string]any
@@ -5563,11 +5581,13 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(DeleteModelResponse)
 	var responseMap map[string]any
@@ -5634,11 +5654,13 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(CountTokensResponse)
 	var responseMap map[string]any
@@ -5705,11 +5727,13 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(ComputeTokensResponse)
 	var responseMap map[string]any
@@ -5777,11 +5801,13 @@ func (m Models) GenerateVideos(ctx context.Context, model string, prompt string,
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(GenerateVideosOperation)
 	var responseMap map[string]any

@@ -24,8 +24,10 @@ import (
 	"iter"
 	"log"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -42,21 +44,24 @@ type apiClient struct {
 
 // sendStreamRequest issues an server streaming API request and returns a map of the response contents.
 func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiClient, path string, method string, body map[string]any, httpOptions *HTTPOptions, output *responseStream[R]) error {
-	effectiveRequestTimeout := getEffectiveRequestTimeout(ac, httpOptions)
-
-	req, err := buildRequest(ctx, ac, path, body, method, httpOptions, effectiveRequestTimeout)
+	req, httpOptions, err := buildRequest(ctx, ac, path, body, method, httpOptions)
 	if err != nil {
 		return err
 	}
 
-	effectiveContext := ctx
+	// Handle context timeout.
+	// The request's context deadline is set using [HTTPOptions.Timeout].
+	// [ClientConfig.HTTPClient.Timeout] does not affect the context deadline for the request.
+	// [ClientConfig.HTTPClient.Timeout] is used along with `x-server-timeout` header in order to
+	// get the end-to-end timeout value for logging.
+	requestContext := ctx
+	timeout := httpOptions.Timeout
 	var cancel context.CancelFunc
-	if effectiveRequestTimeout != nil && *effectiveRequestTimeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *effectiveRequestTimeout) {
-		effectiveContext, cancel = context.WithTimeout(ctx, *effectiveRequestTimeout)
+	if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
+		requestContext, cancel = context.WithTimeout(ctx, *timeout)
 		defer cancel()
 	}
-
-	req = req.WithContext(effectiveContext)
+	req = req.WithContext(requestContext)
 
 	resp, err := doRequest(ac, req)
 	if err != nil {
@@ -69,21 +74,20 @@ func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiC
 
 // sendRequest issues an API request and returns a map of the response contents.
 func sendRequest(ctx context.Context, ac *apiClient, path string, method string, body map[string]any, httpOptions *HTTPOptions) (map[string]any, error) {
-	effectiveRequestTimeout := getEffectiveRequestTimeout(ac, httpOptions)
 
-	req, err := buildRequest(ctx, ac, path, body, method, httpOptions, effectiveRequestTimeout)
+	req, httpOptions, err := buildRequest(ctx, ac, path, body, method, httpOptions)
 	if err != nil {
 		return nil, err
 	}
 
-	effectiveContext := ctx
+	requestContext := ctx
+	timeout := httpOptions.Timeout
 	var cancel context.CancelFunc
-	if effectiveRequestTimeout != nil && *effectiveRequestTimeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *effectiveRequestTimeout) {
-		effectiveContext, cancel = context.WithTimeout(ctx, *effectiveRequestTimeout)
+	if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
+		requestContext, cancel = context.WithTimeout(ctx, *timeout)
 		defer cancel()
 	}
-
-	req = req.WithContext(effectiveContext)
+	req = req.WithContext(requestContext)
 
 	resp, err := doRequest(ac, req)
 	if err != nil {
@@ -97,7 +101,8 @@ func sendRequest(ctx context.Context, ac *apiClient, path string, method string,
 
 func downloadFile(ctx context.Context, ac *apiClient, path string, httpOptions *HTTPOptions) ([]byte, error) {
 	// The client and request timeout are not used for downloadFile.
-	req, err := buildRequest(ctx, ac, path, nil, http.MethodGet, httpOptions, nil)
+	// TODO(b/427540996): implement timeout.
+	req, _, err := buildRequest(ctx, ac, path, nil, http.MethodGet, httpOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -147,78 +152,120 @@ func (ac *apiClient) createAPIURL(suffix, method string, httpOptions *HTTPOption
 	}
 }
 
-func getEffectiveRequestTimeout(ac *apiClient, httpOptions *HTTPOptions) *time.Duration {
-	var effectiveTimeout *time.Duration = nil
-
-	if ac.clientConfig.HTTPOptions.Timeout != nil {
-		effectiveTimeout = ac.clientConfig.HTTPOptions.Timeout
-	}
-
-	if httpOptions != nil {
-		if httpOptions.Timeout != nil {
-			effectiveTimeout = httpOptions.Timeout
-		}
-	}
-
-	return effectiveTimeout
-}
-
-func buildRequest(ctx context.Context, ac *apiClient, path string, body map[string]any, method string, httpOptions *HTTPOptions, effectiveRequestTimeout *time.Duration) (*http.Request, error) {
-	url, err := ac.createAPIURL(path, method, httpOptions)
+// patchHTTPOptions merges two HttpOptions objects, creating a new one.
+// Fields from patchOptions will overwrite fields from options.
+func patchHTTPOptions(options, patchOptions HTTPOptions) (*HTTPOptions, error) {
+	// Start with a shallow copy of the base options.
+	copyOption := HTTPOptions{Headers: http.Header{}}
+	err := deepCopy(options, &copyOption)
 	if err != nil {
 		return nil, err
 	}
 
-	if httpOptions != nil {
-		if httpOptions.ExtrasRequestProvider != nil {
-			log.Printf("Warning: Usage of ExtrasRequestProvider is strongly discouraged. No forward compatibility is guaranteed.")
-			body = httpOptions.ExtrasRequestProvider(body)
-		}
+	// Deep copy the Headers map to avoid modifying the original options' map.
+	// The Python code effectively does this by creating a new dictionary.
+	mergedHeaders := http.Header{}
+	for k, v := range options.Headers {
+		mergedHeaders[textproto.CanonicalMIMEHeaderKey(k)] = v
+	}
+	for k, v := range patchOptions.Headers {
+		mergedHeaders[textproto.CanonicalMIMEHeaderKey(k)] = v
+	}
+	copyOption.Headers = mergedHeaders
+
+	// BaseURL and APIVersion is value type because explicitly setting
+	// request HTTPOption to empty string won't override the client HTTPOption.
+	if patchOptions.BaseURL != "" {
+		copyOption.BaseURL = patchOptions.BaseURL
+	}
+	if patchOptions.APIVersion != "" {
+		copyOption.APIVersion = patchOptions.APIVersion
+	}
+	if patchOptions.ExtrasRequestProvider != nil {
+		copyOption.ExtrasRequestProvider = patchOptions.ExtrasRequestProvider
+	}
+	// Request timeout config overrides client timeout config.
+	// So we need a pointer type so that we know the request timeout
+	// is explicitly set or not.
+	// Especially when request timeout is explicitly set to Ptr[int32](0),
+	// then it means no timeout regardless client timeout is non-zero.
+	if patchOptions.Timeout != nil {
+		copyOption.Timeout = patchOptions.Timeout
+	}
+	appendSDKHeaders(copyOption.Headers)
+
+	return &copyOption, nil
+}
+
+// appendLibraryVersionHeaders appends telemetry headers to the headers map.
+// It modifies the map in place.
+func appendSDKHeaders(headers http.Header) {
+	if headers == nil {
+		return
+	}
+
+	libraryLabel := fmt.Sprintf("google-genai-sdk/%s", version)
+	languageLabel := fmt.Sprintf("gl-go/%s", runtime.Version())
+	versionHeaderValue := fmt.Sprintf("%s %s", libraryLabel, languageLabel)
+
+	if !slices.Contains(headers.Values("user-agent"), versionHeaderValue) {
+		headers.Add("user-agent", versionHeaderValue)
+	}
+
+	if !slices.Contains(headers.Values("x-goog-api-client"), versionHeaderValue) {
+		headers.Add("x-goog-api-client", versionHeaderValue)
+	}
+}
+
+func buildRequest(ctx context.Context, ac *apiClient, path string, body map[string]any, method string, httpOptions *HTTPOptions) (*http.Request, *HTTPOptions, error) {
+	patchedHTTPOptions, err := patchHTTPOptions(ac.clientConfig.HTTPOptions, *httpOptions)
+	if err != nil {
+		return nil, nil, err
+	}
+	url, err := ac.createAPIURL(path, method, patchedHTTPOptions)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if patchedHTTPOptions.ExtrasRequestProvider != nil {
+		log.Printf("Warning: Usage of ExtrasRequestProvider is strongly discouraged. No forward compatibility is guaranteed.")
+		body = httpOptions.ExtrasRequestProvider(body)
 	}
 
 	b := new(bytes.Buffer)
 	if len(body) > 0 {
 		if err := json.NewEncoder(b).Encode(body); err != nil {
-			return nil, fmt.Errorf("buildRequest: error encoding body %#v: %w", body, err)
+			return nil, nil, fmt.Errorf("buildRequest: error encoding body %#v: %w", body, err)
 		}
 	}
 
 	// Create a new HTTP request
 	req, err := http.NewRequest(method, url.String(), b)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// Set headers
-	doMergeHeaders(ac.clientConfig.HTTPOptions.Headers, &req.Header)
-	doMergeHeaders(httpOptions.Headers, &req.Header)
-	doMergeHeaders(sdkHeader(ctx, ac, effectiveRequestTimeout), &req.Header)
-	return req, nil
+	req.Header = patchedHTTPOptions.Headers
+	timeoutSeconds := inferTimeout(ctx, ac, patchedHTTPOptions.Timeout).Seconds()
+	if timeoutSeconds > 0 {
+		req.Header.Set("x-server-timeout", strconv.FormatInt(int64(timeoutSeconds), 10))
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if ac.clientConfig.APIKey != "" {
+		req.Header.Set("x-goog-api-key", ac.clientConfig.APIKey)
+	}
+
+	return req, patchedHTTPOptions, nil
 }
 
+// TODO(b/428730853): HTTP Client timeout should be considered.
 func isTimeoutBeforeDeadline(ctx context.Context, timeout time.Duration) bool {
 	deadline, ok := ctx.Deadline()
 	if !ok {
 		return true
 	}
 	return timeout < time.Until(deadline)
-}
-
-func sdkHeader(ctx context.Context, ac *apiClient, requestTimeout *time.Duration) http.Header {
-	header := make(http.Header)
-	header.Set("Content-Type", "application/json")
-	if ac.clientConfig.APIKey != "" {
-		header.Set("x-goog-api-key", ac.clientConfig.APIKey)
-	}
-	libraryLabel := fmt.Sprintf("google-genai-sdk/%s", version)
-	languageLabel := fmt.Sprintf("gl-go/%s", runtime.Version())
-	versionHeaderValue := fmt.Sprintf("%s %s", libraryLabel, languageLabel)
-	header.Set("user-agent", versionHeaderValue)
-	header.Set("x-goog-api-client", versionHeaderValue)
-	timeoutSeconds := inferTimeout(ctx, ac, requestTimeout).Seconds()
-	if timeoutSeconds > 0 {
-		header.Set("x-server-timeout", strconv.FormatInt(int64(timeoutSeconds), 10))
-	}
-	return header
 }
 
 func inferTimeout(ctx context.Context, ac *apiClient, requestTimeout *time.Duration) time.Duration {
@@ -231,14 +278,24 @@ func inferTimeout(ctx context.Context, ac *apiClient, requestTimeout *time.Durat
 		contextTimeout = time.Until(deadline)
 	}
 
+	// If context timeout or httpClient timeout is less than request timeout,
+	// Then the smaller one takes precedence.
 	if requestTimeout != nil {
 		effectiveTimeout = *requestTimeout
 	}
-	if effectiveTimeout == 0 || (httpClientTimeout != 0 && httpClientTimeout < effectiveTimeout) {
-		effectiveTimeout = httpClientTimeout
+	if httpClientTimeout != 0 {
+		if effectiveTimeout == 0 {
+			effectiveTimeout = httpClientTimeout
+		} else {
+			effectiveTimeout = min(effectiveTimeout, httpClientTimeout)
+		}
 	}
-	if effectiveTimeout == 0 || (contextTimeout != 0 && contextTimeout < effectiveTimeout) {
-		effectiveTimeout = contextTimeout
+	if contextTimeout != 0 {
+		if effectiveTimeout == 0 {
+			effectiveTimeout = contextTimeout
+		} else {
+			effectiveTimeout = min(effectiveTimeout, contextTimeout)
+		}
 	}
 	return effectiveTimeout
 }
@@ -459,12 +516,23 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 			return nil, fmt.Errorf("Failed to read bytes from file at offset %d: %w. Bytes actually read: %d", offset, err, bytesRead)
 		}
 		for attempt := 0; attempt < maxRetryCount; attempt++ {
+			patchedHTTPOptions, err := patchHTTPOptions(ac.clientConfig.HTTPOptions, *httpOptions)
+			if err != nil {
+				return nil, err
+			}
+
+			// TODO(b/427540996): Support timeout.
 			req, err := http.NewRequestWithContext(ctx, http.MethodPost, uploadURL, bytes.NewReader(buffer[:bytesRead]))
 			if err != nil {
 				return nil, fmt.Errorf("Failed to create upload request for chunk at offset %d: %w", offset, err)
 			}
-			doMergeHeaders(httpOptions.Headers, &req.Header)
-			doMergeHeaders(sdkHeader(ctx, ac, nil), &req.Header)
+
+			req.Header = patchedHTTPOptions.Headers
+			req.Header.Set("Content-Type", "application/json")
+			if ac.clientConfig.APIKey != "" {
+				req.Header.Set("x-goog-api-key", ac.clientConfig.APIKey)
+			}
+			// TODO(b/427540996): Add timeout logging.
 
 			req.Header.Set("X-Goog-Upload-Command", uploadCommand)
 			req.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))

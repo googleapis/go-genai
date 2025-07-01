@@ -90,11 +90,13 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(GenerateVideosOperation)
 	var responseMap map[string]any
@@ -160,11 +162,13 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(GenerateVideosOperation)
 	var responseMap map[string]any

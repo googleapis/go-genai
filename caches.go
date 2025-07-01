@@ -609,11 +609,13 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(CachedContent)
 	var responseMap map[string]any
@@ -680,11 +682,13 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(CachedContent)
 	var responseMap map[string]any
@@ -751,11 +755,13 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(DeleteCachedContentResponse)
 	var responseMap map[string]any
@@ -822,11 +828,13 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(CachedContent)
 	var responseMap map[string]any
@@ -892,11 +900,13 @@ func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*Li
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
-	if config == nil {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, nil)
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
 	} else {
-		httpOptions = mergeHTTPOptions(m.apiClient.clientConfig, config.HTTPOptions)
-		config.HTTPOptions = nil
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
 	}
 	var response = new(ListCachedContentsResponse)
 	var responseMap map[string]any

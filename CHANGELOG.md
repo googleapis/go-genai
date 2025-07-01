@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.14.0](https://github.com/googleapis/go-genai/compare/v1.13.0...v1.14.0) (2025-07-01)
+
+
+### Features
+
+* Enable HttpOptions timeout ([1ca3aaf](https://github.com/googleapis/go-genai/commit/1ca3aaf8f4cfa786226eba1dbfb361dda574f2f7))
+* Support Batches delete ([b2cf7bb](https://github.com/googleapis/go-genai/commit/b2cf7bb6b1f091fb18e4a8bb40e07480e7d448a4))
+* Support different media input in Vertex Live API ([b6650b5](https://github.com/googleapis/go-genai/commit/b6650b51d88028cab0eb674028aef130185ae560))
+
 ## [1.13.0](https://github.com/googleapis/go-genai/compare/v1.12.0...v1.13.0) (2025-06-25)
 
 

@@ -57,10 +57,6 @@ var (
 
 			// TODO(b/424824119): generateVideos tests disabled due to backwards compatibility
 			"/models/generate_videos",
-			// TODO(b/427475992) Empty response isn't supported in replay, added example.
-			"batches/cancel",
-			// Recorded request has Union types, Go only support one type. Added example.
-			"batches/create",
 			// filter=display_name%3A%22genai_%2A%22&pageSize=5 are reordered and mismatched
 			"batches/list/test_list_batch_jobs_with_config",
 		},

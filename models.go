@@ -3762,12 +3762,6 @@ func generateImagesResponseFromMldev(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
-func endpointFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
 func tunedModelInfoFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3785,12 +3779,6 @@ func tunedModelInfoFromMldev(fromObject map[string]any, parentObject map[string]
 	if fromUpdateTime != nil {
 		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
 	}
-
-	return toObject, nil
-}
-
-func checkpointFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
 
 	return toObject, nil
 }

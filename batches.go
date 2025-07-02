@@ -251,23 +251,6 @@ func deleteBatchJobParametersToMldev(ac *apiClient, fromObject map[string]any, p
 	return toObject, nil
 }
 
-func inlinedRequestToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"model"}) != nil {
-		return nil, fmt.Errorf("model parameter is not supported in Vertex AI")
-	}
-
-	if getValueByPath(fromObject, []string{"contents"}) != nil {
-		return nil, fmt.Errorf("contents parameter is not supported in Vertex AI")
-	}
-
-	if getValueByPath(fromObject, []string{"config"}) != nil {
-		return nil, fmt.Errorf("config parameter is not supported in Vertex AI")
-	}
-
-	return toObject, nil
-}
-
 func batchJobSourceToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -292,19 +275,6 @@ func batchJobSourceToVertex(fromObject map[string]any, parentObject map[string]a
 
 	if getValueByPath(fromObject, []string{"inlinedRequests"}) != nil {
 		return nil, fmt.Errorf("inlinedRequests parameter is not supported in Vertex AI")
-	}
-
-	return toObject, nil
-}
-
-func inlinedResponseToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"response"}) != nil {
-		return nil, fmt.Errorf("response parameter is not supported in Vertex AI")
-	}
-
-	if getValueByPath(fromObject, []string{"error"}) != nil {
-		return nil, fmt.Errorf("error parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
@@ -698,12 +668,6 @@ func jobErrorFromVertex(fromObject map[string]any, parentObject map[string]any) 
 	return toObject, nil
 }
 
-func inlinedRequestFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
 func batchJobSourceFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -721,12 +685,6 @@ func batchJobSourceFromVertex(fromObject map[string]any, parentObject map[string
 	if fromBigqueryUri != nil {
 		setValueByPath(toObject, []string{"bigqueryUri"}, fromBigqueryUri)
 	}
-
-	return toObject, nil
-}
-
-func inlinedResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
 
 	return toObject, nil
 }

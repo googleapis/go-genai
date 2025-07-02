@@ -398,11 +398,22 @@ const (
 type ImagePromptLanguage string
 
 const (
+	// Auto-detect the language.
 	ImagePromptLanguageAuto ImagePromptLanguage = "auto"
-	ImagePromptLanguageEn   ImagePromptLanguage = "en"
-	ImagePromptLanguageJa   ImagePromptLanguage = "ja"
-	ImagePromptLanguageKo   ImagePromptLanguage = "ko"
-	ImagePromptLanguageHi   ImagePromptLanguage = "hi"
+	// English
+	ImagePromptLanguageEn ImagePromptLanguage = "en"
+	// Japanese
+	ImagePromptLanguageJa ImagePromptLanguage = "ja"
+	// Korean
+	ImagePromptLanguageKo ImagePromptLanguage = "ko"
+	// Hindi
+	ImagePromptLanguageHi ImagePromptLanguage = "hi"
+	// Chinese
+	ImagePromptLanguageZh ImagePromptLanguage = "zh"
+	// Portuguese
+	ImagePromptLanguagePt ImagePromptLanguage = "pt"
+	// Spanish
+	ImagePromptLanguageEs ImagePromptLanguage = "es"
 )
 
 // Enum representing the mask mode of a mask reference image.

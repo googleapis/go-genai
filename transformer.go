@@ -323,3 +323,18 @@ func tJobState(state any) (any, error) {
 		return state, nil
 	}
 }
+
+func tTuningJobStatus(state any) (any, error) {
+	switch state {
+	case "STATE_UNSPECIFIED":
+		return "JOB_STATE_UNSPECIFIED", nil
+	case "CREATING":
+		return "JOB_STATE_RUNNING", nil
+	case "ACTIVE":
+		return "JOB_STATE_SUCCEEDED", nil
+	case "FAILED":
+		return "JOB_STATE_FAILED", nil
+	default:
+		return state, nil
+	}
+}

@@ -326,7 +326,12 @@ func deserializeUnaryResponse(resp *http.Response) (map[string]any, error) {
 			return nil, fmt.Errorf("deserializeUnaryResponse: error unmarshalling response: %w\n%s", err, respBody)
 		}
 	}
-	output["httpHeaders"] = resp.Header
+
+	httpResponse := map[string]any{
+		"headers": resp.Header,
+		"body":    respBody,
+	}
+	output["sdkHttpResponse"] = httpResponse
 	return output, nil
 }
 

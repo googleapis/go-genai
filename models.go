@@ -1314,6 +1314,31 @@ func imageToMldev(fromObject map[string]any, parentObject map[string]any) (toObj
 	return toObject, nil
 }
 
+func generateVideosSourceToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
+	}
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToMldev(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	if getValueByPath(fromObject, []string{"video"}) != nil {
+		return nil, fmt.Errorf("video parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
 func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1408,6 +1433,20 @@ func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, p
 		}
 
 		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	if getValueByPath(fromObject, []string{"video"}) != nil {
+		return nil, fmt.Errorf("video parameter is not supported in Gemini API")
+	}
+
+	fromSource := getValueByPath(fromObject, []string{"source"})
+	if fromSource != nil {
+		fromSource, err = generateVideosSourceToMldev(fromSource.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromSource)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
@@ -3208,6 +3247,37 @@ func videoToVertex(fromObject map[string]any, parentObject map[string]any) (toOb
 	return toObject, nil
 }
 
+func generateVideosSourceToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
+	}
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	fromVideo := getValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = videoToVertex(fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "video"}, fromVideo)
+	}
+
+	return toObject, nil
+}
+
 func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3315,6 +3385,26 @@ func generateVideosParametersToVertex(ac *apiClient, fromObject map[string]any, 
 		}
 
 		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	fromVideo := getValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = videoToVertex(fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
+	}
+
+	fromSource := getValueByPath(fromObject, []string{"source"})
+	if fromSource != nil {
+		fromSource, err = generateVideosSourceToVertex(fromSource.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromSource)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
@@ -5678,10 +5768,10 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 }
 
 // GenerateVideos creates a long-running video generation operation.
-func (m Models) GenerateVideos(ctx context.Context, model string, prompt string, image *Image, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+func (m Models) generateVideos(ctx context.Context, model string, prompt string, image *Image, video *Video, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
 	parameterMap := make(map[string]any)
 
-	kwargs := map[string]any{"model": model, "prompt": prompt, "image": image, "config": config}
+	kwargs := map[string]any{"model": model, "prompt": prompt, "image": image, "video": video, "source": source, "config": config}
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
@@ -5868,4 +5958,20 @@ func (m Models) EditImage(ctx context.Context, model, prompt string, referenceIm
 		refImages[i] = img.referenceImageAPI()
 	}
 	return m.editImage(ctx, model, prompt, refImages, config)
+}
+
+// GenerateVideos creates a long-running video generation operation.
+// This method is kept for backward compatibility. Use GenerateVideosFromSource instead.
+func (m Models) GenerateVideos(ctx context.Context, model string, prompt string, image *Image, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+	// Does not support Video or GenerateVideosSource.
+	return m.generateVideos(ctx, model, prompt, image, nil, nil, config)
+}
+
+// GenerateVideos creates a long-running video generation operation.
+func (m Models) GenerateVideosFromSource(ctx context.Context, model string, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+	if source == nil {
+		return nil, fmt.Errorf("source is required")
+	}
+	// Rely on backend validation for combinations of prompt, image, and video.
+	return m.generateVideos(ctx, model, "", nil, nil, source, config)
 }

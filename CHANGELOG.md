@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.15.0](https://github.com/googleapis/go-genai/compare/v1.14.0...v1.15.0) (2025-07-09)
+
+
+### Features
+
+* Add new languages for Imagen 4 prompt language ([afeabc2](https://github.com/googleapis/go-genai/commit/afeabc2afbac49b25eb7cd157192445da5f545d3))
+* make credentials optional when providing HTTPClient ([8b63004](https://github.com/googleapis/go-genai/commit/8b630040d5ca97f6bcf627f28a0628a944ae8432))
+
 ## [1.14.0](https://github.com/googleapis/go-genai/compare/v1.13.0...v1.14.0) (2025-07-01)
 
 

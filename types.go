@@ -1664,6 +1664,14 @@ type GenerateContentConfig struct {
 	ThinkingConfig *ThinkingConfig `json:"thinkingConfig,omitempty"`
 }
 
+// A wrapper class for the HTTP response.
+type HTTPResponse struct {
+	// Optional. Used to retain the processed HTTP headers in the response.
+	Headers http.Header `json:"headers,omitempty"`
+	// Optional. The raw HTTP response body, in JSON format.
+	Body string `json:"body,omitempty"`
+}
+
 // Source attributions for content.
 type Citation struct {
 	// Output only. End index into the content.
@@ -3234,12 +3242,15 @@ type ListFilesResponse struct {
 type CreateFileConfig struct {
 	// Optional. Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. If true, the raw HTTP response will be returned in the 'sdk_http_response'
+	// field.
+	ShouldReturnHTTPResponse bool `json:"shouldReturnHttpResponse,omitempty"`
 }
 
 // Response for the create file method.
 type CreateFileResponse struct {
-	// Optional. Used to retain the HTTP headers in the request
-	HTTPHeaders http.Header `json:"httpHeaders,omitempty"`
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 }
 
 // Used to override the default configuration.

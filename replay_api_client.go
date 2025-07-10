@@ -183,6 +183,56 @@ func redactRequestBody(body map[string]any) map[string]any {
 	return body
 }
 
+func redactVersionNumbers(versionString string) string {
+	re := regexp.MustCompile(`(v|go)?\d+\.\d+(\.\d+)?`)
+	res := re.ReplaceAllString(versionString, "{VERSION_NUMBER}")
+
+	placeholder := "{VERSION_NUMBER}"
+	firstIndex := strings.Index(res, placeholder)
+	if firstIndex == -1 {
+		return res
+	}
+
+	searchStart := firstIndex + len(placeholder)
+	if searchStart >= len(res) {
+		return res
+	}
+
+	secondIndex := strings.Index(res[searchStart:], placeholder)
+	if secondIndex != -1 {
+		realSecondIndex := searchStart + secondIndex
+		endOfPlaceholder := realSecondIndex + len(placeholder)
+		return res[:endOfPlaceholder]
+	}
+
+	return res
+}
+
+func redactLanguageLabel(languageLabel string) string {
+	re := regexp.MustCompile(`gl-go/`)
+	return re.ReplaceAllString(languageLabel, "{LANGUAGE_LABEL}/")
+}
+
+func redactRequestHeaders(headers map[string]string) map[string]string {
+	redactedHeaders := make(map[string]string)
+	for headerName, headerValue := range headers {
+		if headerName == "x-goog-api-key" {
+			redactedHeaders[headerName] = "{REDACTED}"
+		} else if headerName == "user-agent" {
+			redactedHeaders[headerName] = redactLanguageLabel(redactVersionNumbers(headerValue))
+		} else if headerName == "x-goog-api-client" {
+			redactedHeaders[headerName] = redactLanguageLabel(redactVersionNumbers(headerValue))
+		} else if headerName == "x-goog-user-project" {
+			continue
+		} else if headerName == "authorization" {
+			continue
+		} else {
+			redactedHeaders[headerName] = headerValue
+		}
+	}
+	return redactedHeaders
+}
+
 func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayRequest *replayRequest) {
 	rac.t.Helper()
 	sdkRequestBody, err := io.ReadAll(sdkRequest.Body)
@@ -199,20 +249,32 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 	bodySegment = convertKeysToCamelCase(bodySegment, "").(map[string]any)
 	omitEmptyValues(bodySegment)
 
-	headers := make(map[string]string)
+	sdkHeaders := make(map[string]string)
 	for k, v := range sdkRequest.Header {
-		headers[k] = strings.Join(v, ",")
+		lowerK := strings.ToLower(k)
+		if lowerK == "accept-encoding" || lowerK == "content-length" {
+			continue
+		}
+		sdkHeaders[lowerK] = strings.Join(v, ",")
 	}
-	// TODO(b/390425822): support headers validation.
+	redactedSDKHeaders := redactRequestHeaders(sdkHeaders)
+
+	replayHeaders := make(map[string]string)
+	for k, v := range replayRequest.Headers {
+		replayHeaders[strings.ToLower(k)] = v
+	}
+
 	got := map[string]any{
 		"method":       strings.ToLower(sdkRequest.Method),
 		"url":          redactSDKURL(sdkRequest.URL.String()),
+		"headers":      redactedSDKHeaders,
 		"bodySegments": []map[string]any{bodySegment},
 	}
 
 	want := map[string]any{
 		"method":       replayRequest.Method,
 		"url":          redactReplayURL(replayRequest.URL),
+		"headers":      replayHeaders,
 		"bodySegments": replayRequest.BodySegments,
 	}
 

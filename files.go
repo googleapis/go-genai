@@ -352,9 +352,9 @@ func listFilesResponseFromMldev(fromObject map[string]any, parentObject map[stri
 func createFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromHttpHeaders := getValueByPath(fromObject, []string{"httpHeaders"})
-	if fromHttpHeaders != nil {
-		setValueByPath(toObject, []string{"httpHeaders"}, fromHttpHeaders)
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	return toObject, nil
@@ -770,16 +770,19 @@ func (m Files) Upload(ctx context.Context, r io.Reader, config *UploadFileConfig
 
 	var createFileConfig CreateFileConfig
 	createFileConfig.HTTPOptions = &httpOptions
+	createFileConfig.ShouldReturnHTTPResponse = true
 
 	resp, err := m.create(ctx, &fileToUpload, &createFileConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create file. Ran into an error: %s", err)
 	}
-	if resp.HTTPHeaders == nil || resp.HTTPHeaders.Get("x-goog-upload-url") == "" {
+	if resp.SDKHTTPResponse == nil || resp.SDKHTTPResponse.Headers == nil {
 		return nil, fmt.Errorf("Failed to create file. Upload URL was not returned from the create file request.")
 	}
-
-	uploadURL := resp.HTTPHeaders.Get("x-goog-upload-url")
+	uploadURL := resp.SDKHTTPResponse.Headers.Get("X-Goog-Upload-Url")
+	if uploadURL == "" {
+		return nil, fmt.Errorf("Failed to create file. Upload URL was not returned from the create file request.")
+	}
 	return m.apiClient.uploadFile(ctx, r, uploadURL, &httpOptions)
 }
 

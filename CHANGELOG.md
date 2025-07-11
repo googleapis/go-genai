@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/googleapis/go-genai/compare/v1.15.0...v1.16.0) (2025-07-11)
+
+
+### Features
+
+* Add `addWatermark` parameter to the edit image configuration. ([d7e2847](https://github.com/googleapis/go-genai/commit/d7e284753de40e21ea6df0a5e821f9973d8aa3e3))
+
 ## [1.15.0](https://github.com/googleapis/go-genai/compare/v1.14.0...v1.15.0) (2025-07-09)
 
 

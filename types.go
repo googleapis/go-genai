@@ -2789,6 +2789,19 @@ func (v *Video) setVideoBytes(b []byte) bool {
 	return true
 }
 
+// A set of source input(s) for video generation.
+type GenerateVideosSource struct {
+	// Optional. The text prompt for generating the videos.
+	// Optional if image or video is provided.
+	Prompt string `json:"prompt,omitempty"`
+	// Optional. The input image for generating the videos.
+	// Optional if prompt or video is provided.
+	Image *Image `json:"image,omitempty"`
+	// Optional. The input video for video extension use cases.
+	// Optional if prompt or image is provided.
+	Video *Video `json:"video,omitempty"`
+}
+
 // You can find API default values and more details at VertexAI: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation.
 type GenerateVideosConfig struct {
 	// Optional. Used to override HTTP request options.

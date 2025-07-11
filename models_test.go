@@ -205,7 +205,6 @@ func TestModelsGenerateContentMultiSpeakerVoiceConfigAudio(t *testing.T) {
 }
 
 func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
-	fmt.Println("TestModelsGenerateVideosText2VideoPoll mode", *mode, *mode == apiMode)
 	if *mode != apiMode {
 		t.Skip("Skip. This test is only in the API mode")
 	}
@@ -221,6 +220,61 @@ func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
 				t.Fatal(err)
 			}
 			operation, err := client.Models.GenerateVideos(ctx, "veo-2.0-generate-001", "A neon hologram of a cat driving at top speed", nil, nil)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation, err = client.Operations.GetVideosOperation(ctx, operation, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation == nil || operation.Response == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if operation.Response.GeneratedVideos[0].Video.URI == "" && operation.Response.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have either URI or video bytes")
+			}
+		})
+	}
+}
+
+func TestModelsGenerateVideosFromSource(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			video := &Video{
+				URI:      "gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+				MIMEType: "video/mp4",
+			}
+			outputGCSURI := "gs://genai-sdk-tests/outputs/videos"
+			if backend.Backend != BackendVertexAI {
+				// Not supported in MLDev.
+				video = nil
+				outputGCSURI = ""
+			}
+			generateVideosSource := &GenerateVideosSource{
+				Prompt: "Driving across a bridge.",
+				Video:  video,
+			}
+			config := &GenerateVideosConfig{
+				NumberOfVideos: 1,
+				OutputGCSURI:   outputGCSURI,
+			}
+			operation, err := client.Models.GenerateVideosFromSource(ctx, "veo-2.0-generate-001", generateVideosSource, config)
 			if err != nil {
 				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
 			}

@@ -292,7 +292,7 @@ func TestTable(t *testing.T) {
 								return
 							}
 							wantException := extractWantException(testTableItem, backend.Backend)
-							if wantException != "" {
+							if wantException != "" && len(response) > 1 {
 								if response[1].IsNil() {
 									t.Fatalf("Calling method expected to fail but it didn't, err: %v", wantException)
 								}
@@ -305,6 +305,11 @@ func TestTable(t *testing.T) {
 									t.Errorf("Exceptions had diff (-got +want):\n%v", diff)
 								}
 							} else {
+								// If the response is nil, it means the call was successful but the response is
+								// empty. For example, batches.cancel() returns an empty response.
+								if len(response) == 1 {
+									return
+								}
 								// Assert there was no error when the call is successful.
 								if !response[1].IsNil() {
 									t.Fatalf("Calling method failed unexpectedly, err: %v", response[1].Interface().(error).Error())

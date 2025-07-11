@@ -4930,6 +4930,7 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 	}
 	delete(body, "_url")
 	delete(body, "config")
+
 	err = sendStreamRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions, &rs)
 	if err != nil {
 		return yieldErrorAndEndIterator[GenerateContentResponse](err)

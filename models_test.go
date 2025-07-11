@@ -347,3 +347,81 @@ func TestModelsAll(t *testing.T) {
 		})
 	}
 }
+
+func TestModelsAllEmptyResponse(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name            string
+		serverResponses []func(w http.ResponseWriter)
+	}{
+		{
+			name: "Empty_JSON_Payload",
+			serverResponses: []func(w http.ResponseWriter){
+				func(w http.ResponseWriter) {
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusOK)
+					_, err := w.Write([]byte(`{}`))
+					if err != nil {
+						t.Errorf("Failed to write response: %v", err)
+					}
+				},
+			},
+		},
+		{
+			name: "JSON_Payload_With_Unknown_Fields",
+			serverResponses: []func(w http.ResponseWriter){
+				func(w http.ResponseWriter) {
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusOK)
+					_, err := w.Write([]byte(`{"unknownField": "value", "models": []}`))
+					if err != nil {
+						t.Errorf("Failed to write response: %v", err)
+					}
+				},
+			},
+		},
+		{
+			name: "Entirely_Empty_Response_Body",
+			serverResponses: []func(w http.ResponseWriter){
+				func(w http.ResponseWriter) {
+					w.WriteHeader(http.StatusOK)
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			responseIndex := 0
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				tt.serverResponses[responseIndex](w)
+				responseIndex++
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(ctx, &ClientConfig{HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_API_KEY": "test-api-key",
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Failed to create client: %v", err)
+			}
+
+			gotModels := []*Model{}
+			for model, err := range client.Models.All(ctx) {
+				if err != nil {
+					t.Errorf("Models.All() iteration error = %v", err)
+					return
+				}
+				gotModels = append(gotModels, model)
+			}
+
+			if len(gotModels) != 0 {
+				t.Errorf("Models.All() expected empty list, got: %v", gotModels)
+			}
+		})
+	}
+}

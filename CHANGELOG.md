@@ -7,7 +7,6 @@
 
 * Add `addWatermark` parameter to the edit image configuration. ([d7e2847](https://github.com/googleapis/go-genai/commit/d7e284753de40e21ea6df0a5e821f9973d8aa3e3))
 * add Tuning support for Go ([0c90d6c](https://github.com/googleapis/go-genai/commit/0c90d6c7471f9634ef539a98a6dc1f15cf67446b))
-* add Tuning support for Java ([f99e9af](https://github.com/googleapis/go-genai/commit/f99e9af75ec08d7f91bced5bf0b44a2ce234fd2c))
 * Migrate Go file.create method to use the sdk_http_response field and remove http_headers ([082b7c7](https://github.com/googleapis/go-genai/commit/082b7c7ad7a9f447e0ea07e8cb8f949fef578572))
 
 

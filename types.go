@@ -514,6 +514,17 @@ const (
 	EditModeProductImage      EditMode = "EDIT_MODE_PRODUCT_IMAGE"
 )
 
+// Enum that represents the segmentation mode.
+type SegmentMode string
+
+const (
+	SegmentModeForeground  SegmentMode = "foreground"
+	SegmentModeBackground  SegmentMode = "background"
+	SegmentModePrompt      SegmentMode = "prompt"
+	SegmentModeSemantic    SegmentMode = "semantic"
+	SegmentModeInteractive SegmentMode = "interactive"
+)
+
 // Enum that controls the compression quality of the generated videos.
 type VideoCompressionQuality string
 
@@ -2637,6 +2648,69 @@ type RecontextImageConfig struct {
 type RecontextImageResponse struct {
 	// List of generated images.
 	GeneratedImages []*GeneratedImage `json:"generatedImages,omitempty"`
+}
+
+// An image mask representing a brush scribble.
+type ScribbleImage struct {
+	// Optional. The brush scribble to guide segmentation. Valid for the interactive mode.
+	Image *Image `json:"image,omitempty"`
+}
+
+// A set of source input(s) for image segmentation.
+type SegmentImageSource struct {
+	// Optional. A text prompt for guiding the model during image segmentation.
+	// Required for prompt mode and semantic mode, disallowed for other modes.
+	Prompt string `json:"prompt,omitempty"`
+	// The image to be segmented.
+	Image *Image `json:"image,omitempty"`
+	// Optional. The brush scribble to guide segmentation.
+	// Required for the interactive mode, disallowed for other modes.
+	ScribbleImage *ScribbleImage `json:"scribbleImage,omitempty"`
+}
+
+// Configuration for segmenting an image.
+type SegmentImageConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. The segmentation mode to use.
+	Mode SegmentMode `json:"mode,omitempty"`
+	// Optional. The maximum number of predictions to return up to, by top
+	// confidence score.
+	MaxPredictions *int32 `json:"maxPredictions,omitempty"`
+	// Optional. The confidence score threshold for the detections as a decimal
+	// value. Only predictions with a confidence score higher than this
+	// threshold will be returned.
+	ConfidenceThreshold *float32 `json:"confidenceThreshold,omitempty"`
+	// Optional. A decimal value representing how much dilation to apply to the
+	// masks. 0 for no dilation. 1.0 means the masked area covers the whole
+	// image.
+	MaskDilation *float32 `json:"maskDilation,omitempty"`
+	// Optional. The binary color threshold to apply to the masks. The threshold
+	// can be set to a decimal value between 0 and 255 non-inclusive.
+	// Set to -1 for no binary color thresholding.
+	BinaryColorThreshold *float32 `json:"binaryColorThreshold,omitempty"`
+}
+
+// An entity representing the segmented area.
+type EntityLabel struct {
+	// Optional. The label of the segmented entity.
+	Label string `json:"label,omitempty"`
+	// Optional. The confidence score of the detected label.
+	Score float32 `json:"score,ommitempty,string"`
+}
+
+// A generated image mask.
+type GeneratedImageMask struct {
+	// Optional. The generated image mask.
+	Mask *Image `json:"mask,omitempty"`
+	// Optional. The detected entities on the segmented area.
+	Labels []*EntityLabel `json:"labels,omitempty"`
+}
+
+// The output images response.
+type SegmentImageResponse struct {
+	// List of generated image masks.
+	GeneratedMasks []*GeneratedImageMask `json:"generatedMasks,omitempty"`
 }
 
 // Optional parameters for models.get method.

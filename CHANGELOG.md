@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.16.0](https://github.com/googleapis/go-genai/compare/v1.15.0...v1.16.0) (2025-07-16)
+
+
+### Features
+
+* Add `addWatermark` parameter to the edit image configuration. ([d7e2847](https://github.com/googleapis/go-genai/commit/d7e284753de40e21ea6df0a5e821f9973d8aa3e3))
+* add Tuning support for Go ([0c90d6c](https://github.com/googleapis/go-genai/commit/0c90d6c7471f9634ef539a98a6dc1f15cf67446b))
+* add Tuning support for Java ([f99e9af](https://github.com/googleapis/go-genai/commit/f99e9af75ec08d7f91bced5bf0b44a2ce234fd2c))
+* Migrate Go file.create method to use the sdk_http_response field and remove http_headers ([082b7c7](https://github.com/googleapis/go-genai/commit/082b7c7ad7a9f447e0ea07e8cb8f949fef578572))
+
+
+### Bug Fixes
+
+* **live:** Enhance security by moving api key from query parameters to header ([7cc7b7c](https://github.com/googleapis/go-genai/commit/7cc7b7c722d554796bec9f8bbd1af374be0b4892))
+
 ## [1.15.0](https://github.com/googleapis/go-genai/compare/v1.14.0...v1.15.0) (2025-07-09)
 
 

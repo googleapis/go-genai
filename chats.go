@@ -21,6 +21,7 @@ import (
 	"io"
 	"iter"
 	"log"
+	"strings"
 )
 
 // Chats provides util functions for creating a new chat session.
@@ -56,12 +57,9 @@ func (c *Chats) Create(ctx context.Context, model string, config *GenerateConten
 	return chat, nil
 }
 
-func (c *Chat) recordHistory(ctx context.Context, inputContent *Content, outputContents []*Content) {
+func (c *Chat) recordHistory(ctx context.Context, inputContent *Content, outputContent *Content) {
 	c.comprehensiveHistory = append(c.comprehensiveHistory, inputContent)
-
-	for _, outputContent := range outputContents {
-		c.comprehensiveHistory = append(c.comprehensiveHistory, copySanitizedModelContent(outputContent))
-	}
+	c.comprehensiveHistory = append(c.comprehensiveHistory, copySanitizedModelContent(outputContent))
 }
 
 // copySanitizedModelContent creates a (shallow) copy of modelContent with role set to
@@ -105,11 +103,9 @@ func (c *Chat) Send(ctx context.Context, parts ...*Part) (*GenerateContentRespon
 	}
 
 	// Record history. By default, use the first candidate for history.
-	var outputContents []*Content
 	if len(modelOutput.Candidates) > 0 && modelOutput.Candidates[0].Content != nil {
-		outputContents = append(outputContents, modelOutput.Candidates[0].Content)
+		c.recordHistory(ctx, inputContent, modelOutput.Candidates[0].Content)
 	}
-	c.recordHistory(ctx, inputContent, outputContents)
 
 	return modelOutput, err
 }
@@ -136,7 +132,7 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 
 	// Return a new iterator that will yield the responses and record history with merged response.
 	return func(yield func(*GenerateContentResponse, error) bool) {
-		var outputContents []*Content
+		outputContent := &Content{}
 		for chunk, err := range response {
 			if err == io.EOF {
 				break
@@ -146,13 +142,54 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 				return
 			}
 			if len(chunk.Candidates) > 0 && chunk.Candidates[0].Content != nil {
-				outputContents = append(outputContents, chunk.Candidates[0].Content)
+				outputContent = joinContent(outputContent, chunk.Candidates[0].Content)
 			}
 			if !yield(chunk, nil) {
 				return
 			}
 		}
 		// Record history. By default, use the first candidate for history.
-		c.recordHistory(ctx, inputContent, outputContents)
+		c.recordHistory(ctx, inputContent, outputContent)
 	}
+}
+
+func joinContent(dest, src *Content) *Content {
+	if dest == nil {
+		return src
+	}
+	if src == nil {
+		return dest
+	}
+	// Assume roles are the same.
+	dest.Parts = joinParts(dest.Parts, src.Parts)
+	return dest
+}
+
+func joinParts(dest, src []*Part) []*Part {
+	return mergeTexts(append(dest, src...))
+}
+
+func mergeTexts(in []*Part) []*Part {
+	var out []*Part
+	i := 0
+	for i < len(in) {
+		if in[i].Text != "" {
+			texts := []string{in[i].Text}
+			var j int
+			for j = i + 1; j < len(in); j++ {
+				if in[j].Text != "" {
+					texts = append(texts, in[j].Text)
+				} else {
+					break
+				}
+			}
+			// j is just after the last Text.
+			out = append(out, NewPartFromText(strings.Join(texts, "")))
+			i = j
+		} else {
+			out = append(out, in[i])
+			i++
+		}
+	}
+	return out
 }

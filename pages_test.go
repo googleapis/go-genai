@@ -26,8 +26,8 @@ func TestNewPage(t *testing.T) {
 	ctx := context.Background()
 	name := "test"
 	config := make(map[string]any)
-	listFunc := func(ctx context.Context, config map[string]any) ([]*string, string, error) {
-		return []*string{Ptr("item1"), Ptr("item2")}, "next_page_token", nil
+	listFunc := func(ctx context.Context, config map[string]any) ([]*string, string, *HTTPResponse, error) {
+		return []*string{Ptr("item1"), Ptr("item2")}, "next_page_token", nil, nil
 	}
 
 	page, err := newPage[string](ctx, name, config, listFunc)
@@ -46,8 +46,8 @@ func TestNewPage(t *testing.T) {
 		t.Errorf("nextPageToken mismatch: got %q, want %q", page.NextPageToken, "next_page_token")
 	}
 
-	listFuncError := func(ctx context.Context, config map[string]any) ([]*string, string, error) {
-		return nil, "", errors.New("list func error")
+	listFuncError := func(ctx context.Context, config map[string]any) ([]*string, string, *HTTPResponse, error) {
+		return nil, "", nil, errors.New("list func error")
 	}
 	_, err = newPage[string](ctx, name, config, listFuncError)
 	if err == nil {
@@ -58,11 +58,11 @@ func TestNewPage(t *testing.T) {
 func TestPageNext(t *testing.T) {
 	ctx := context.Background()
 	config := make(map[string]any)
-	listFunc := func(ctx context.Context, config map[string]any) ([]*string, string, error) {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*string, string, *HTTPResponse, error) {
 		if config["PageToken"] == "next_page_token" {
-			return []*string{Ptr("item3"), Ptr("item4")}, "", nil
+			return []*string{Ptr("item3"), Ptr("item4")}, "", nil, nil
 		}
-		return []*string{Ptr("item1"), Ptr("item2")}, "next_page_token", nil
+		return []*string{Ptr("item1"), Ptr("item2")}, "next_page_token", nil, nil
 	}
 
 	page, err := newPage[string](ctx, "test", config, listFunc)
@@ -88,11 +88,11 @@ func TestPageNext(t *testing.T) {
 func TestPageAll(t *testing.T) {
 	ctx := context.Background()
 	config := map[string]any{}
-	listFunc := func(ctx context.Context, config map[string]any) ([]*string, string, error) {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*string, string, *HTTPResponse, error) {
 		if config["PageToken"] == "next_page_token" {
-			return []*string{Ptr("item3"), Ptr("item4")}, "", nil
+			return []*string{Ptr("item3"), Ptr("item4")}, "", nil, nil
 		}
-		return []*string{Ptr("item1"), Ptr("item2")}, "next_page_token", nil
+		return []*string{Ptr("item1"), Ptr("item2")}, "next_page_token", nil, nil
 	}
 
 	page, err := newPage[string](ctx, "test", config, listFunc)
@@ -118,11 +118,11 @@ func TestPageAll(t *testing.T) {
 	}
 
 	// Test error handling within the iterator.
-	listFuncError := func(ctx context.Context, config map[string]any) ([]*string, string, error) {
+	listFuncError := func(ctx context.Context, config map[string]any) ([]*string, string, *HTTPResponse, error) {
 		if config["PageToken"] == "next_page_token" {
-			return nil, "", errors.New("list func error")
+			return nil, "", nil, errors.New("list func error")
 		}
-		return []*string{Ptr("item1"), Ptr("item2")}, "next_page_token", nil
+		return []*string{Ptr("item1"), Ptr("item2")}, "next_page_token", nil, nil
 	}
 	page, err = newPage[string](ctx, "test", config, listFuncError)
 	if err != nil {

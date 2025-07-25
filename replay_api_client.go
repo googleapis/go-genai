@@ -104,6 +104,10 @@ func (rac *replayAPIClient) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 
 	rac.assertRequest(req, interaction.Request)
 	rac.currentInteractionIndex++
+
+	// Set Content-Type header
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
 	var bodySegments []string
 	for i := 0; i < len(interaction.Response.BodySegments); i++ {
 		responseBodySegment, err := json.Marshal(interaction.Response.BodySegments[i])
@@ -368,6 +372,51 @@ var stringComparator = cmp.Comparer(func(x, y string) bool {
 	}
 	return x == y
 })
+
+func sanitizeHeadersForComparison(item map[string]any) {
+	sdkHTTPResponse, ok := item["sdkHttpResponse"].(map[string]any)
+	if !ok {
+		return
+	}
+
+	headers, ok := sdkHTTPResponse["headers"].(map[string]any)
+	if !ok {
+		return
+	}
+
+	// Headers to ignore in comparison.
+	ignoreHeaders := map[string]bool{
+		"content-encoding":       true,
+		"server":                 true,
+		"server-timing":          true,
+		"transfer-encoding":      true,
+		"vary":                   true,
+		"x-xss-protection":       true,
+		"x-frame-options":        true,
+		"x-content-type-options": true,
+		"date":                   true,
+	}
+
+	processedHeaders := make(map[string][]string)
+	for k, v := range headers {
+		lowerK := strings.ToLower(k)
+		if !ignoreHeaders[lowerK] {
+			switch val := v.(type) {
+			case string:
+				processedHeaders[lowerK] = []string{val}
+			case []string:
+				processedHeaders[lowerK] = val
+			case []any:
+				strSlice := make([]string, len(val))
+				for i, item := range val {
+					strSlice[i] = item.(string)
+				}
+				processedHeaders[lowerK] = strSlice
+			}
+		}
+	}
+	sdkHTTPResponse["headers"] = processedHeaders
+}
 
 var floatComparator = cmp.Comparer(func(x, y float64) bool {
 	return math.Abs(x-y) < 1e-6

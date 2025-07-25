@@ -603,6 +603,11 @@ func batchJobFromMldev(fromObject map[string]any, parentObject map[string]any) (
 func listBatchJobsResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
 		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
@@ -793,6 +798,11 @@ func batchJobFromVertex(fromObject map[string]any, parentObject map[string]any) 
 
 func listBatchJobsResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
 
 	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
@@ -1225,16 +1235,16 @@ func (b Batches) Create(ctx context.Context, model string, src *BatchJobSource, 
 
 // List retrieves a paginated list of batch jobs.
 func (b Batches) List(ctx context.Context, config *ListBatchJobsConfig) (Page[BatchJob], error) {
-	listFunc := func(ctx context.Context, config map[string]any) ([]*BatchJob, string, error) {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*BatchJob, string, *HTTPResponse, error) {
 		var c ListBatchJobsConfig
 		if err := mapToStruct(config, &c); err != nil {
-			return nil, "", err
+			return nil, "", nil, err
 		}
 		resp, err := b.list(ctx, &c)
 		if err != nil {
-			return nil, "", err
+			return nil, "", nil, err
 		}
-		return resp.BatchJobs, resp.NextPageToken, nil
+		return resp.BatchJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
 	}
 	c := make(map[string]any)
 	deepMarshal(config, &c)
@@ -1248,16 +1258,16 @@ func (b Batches) List(ctx context.Context, config *ListBatchJobsConfig) (Page[Ba
 // content entry one by one. You do not need to manage pagination
 // tokens or make multiple calls to retrieve all data.
 func (b Batches) All(ctx context.Context) iter.Seq2[*BatchJob, error] {
-	listFunc := func(ctx context.Context, config map[string]any) ([]*BatchJob, string, error) {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*BatchJob, string, *HTTPResponse, error) {
 		var c ListBatchJobsConfig
 		if err := mapToStruct(config, &c); err != nil {
-			return nil, "", err
+			return nil, "", nil, err
 		}
 		resp, err := b.list(ctx, &c)
 		if err != nil {
-			return nil, "", err
+			return nil, "", nil, err
 		}
-		return resp.BatchJobs, resp.NextPageToken, nil
+		return resp.BatchJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
 	}
 	p, err := newPage(ctx, "BatchJobs", map[string]any{}, listFunc)
 	if err != nil {

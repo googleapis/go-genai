@@ -366,7 +366,6 @@ func deserializeUnaryResponse(resp *http.Response) (map[string]any, error) {
 
 	httpResponse := map[string]any{
 		"headers": resp.Header,
-		"body":    respBody,
 	}
 	output["sdkHttpResponse"] = httpResponse
 	return output, nil

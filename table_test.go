@@ -89,6 +89,10 @@ func sanitizeGotSDKResponses(t *testing.T, responses []map[string]any) {
 			delete(response, "Items")
 			delete(response, "Name")
 		}
+		if sdkResponse, ok := response["SDKHTTPResponse"].(map[string]any); ok {
+			response["sdkHttpResponse"] = sdkResponse
+			delete(response, "SDKHTTPResponse")
+		}
 
 	}
 }
@@ -345,9 +349,38 @@ func TestTable(t *testing.T) {
 										}
 									}
 								}
+
+								// Format SDKHTTPResponse headers for comparison
+								for _, item := range got {
+									sanitizeHeadersForComparison(item)
+								}
+								for _, item := range want {
+									sanitizeHeadersForComparison(item)
+								}
+
+								// only verifies the content-length header if exists in replay, ignores otherwise
+								for i := range got {
+									if len(want) <= i {
+										continue
+									}
+									gotSDKHResponse, gotOK := got[i]["sdkHttpResponse"].(map[string]any)
+									wantSDKHResponse, wantOK := want[i]["sdkHttpResponse"].(map[string]any)
+									if !gotOK || !wantOK {
+										continue
+									}
+
+									gotHeaders, gotOK := gotSDKHResponse["headers"].(map[string][]string)
+									wantHeaders, wantOK := wantSDKHResponse["headers"].(map[string][]string)
+									if !gotOK || !wantOK {
+										continue
+									}
+
+									if _, existsInWant := wantHeaders["content-length"]; !existsInWant {
+										delete(gotHeaders, "content-length")
+									}
+								}
+
 								for _, v := range want {
-									// TODO(b/425393586): Remove this hack once golang support sdkHttpResponse.
-									delete(v, "sdkHttpResponse")
 									_ = convertFloat64ToString(v)
 								}
 								for _, v := range got {

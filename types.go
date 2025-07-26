@@ -2053,6 +2053,8 @@ type GenerateContentResponseUsageMetadata struct {
 
 // Response message for PredictionService.GenerateContent.
 type GenerateContentResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// Response variations returned by the model.
 	Candidates []*Candidate `json:"candidates,omitempty"`
 	// Timestamp when the request is made to the server.
@@ -2267,6 +2269,8 @@ type EmbedContentMetadata struct {
 
 // Response for the embed_content method.
 type EmbedContentResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// The embeddings for each request, in the same order as provided in
 	// the batch request.
 	Embeddings []*ContentEmbedding `json:"embeddings,omitempty"`
@@ -2362,6 +2366,8 @@ type GeneratedImage struct {
 
 // The output images response.
 type GenerateImagesResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// List of generated images.
 	GeneratedImages []*GeneratedImage `json:"generatedImages,omitempty"`
 	// Optional. Safety attributes of the positive prompt. Only populated if
@@ -2540,6 +2546,8 @@ type EditImageConfig struct {
 
 // Response for the request to edit an image.
 type EditImageResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// Generated images.
 	GeneratedImages []*GeneratedImage `json:"generatedImages,omitempty"`
 }
@@ -2574,6 +2582,8 @@ type upscaleImageAPIConfig struct {
 }
 
 type UpscaleImageResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// Generated images.
 	GeneratedImages []*GeneratedImage `json:"generatedImages,omitempty"`
 }
@@ -2709,6 +2719,9 @@ type ListModelsConfig struct {
 }
 
 type ListModelsResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
+
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	Models []*Model `json:"models,omitempty"`
@@ -2830,6 +2843,8 @@ type CountTokensConfig struct {
 
 // Response for counting tokens.
 type CountTokensResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// Total number of tokens.
 	TotalTokens int32 `json:"totalTokens,omitempty"`
 	// Number of tokens in the cached part of the prompt (the cached content). This field
@@ -2891,6 +2906,8 @@ func (t *TokensInfo) MarshalJSON() ([]byte, error) {
 
 // Response for computing tokens.
 type ComputeTokensResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// Lists of tokens info from the input. A ComputeTokensRequest could have multiple instances
 	// with a prompt in each instance. We also need to return lists of tokens info for the
 	// request with multiple instances.
@@ -3314,6 +3331,8 @@ type DistillationSpec struct {
 
 // A tuning job.
 type TuningJob struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// Output only. Identifier. Resource name of a TuningJob. Format: `projects/{project}/locations/{location}/tuningJobs/{tuning_job}`
 	Name string `json:"name,omitempty"`
 	// Output only. The detailed state of the job.
@@ -3457,6 +3476,8 @@ type ListTuningJobsConfig struct {
 
 // Response for the list tuning jobs method.
 type ListTuningJobsResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// A token to retrieve the next page of results. Pass to ListTuningJobsRequest.page_token
 	// to obtain that page.
 	NextPageToken string `json:"nextPageToken,omitempty"`
@@ -3522,6 +3543,8 @@ type CreateTuningJobConfig struct {
 
 // A long-running operation.
 type TuningOperation struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// The server-assigned name, which is only unique within the same service that originally
 	// returns it. If you use the default HTTP mapping, the `name` should be a resource
 	// name ending with `operations/{unique_id}`.
@@ -3788,6 +3811,9 @@ type ListCachedContentsConfig struct {
 }
 
 type ListCachedContentsResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
+
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// List of cached contents.
 	CachedContents []*CachedContent `json:"cachedContents,omitempty"`
@@ -3956,6 +3982,8 @@ func (f *File) setVideoBytes(b []byte) bool {
 
 // Response for the list files method.
 type ListFilesResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 	// A token to retrieve next page of results.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 	// The list of files.
@@ -4195,6 +4223,9 @@ type ListBatchJobsConfig struct {
 
 // Config for batches.list return value.
 type ListBatchJobsResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
+
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	BatchJobs []*BatchJob `json:"batchJobs,omitempty"`

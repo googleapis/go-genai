@@ -3691,6 +3691,11 @@ func candidateFromMldev(fromObject map[string]any, parentObject map[string]any) 
 func generateContentResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromCandidates := getValueByPath(fromObject, []string{"candidates"})
 	if fromCandidates != nil {
 		fromCandidates, err = applyConverterToSlice(fromCandidates.([]any), candidateFromMldev)
@@ -3738,6 +3743,11 @@ func embedContentMetadataFromMldev(fromObject map[string]any, parentObject map[s
 
 func embedContentResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
 
 	fromEmbeddings := getValueByPath(fromObject, []string{"embeddings"})
 	if fromEmbeddings != nil {
@@ -3838,6 +3848,11 @@ func generatedImageFromMldev(fromObject map[string]any, parentObject map[string]
 func generateImagesResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
 		fromGeneratedImages, err = applyConverterToSlice(fromGeneratedImages.([]any), generatedImageFromMldev)
@@ -3936,6 +3951,11 @@ func modelFromMldev(fromObject map[string]any, parentObject map[string]any) (toO
 func listModelsResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
 		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
@@ -3967,6 +3987,11 @@ func deleteModelResponseFromMldev(fromObject map[string]any, parentObject map[st
 
 func countTokensResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
 
 	fromTotalTokens := getValueByPath(fromObject, []string{"totalTokens"})
 	if fromTotalTokens != nil {
@@ -4357,6 +4382,11 @@ func candidateFromVertex(fromObject map[string]any, parentObject map[string]any)
 func generateContentResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromCandidates := getValueByPath(fromObject, []string{"candidates"})
 	if fromCandidates != nil {
 		fromCandidates, err = applyConverterToSlice(fromCandidates.([]any), candidateFromVertex)
@@ -4445,6 +4475,11 @@ func embedContentMetadataFromVertex(fromObject map[string]any, parentObject map[
 
 func embedContentResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
 
 	fromEmbeddings := getValueByPath(fromObject, []string{"predictions[]", "embeddings"})
 	if fromEmbeddings != nil {
@@ -4555,6 +4590,11 @@ func generatedImageFromVertex(fromObject map[string]any, parentObject map[string
 func generateImagesResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
 		fromGeneratedImages, err = applyConverterToSlice(fromGeneratedImages.([]any), generatedImageFromVertex)
@@ -4581,6 +4621,11 @@ func generateImagesResponseFromVertex(fromObject map[string]any, parentObject ma
 func editImageResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
 		fromGeneratedImages, err = applyConverterToSlice(fromGeneratedImages.([]any), generatedImageFromVertex)
@@ -4596,6 +4641,11 @@ func editImageResponseFromVertex(fromObject map[string]any, parentObject map[str
 
 func upscaleImageResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
 
 	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
@@ -4737,6 +4787,11 @@ func modelFromVertex(fromObject map[string]any, parentObject map[string]any) (to
 func listModelsResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
 		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
@@ -4769,6 +4824,11 @@ func deleteModelResponseFromVertex(fromObject map[string]any, parentObject map[s
 func countTokensResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	fromTotalTokens := getValueByPath(fromObject, []string{"totalTokens"})
 	if fromTotalTokens != nil {
 		setValueByPath(toObject, []string{"totalTokens"}, fromTotalTokens)
@@ -4779,6 +4839,11 @@ func countTokensResponseFromVertex(fromObject map[string]any, parentObject map[s
 
 func computeTokensResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
 
 	fromTokensInfo := getValueByPath(fromObject, []string{"tokensInfo"})
 	if fromTokensInfo != nil {
@@ -5856,10 +5921,10 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 
 // List retrieves a paginated list of models resources.
 func (m Models) List(ctx context.Context, config *ListModelsConfig) (Page[Model], error) {
-	listFunc := func(ctx context.Context, config map[string]any) ([]*Model, string, error) {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*Model, string, *HTTPResponse, error) {
 		var c ListModelsConfig
 		if err := mapToStruct(config, &c); err != nil {
-			return nil, "", err
+			return nil, "", nil, err
 		}
 		if c.QueryBase == nil {
 			c.QueryBase = Ptr(true)
@@ -5872,9 +5937,9 @@ func (m Models) List(ctx context.Context, config *ListModelsConfig) (Page[Model]
 		}
 		resp, err := m.list(ctx, &c)
 		if err != nil {
-			return nil, "", err
+			return nil, "", nil, err
 		}
-		return resp.Models, resp.NextPageToken, nil
+		return resp.Models, resp.NextPageToken, resp.SDKHTTPResponse, nil
 	}
 	c := make(map[string]any)
 	deepMarshal(config, &c)
@@ -5888,10 +5953,10 @@ func (m Models) List(ctx context.Context, config *ListModelsConfig) (Page[Model]
 // content entry one by one. You do not need to manage pagination
 // tokens or make multiple calls to retrieve all data.
 func (m Models) All(ctx context.Context) iter.Seq2[*Model, error] {
-	listFunc := func(ctx context.Context, config map[string]any) ([]*Model, string, error) {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*Model, string, *HTTPResponse, error) {
 		var c ListModelsConfig
 		if err := mapToStruct(config, &c); err != nil {
-			return nil, "", err
+			return nil, "", nil, err
 		}
 		if c.QueryBase == nil {
 			c.QueryBase = Ptr(true)
@@ -5899,9 +5964,9 @@ func (m Models) All(ctx context.Context) iter.Seq2[*Model, error] {
 
 		resp, err := m.list(ctx, &c)
 		if err != nil {
-			return nil, "", err
+			return nil, "", nil, err
 		}
-		return resp.Models, resp.NextPageToken, nil
+		return resp.Models, resp.NextPageToken, resp.SDKHTTPResponse, nil
 	}
 	p, err := newPage(ctx, "models", map[string]any{}, listFunc)
 	if err != nil {
@@ -5927,9 +5992,15 @@ func (m Models) GenerateImages(ctx context.Context, model string, prompt string,
 		}
 	}
 
+	var sdkHTTPResponse *HTTPResponse
+	if apiResponse.SDKHTTPResponse != nil {
+		sdkHTTPResponse = apiResponse.SDKHTTPResponse
+	}
+
 	return &GenerateImagesResponse{
 		GeneratedImages:                generatedImages,
 		PositivePromptSafetyAttributes: positivePromptSafetyAttributes,
+		SDKHTTPResponse:                sdkHTTPResponse,
 	}, nil
 }
 

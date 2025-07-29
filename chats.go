@@ -106,7 +106,7 @@ func (c *Chat) Send(ctx context.Context, parts ...*Part) (*GenerateContentRespon
 
 	// Record history. By default, use the first candidate for history.
 	var outputContents []*Content
-	if len(modelOutput.Candidates) > 0 && modelOutput.Candidates[0].Content != nil {
+	if len(modelOutput.Candidates) > 0 && modelOutput.Candidates[0].Content != nil && len(modelOutput.Candidates[0].Content.Parts) > 0 {
 		outputContents = append(outputContents, modelOutput.Candidates[0].Content)
 	}
 	c.recordHistory(ctx, inputContent, outputContents)

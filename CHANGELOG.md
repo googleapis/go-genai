@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/googleapis/go-genai/compare/v1.17.0...v1.18.0) (2025-07-30)
+
+
+### Features
+
+* support response headers in Go for all methods. ([4865b93](https://github.com/googleapis/go-genai/commit/4865b9366e72f1ee5f124346bd15198d3582e7f1))
+
 ## [1.17.0](https://github.com/googleapis/go-genai/compare/v1.16.0...v1.17.0) (2025-07-17)
 
 

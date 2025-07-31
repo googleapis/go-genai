@@ -79,22 +79,6 @@ func listTuningJobsParametersToMldev(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
-func tuningExampleToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTextInput := getValueByPath(fromObject, []string{"textInput"})
-	if fromTextInput != nil {
-		setValueByPath(toObject, []string{"textInput"}, fromTextInput)
-	}
-
-	fromOutput := getValueByPath(fromObject, []string{"output"})
-	if fromOutput != nil {
-		setValueByPath(toObject, []string{"output"}, fromOutput)
-	}
-
-	return toObject, nil
-}
-
 func tuningDatasetToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 	if getValueByPath(fromObject, []string{"gcsUri"}) != nil {
@@ -103,16 +87,6 @@ func tuningDatasetToMldev(fromObject map[string]any, parentObject map[string]any
 
 	if getValueByPath(fromObject, []string{"vertexDatasetResource"}) != nil {
 		return nil, fmt.Errorf("vertexDatasetResource parameter is not supported in Gemini API")
-	}
-
-	fromExamples := getValueByPath(fromObject, []string{"examples"})
-	if fromExamples != nil {
-		fromExamples, err = applyConverterToSlice(fromExamples.([]any), tuningExampleToMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"examples", "examples"}, fromExamples)
 	}
 
 	return toObject, nil
@@ -150,16 +124,6 @@ func createTuningJobConfigToMldev(fromObject map[string]any, parentObject map[st
 
 	if getValueByPath(fromObject, []string{"adapterSize"}) != nil {
 		return nil, fmt.Errorf("adapterSize parameter is not supported in Gemini API")
-	}
-
-	fromBatchSize := getValueByPath(fromObject, []string{"batchSize"})
-	if fromBatchSize != nil {
-		setValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "batchSize"}, fromBatchSize)
-	}
-
-	fromLearningRate := getValueByPath(fromObject, []string{"learningRate"})
-	if fromLearningRate != nil {
-		setValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "learningRate"}, fromLearningRate)
 	}
 
 	return toObject, nil
@@ -262,10 +226,6 @@ func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]an
 		setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
 	}
 
-	if getValueByPath(fromObject, []string{"examples"}) != nil {
-		return nil, fmt.Errorf("examples parameter is not supported in Vertex AI")
-	}
-
 	return toObject, nil
 }
 
@@ -326,14 +286,6 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 	fromAdapterSize := getValueByPath(fromObject, []string{"adapterSize"})
 	if fromAdapterSize != nil {
 		setValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
-	}
-
-	if getValueByPath(fromObject, []string{"batchSize"}) != nil {
-		return nil, fmt.Errorf("batchSize parameter is not supported in Vertex AI")
-	}
-
-	if getValueByPath(fromObject, []string{"learningRate"}) != nil {
-		return nil, fmt.Errorf("learningRate parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil

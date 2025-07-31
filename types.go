@@ -3485,13 +3485,6 @@ type ListTuningJobsResponse struct {
 	TuningJobs []*TuningJob `json:"tuningJobs,omitempty"`
 }
 
-type TuningExample struct {
-	// Optional. Text model input.
-	TextInput string `json:"textInput,omitempty"`
-	// Optional. The expected model output.
-	Output string `json:"output,omitempty"`
-}
-
 // Supervised fine-tuning training dataset.
 type TuningDataset struct {
 	// Optional. GCS URI of the file containing training dataset in JSONL format.
@@ -3499,8 +3492,6 @@ type TuningDataset struct {
 	// Optional. The resource name of the Vertex Multimodal Dataset that is used as training
 	// dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.
 	VertexDatasetResource string `json:"vertexDatasetResource,omitempty"`
-	// Optional. Inline examples with simple input/output text.
-	Examples []*TuningExample `json:"examples,omitempty"`
 }
 
 type TuningValidationDataset struct {
@@ -3533,12 +3524,6 @@ type CreateTuningJobConfig struct {
 	ExportLastCheckpointOnly *bool `json:"exportLastCheckpointOnly,omitempty"`
 	// Optional. Adapter size for tuning.
 	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
-	// Optional. The batch size hyperparameter for tuning. If not set, a default of 4 or
-	// 16 will be used based on the number of training examples.
-	BatchSize *int32 `json:"batchSize,omitempty"`
-	// Optional. The learning rate hyperparameter for tuning. If not set, a default of 0.001
-	// or 0.0002 will be calculated based on the number of training examples.
-	LearningRate *float32 `json:"learningRate,omitempty"`
 }
 
 // A long-running operation.

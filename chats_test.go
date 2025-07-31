@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"cloud.google.com/go/auth"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestChatsUnitTest(t *testing.T) {
@@ -413,6 +414,8 @@ data:{
 		}
 
 		part := Part{Text: "What is 1 + 2?"}
+		expectedResponses := []string{"1 + ", "2", " = 3"}
+		i := 0
 
 		for result, err := range chat.SendMessageStream(ctx, part) {
 			if err != nil {
@@ -421,19 +424,25 @@ data:{
 			if result.Text() == "" {
 				t.Errorf("Response text should not be empty")
 			}
+			if result.Text() != expectedResponses[i] {
+				t.Errorf("Expected response to be %s, got %s", expectedResponses[i], result.Text())
+			}
+			i++
 		}
 
-		expectedResponses := []string{"1 + ", "2", " = 3"}
 		history := chat.History(false)
 		expectedUserMessage := "What is 1 + 2?"
 		if history[0].Parts[0].Text != expectedUserMessage {
 			t.Errorf("Expected history to start with %s, got %s", expectedUserMessage, history[0].Parts[0].Text)
 		}
-		for i, expectedResponse := range expectedResponses {
-			gotResponse := history[i+1].Parts[0].Text
-			if gotResponse != expectedResponse {
-				t.Errorf("Expected model response to be %s, got %s", expectedResponse, gotResponse)
-			}
+		// for i, expectedResponse := range expectedResponses {
+		// 	gotResponse := history[i+1].Parts[0].Text
+		// 	if gotResponse != expectedResponse {
+		// 		t.Errorf("Expected model response to be %s, got %s", expectedResponse, gotResponse)
+		// 	}
+		// }
+		if history[1].Parts[0].Text != "1 + 2 = 3" {
+			t.Errorf("Expected history to be %s, got %s", "1 + 2 = 3", history[1].Parts[0].Text)
 		}
 	})
 }
@@ -502,29 +511,29 @@ data:{
 
 		part := Part{Text: "What is 1 + 2?"}
 
-		for _, err := range chat.SendMessageStream(ctx, part) {
+		var expectedContents []*Content
+		expectedContents = append(expectedContents, &Content{Role: "model", Parts: []*Part{&Part{Text: "text1_candidate1"}}})
+		expectedContents = append(expectedContents, &Content{Role: "model", Parts: []*Part{&Part{Text: " "}}})
+		expectedContents = append(expectedContents, &Content{Role: "model", Parts: []*Part{&Part{Text: "text3_candidate1"}, &Part{Text: " additional text3_candidate1 "}}})
+		expectedContents = append(expectedContents, &Content{Role: "model", Parts: []*Part{&Part{Text: "text4_candidate1"}, &Part{Text: " additional text4_candidate1"}}})
+		i := 0
+		for resp, err := range chat.SendMessageStream(ctx, part) {
 			if err != nil {
 				log.Fatal(err)
 			}
+			if diff := cmp.Diff(resp.Candidates[0].Content, expectedContents[i]); diff != "" {
+				t.Errorf("Content mismatch (-want +got):\n%s", diff)
+			}
+			i++
 		}
-
-		var expectedResponses []*Content
-		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{&Part{Text: "text1_candidate1"}}})
-		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{&Part{Text: " "}}})
-		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{&Part{Text: "text3_candidate1"}, &Part{Text: " additional text3_candidate1 "}}})
-		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{&Part{Text: "text4_candidate1"}, &Part{Text: " additional text4_candidate1"}}})
 
 		history := chat.History(false)
 		expectedUserMessage := "What is 1 + 2?"
 		if history[0].Parts[0].Text != expectedUserMessage {
 			t.Errorf("Expected history to start with %s, got %s", expectedUserMessage, history[0].Parts[0].Text)
 		}
-		for i, expectedResponse := range expectedResponses {
-			for j, expectedPart := range history[i+1].Parts {
-				if expectedPart.Text != expectedResponse.Parts[j].Text {
-					t.Errorf("Expected model response to be %s, got %s", expectedResponse.Parts[j].Text, part.Text)
-				}
-			}
+		if history[1].Parts[0].Text != "text1_candidate1 text3_candidate1 additional text3_candidate1 text4_candidate1 additional text4_candidate1" {
+			t.Errorf("Expected history to be %s, got %s", "text1_candidate1", history[1].Parts[0].Text)
 		}
 
 	})

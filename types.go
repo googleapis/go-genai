@@ -3107,7 +3107,11 @@ type TunedModelCheckpoint struct {
 }
 
 type TunedModel struct {
-	// Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}`.
+	// Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+	// When tuning from a base model, the version_id will be 1. For continuous tuning, the
+	// version ID will be incremented by 1 from the last version ID in the parent model.
+	// E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id +
+	// 1}`
 	Model string `json:"model,omitempty"`
 	// Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
 	Endpoint string `json:"endpoint,omitempty"`
@@ -3132,6 +3136,20 @@ type GoogleRpcStatus struct {
 	// message should be localized and sent in the google.rpc.Status.details field, or localized
 	// by the client.
 	Message string `json:"message,omitempty"`
+}
+
+// A pre-tuned model for continuous tuning.
+type PreTunedModel struct {
+	// The resource name of the Model. E.g., a model resource name with a specified version
+	// ID or alias: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+	// `projects/{project}/locations/{location}/models/{model}@{alias}` Or, omit the version
+	// ID to use the default version: `projects/{project}/locations/{location}/models/{model}`
+	TunedModelName string `json:"tunedModelName,omitempty"`
+	// Optional. The source checkpoint id. If not specified, the default checkpoint will
+	// be used.
+	CheckpointID string `json:"checkpointId,omitempty"`
+	// Output only. The name of the base model this PreTunedModel was tuned from.
+	BaseModel string `json:"baseModel,omitempty"`
 }
 
 // Hyperparameters for SFT.
@@ -3411,6 +3429,8 @@ type TuningJob struct {
 	BaseModel string `json:"baseModel,omitempty"`
 	// Output only. The tuned model resources associated with this TuningJob.
 	TunedModel *TunedModel `json:"tunedModel,omitempty"`
+	// The pre-tuned model for continuous tuning.
+	PreTunedModel *PreTunedModel `json:"preTunedModel,omitempty"`
 	// Tuning Spec for Supervised Fine Tuning.
 	SupervisedTuningSpec *SupervisedTuningSpec `json:"supervisedTuningSpec,omitempty"`
 	// Output only. The tuning data statistics associated with this TuningJob.
@@ -3587,6 +3607,9 @@ type CreateTuningJobConfig struct {
 	// Optional. If set to true, disable intermediate checkpoints for SFT and only the last
 	// checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT.
 	ExportLastCheckpointOnly *bool `json:"exportLastCheckpointOnly,omitempty"`
+	// Optional. The optional checkpoint ID of the pre-tuned model to use for tuning, if
+	// applicable.
+	PreTunedModelCheckpointID string `json:"preTunedModelCheckpointId,omitempty"`
 	// Optional. Adapter size for tuning.
 	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
 	// Optional. The batch size hyperparameter for tuning. If not set, a default of 4 or

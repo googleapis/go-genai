@@ -378,18 +378,6 @@ const (
 	AdapterSizeThirtyTwo AdapterSize = "ADAPTER_SIZE_THIRTY_TWO"
 )
 
-// The tuning task. Either I2V or T2V.
-type TuningTask string
-
-const (
-	// Default value. This value is unused.
-	TuningTaskUnspecified TuningTask = "TUNING_TASK_UNSPECIFIED"
-	// Tuning task for image to video.
-	TuningTaskI2v TuningTask = "TUNING_TASK_I2V"
-	// Tuning task for text to video.
-	TuningTaskT2v TuningTask = "TUNING_TASK_T2V"
-)
-
 // Options for feature selection preference.
 type FeatureSelectionPreference string
 
@@ -3503,90 +3491,6 @@ type PartnerModelTuningSpec struct {
 	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
 }
 
-// Hyperparameters for Distillation.
-type DistillationHyperParameters struct {
-	// Optional. Adapter size for distillation.
-	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
-	// Optional. Number of complete passes the model makes over the entire training dataset
-	// during training.
-	EpochCount int64 `json:"epochCount,omitempty,string"`
-	// Optional. Multiplier for adjusting the default learning rate.
-	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
-}
-
-// Tuning Spec for Distillation.
-type DistillationSpec struct {
-	// The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).
-	BaseTeacherModel string `json:"baseTeacherModel,omitempty"`
-	// Optional. Hyperparameters for Distillation.
-	HyperParameters *DistillationHyperParameters `json:"hyperParameters,omitempty"`
-	// Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output
-	// directory of the distillation pipeline. It is used by the system to generate the
-	// paths of output artifacts.
-	PipelineRootDirectory string `json:"pipelineRootDirectory,omitempty"`
-	// The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated.
-	// Use base_model instead.
-	StudentModel string `json:"studentModel,omitempty"`
-	// Deprecated. Cloud Storage path to file containing training dataset for tuning. The
-	// dataset must be formatted as a JSONL file.
-	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
-	// The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`.
-	TunedTeacherModelSource string `json:"tunedTeacherModelSource,omitempty"`
-	// Optional. Cloud Storage path to file containing validation dataset for tuning. The
-	// dataset must be formatted as a JSONL file.
-	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
-}
-
-// Hyperparameters for Preference Optimization.
-type PreferenceOptimizationHyperParameters struct {
-	// Optional. Adapter size for preference optimization.
-	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
-	// Optional. Weight for KL Divergence regularization.
-	Beta float64 `json:"beta,omitempty"`
-	// Optional. Number of complete passes the model makes over the entire training dataset
-	// during training.
-	EpochCount int64 `json:"epochCount,omitempty,string"`
-	// Optional. Multiplier for adjusting the default learning rate.
-	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
-}
-
-// Tuning Spec for Preference Optimization.
-type PreferenceOptimizationSpec struct {
-	// Optional. Hyperparameters for Preference Optimization.
-	HyperParameters *PreferenceOptimizationHyperParameters `json:"hyperParameters,omitempty"`
-	// Required. Cloud Storage path to file containing training dataset for preference optimization
-	// tuning. The dataset must be formatted as a JSONL file.
-	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
-	// Optional. Cloud Storage path to file containing validation dataset for preference
-	// optimization tuning. The dataset must be formatted as a JSONL file.
-	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
-}
-
-// Hyperparameters for Veo.
-type VeoHyperParameters struct {
-	// Optional. Number of complete passes the model makes over the entire training dataset
-	// during training.
-	EpochCount int64 `json:"epochCount,omitempty,string"`
-	// Optional. Multiplier for adjusting the default learning rate.
-	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
-	// Optional. The tuning task. Either I2V or T2V.
-	TuningTask TuningTask `json:"tuningTask,omitempty"`
-}
-
-// Tuning Spec for Veo Model Tuning.
-type VeoTuningSpec struct {
-	// Optional. Hyperparameters for Veo.
-	HyperParameters *VeoHyperParameters `json:"hyperParameters,omitempty"`
-	// Required. Training dataset used for tuning. The dataset can be specified as either
-	// a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal
-	// Dataset.
-	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
-	// Optional. Validation dataset used for tuning. The dataset can be specified as either
-	// a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal
-	// Dataset.
-	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
-}
-
 // A tuning job.
 type TuningJob struct {
 	// Optional. Used to retain the full HTTP response.
@@ -3632,8 +3536,6 @@ type TuningJob struct {
 	// the custom model is derived from. This feature is only available for open source
 	// models.
 	CustomBaseModel string `json:"customBaseModel,omitempty"`
-	// Tuning Spec for Distillation.
-	DistillationSpec *DistillationSpec `json:"distillationSpec,omitempty"`
 	// Output only. The Experiment associated with this TuningJob.
 	Experiment string `json:"experiment,omitempty"`
 	// Optional. The labels with user-defined metadata to organize TuningJob and generated
@@ -3648,12 +3550,6 @@ type TuningJob struct {
 	// Output only. The resource name of the PipelineJob associated with the TuningJob.
 	// Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.
 	PipelineJob string `json:"pipelineJob,omitempty"`
-	// Tuning Spec for Preference Optimization.
-	PreferenceOptimizationSpec *PreferenceOptimizationSpec `json:"preferenceOptimizationSpec,omitempty"`
-	// Output only. Reserved for future use.
-	SatisfiesPzi bool `json:"satisfiesPzi,omitempty"`
-	// Output only. Reserved for future use.
-	SatisfiesPzs bool `json:"satisfiesPzs,omitempty"`
 	// The service account that the tuningJob workload runs as. If not specified, the Vertex
 	// AI Secure Fine-Tuned Service Agent in the project will be used. See https://cloud.google.com/iam/docs/service-agents#vertex-ai-secure-fine-tuning-service-agent
 	// Users starting the pipeline must have the `iam.serviceAccounts.actAs` permission
@@ -3662,8 +3558,6 @@ type TuningJob struct {
 	// Optional. The display name of the TunedModel. The name can be up to 128 characters
 	// long and can consist of any UTF-8 characters.
 	TunedModelDisplayName string `json:"tunedModelDisplayName,omitempty"`
-	// Tuning Spec for Veo Tuning.
-	VeoTuningSpec *VeoTuningSpec `json:"veoTuningSpec,omitempty"`
 }
 
 func (t *TuningJob) UnmarshalJSON(data []byte) error {

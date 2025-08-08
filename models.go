@@ -3107,6 +3107,120 @@ func recontextImageParametersToVertex(ac *apiClient, fromObject map[string]any, 
 	return toObject, nil
 }
 
+func scribbleImageToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"image"}, fromImage)
+	}
+
+	return toObject, nil
+}
+
+func segmentImageSourceToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	if fromPrompt != nil {
+		setValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
+	}
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
+	}
+
+	fromScribbleImage := getValueByPath(fromObject, []string{"scribbleImage"})
+	if fromScribbleImage != nil {
+		fromScribbleImage, err = scribbleImageToVertex(fromScribbleImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "scribble"}, fromScribbleImage)
+	}
+
+	return toObject, nil
+}
+
+func segmentImageConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromMode := getValueByPath(fromObject, []string{"mode"})
+	if fromMode != nil {
+		setValueByPath(parentObject, []string{"parameters", "mode"}, fromMode)
+	}
+
+	fromMaxPredictions := getValueByPath(fromObject, []string{"maxPredictions"})
+	if fromMaxPredictions != nil {
+		setValueByPath(parentObject, []string{"parameters", "maxPredictions"}, fromMaxPredictions)
+	}
+
+	fromConfidenceThreshold := getValueByPath(fromObject, []string{"confidenceThreshold"})
+	if fromConfidenceThreshold != nil {
+		setValueByPath(parentObject, []string{"parameters", "confidenceThreshold"}, fromConfidenceThreshold)
+	}
+
+	fromMaskDilation := getValueByPath(fromObject, []string{"maskDilation"})
+	if fromMaskDilation != nil {
+		setValueByPath(parentObject, []string{"parameters", "maskDilation"}, fromMaskDilation)
+	}
+
+	fromBinaryColorThreshold := getValueByPath(fromObject, []string{"binaryColorThreshold"})
+	if fromBinaryColorThreshold != nil {
+		setValueByPath(parentObject, []string{"parameters", "binaryColorThreshold"}, fromBinaryColorThreshold)
+	}
+
+	return toObject, nil
+}
+
+func segmentImageParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		fromModel, err = tModel(ac, fromModel)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+	}
+
+	fromSource := getValueByPath(fromObject, []string{"source"})
+	if fromSource != nil {
+		fromSource, err = segmentImageSourceToVertex(fromSource.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromSource)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = segmentImageConfigToVertex(fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func getModelParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -4807,6 +4921,64 @@ func recontextImageResponseFromVertex(fromObject map[string]any, parentObject ma
 	return toObject, nil
 }
 
+func entityLabelFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromLabel := getValueByPath(fromObject, []string{"label"})
+	if fromLabel != nil {
+		setValueByPath(toObject, []string{"label"}, fromLabel)
+	}
+
+	fromScore := getValueByPath(fromObject, []string{"score"})
+	if fromScore != nil {
+		setValueByPath(toObject, []string{"score"}, fromScore)
+	}
+
+	return toObject, nil
+}
+
+func generatedImageMaskFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromMask := getValueByPath(fromObject, []string{"_self"})
+	if fromMask != nil {
+		fromMask, err = imageFromVertex(fromMask.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"mask"}, fromMask)
+	}
+
+	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		fromLabels, err = applyConverterToSlice(fromLabels.([]any), entityLabelFromVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"labels"}, fromLabels)
+	}
+
+	return toObject, nil
+}
+
+func segmentImageResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGeneratedMasks := getValueByPath(fromObject, []string{"predictions"})
+	if fromGeneratedMasks != nil {
+		fromGeneratedMasks, err = applyConverterToSlice(fromGeneratedMasks.([]any), generatedImageMaskFromVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"generatedMasks"}, fromGeneratedMasks)
+	}
+
+	return toObject, nil
+}
+
 func endpointFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -5573,6 +5745,91 @@ func (m Models) RecontextImage(ctx context.Context, model string, source *Recont
 	} else {
 
 		return nil, fmt.Errorf("method RecontextImage is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+
+	}
+
+	body, err := toConverter(m.apiClient, parameterMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	var path string
+	var urlParams map[string]any
+	if _, ok := body["_url"]; ok {
+		urlParams = body["_url"].(map[string]any)
+		delete(body, "_url")
+	}
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		path, err = formatMap("{model}:predict", urlParams)
+	} else {
+		path, err = formatMap("None", urlParams)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path += "?" + query
+		delete(body, "_query")
+	}
+
+	if _, ok := body["config"]; ok {
+		delete(body, "config")
+	}
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
+	if err != nil {
+		return nil, err
+	}
+	responseMap, err = fromConverter(responseMap, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = mapToStruct(responseMap, response)
+	if err != nil {
+		return nil, err
+	}
+
+	if field, ok := reflect.TypeOf(response).Elem().FieldByName("SDKHTTPResponse"); ok {
+		{
+			if reflect.ValueOf(response).Elem().FieldByName("SDKHTTPResponse").IsValid() {
+				{
+					reflect.ValueOf(response).Elem().FieldByName("SDKHTTPResponse").Set(reflect.Zero(field.Type))
+				}
+			}
+		}
+	}
+
+	return response, nil
+}
+
+// SegmentImage segments an image, creating a mask of a specified area.
+func (m Models) SegmentImage(ctx context.Context, model string, source *SegmentImageSource, config *SegmentImageConfig) (*SegmentImageResponse, error) {
+	parameterMap := make(map[string]any)
+
+	kwargs := map[string]any{"model": model, "source": source, "config": config}
+	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
+	} else {
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
+	}
+	var response = new(SegmentImageResponse)
+	var responseMap map[string]any
+	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		toConverter = segmentImageParametersToVertex
+		fromConverter = segmentImageResponseFromVertex
+	} else {
+
+		return nil, fmt.Errorf("method SegmentImage is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
 
 	}
 

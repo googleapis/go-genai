@@ -150,7 +150,7 @@ func convertFloat64ToString(data map[string]any) map[string]any {
 		switch v := value.(type) {
 		case float64:
 			// Convert float64 to string
-			data[key] = strconv.FormatFloat(v, 'f', 5, 64)
+			data[key] = strconv.FormatFloat(v, 'f', 6, 64) // precision 6 is enough for float32
 		case map[string]any:
 			// Recursively process nested maps
 			data[key] = convertFloat64ToString(v)

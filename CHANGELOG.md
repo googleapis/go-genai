@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.19.0](https://github.com/googleapis/go-genai/compare/v1.18.0...v1.19.0) (2025-08-06)
+
+
+### Features
+
+* Add image_size field for Gemini Developer API Imagen 4 generation ([3ccd2b0](https://github.com/googleapis/go-genai/commit/3ccd2b086ecc761dd0492bae030f9ce7501e17c1))
+* Add parts length check ([#444](https://github.com/googleapis/go-genai/issues/444)) ([a4896f3](https://github.com/googleapis/go-genai/commit/a4896f37c756e9cf9b69a9ed38db00bf36e28f0d))
+* allow methods in batch to return headers in sdk_http_response by default ([3a1d6d8](https://github.com/googleapis/go-genai/commit/3a1d6d83a10b53fc44c7cc06e1d3b0426a437c98))
+* enable responseId for Gemini Developer API ([9845a91](https://github.com/googleapis/go-genai/commit/9845a919d768d7ced4857518b3155426105c5d85))
+* support curated history in the Go chats module. ([2b99b83](https://github.com/googleapis/go-genai/commit/2b99b83451ed6e622e985baf68461c3ad03e793e))
+* Support image recontext on Vertex ([fc7ee78](https://github.com/googleapis/go-genai/commit/fc7ee78fcae0f196deeaf8ccac4592905112c60c))
+* Support new enum types for UrlRetrievalStatus ([ef63a73](https://github.com/googleapis/go-genai/commit/ef63a73505062e763df5f33559c6b0ba160e22ca))
+
 ## [1.18.0](https://github.com/googleapis/go-genai/compare/v1.17.0...v1.18.0) (2025-07-30)
 
 

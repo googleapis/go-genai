@@ -172,16 +172,6 @@ const (
 	APISpecElasticSearch APISpec = "ELASTIC_SEARCH"
 )
 
-// The environment being operated.
-type Environment string
-
-const (
-	// Defaults to browser.
-	EnvironmentUnspecified Environment = "ENVIRONMENT_UNSPECIFIED"
-	// Operates in a web browser.
-	EnvironmentBrowser Environment = "ENVIRONMENT_BROWSER"
-)
-
 // Status of the URL retrieval.
 type URLRetrievalStatus string
 
@@ -192,6 +182,10 @@ const (
 	URLRetrievalStatusSuccess URLRetrievalStatus = "URL_RETRIEVAL_STATUS_SUCCESS"
 	// URL retrieval is failed due to error.
 	URLRetrievalStatusError URLRetrievalStatus = "URL_RETRIEVAL_STATUS_ERROR"
+	// URL retrieval is failed because the content is behind paywall.
+	URLRetrievalStatusPaywall URLRetrievalStatus = "URL_RETRIEVAL_STATUS_PAYWALL"
+	// URL retrieval is failed because the content is unsafe.
+	URLRetrievalStatusUnsafe URLRetrievalStatus = "URL_RETRIEVAL_STATUS_UNSAFE"
 )
 
 // The reason why the model stopped generating tokens.
@@ -352,6 +346,18 @@ const (
 	JobStatePartiallySucceeded JobState = "JOB_STATE_PARTIALLY_SUCCEEDED"
 )
 
+// Tuning mode.
+type TuningMode string
+
+const (
+	// Tuning mode is unspecified.
+	TuningModeUnspecified TuningMode = "TUNING_MODE_UNSPECIFIED"
+	// Full fine-tuning mode.
+	TuningModeFull TuningMode = "TUNING_MODE_FULL"
+	// PEFT adapter tuning mode.
+	TuningModePeftAdapter TuningMode = "TUNING_MODE_PEFT_ADAPTER"
+)
+
 // Adapter size for tuning.
 type AdapterSize string
 
@@ -370,6 +376,18 @@ const (
 	AdapterSizeSixteen AdapterSize = "ADAPTER_SIZE_SIXTEEN"
 	// Adapter size 32.
 	AdapterSizeThirtyTwo AdapterSize = "ADAPTER_SIZE_THIRTY_TWO"
+)
+
+// The tuning task. Either I2V or T2V.
+type TuningTask string
+
+const (
+	// Default value. This value is unused.
+	TuningTaskUnspecified TuningTask = "TUNING_TASK_UNSPECIFIED"
+	// Tuning task for image to video.
+	TuningTaskI2v TuningTask = "TUNING_TASK_I2V"
+	// Tuning task for text to video.
+	TuningTaskT2v TuningTask = "TUNING_TASK_T2V"
 )
 
 // Options for feature selection preference.
@@ -405,6 +423,16 @@ const (
 	DynamicRetrievalConfigModeUnspecified DynamicRetrievalConfigMode = "MODE_UNSPECIFIED"
 	// Run retrieval only when system decides it is necessary.
 	DynamicRetrievalConfigModeDynamic DynamicRetrievalConfigMode = "MODE_DYNAMIC"
+)
+
+// The environment being operated.
+type Environment string
+
+const (
+	// Defaults to browser.
+	EnvironmentUnspecified Environment = "ENVIRONMENT_UNSPECIFIED"
+	// Operates in a web browser.
+	EnvironmentBrowser Environment = "ENVIRONMENT_BROWSER"
 )
 
 // Config for the function calling config mode.
@@ -1306,6 +1334,12 @@ type GoogleMaps struct {
 type URLContext struct {
 }
 
+// Tool to support computer use.
+type ToolComputerUse struct {
+	// Optional. Required. The environment being operated.
+	Environment Environment `json:"environment,omitempty"`
+}
+
 // The API secret.
 type APIAuthAPIKeyConfig struct {
 	// Required. The SecretManager secret version resource name storing API key. e.g. projects/{project}/secrets/{secret}/versions/{version}
@@ -1483,12 +1517,6 @@ type Retrieval struct {
 type ToolCodeExecution struct {
 }
 
-// Tool to support computer use.
-type ToolComputerUse struct {
-	// Required. The environment being operated.
-	Environment Environment `json:"environment,omitempty"`
-}
-
 // Tool details of a tool that the model may use to generate a response.
 type Tool struct {
 	// Optional. List of function declarations that the tool supports.
@@ -1511,11 +1539,12 @@ type Tool struct {
 	GoogleMaps *GoogleMaps `json:"googleMaps,omitempty"`
 	// Optional. Tool to support URL context retrieval.
 	URLContext *URLContext `json:"urlContext,omitempty"`
+	// Optional. Tool to support the model interacting directly with the
+	// computer. If enabled, it automatically populates computer-use specific
+	// Function Declarations.
+	ComputerUse *ToolComputerUse `json:"computerUse,omitempty"`
 	// Optional. CodeExecution tool type. Enables the model to execute code as part of generation.
 	CodeExecution *ToolCodeExecution `json:"codeExecution,omitempty"`
-	// Optional. Tool to support the model interacting directly with the computer. If enabled,
-	// it automatically populates computer-use specific Function Declarations.
-	ComputerUse *ToolComputerUse `json:"computerUse,omitempty"`
 }
 
 // Function calling config.
@@ -1822,6 +1851,56 @@ type URLContextMetadata struct {
 	URLMetadata []*URLMetadata `json:"urlMetadata,omitempty"`
 }
 
+// Author attribution for a photo or review.
+type GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution struct {
+	// Name of the author of the Photo or Review.
+	DisplayName string `json:"displayName,omitempty"`
+	// Profile photo URI of the author of the Photo or Review.
+	PhotoURI string `json:"photoUri,omitempty"`
+	// URI of the author of the Photo or Review.
+	URI string `json:"uri,omitempty"`
+}
+
+// Encapsulates a review snippet.
+type GroundingChunkMapsPlaceAnswerSourcesReviewSnippet struct {
+	// This review's author.
+	AuthorAttribution *GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution `json:"authorAttribution,omitempty"`
+	// A link where users can flag a problem with the review.
+	FlagContentURI string `json:"flagContentUri,omitempty"`
+	// A link to show the review on Google Maps.
+	GoogleMapsURI string `json:"googleMapsUri,omitempty"`
+	// A string of formatted recent time, expressing the review time relative to the current
+	// time in a form appropriate for the language and country.
+	RelativePublishTimeDescription string `json:"relativePublishTimeDescription,omitempty"`
+	// A reference representing this place review which may be used to look up this place
+	// review again.
+	Review string `json:"review,omitempty"`
+}
+
+// Sources used to generate the place answer.
+type GroundingChunkMapsPlaceAnswerSources struct {
+	// A link where users can flag a problem with the generated answer.
+	FlagContentURI string `json:"flagContentUri,omitempty"`
+	// Snippets of reviews that are used to generate the answer.
+	ReviewSnippets []*GroundingChunkMapsPlaceAnswerSourcesReviewSnippet `json:"reviewSnippets,omitempty"`
+}
+
+// Chunk from Google Maps.
+type GroundingChunkMaps struct {
+	// Sources used to generate the place answer. This includes review snippets and photos
+	// that were used to generate the answer, as well as uris to flag content.
+	PlaceAnswerSources *GroundingChunkMapsPlaceAnswerSources `json:"placeAnswerSources,omitempty"`
+	// This Place's resource name, in `places/{place_id}` format. Can be used to look up
+	// the Place.
+	PlaceID string `json:"placeId,omitempty"`
+	// Text of the chunk.
+	Text string `json:"text,omitempty"`
+	// Title of the chunk.
+	Title string `json:"title,omitempty"`
+	// URI reference of the chunk.
+	URI string `json:"uri,omitempty"`
+}
+
 // Represents where the chunk starts and ends in the document.
 type RAGChunkPageSpan struct {
 	// Page where chunk starts in the document. Inclusive. 1-indexed.
@@ -1840,6 +1919,8 @@ type RAGChunk struct {
 
 // Chunk from context retrieved by the retrieval tools.
 type GroundingChunkRetrievedContext struct {
+	// Output only. The full document name for the referenced Vertex AI Search document.
+	DocumentName string `json:"documentName,omitempty"`
 	// Additional context for the RAG retrieval result. This is only populated when using
 	// the RAG retrieval tool.
 	RAGChunk *RAGChunk `json:"ragChunk,omitempty"`
@@ -1863,6 +1944,8 @@ type GroundingChunkWeb struct {
 
 // Grounding chunk.
 type GroundingChunk struct {
+	// Grounding chunk from Google Maps.
+	Maps *GroundingChunkMaps `json:"maps,omitempty"`
 	// Grounding chunk from context retrieved by the retrieval tools.
 	RetrievedContext *GroundingChunkRetrievedContext `json:"retrievedContext,omitempty"`
 	// Grounding chunk from the web.
@@ -1917,6 +2000,10 @@ type SearchEntryPoint struct {
 
 // Metadata returned to client when grounding is enabled.
 type GroundingMetadata struct {
+	// Optional. Output only. Resource name of the Google Maps widget context token to be
+	// used with the PlacesContextElement widget to render contextual data. This is populated
+	// only for Google Maps grounding.
+	GoogleMapsWidgetContextToken string `json:"googleMapsWidgetContextToken,omitempty"`
 	// List of supporting references retrieved from specified grounding source.
 	GroundingChunks []*GroundingChunk `json:"groundingChunks,omitempty"`
 	// Optional. List of grounding support.
@@ -3103,7 +3190,11 @@ type TunedModelCheckpoint struct {
 }
 
 type TunedModel struct {
-	// Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}`.
+	// Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+	// When tuning from a base model, the version_id will be 1. For continuous tuning, the
+	// version ID will be incremented by 1 from the last version ID in the parent model.
+	// E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id +
+	// 1}`
 	Model string `json:"model,omitempty"`
 	// Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
 	Endpoint string `json:"endpoint,omitempty"`
@@ -3130,15 +3221,34 @@ type GoogleRpcStatus struct {
 	Message string `json:"message,omitempty"`
 }
 
+// A pre-tuned model for continuous tuning.
+type PreTunedModel struct {
+	// Output only. The name of the base model this PreTunedModel was tuned from.
+	BaseModel string `json:"baseModel,omitempty"`
+	// Optional. The source checkpoint id. If not specified, the default checkpoint will
+	// be used.
+	CheckpointID string `json:"checkpointId,omitempty"`
+	// The resource name of the Model. E.g., a model resource name with a specified version
+	// ID or alias: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+	// `projects/{project}/locations/{location}/models/{model}@{alias}` Or, omit the version
+	// ID to use the default version: `projects/{project}/locations/{location}/models/{model}`
+	TunedModelName string `json:"tunedModelName,omitempty"`
+}
+
 // Hyperparameters for SFT.
 type SupervisedHyperParameters struct {
 	// Optional. Adapter size for tuning.
 	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
+	// Optional. Batch size for tuning. This feature is only available for open source models.
+	BatchSize int64 `json:"batchSize,omitempty,string"`
 	// Optional. Number of complete passes the model makes over the entire training dataset
 	// during training.
 	EpochCount int64 `json:"epochCount,omitempty,string"`
+	// Optional. Learning rate for tuning. Mutually exclusive with `learning_rate_multiplier`.
+	// This feature is only available for open source models.
+	LearningRate float64 `json:"learningRate,omitempty"`
 	// Optional. Multiplier for adjusting the default learning rate. Mutually exclusive
-	// with `learning_rate`.
+	// with `learning_rate`. This feature is only available for 1P models.
 	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
 }
 
@@ -3154,6 +3264,8 @@ type SupervisedTuningSpec struct {
 	// a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal
 	// Dataset.
 	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
+	// Tuning mode.
+	TuningMode TuningMode `json:"tuningMode,omitempty"`
 	// Optional. Validation dataset used for tuning. The dataset can be specified as either
 	// a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal
 	// Dataset.
@@ -3215,6 +3327,42 @@ type DatasetStats struct {
 type DistillationDataStats struct {
 	// Output only. Statistics computed for the training dataset.
 	TrainingDatasetStats *DatasetStats `json:"trainingDatasetStats,omitempty"`
+}
+
+// Completion and its preference score.
+type GeminiPreferenceExampleCompletion struct {
+	// Single turn completion for the given prompt.
+	Completion *Content `json:"completion,omitempty"`
+	// The score for the given completion.
+	Score float32 `json:"score,omitempty"`
+}
+
+// Input example for preference optimization.
+type GeminiPreferenceExample struct {
+	// List of completions for a given prompt.
+	Completions []*GeminiPreferenceExampleCompletion `json:"completions,omitempty"`
+	// Multi-turn contents that represents the Prompt.
+	Contents []*Content `json:"contents,omitempty"`
+}
+
+// Statistics computed for datasets used for preference optimization.
+type PreferenceOptimizationDataStats struct {
+	// Output only. Dataset distributions for scores variance per example.
+	ScoreVariancePerExampleDistribution *DatasetDistribution `json:"scoreVariancePerExampleDistribution,omitempty"`
+	// Output only. Dataset distributions for scores.
+	ScoresDistribution *DatasetDistribution `json:"scoresDistribution,omitempty"`
+	// Output only. Number of billable tokens in the tuning dataset.
+	TotalBillableTokenCount int64 `json:"totalBillableTokenCount,omitempty,string"`
+	// Output only. Number of examples in the tuning dataset.
+	TuningDatasetExampleCount int64 `json:"tuningDatasetExampleCount,omitempty,string"`
+	// Output only. Number of tuning steps for this Tuning Job.
+	TuningStepCount int64 `json:"tuningStepCount,omitempty,string"`
+	// Output only. Sample user examples in the training dataset.
+	UserDatasetExamples []*GeminiPreferenceExample `json:"userDatasetExamples,omitempty"`
+	// Output only. Dataset distributions for the user input tokens.
+	UserInputTokenDistribution *DatasetDistribution `json:"userInputTokenDistribution,omitempty"`
+	// Output only. Dataset distributions for the user output tokens.
+	UserOutputTokenDistribution *DatasetDistribution `json:"userOutputTokenDistribution,omitempty"`
 }
 
 // Dataset bucket used to create a histogram for the distribution given a population
@@ -3321,6 +3469,8 @@ func (s *SupervisedTuningDataStats) MarshalJSON() ([]byte, error) {
 type TuningDataStats struct {
 	// Output only. Statistics for distillation.
 	DistillationDataStats *DistillationDataStats `json:"distillationDataStats,omitempty"`
+	// Output only. Statistics for preference optimization.
+	PreferenceOptimizationDataStats *PreferenceOptimizationDataStats `json:"preferenceOptimizationDataStats,omitempty"`
 	// The SFT Tuning data stats.
 	SupervisedTuningDataStats *SupervisedTuningDataStats `json:"supervisedTuningDataStats,omitempty"`
 }
@@ -3381,6 +3531,56 @@ type DistillationSpec struct {
 	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
 }
 
+// Hyperparameters for Preference Optimization.
+type PreferenceOptimizationHyperParameters struct {
+	// Optional. Adapter size for preference optimization.
+	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
+	// Optional. Weight for KL Divergence regularization.
+	Beta float64 `json:"beta,omitempty"`
+	// Optional. Number of complete passes the model makes over the entire training dataset
+	// during training.
+	EpochCount int64 `json:"epochCount,omitempty,string"`
+	// Optional. Multiplier for adjusting the default learning rate.
+	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
+}
+
+// Tuning Spec for Preference Optimization.
+type PreferenceOptimizationSpec struct {
+	// Optional. Hyperparameters for Preference Optimization.
+	HyperParameters *PreferenceOptimizationHyperParameters `json:"hyperParameters,omitempty"`
+	// Required. Cloud Storage path to file containing training dataset for preference optimization
+	// tuning. The dataset must be formatted as a JSONL file.
+	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
+	// Optional. Cloud Storage path to file containing validation dataset for preference
+	// optimization tuning. The dataset must be formatted as a JSONL file.
+	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
+}
+
+// Hyperparameters for Veo.
+type VeoHyperParameters struct {
+	// Optional. Number of complete passes the model makes over the entire training dataset
+	// during training.
+	EpochCount int64 `json:"epochCount,omitempty,string"`
+	// Optional. Multiplier for adjusting the default learning rate.
+	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
+	// Optional. The tuning task. Either I2V or T2V.
+	TuningTask TuningTask `json:"tuningTask,omitempty"`
+}
+
+// Tuning Spec for Veo Model Tuning.
+type VeoTuningSpec struct {
+	// Optional. Hyperparameters for Veo.
+	HyperParameters *VeoHyperParameters `json:"hyperParameters,omitempty"`
+	// Required. Training dataset used for tuning. The dataset can be specified as either
+	// a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal
+	// Dataset.
+	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
+	// Optional. Validation dataset used for tuning. The dataset can be specified as either
+	// a Cloud Storage path to a JSONL file or as the resource name of a Vertex Multimodal
+	// Dataset.
+	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
+}
+
 // A tuning job.
 type TuningJob struct {
 	// Optional. Used to retain the full HTTP response.
@@ -3407,6 +3607,8 @@ type TuningJob struct {
 	BaseModel string `json:"baseModel,omitempty"`
 	// Output only. The tuned model resources associated with this TuningJob.
 	TunedModel *TunedModel `json:"tunedModel,omitempty"`
+	// The pre-tuned model for continuous tuning.
+	PreTunedModel *PreTunedModel `json:"preTunedModel,omitempty"`
 	// Tuning Spec for Supervised Fine Tuning.
 	SupervisedTuningSpec *SupervisedTuningSpec `json:"supervisedTuningSpec,omitempty"`
 	// Output only. The tuning data statistics associated with this TuningJob.
@@ -3417,6 +3619,13 @@ type TuningJob struct {
 	EncryptionSpec *EncryptionSpec `json:"encryptionSpec,omitempty"`
 	// Tuning Spec for open sourced and third party Partner models.
 	PartnerModelTuningSpec *PartnerModelTuningSpec `json:"partnerModelTuningSpec,omitempty"`
+	// Optional. The user-provided path to custom model weights. Set this field to tune
+	// a custom model. The path must be a Cloud Storage directory that contains the model
+	// weights in .safetensors format along with associated model metadata files. If this
+	// field is set, the base_model field must still be set to indicate which base model
+	// the custom model is derived from. This feature is only available for open source
+	// models.
+	CustomBaseModel string `json:"customBaseModel,omitempty"`
 	// Tuning Spec for Distillation.
 	DistillationSpec *DistillationSpec `json:"distillationSpec,omitempty"`
 	// Output only. The Experiment associated with this TuningJob.
@@ -3427,9 +3636,14 @@ type TuningJob struct {
 	// underscores and dashes. International characters are allowed. See https://goo.gl/xmQnxf
 	// for more information and examples of labels.
 	Labels map[string]string `json:"labels,omitempty"`
+	// Optional. Cloud Storage path to the directory where tuning job outputs are written
+	// to. This field is only available and required for open source models.
+	OutputURI string `json:"outputUri,omitempty"`
 	// Output only. The resource name of the PipelineJob associated with the TuningJob.
 	// Format: `projects/{project}/locations/{location}/pipelineJobs/{pipeline_job}`.
 	PipelineJob string `json:"pipelineJob,omitempty"`
+	// Tuning Spec for Preference Optimization.
+	PreferenceOptimizationSpec *PreferenceOptimizationSpec `json:"preferenceOptimizationSpec,omitempty"`
 	// Output only. Reserved for future use.
 	SatisfiesPzi bool `json:"satisfiesPzi,omitempty"`
 	// Output only. Reserved for future use.
@@ -3442,6 +3656,8 @@ type TuningJob struct {
 	// Optional. The display name of the TunedModel. The name can be up to 128 characters
 	// long and can consist of any UTF-8 characters.
 	TunedModelDisplayName string `json:"tunedModelDisplayName,omitempty"`
+	// Tuning Spec for Veo Tuning.
+	VeoTuningSpec *VeoTuningSpec `json:"veoTuningSpec,omitempty"`
 }
 
 func (t *TuningJob) UnmarshalJSON(data []byte) error {
@@ -3583,6 +3799,9 @@ type CreateTuningJobConfig struct {
 	// Optional. If set to true, disable intermediate checkpoints for SFT and only the last
 	// checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT.
 	ExportLastCheckpointOnly *bool `json:"exportLastCheckpointOnly,omitempty"`
+	// Optional. The optional checkpoint ID of the pre-tuned model to use for tuning, if
+	// applicable.
+	PreTunedModelCheckpointID string `json:"preTunedModelCheckpointId,omitempty"`
 	// Optional. Adapter size for tuning.
 	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
 	// Optional. The batch size hyperparameter for tuning. If not set, a default of 4 or
@@ -4899,6 +5118,18 @@ type LiveClientRealtimeInput struct {
 	ActivityEnd *ActivityEnd `json:"activityEnd,omitempty"`
 }
 
+// Client generated response to a `ToolCall` received from the server.
+// Individual `FunctionResponse` objects are matched to the respective
+// `FunctionCall` objects by the `id` field.
+// Note that in the unary and server-streaming GenerateContent APIs function
+// calling happens by exchanging the `Content` parts, while in the bidi
+// GenerateContent APIs function calling happens over this dedicated set of
+// messages.
+type LiveClientToolResponse struct {
+	// Optional. The response to the function calls.
+	FunctionResponses []*FunctionResponse `json:"functionResponses,omitempty"`
+}
+
 // Parameters for sending realtime input to the live API.
 type LiveSendRealtimeInputParameters struct {
 	// Optional. Realtime input to send to the session.
@@ -4920,18 +5151,6 @@ type LiveSendRealtimeInputParameters struct {
 	ActivityStart *ActivityStart `json:"activityStart,omitempty"`
 	// Optional. Marks the end of user activity.
 	ActivityEnd *ActivityEnd `json:"activityEnd,omitempty"`
-}
-
-// Client generated response to a `ToolCall` received from the server.
-// Individual `FunctionResponse` objects are matched to the respective
-// `FunctionCall` objects by the `id` field.
-// Note that in the unary and server-streaming GenerateContent APIs function
-// calling happens by exchanging the `Content` parts, while in the bidi
-// GenerateContent APIs function calling happens over this dedicated set of
-// messages.
-type LiveClientToolResponse struct {
-	// Optional. The response to the function calls.
-	FunctionResponses []*FunctionResponse `json:"functionResponses,omitempty"`
 }
 
 // Messages sent by the client in the API call.
@@ -5040,85 +5259,4 @@ func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage
 	return &LiveClientMessage{
 		ToolResponse: &LiveClientToolResponse{FunctionResponses: p.FunctionResponses},
 	}
-}
-
-// Config for LiveConnectConstraints for Auth Token creation.
-type LiveConnectConstraints struct {
-	// Optional. ID of the model to configure in the ephemeral token for Live API.
-	// For a list of models, see `Gemini models
-	// <https://ai.google.dev/gemini-api/docs/models>`.
-	Model string `json:"model,omitempty"`
-	// Optional. Configuration specific to Live API connections created using this token.
-	Config *LiveConnectConfig `json:"config,omitempty"`
-}
-
-// Optional parameters.
-type CreateAuthTokenConfig struct {
-	// Optional. Used to override HTTP request options.
-	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
-	// Optional. An optional time after which, when using the resulting token,
-	// messages in Live API sessions will be rejected. (Gemini may
-	// preemptively close the session after this time.)
-	// If not set then this defaults to 30 minutes in the future. If set, this
-	// value must be less than 20 hours in the future.
-	ExpireTime time.Time `json:"expireTime,omitempty"`
-	// Optional. The time after which new Live API sessions using the token
-	// resulting from this request will be rejected.
-	// If not set this defaults to 60 seconds in the future. If set, this value
-	// must be less than 20 hours in the future.
-	NewSessionExpireTime time.Time `json:"newSessionExpireTime,omitempty"`
-	// Optional. The number of times the token can be used. If this value is zero
-	// then no limit is applied. Default is 1. Resuming a Live API session does
-	// not count as a use.
-	Uses int32 `json:"uses,omitempty"`
-	// Optional. Configuration specific to Live API connections created using this token.
-	LiveConnectConstraints *LiveConnectConstraints `json:"liveConnectConstraints,omitempty"`
-	// Optional. Additional fields to lock in the effective LiveConnectParameters.
-	LockAdditionalFields []string `json:"lockAdditionalFields,omitempty"`
-}
-
-func (c *CreateAuthTokenConfig) UnmarshalJSON(data []byte) error {
-	type Alias CreateAuthTokenConfig
-	aux := &struct {
-		ExpireTime           *time.Time `json:"expireTime,omitempty"`
-		NewSessionExpireTime *time.Time `json:"newSessionExpireTime,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	if !reflect.ValueOf(aux.ExpireTime).IsZero() {
-		c.ExpireTime = time.Time(*aux.ExpireTime)
-	}
-
-	if !reflect.ValueOf(aux.NewSessionExpireTime).IsZero() {
-		c.NewSessionExpireTime = time.Time(*aux.NewSessionExpireTime)
-	}
-
-	return nil
-}
-
-func (c *CreateAuthTokenConfig) MarshalJSON() ([]byte, error) {
-	type Alias CreateAuthTokenConfig
-	aux := &struct {
-		ExpireTime           *time.Time `json:"expireTime,omitempty"`
-		NewSessionExpireTime *time.Time `json:"newSessionExpireTime,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	if !reflect.ValueOf(c.ExpireTime).IsZero() {
-		aux.ExpireTime = (*time.Time)(&c.ExpireTime)
-	}
-
-	if !reflect.ValueOf(c.NewSessionExpireTime).IsZero() {
-		aux.NewSessionExpireTime = (*time.Time)(&c.NewSessionExpireTime)
-	}
-
-	return json.Marshal(aux)
 }

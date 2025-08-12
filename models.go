@@ -421,6 +421,17 @@ func urlContextToMldev(fromObject map[string]any, parentObject map[string]any) (
 	return toObject, nil
 }
 
+func toolComputerUseToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromEnvironment := getValueByPath(fromObject, []string{"environment"})
+	if fromEnvironment != nil {
+		setValueByPath(toObject, []string{"environment"}, fromEnvironment)
+	}
+
+	return toObject, nil
+}
+
 func toolToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -476,14 +487,19 @@ func toolToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 		setValueByPath(toObject, []string{"urlContext"}, fromUrlContext)
 	}
 
+	fromComputerUse := getValueByPath(fromObject, []string{"computerUse"})
+	if fromComputerUse != nil {
+		fromComputerUse, err = toolComputerUseToMldev(fromComputerUse.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
+	}
+
 	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
 	if fromCodeExecution != nil {
 		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
-	}
-
-	fromComputerUse := getValueByPath(fromObject, []string{"computerUse"})
-	if fromComputerUse != nil {
-		setValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
 	}
 
 	return toObject, nil
@@ -1954,6 +1970,17 @@ func urlContextToVertex(fromObject map[string]any, parentObject map[string]any) 
 	return toObject, nil
 }
 
+func toolComputerUseToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromEnvironment := getValueByPath(fromObject, []string{"environment"})
+	if fromEnvironment != nil {
+		setValueByPath(toObject, []string{"environment"}, fromEnvironment)
+	}
+
+	return toObject, nil
+}
+
 func toolToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -2022,14 +2049,19 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any) (toObj
 		setValueByPath(toObject, []string{"urlContext"}, fromUrlContext)
 	}
 
+	fromComputerUse := getValueByPath(fromObject, []string{"computerUse"})
+	if fromComputerUse != nil {
+		fromComputerUse, err = toolComputerUseToVertex(fromComputerUse.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
+	}
+
 	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
 	if fromCodeExecution != nil {
 		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
-	}
-
-	fromComputerUse := getValueByPath(fromObject, []string{"computerUse"})
-	if fromComputerUse != nil {
-		setValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
 	}
 
 	return toObject, nil

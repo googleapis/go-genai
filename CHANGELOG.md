@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.20.0](https://github.com/googleapis/go-genai/compare/v1.19.0...v1.20.0) (2025-08-13)
+
+
+### Features
+
+* add an _exclude_fields characteristic in the config for unused values to avoid unnecessary and unused code in converter and type generation. ([5627bd1](https://github.com/googleapis/go-genai/commit/5627bd1d783aff599ddbadc3e9085854e7b75cff))
+* Add evaluation support to Vertex tuning ([e78bc7e](https://github.com/googleapis/go-genai/commit/e78bc7e8ed1606a7297e2ca5243bde6fec78de0a))
+* enable continuous fine-tuning on a pre-tuned model in the SDK. ([1f20493](https://github.com/googleapis/go-genai/commit/1f204939b8d68d8f5c9d739ade69716a03be28f1))
+* support document name in grounding metadata ([f673e20](https://github.com/googleapis/go-genai/commit/f673e200ce5663de3f62b832a4bafc756494da75))
+* Support exclude_domains in Google Search and Enterprise Web Search ([2547ad1](https://github.com/googleapis/go-genai/commit/2547ad1a4f07ac1111b14a6352a64bc4d7bea5a5))
+
 ## [1.19.0](https://github.com/googleapis/go-genai/compare/v1.18.0...v1.19.0) (2025-08-06)
 
 

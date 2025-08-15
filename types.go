@@ -2717,6 +2717,8 @@ type RecontextImageConfig struct {
 	// Optional. Whether allow to generate person images, and restrict to specific
 	// ages.
 	PersonGeneration PersonGeneration `json:"personGeneration,omitempty"`
+	// Optional. Whether to add a SynthID watermark to the generated images.
+	AddWatermark *bool `json:"addWatermark,omitempty"`
 	// Optional. MIME type of the generated image.
 	OutputMIMEType string `json:"outputMimeType,omitempty"`
 	// Optional. Compression quality of the generated image (for ``image/jpeg``

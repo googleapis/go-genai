@@ -3109,6 +3109,11 @@ func recontextImageConfigToVertex(fromObject map[string]any, parentObject map[st
 		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
 	}
 
+	fromAddWatermark := getValueByPath(fromObject, []string{"addWatermark"})
+	if fromAddWatermark != nil {
+		setValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
+	}
+
 	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
 	if fromOutputMimeType != nil {
 		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)

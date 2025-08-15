@@ -255,24 +255,6 @@ const (
 	HarmSeverityHigh HarmSeverity = "HARM_SEVERITY_HIGH"
 )
 
-// Blocked reason.
-type BlockedReason string
-
-const (
-	// Unspecified blocked reason.
-	BlockedReasonUnspecified BlockedReason = "BLOCKED_REASON_UNSPECIFIED"
-	// Candidates blocked due to safety.
-	BlockedReasonSafety BlockedReason = "SAFETY"
-	// Candidates blocked due to other reason.
-	BlockedReasonOther BlockedReason = "OTHER"
-	// Candidates blocked due to the terms which are included from the terminology blocklist.
-	BlockedReasonBlocklist BlockedReason = "BLOCKLIST"
-	// Candidates blocked due to prohibited content.
-	BlockedReasonProhibitedContent BlockedReason = "PROHIBITED_CONTENT"
-	// Candidates blocked due to unsafe image generation content.
-	BlockedReasonImageSafety BlockedReason = "IMAGE_SAFETY"
-)
-
 // Traffic type. This shows whether a request consumes Pay-As-You-Go or Provisioned
 // Throughput quota.
 type TrafficType string
@@ -298,6 +280,24 @@ const (
 	ModalityImage Modality = "IMAGE"
 	// Indicates the model should return audio.
 	ModalityAudio Modality = "AUDIO"
+)
+
+// Blocked reason.
+type BlockedReason string
+
+const (
+	// Unspecified blocked reason.
+	BlockedReasonUnspecified BlockedReason = "BLOCKED_REASON_UNSPECIFIED"
+	// Candidates blocked due to safety.
+	BlockedReasonSafety BlockedReason = "SAFETY"
+	// Candidates blocked due to other reason.
+	BlockedReasonOther BlockedReason = "OTHER"
+	// Candidates blocked due to the terms which are included from the terminology blocklist.
+	BlockedReasonBlocklist BlockedReason = "BLOCKLIST"
+	// Candidates blocked due to prohibited content.
+	BlockedReasonProhibitedContent BlockedReason = "PROHIBITED_CONTENT"
+	// Candidates blocked due to unsafe image generation content.
+	BlockedReasonImageSafety BlockedReason = "IMAGE_SAFETY"
 )
 
 // The media resolution to use.
@@ -2097,16 +2097,6 @@ type Candidate struct {
 	SafetyRatings []*SafetyRating `json:"safetyRatings,omitempty"`
 }
 
-// Content filter results for a prompt sent in the request.
-type GenerateContentResponsePromptFeedback struct {
-	// Output only. Blocked reason.
-	BlockReason BlockedReason `json:"blockReason,omitempty"`
-	// Output only. A readable block reason message.
-	BlockReasonMessage string `json:"blockReasonMessage,omitempty"`
-	// Output only. Safety ratings.
-	SafetyRatings []*SafetyRating `json:"safetyRatings,omitempty"`
-}
-
 // Represents token counting info for a single modality.
 type ModalityTokenCount struct {
 	// Optional. The modality associated with this token count.
@@ -2117,30 +2107,45 @@ type ModalityTokenCount struct {
 
 // Usage metadata about response(s).
 type GenerateContentResponseUsageMetadata struct {
-	// Output only. List of modalities of the cached content in the request input.
+	// Optional. Output only. List of modalities of the cached content in the request input.
 	CacheTokensDetails []*ModalityTokenCount `json:"cacheTokensDetails,omitempty"`
-	// Output only. Number of tokens in the cached part in the input (the cached content).
+	// Optional. Output only. Number of tokens in the cached part in the input (the cached
+	// content).
 	CachedContentTokenCount int32 `json:"cachedContentTokenCount,omitempty"`
-	// Number of tokens in the response(s). This includes all the generated response candidates.
+	// Optional. Number of tokens in the response(s). This includes all the generated response
+	// candidates.
 	CandidatesTokenCount int32 `json:"candidatesTokenCount,omitempty"`
-	// Output only. List of modalities that were returned in the response.
+	// Optional. Output only. List of modalities that were returned in the response.
 	CandidatesTokensDetails []*ModalityTokenCount `json:"candidatesTokensDetails,omitempty"`
-	// Number of tokens in the prompt. When cached_content is set, this is still the total
-	// effective prompt size meaning this includes the number of tokens in the cached content.
+	// Optional. Number of tokens in the prompt. When cached_content is set, this is still
+	// the total effective prompt size meaning this includes the number of tokens in the
+	// cached content.
 	PromptTokenCount int32 `json:"promptTokenCount,omitempty"`
-	// Output only. List of modalities that were processed in the request input.
+	// Optional. Output only. List of modalities that were processed in the request input.
 	PromptTokensDetails []*ModalityTokenCount `json:"promptTokensDetails,omitempty"`
-	// Output only. Number of tokens present in thoughts output.
+	// Optional. Output only. Number of tokens present in thoughts output.
 	ThoughtsTokenCount int32 `json:"thoughtsTokenCount,omitempty"`
-	// Output only. Number of tokens present in tool-use prompt(s).
+	// Optional. Output only. Number of tokens present in tool-use prompt(s).
 	ToolUsePromptTokenCount int32 `json:"toolUsePromptTokenCount,omitempty"`
-	// Output only. List of modalities that were processed for tool-use request inputs.
+	// Optional. Output only. List of modalities that were processed for tool-use request
+	// inputs.
 	ToolUsePromptTokensDetails []*ModalityTokenCount `json:"toolUsePromptTokensDetails,omitempty"`
-	// Total token count for prompt, response candidates, and tool-use prompts (if present).
+	// Optional. Total token count for prompt, response candidates, and tool-use prompts
+	// (if present).
 	TotalTokenCount int32 `json:"totalTokenCount,omitempty"`
-	// Output only. Traffic type. This shows whether a request consumes Pay-As-You-Go or
-	// Provisioned Throughput quota.
+	// Optional. Output only. Traffic type. This shows whether a request consumes Pay-As-You-Go
+	// or Provisioned Throughput quota.
 	TrafficType TrafficType `json:"trafficType,omitempty"`
+}
+
+// Content filter results for a prompt sent in the request.
+type GenerateContentResponsePromptFeedback struct {
+	// Output only. Blocked reason.
+	BlockReason BlockedReason `json:"blockReason,omitempty"`
+	// Output only. A readable block reason message.
+	BlockReasonMessage string `json:"blockReasonMessage,omitempty"`
+	// Output only. Safety ratings.
+	SafetyRatings []*SafetyRating `json:"safetyRatings,omitempty"`
 }
 
 // Response message for PredictionService.GenerateContent.
@@ -2151,6 +2156,8 @@ type GenerateContentResponse struct {
 	Candidates []*Candidate `json:"candidates,omitempty"`
 	// Timestamp when the request is made to the server.
 	CreateTime time.Time `json:"createTime,omitempty"`
+	// Optional. Usage metadata about the response(s).
+	UsageMetadata *GenerateContentResponseUsageMetadata `json:"usageMetadata,omitempty"`
 	// Output only. The model version used to generate the response.
 	ModelVersion string `json:"modelVersion,omitempty"`
 	// Output only. Content filter results for a prompt sent in the request. Note: Sent
@@ -2160,8 +2167,6 @@ type GenerateContentResponse struct {
 	// Output only. response_id is used to identify each response. It is the encoding of
 	// the event_id.
 	ResponseID string `json:"responseId,omitempty"`
-	// Usage metadata about the response(s).
-	UsageMetadata *GenerateContentResponseUsageMetadata `json:"usageMetadata,omitempty"`
 }
 
 func (g *GenerateContentResponse) UnmarshalJSON(data []byte) error {

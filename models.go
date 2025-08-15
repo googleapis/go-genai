@@ -3984,6 +3984,62 @@ func candidateFromMldev(fromObject map[string]any, parentObject map[string]any) 
 	return toObject, nil
 }
 
+func generateContentResponseUsageMetadataFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromCacheTokensDetails := getValueByPath(fromObject, []string{"cacheTokensDetails"})
+	if fromCacheTokensDetails != nil {
+		setValueByPath(toObject, []string{"cacheTokensDetails"}, fromCacheTokensDetails)
+	}
+
+	fromCachedContentTokenCount := getValueByPath(fromObject, []string{"cachedContentTokenCount"})
+	if fromCachedContentTokenCount != nil {
+		setValueByPath(toObject, []string{"cachedContentTokenCount"}, fromCachedContentTokenCount)
+	}
+
+	fromCandidatesTokenCount := getValueByPath(fromObject, []string{"candidatesTokenCount"})
+	if fromCandidatesTokenCount != nil {
+		setValueByPath(toObject, []string{"candidatesTokenCount"}, fromCandidatesTokenCount)
+	}
+
+	fromCandidatesTokensDetails := getValueByPath(fromObject, []string{"candidatesTokensDetails"})
+	if fromCandidatesTokensDetails != nil {
+		setValueByPath(toObject, []string{"candidatesTokensDetails"}, fromCandidatesTokensDetails)
+	}
+
+	fromPromptTokenCount := getValueByPath(fromObject, []string{"promptTokenCount"})
+	if fromPromptTokenCount != nil {
+		setValueByPath(toObject, []string{"promptTokenCount"}, fromPromptTokenCount)
+	}
+
+	fromPromptTokensDetails := getValueByPath(fromObject, []string{"promptTokensDetails"})
+	if fromPromptTokensDetails != nil {
+		setValueByPath(toObject, []string{"promptTokensDetails"}, fromPromptTokensDetails)
+	}
+
+	fromThoughtsTokenCount := getValueByPath(fromObject, []string{"thoughtsTokenCount"})
+	if fromThoughtsTokenCount != nil {
+		setValueByPath(toObject, []string{"thoughtsTokenCount"}, fromThoughtsTokenCount)
+	}
+
+	fromToolUsePromptTokenCount := getValueByPath(fromObject, []string{"toolUsePromptTokenCount"})
+	if fromToolUsePromptTokenCount != nil {
+		setValueByPath(toObject, []string{"toolUsePromptTokenCount"}, fromToolUsePromptTokenCount)
+	}
+
+	fromToolUsePromptTokensDetails := getValueByPath(fromObject, []string{"toolUsePromptTokensDetails"})
+	if fromToolUsePromptTokensDetails != nil {
+		setValueByPath(toObject, []string{"toolUsePromptTokensDetails"}, fromToolUsePromptTokensDetails)
+	}
+
+	fromTotalTokenCount := getValueByPath(fromObject, []string{"totalTokenCount"})
+	if fromTotalTokenCount != nil {
+		setValueByPath(toObject, []string{"totalTokenCount"}, fromTotalTokenCount)
+	}
+
+	return toObject, nil
+}
+
 func generateContentResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -4002,6 +4058,16 @@ func generateContentResponseFromMldev(fromObject map[string]any, parentObject ma
 		setValueByPath(toObject, []string{"candidates"}, fromCandidates)
 	}
 
+	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
+	if fromUsageMetadata != nil {
+		fromUsageMetadata, err = generateContentResponseUsageMetadataFromMldev(fromUsageMetadata.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
+	}
+
 	fromModelVersion := getValueByPath(fromObject, []string{"modelVersion"})
 	if fromModelVersion != nil {
 		setValueByPath(toObject, []string{"modelVersion"}, fromModelVersion)
@@ -4015,11 +4081,6 @@ func generateContentResponseFromMldev(fromObject map[string]any, parentObject ma
 	fromResponseId := getValueByPath(fromObject, []string{"responseId"})
 	if fromResponseId != nil {
 		setValueByPath(toObject, []string{"responseId"}, fromResponseId)
-	}
-
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
-	if fromUsageMetadata != nil {
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
 	}
 
 	return toObject, nil
@@ -4680,6 +4741,67 @@ func candidateFromVertex(fromObject map[string]any, parentObject map[string]any)
 	return toObject, nil
 }
 
+func generateContentResponseUsageMetadataFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromCacheTokensDetails := getValueByPath(fromObject, []string{"cacheTokensDetails"})
+	if fromCacheTokensDetails != nil {
+		setValueByPath(toObject, []string{"cacheTokensDetails"}, fromCacheTokensDetails)
+	}
+
+	fromCachedContentTokenCount := getValueByPath(fromObject, []string{"cachedContentTokenCount"})
+	if fromCachedContentTokenCount != nil {
+		setValueByPath(toObject, []string{"cachedContentTokenCount"}, fromCachedContentTokenCount)
+	}
+
+	fromCandidatesTokenCount := getValueByPath(fromObject, []string{"candidatesTokenCount"})
+	if fromCandidatesTokenCount != nil {
+		setValueByPath(toObject, []string{"candidatesTokenCount"}, fromCandidatesTokenCount)
+	}
+
+	fromCandidatesTokensDetails := getValueByPath(fromObject, []string{"candidatesTokensDetails"})
+	if fromCandidatesTokensDetails != nil {
+		setValueByPath(toObject, []string{"candidatesTokensDetails"}, fromCandidatesTokensDetails)
+	}
+
+	fromPromptTokenCount := getValueByPath(fromObject, []string{"promptTokenCount"})
+	if fromPromptTokenCount != nil {
+		setValueByPath(toObject, []string{"promptTokenCount"}, fromPromptTokenCount)
+	}
+
+	fromPromptTokensDetails := getValueByPath(fromObject, []string{"promptTokensDetails"})
+	if fromPromptTokensDetails != nil {
+		setValueByPath(toObject, []string{"promptTokensDetails"}, fromPromptTokensDetails)
+	}
+
+	fromThoughtsTokenCount := getValueByPath(fromObject, []string{"thoughtsTokenCount"})
+	if fromThoughtsTokenCount != nil {
+		setValueByPath(toObject, []string{"thoughtsTokenCount"}, fromThoughtsTokenCount)
+	}
+
+	fromToolUsePromptTokenCount := getValueByPath(fromObject, []string{"toolUsePromptTokenCount"})
+	if fromToolUsePromptTokenCount != nil {
+		setValueByPath(toObject, []string{"toolUsePromptTokenCount"}, fromToolUsePromptTokenCount)
+	}
+
+	fromToolUsePromptTokensDetails := getValueByPath(fromObject, []string{"toolUsePromptTokensDetails"})
+	if fromToolUsePromptTokensDetails != nil {
+		setValueByPath(toObject, []string{"toolUsePromptTokensDetails"}, fromToolUsePromptTokensDetails)
+	}
+
+	fromTotalTokenCount := getValueByPath(fromObject, []string{"totalTokenCount"})
+	if fromTotalTokenCount != nil {
+		setValueByPath(toObject, []string{"totalTokenCount"}, fromTotalTokenCount)
+	}
+
+	fromTrafficType := getValueByPath(fromObject, []string{"trafficType"})
+	if fromTrafficType != nil {
+		setValueByPath(toObject, []string{"trafficType"}, fromTrafficType)
+	}
+
+	return toObject, nil
+}
+
 func generateContentResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -4703,6 +4825,16 @@ func generateContentResponseFromVertex(fromObject map[string]any, parentObject m
 		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
 	}
 
+	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
+	if fromUsageMetadata != nil {
+		fromUsageMetadata, err = generateContentResponseUsageMetadataFromVertex(fromUsageMetadata.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
+	}
+
 	fromModelVersion := getValueByPath(fromObject, []string{"modelVersion"})
 	if fromModelVersion != nil {
 		setValueByPath(toObject, []string{"modelVersion"}, fromModelVersion)
@@ -4716,11 +4848,6 @@ func generateContentResponseFromVertex(fromObject map[string]any, parentObject m
 	fromResponseId := getValueByPath(fromObject, []string{"responseId"})
 	if fromResponseId != nil {
 		setValueByPath(toObject, []string{"responseId"}, fromResponseId)
-	}
-
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
-	if fromUsageMetadata != nil {
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
 	}
 
 	return toObject, nil

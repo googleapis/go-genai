@@ -3153,6 +3153,16 @@ type GenerateVideosSource struct {
 	Video *Video `json:"video,omitempty"`
 }
 
+// A reference image for video generation.
+type VideoGenerationReferenceImage struct {
+	// The reference image.
+	Image *Image `json:"image,omitempty"`
+	// The type of the reference image, which defines how the reference
+	// image will be used to generate the video. Supported values are 'asset'
+	// or 'style'.
+	referenceType string
+}
+
 // You can find API default values and more details at VertexAI: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation.
 type GenerateVideosConfig struct {
 	// Optional. Used to override HTTP request options.
@@ -3189,6 +3199,12 @@ type GenerateVideosConfig struct {
 	// Optional. Image to use as the last frame of generated videos. Only supported for
 	// image to video use cases.
 	LastFrame *Image `json:"lastFrame,omitempty"`
+	// Optional. The images to use as the references to generate the videos.
+	// If this field is provided, the text prompt field must also be provided.
+	// The image, video, or last_frame field are not supported. Each image must
+	// be associated with a type. Veo 2 supports up to 3 asset images *or* 1
+	// style image.
+	ReferenceImages []*VideoGenerationReferenceImage `json:"referenceImages,omitempty"`
 	// Optional. Compression quality of the generated videos.
 	CompressionQuality VideoCompressionQuality `json:"compressionQuality,omitempty"`
 }

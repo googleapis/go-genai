@@ -1426,6 +1426,10 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		return nil, fmt.Errorf("lastFrame parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"referenceImages"}) != nil {
+		return nil, fmt.Errorf("referenceImages parameter is not supported in Gemini API")
+	}
+
 	if getValueByPath(fromObject, []string{"compressionQuality"}) != nil {
 		return nil, fmt.Errorf("compressionQuality parameter is not supported in Gemini API")
 	}
@@ -3583,6 +3587,27 @@ func generateVideosSourceToVertex(fromObject map[string]any, parentObject map[st
 	return toObject, nil
 }
 
+func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"image"}, fromImage)
+	}
+
+	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
+	if fromReferenceType != nil {
+		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+	}
+
+	return toObject, nil
+}
+
 func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3654,6 +3679,16 @@ func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[st
 		}
 
 		setValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
+	}
+
+	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	if fromReferenceImages != nil {
+		fromReferenceImages, err = applyConverterToSlice(fromReferenceImages.([]any), videoGenerationReferenceImageToVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
 	}
 
 	fromCompressionQuality := getValueByPath(fromObject, []string{"compressionQuality"})

@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.21.0](https://github.com/googleapis/go-genai/compare/v1.20.0...v1.21.0) (2025-08-18)
+
+
+### Features
+
+* Support Imagen image segmentation on Vertex ([2a38843](https://github.com/googleapis/go-genai/commit/2a388434bc2bd9d564479e1d8db6eb4ffdadcb68))
+* Support Veo 2 Reference Images to Video Generation on Vertex ([9894324](https://github.com/googleapis/go-genai/commit/9894324c30a4a73614f1c4ed9ce9ebf67eb7a5a9))
+
+
+### Bug Fixes
+
+* Add a missing resp.Body.Close() to deserializeStreamResponse. ([bf3fb3f](https://github.com/googleapis/go-genai/commit/bf3fb3f37172fbff4d4045ebe781d8f03f7fb23a))
+
 ## [1.20.0](https://github.com/googleapis/go-genai/compare/v1.19.0...v1.20.0) (2025-08-13)
 
 

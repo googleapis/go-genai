@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.22.0](https://github.com/googleapis/go-genai/compare/v1.21.0...v1.22.0) (2025-08-20)
+
+
+### Features
+
+* Add add_watermark field for recontext_image (Virtual Try-On, Product Recontext) ([07b6f57](https://github.com/googleapis/go-genai/commit/07b6f573b2941fd22e5d68df09610f0d910b3463))
+* refactor Go SDK to use pointers for optional parameters ([3ff328a](https://github.com/googleapis/go-genai/commit/3ff328ac19ce7b4429ce6d75f2fe2d1ffaf37a37))
+
 ## [1.21.0](https://github.com/googleapis/go-genai/compare/v1.20.0...v1.21.0) (2025-08-18)
 
 

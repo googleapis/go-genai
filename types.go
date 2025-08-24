@@ -2955,6 +2955,8 @@ type DeleteModelConfig struct {
 }
 
 type DeleteModelResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 }
 
 // Config for thinking features.
@@ -4001,6 +4003,8 @@ type DeleteCachedContentConfig struct {
 
 // Empty response for caches.delete method.
 type DeleteCachedContentResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 }
 
 // Optional parameters for caches.update method.
@@ -4282,6 +4286,8 @@ type DeleteFileConfig struct {
 
 // Response for the delete file method.
 type DeleteFileResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 }
 
 // Config for inlined request.

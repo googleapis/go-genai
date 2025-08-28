@@ -1431,6 +1431,10 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		return nil, fmt.Errorf("referenceImages parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"mask"}) != nil {
+		return nil, fmt.Errorf("mask parameter is not supported in Gemini API")
+	}
+
 	if getValueByPath(fromObject, []string{"compressionQuality"}) != nil {
 		return nil, fmt.Errorf("compressionQuality parameter is not supported in Gemini API")
 	}
@@ -3619,6 +3623,27 @@ func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObje
 	return toObject, nil
 }
 
+func videoGenerationMaskToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_self"}, fromImage)
+	}
+
+	fromMaskMode := getValueByPath(fromObject, []string{"maskMode"})
+	if fromMaskMode != nil {
+		setValueByPath(toObject, []string{"maskMode"}, fromMaskMode)
+	}
+
+	return toObject, nil
+}
+
 func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3700,6 +3725,16 @@ func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[st
 		}
 
 		setValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
+	}
+
+	fromMask := getValueByPath(fromObject, []string{"mask"})
+	if fromMask != nil {
+		fromMask, err = videoGenerationMaskToVertex(fromMask.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "mask"}, fromMask)
 	}
 
 	fromCompressionQuality := getValueByPath(fromObject, []string{"compressionQuality"})

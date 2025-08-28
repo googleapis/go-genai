@@ -3186,6 +3186,16 @@ type VideoGenerationReferenceImage struct {
 	ReferenceType VideoGenerationReferenceType `json:"referenceType,omitempty"`
 }
 
+// A mask for video generation.
+type VideoGenerationMask struct {
+	// Optional. The image mask to use for generating videos.
+	Image *Image `json:"image,omitempty"`
+	// Describes how the mask will be used. Inpainting masks must match
+	// the aspect ratio of the input video. Outpainting masks can be either 9:16
+	// or 16:9.
+	MaskMode string `json:"maskMode,omitempty"`
+}
+
 // You can find API default values and more details at VertexAI: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation.
 type GenerateVideosConfig struct {
 	// Optional. Used to override HTTP request options.
@@ -3231,6 +3241,8 @@ type GenerateVideosConfig struct {
 	// be associated with a type. Veo 2 supports up to 3 asset images *or* 1
 	// style image.
 	ReferenceImages []*VideoGenerationReferenceImage `json:"referenceImages,omitempty"`
+	// Optional. The mask to use for generating videos.
+	Mask *VideoGenerationMask `json:"mask,omitempty"`
 	// Optional. Compression quality of the generated videos.
 	CompressionQuality VideoCompressionQuality `json:"compressionQuality,omitempty"`
 }

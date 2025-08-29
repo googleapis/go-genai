@@ -25,7 +25,7 @@ import (
 )
 
 func inlinedRequestToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
+	toRequestObject := make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
@@ -34,7 +34,7 @@ func inlinedRequestToMldev(ac *apiClient, fromObject map[string]any, parentObjec
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"request", "model"}, fromModel)
+		setValueByPath(toRequestObject, []string{"model"}, fromModel)
 	}
 
 	fromContents := getValueByPath(fromObject, []string{"contents"})
@@ -49,18 +49,21 @@ func inlinedRequestToMldev(ac *apiClient, fromObject map[string]any, parentObjec
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"request", "contents"}, fromContents)
+		setValueByPath(toRequestObject, []string{"contents"}, fromContents)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = generateContentConfigToMldev(ac, fromConfig.(map[string]any), toObject)
+		fromConfig, err = generateContentConfigToMldev(ac, fromConfig.(map[string]any), toRequestObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"request", "generationConfig"}, fromConfig)
+		setValueByPath(toRequestObject, []string{"generationConfig"}, fromConfig)
 	}
+
+	toObject = make(map[string]any)
+	setValueByPath(toObject, []string{"request"}, toRequestObject)
 
 	return toObject, nil
 }

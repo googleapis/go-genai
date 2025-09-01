@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.22.0](https://github.com/googleapis/go-genai/compare/v1.21.0...v1.22.0) (2025-08-27)
+
+
+### Features
+
+* add `sdkHttpResponse.headers` to *Delete responses. ([ac0e763](https://github.com/googleapis/go-genai/commit/ac0e7632e5760378d0751cc8c9224bbd6a1bad0c))
+* Add add_watermark field for recontext_image (Virtual Try-On, Product Recontext) ([07b6f57](https://github.com/googleapis/go-genai/commit/07b6f573b2941fd22e5d68df09610f0d910b3463))
+* Add output_gcs_uri to Imagen upscale_image ([c08d9f3](https://github.com/googleapis/go-genai/commit/c08d9f35c3dce6da9854842926aeec61593ff02a))
+* Add VALIDATED mode into FunctionCallingConfigMode ([c282e79](https://github.com/googleapis/go-genai/commit/c282e79bed1ac0fd60facbffe3dde74b8d240a01))
+* Add VideoGenerationReferenceType enum for generate_videos ([635b825](https://github.com/googleapis/go-genai/commit/635b825bedd2bbe5d2e84eca78e0d3b08eecdc31))
+* refactor Go SDK to use pointers for optional parameters ([3ff328a](https://github.com/googleapis/go-genai/commit/3ff328ac19ce7b4429ce6d75f2fe2d1ffaf37a37))
+* support tunings.cancel in the genai SDK for Python, Java, JS, and Go ([8c46fd2](https://github.com/googleapis/go-genai/commit/8c46fd26e1985f15d510ed0f4d4cefcdd2110af7))
+
+## [1.21.0](https://github.com/googleapis/go-genai/compare/v1.20.0...v1.21.0) (2025-08-18)
+
+
+### Features
+
+* Support Imagen image segmentation on Vertex ([2a38843](https://github.com/googleapis/go-genai/commit/2a388434bc2bd9d564479e1d8db6eb4ffdadcb68))
+* Support Veo 2 Reference Images to Video Generation on Vertex ([9894324](https://github.com/googleapis/go-genai/commit/9894324c30a4a73614f1c4ed9ce9ebf67eb7a5a9))
+
+
+### Bug Fixes
+
+* Add a missing resp.Body.Close() to deserializeStreamResponse. ([bf3fb3f](https://github.com/googleapis/go-genai/commit/bf3fb3f37172fbff4d4045ebe781d8f03f7fb23a))
+
 ## [1.20.0](https://github.com/googleapis/go-genai/compare/v1.19.0...v1.20.0) (2025-08-13)
 
 

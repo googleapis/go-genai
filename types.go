@@ -439,6 +439,11 @@ const (
 	// Model will not predict any function calls. Model behavior is same as when not passing
 	// any function declarations.
 	FunctionCallingConfigModeNone FunctionCallingConfigMode = "NONE"
+	// Model decides to predict either a function call or a natural language response, but
+	// will validate function calls with constrained decoding. If "allowed_function_names"
+	// are set, the predicted function call will be limited to any one of "allowed_function_names",
+	// else the predicted function call will be any one of the provided "function_declarations".
+	FunctionCallingConfigModeValidated FunctionCallingConfigMode = "VALIDATED"
 )
 
 // Enum that controls the safety filter level for objectionable content.
@@ -516,7 +521,7 @@ const (
 	SubjectReferenceTypeSubjectTypeProduct SubjectReferenceType = "SUBJECT_TYPE_PRODUCT"
 )
 
-// Enum representing the Imagen 3 Edit mode.
+// Enum representing the editing mode.
 type EditMode string
 
 const (
@@ -539,6 +544,19 @@ const (
 	SegmentModePrompt      SegmentMode = "PROMPT"
 	SegmentModeSemantic    SegmentMode = "SEMANTIC"
 	SegmentModeInteractive SegmentMode = "INTERACTIVE"
+)
+
+// Enum for the reference type of a video generation reference image.
+type VideoGenerationReferenceType string
+
+const (
+	// A reference image that provides assets to the generated video,
+	// such as the scene, an object, a character, etc.
+	VideoGenerationReferenceTypeAsset VideoGenerationReferenceType = "ASSET"
+	// A reference image that provides aesthetics including colors,
+	// lighting, texture, etc., to be used as the style of the generated video,
+	// such as 'anime', 'photography', 'origami', etc.
+	VideoGenerationReferenceTypeStyle VideoGenerationReferenceType = "STYLE"
 )
 
 // Enum that controls the compression quality of the generated videos.
@@ -2381,8 +2399,8 @@ type GenerateImagesConfig struct {
 	OutputGCSURI string `json:"outputGcsUri,omitempty"`
 	// Optional. Description of what to discourage in the generated images.
 	NegativePrompt string `json:"negativePrompt,omitempty"`
-	// Optional. Number of images to generate.
-	// If empty, the system will choose a default value (currently 4).
+	// Optional. Number of images to generate. If empty, the system will choose a default
+	// value (currently 4).
 	NumberOfImages int32 `json:"numberOfImages,omitempty"`
 	// Optional. Aspect ratio of the generated images. Supported values are
 	// "1:1", "3:4", "4:3", "9:16", and "16:9".
@@ -2598,8 +2616,8 @@ type EditImageConfig struct {
 	OutputGCSURI string `json:"outputGcsUri,omitempty"`
 	// Optional. Description of what to discourage in the generated images.
 	NegativePrompt string `json:"negativePrompt,omitempty"`
-	// Optional. Number of images to generate.
-	// If empty, the system will choose a default value (currently 4).
+	// Optional. Number of images to generate. If empty, the system will choose a default
+	// value (currently 4).
 	NumberOfImages int32 `json:"numberOfImages,omitempty"`
 	// Optional. Aspect ratio of the generated images. Supported values are
 	// "1:1", "3:4", "4:3", "9:16", and "16:9".
@@ -2651,13 +2669,15 @@ type EditImageResponse struct {
 type upscaleImageAPIConfig struct {
 	// Optional. Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. Cloud Storage URI used to store the generated images.
+	OutputGCSURI string `json:"outputGcsUri,omitempty"`
 	// Optional. Whether to include a reason for filtered-out images in the
 	// response.
 	IncludeRAIReason bool `json:"includeRaiReason,omitempty"`
 	// Optional. The image format that the output should be saved as.
 	OutputMIMEType string `json:"outputMimeType,omitempty"`
-	// Optional. The level of compression if the ``output_mime_type`` is
-	// ``image/jpeg``.
+	// Optional. The level of compression. Only applicable if the
+	// ``output_mime_type`` is ``image/jpeg``.
 	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
 	// Optional. Whether to add an image enhancing step before upscaling.
 	// It is expected to suppress the noise and JPEG compression artifacts
@@ -2717,6 +2737,8 @@ type RecontextImageConfig struct {
 	// Optional. Whether allow to generate person images, and restrict to specific
 	// ages.
 	PersonGeneration PersonGeneration `json:"personGeneration,omitempty"`
+	// Optional. Whether to add a SynthID watermark to the generated images.
+	AddWatermark *bool `json:"addWatermark,omitempty"`
 	// Optional. MIME type of the generated image.
 	OutputMIMEType string `json:"outputMimeType,omitempty"`
 	// Optional. Compression quality of the generated image (for ``image/jpeg``
@@ -2953,6 +2975,8 @@ type DeleteModelConfig struct {
 }
 
 type DeleteModelResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 }
 
 // Config for thinking features.
@@ -3069,9 +3093,9 @@ type ComputeTokensConfig struct {
 type TokensInfo struct {
 	// Optional. Optional fields for the role from the corresponding Content.
 	Role string `json:"role,omitempty"`
-	// A list of token IDs from the input.
+	// Optional. A list of token IDs from the input.
 	TokenIDs []int64 `json:"tokenIds,omitempty"`
-	// A list of tokens from the input.
+	// Optional. A list of tokens from the input.
 	Tokens [][]byte `json:"tokens,omitempty"`
 }
 
@@ -3127,7 +3151,7 @@ type Video struct {
 	URI string `json:"uri,omitempty"`
 	// Optional. Video bytes.
 	VideoBytes []byte `json:"videoBytes,omitempty"`
-	// Optional. Video encoding, for example "video/mp4".
+	// Optional. Video encoding, for example ``video/mp4``.
 	MIMEType string `json:"mimeType,omitempty"`
 }
 
@@ -3146,11 +3170,20 @@ type GenerateVideosSource struct {
 	// Optional if image or video is provided.
 	Prompt string `json:"prompt,omitempty"`
 	// Optional. The input image for generating the videos.
-	// Optional if prompt or video is provided.
+	// Optional if prompt is provided. Not allowed if video is provided.
 	Image *Image `json:"image,omitempty"`
 	// Optional. The input video for video extension use cases.
-	// Optional if prompt or image is provided.
+	// Optional if prompt is provided. Not allowed if image is provided.
 	Video *Video `json:"video,omitempty"`
+}
+
+// A reference image for video generation.
+type VideoGenerationReferenceImage struct {
+	// The reference image.
+	Image *Image `json:"image,omitempty"`
+	// The type of the reference image, which defines how the reference
+	// image will be used to generate the video.
+	ReferenceType VideoGenerationReferenceType `json:"referenceType,omitempty"`
 }
 
 // You can find API default values and more details at VertexAI: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation.
@@ -3165,30 +3198,39 @@ type GenerateVideosConfig struct {
 	FPS *int32 `json:"fps,omitempty"`
 	// Optional. Duration of the clip for video generation in seconds.
 	DurationSeconds *int32 `json:"durationSeconds,omitempty"`
-	// Optional. The RNG seed. If RNG seed is exactly same for each request with unchanged
-	// inputs, the prediction results will be consistent. Otherwise, a random RNG seed will
-	// be used each time to produce a different result.
+	// Optional. The RNG seed. If RNG seed is exactly same for each request with
+	// unchanged inputs, the prediction results will be consistent. Otherwise,
+	// a random RNG seed will be used each time to produce a different
+	// result.
 	Seed *int32 `json:"seed,omitempty"`
-	// Optional. The aspect ratio for the generated video. 16:9 (landscape) and 9:16 (portrait)
-	// are supported.
+	// Optional. The aspect ratio for the generated video. 16:9 (landscape) and
+	// 9:16 (portrait) are supported.
 	AspectRatio string `json:"aspectRatio,omitempty"`
-	// Optional. The resolution for the generated video. 720p and 1080p are supported.
+	// Optional. The resolution for the generated video. 720p and 1080p are
+	// supported.
 	Resolution string `json:"resolution,omitempty"`
-	// Optional. Whether allow to generate person videos, and restrict to specific ages.
-	// Supported values are: dont_allow, allow_adult.
+	// Optional. Whether allow to generate person videos, and restrict to specific
+	// ages. Supported values are: dont_allow, allow_adult.
 	PersonGeneration string `json:"personGeneration,omitempty"`
-	// Optional. The pubsub topic where to publish the video generation progress.
+	// Optional. The pubsub topic where to publish the video generation
+	// progress.
 	PubsubTopic string `json:"pubsubTopic,omitempty"`
-	// Optional. Optional field in addition to the text content. Negative prompts can be
-	// explicitly stated here to help generate the video.
+	// Optional. Explicitly state what should not be included in the generated
+	// videos.
 	NegativePrompt string `json:"negativePrompt,omitempty"`
 	// Optional. Whether to use the prompt rewriting logic.
 	EnhancePrompt bool `json:"enhancePrompt,omitempty"`
 	// Optional. Whether to generate audio along with the video.
 	GenerateAudio *bool `json:"generateAudio,omitempty"`
-	// Optional. Image to use as the last frame of generated videos. Only supported for
-	// image to video use cases.
+	// Optional. Image to use as the last frame of generated videos.
+	// Only supported for image to video use cases.
 	LastFrame *Image `json:"lastFrame,omitempty"`
+	// Optional. The images to use as the references to generate the videos.
+	// If this field is provided, the text prompt field must also be provided.
+	// The image, video, or last_frame field are not supported. Each image must
+	// be associated with a type. Veo 2 supports up to 3 asset images *or* 1
+	// style image.
+	ReferenceImages []*VideoGenerationReferenceImage `json:"referenceImages,omitempty"`
 	// Optional. Compression quality of the generated videos.
 	CompressionQuality VideoCompressionQuality `json:"compressionQuality,omitempty"`
 }
@@ -3727,6 +3769,12 @@ type ListTuningJobsResponse struct {
 	TuningJobs []*TuningJob `json:"tuningJobs,omitempty"`
 }
 
+// Optional parameters for tunings.cancel method.
+type CancelTuningJobConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+}
+
 type TuningExample struct {
 	// Optional. Text model input.
 	TextInput string `json:"textInput,omitempty"`
@@ -3983,6 +4031,8 @@ type DeleteCachedContentConfig struct {
 
 // Empty response for caches.delete method.
 type DeleteCachedContentResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 }
 
 // Optional parameters for caches.update method.
@@ -4264,6 +4314,8 @@ type DeleteFileConfig struct {
 
 // Response for the delete file method.
 type DeleteFileResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 }
 
 // Config for inlined request.
@@ -4601,6 +4653,8 @@ type DownloadFileConfig struct {
 type UpscaleImageConfig struct {
 	// Optional. Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. Cloud Storage URI used to store the generated images.
+	OutputGCSURI string `json:"outputGcsUri,omitempty"`
 	// Optional. Whether to include a reason for filtered-out images in the
 	// response.
 	IncludeRAIReason bool `json:"includeRaiReason,omitempty"`

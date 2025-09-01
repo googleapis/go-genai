@@ -79,6 +79,22 @@ func listTuningJobsParametersToMldev(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
+func cancelTuningJobParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func tuningExampleToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -258,6 +274,22 @@ func listTuningJobsParametersToVertex(fromObject map[string]any, parentObject ma
 	return toObject, nil
 }
 
+func cancelTuningJobParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -357,7 +389,7 @@ func createTuningJobParametersPrivateToVertex(fromObject map[string]any, parentO
 	toObject = make(map[string]any)
 
 	fromBaseModel := getValueByPath(fromObject, []string{"baseModel"})
-	if fromBaseModel != nil && fromBaseModel != "" {
+	if fromBaseModel != nil {
 		setValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
 	}
 
@@ -922,7 +954,69 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 	return response, nil
 }
 
-func (m Tunings) tune(ctx context.Context, baseModel string, preTunedModel *PreTunedModel, trainingDataset *TuningDataset, config *CreateTuningJobConfig) (*TuningJob, error) {
+// Cancel cancels a tuning job resource.
+func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJobConfig) error {
+	parameterMap := make(map[string]any)
+
+	kwargs := map[string]any{"name": name, "config": config}
+	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
+	} else {
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
+	}
+	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		toConverter = cancelTuningJobParametersToVertex
+
+	} else {
+		toConverter = cancelTuningJobParametersToMldev
+
+	}
+
+	body, err := toConverter(parameterMap, nil)
+	if err != nil {
+		return err
+	}
+	var path string
+	var urlParams map[string]any
+	if _, ok := body["_url"]; ok {
+		urlParams = body["_url"].(map[string]any)
+		delete(body, "_url")
+	}
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		path, err = formatMap("{name}:cancel", urlParams)
+	} else {
+		path, err = formatMap("{name}:cancel", urlParams)
+	}
+	if err != nil {
+		return fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return err
+		}
+		path += "?" + query
+		delete(body, "_query")
+	}
+
+	if _, ok := body["config"]; ok {
+		delete(body, "config")
+	}
+	_, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *PreTunedModel, trainingDataset *TuningDataset, config *CreateTuningJobConfig) (*TuningJob, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"baseModel": baseModel, "preTunedModel": preTunedModel, "trainingDataset": trainingDataset, "config": config}
@@ -996,7 +1090,7 @@ func (m Tunings) tune(ctx context.Context, baseModel string, preTunedModel *PreT
 	return response, nil
 }
 
-func (m Tunings) tuneMldev(ctx context.Context, baseModel string, preTunedModel *PreTunedModel, trainingDataset *TuningDataset, config *CreateTuningJobConfig) (*TuningOperation, error) {
+func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel *PreTunedModel, trainingDataset *TuningDataset, config *CreateTuningJobConfig) (*TuningOperation, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"baseModel": baseModel, "preTunedModel": preTunedModel, "trainingDataset": trainingDataset, "config": config}
@@ -1080,15 +1174,12 @@ func (t Tunings) Tune(ctx context.Context, baseModel string, trainingDataset *Tu
 	if t.apiClient.clientConfig.Backend == BackendVertexAI {
 		if strings.HasPrefix(baseModel, "projects/") {
 			preTunedModel := &PreTunedModel{TunedModelName: baseModel}
-
-			// We use "" instead of nil, because Go doesn't accept nil for a string.
-			// The converter treats "" the same as nil for this parameter.
-			return t.tune(ctx, "", preTunedModel, trainingDataset, config)
+			return t.tune(ctx, nil, preTunedModel, trainingDataset, config)
 		} else {
-			return t.tune(ctx, baseModel, nil, trainingDataset, config)
+			return t.tune(ctx, &baseModel, nil, trainingDataset, config)
 		}
 	} else {
-		operation, err := t.tuneMldev(ctx, baseModel, nil, trainingDataset, config)
+		operation, err := t.tuneMldev(ctx, &baseModel, nil, trainingDataset, config)
 		if err != nil {
 			return nil, err
 		}

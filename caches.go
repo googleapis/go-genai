@@ -503,6 +503,11 @@ func cachedContentFromMldev(fromObject map[string]any, parentObject map[string]a
 func deleteCachedContentResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	return toObject, nil
 }
 
@@ -575,6 +580,11 @@ func cachedContentFromVertex(fromObject map[string]any, parentObject map[string]
 
 func deleteCachedContentResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
 
 	return toObject, nil
 }
@@ -849,16 +859,6 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 	err = mapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
-	}
-
-	if field, ok := reflect.TypeOf(response).Elem().FieldByName("SDKHTTPResponse"); ok {
-		{
-			if reflect.ValueOf(response).Elem().FieldByName("SDKHTTPResponse").IsValid() {
-				{
-					reflect.ValueOf(response).Elem().FieldByName("SDKHTTPResponse").Set(reflect.Zero(field.Type))
-				}
-			}
-		}
 	}
 
 	return response, nil

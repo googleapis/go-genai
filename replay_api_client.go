@@ -19,7 +19,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"io"
 	"math"
 	"net/http"
@@ -32,6 +31,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 // ReplayAPIClient is a client that reads responses from a replay session file.
@@ -383,17 +384,18 @@ func sanitizeHeadersForComparison(item map[string]any) {
 		return
 	}
 
-	// Headers to ignore in comparison.
+	// TODO(b/441125206): Support reading response headers for replay tests.
 	ignoreHeaders := map[string]bool{
-		"content-encoding":       true,
-		"server":                 true,
-		"server-timing":          true,
-		"transfer-encoding":      true,
-		"vary":                   true,
-		"x-xss-protection":       true,
-		"x-frame-options":        true,
-		"x-content-type-options": true,
-		"date":                   true,
+		"content-encoding":             true,
+		"server":                       true,
+		"server-timing":                true,
+		"transfer-encoding":            true,
+		"vary":                         true,
+		"x-xss-protection":             true,
+		"x-frame-options":              true,
+		"x-content-type-options":       true,
+		"x-vertex-ai-llm-request-type": true,
+		"date":                         true,
 	}
 
 	processedHeaders := make(map[string][]string)

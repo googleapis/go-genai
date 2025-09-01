@@ -869,7 +869,7 @@ type Batches struct {
 	apiClient *apiClient
 }
 
-func (m Batches) create(ctx context.Context, model string, src *BatchJobSource, config *CreateBatchJobConfig) (*BatchJob, error) {
+func (m Batches) create(ctx context.Context, model *string, src *BatchJobSource, config *CreateBatchJobConfig) (*BatchJob, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "src": src, "config": config}
@@ -1268,7 +1268,7 @@ func (b Batches) Create(ctx context.Context, model string, src *BatchJobSource, 
 			return nil, fmt.Errorf("One of FileName and InlinedRequests must be set.")
 		}
 	}
-	return b.create(ctx, model, src, config)
+	return b.create(ctx, &model, src, config)
 }
 
 // List retrieves a paginated list of batch jobs.

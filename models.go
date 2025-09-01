@@ -1426,6 +1426,10 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		return nil, fmt.Errorf("lastFrame parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"referenceImages"}) != nil {
+		return nil, fmt.Errorf("referenceImages parameter is not supported in Gemini API")
+	}
+
 	if getValueByPath(fromObject, []string{"compressionQuality"}) != nil {
 		return nil, fmt.Errorf("compressionQuality parameter is not supported in Gemini API")
 	}
@@ -2950,6 +2954,11 @@ func editImageParametersToVertex(ac *apiClient, fromObject map[string]any, paren
 func upscaleImageAPIConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	if fromOutputGcsUri != nil {
+		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+	}
+
 	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
 	if fromIncludeRaiReason != nil {
 		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
@@ -3107,6 +3116,11 @@ func recontextImageConfigToVertex(fromObject map[string]any, parentObject map[st
 	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
 		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+	}
+
+	fromAddWatermark := getValueByPath(fromObject, []string{"addWatermark"})
+	if fromAddWatermark != nil {
+		setValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
 	}
 
 	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
@@ -3583,6 +3597,27 @@ func generateVideosSourceToVertex(fromObject map[string]any, parentObject map[st
 	return toObject, nil
 }
 
+func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"image"}, fromImage)
+	}
+
+	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
+	if fromReferenceType != nil {
+		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+	}
+
+	return toObject, nil
+}
+
 func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3654,6 +3689,16 @@ func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[st
 		}
 
 		setValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
+	}
+
+	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	if fromReferenceImages != nil {
+		fromReferenceImages, err = applyConverterToSlice(fromReferenceImages.([]any), videoGenerationReferenceImageToVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
 	}
 
 	fromCompressionQuality := getValueByPath(fromObject, []string{"compressionQuality"})
@@ -4282,6 +4327,11 @@ func listModelsResponseFromMldev(fromObject map[string]any, parentObject map[str
 
 func deleteModelResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
 
 	return toObject, nil
 }
@@ -5193,6 +5243,11 @@ func listModelsResponseFromVertex(fromObject map[string]any, parentObject map[st
 func deleteModelResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
 	return toObject, nil
 }
 
@@ -5550,6 +5605,7 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 	return response, nil
 }
 
+// generateImages private method for generating images.
 func (m Models) generateImages(ctx context.Context, model string, prompt string, config *GenerateImagesConfig) (*GenerateImagesResponse, error) {
 	parameterMap := make(map[string]any)
 
@@ -5623,6 +5679,7 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 	return response, nil
 }
 
+// editImage private method for editing an image.
 func (m Models) editImage(ctx context.Context, model string, prompt string, referenceImages []*referenceImageAPI, config *EditImageConfig) (*EditImageResponse, error) {
 	parameterMap := make(map[string]any)
 
@@ -5697,6 +5754,7 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 	return response, nil
 }
 
+// upscaleImage private method for upscaling an image.
 func (m Models) upscaleImage(ctx context.Context, model string, image *Image, upscaleFactor string, config *upscaleImageAPIConfig) (*UpscaleImageResponse, error) {
 	parameterMap := make(map[string]any)
 
@@ -6257,16 +6315,6 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 		return nil, err
 	}
 
-	if field, ok := reflect.TypeOf(response).Elem().FieldByName("SDKHTTPResponse"); ok {
-		{
-			if reflect.ValueOf(response).Elem().FieldByName("SDKHTTPResponse").IsValid() {
-				{
-					reflect.ValueOf(response).Elem().FieldByName("SDKHTTPResponse").Set(reflect.Zero(field.Type))
-				}
-			}
-		}
-	}
-
 	return response, nil
 }
 
@@ -6419,8 +6467,8 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 	return response, nil
 }
 
-// GenerateVideos creates a long-running video generation operation.
-func (m Models) generateVideos(ctx context.Context, model string, prompt string, image *Image, video *Video, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+// generateVideos private method for generating videos.
+func (m Models) generateVideos(ctx context.Context, model string, prompt *string, image *Image, video *Video, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "prompt": prompt, "image": image, "video": video, "source": source, "config": config}
@@ -6610,6 +6658,7 @@ func (m Models) UpscaleImage(ctx context.Context, model string, image *Image, up
 	apiConfig := &upscaleImageAPIConfig{Mode: "upscale", NumberOfImages: 1}
 
 	if config != nil {
+		apiConfig.OutputGCSURI = config.OutputGCSURI
 		apiConfig.OutputMIMEType = config.OutputMIMEType
 		apiConfig.OutputCompressionQuality = config.OutputCompressionQuality
 		apiConfig.IncludeRAIReason = config.IncludeRAIReason
@@ -6633,7 +6682,7 @@ func (m Models) EditImage(ctx context.Context, model, prompt string, referenceIm
 // This method is kept for backward compatibility. Use GenerateVideosFromSource instead.
 func (m Models) GenerateVideos(ctx context.Context, model string, prompt string, image *Image, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
 	// Does not support Video or GenerateVideosSource.
-	return m.generateVideos(ctx, model, prompt, image, nil, nil, config)
+	return m.generateVideos(ctx, model, &prompt, image, nil, nil, config)
 }
 
 // GenerateVideos creates a long-running video generation operation.
@@ -6642,5 +6691,5 @@ func (m Models) GenerateVideosFromSource(ctx context.Context, model string, sour
 		return nil, fmt.Errorf("source is required")
 	}
 	// Rely on backend validation for combinations of prompt, image, and video.
-	return m.generateVideos(ctx, model, "", nil, nil, source, config)
+	return m.generateVideos(ctx, model, nil, nil, nil, source, config)
 }

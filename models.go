@@ -83,6 +83,27 @@ func fileDataToMldev(fromObject map[string]any, parentObject map[string]any) (to
 	return toObject, nil
 }
 
+func functionCallToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromId := getValueByPath(fromObject, []string{"id"})
+	if fromId != nil {
+		setValueByPath(toObject, []string{"id"}, fromId)
+	}
+
+	fromArgs := getValueByPath(fromObject, []string{"args"})
+	if fromArgs != nil {
+		setValueByPath(toObject, []string{"args"}, fromArgs)
+	}
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	return toObject, nil
+}
+
 func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -126,6 +147,16 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
 	}
 
+	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
+	if fromFunctionCall != nil {
+		fromFunctionCall, err = functionCallToMldev(fromFunctionCall.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
+	}
+
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -134,11 +165,6 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 	fromExecutableCode := getValueByPath(fromObject, []string{"executableCode"})
 	if fromExecutableCode != nil {
 		setValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
-	}
-
-	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
-	if fromFunctionCall != nil {
-		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
 	}
 
 	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})
@@ -1556,6 +1582,25 @@ func fileDataToVertex(fromObject map[string]any, parentObject map[string]any) (t
 	return toObject, nil
 }
 
+func functionCallToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"id"}) != nil {
+		return nil, fmt.Errorf("id parameter is not supported in Vertex AI")
+	}
+
+	fromArgs := getValueByPath(fromObject, []string{"args"})
+	if fromArgs != nil {
+		setValueByPath(toObject, []string{"args"}, fromArgs)
+	}
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	return toObject, nil
+}
+
 func partToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1599,6 +1644,16 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any) (toObj
 		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
 	}
 
+	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
+	if fromFunctionCall != nil {
+		fromFunctionCall, err = functionCallToVertex(fromFunctionCall.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
+	}
+
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -1607,11 +1662,6 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any) (toObj
 	fromExecutableCode := getValueByPath(fromObject, []string{"executableCode"})
 	if fromExecutableCode != nil {
 		setValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
-	}
-
-	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
-	if fromFunctionCall != nil {
-		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
 	}
 
 	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})
@@ -3824,6 +3874,27 @@ func fileDataFromMldev(fromObject map[string]any, parentObject map[string]any) (
 	return toObject, nil
 }
 
+func functionCallFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromId := getValueByPath(fromObject, []string{"id"})
+	if fromId != nil {
+		setValueByPath(toObject, []string{"id"}, fromId)
+	}
+
+	fromArgs := getValueByPath(fromObject, []string{"args"})
+	if fromArgs != nil {
+		setValueByPath(toObject, []string{"args"}, fromArgs)
+	}
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	return toObject, nil
+}
+
 func partFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3867,6 +3938,16 @@ func partFromMldev(fromObject map[string]any, parentObject map[string]any) (toOb
 		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
 	}
 
+	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
+	if fromFunctionCall != nil {
+		fromFunctionCall, err = functionCallFromMldev(fromFunctionCall.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
+	}
+
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -3875,11 +3956,6 @@ func partFromMldev(fromObject map[string]any, parentObject map[string]any) (toOb
 	fromExecutableCode := getValueByPath(fromObject, []string{"executableCode"})
 	if fromExecutableCode != nil {
 		setValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
-	}
-
-	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
-	if fromFunctionCall != nil {
-		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
 	}
 
 	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})
@@ -4525,6 +4601,22 @@ func fileDataFromVertex(fromObject map[string]any, parentObject map[string]any) 
 	return toObject, nil
 }
 
+func functionCallFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromArgs := getValueByPath(fromObject, []string{"args"})
+	if fromArgs != nil {
+		setValueByPath(toObject, []string{"args"}, fromArgs)
+	}
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	return toObject, nil
+}
+
 func partFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -4568,6 +4660,16 @@ func partFromVertex(fromObject map[string]any, parentObject map[string]any) (toO
 		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
 	}
 
+	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
+	if fromFunctionCall != nil {
+		fromFunctionCall, err = functionCallFromVertex(fromFunctionCall.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
+	}
+
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -4576,11 +4678,6 @@ func partFromVertex(fromObject map[string]any, parentObject map[string]any) (toO
 	fromExecutableCode := getValueByPath(fromObject, []string{"executableCode"})
 	if fromExecutableCode != nil {
 		setValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
-	}
-
-	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
-	if fromFunctionCall != nil {
-		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
 	}
 
 	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})

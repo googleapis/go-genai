@@ -35,7 +35,7 @@ func TestValidateContent(t *testing.T) {
 		{"NilContent", nil, false},
 		{"EmptyParts", &Content{Parts: []*Part{}}, false},
 		{"NilPart", &Content{Parts: []*Part{nil}}, false},
-		{"EmptyTextPart", &Content{Parts: []*Part{&Part{Text: ""}}}, false},
+		{"EmptyTextPart", &Content{Parts: []*Part{&Part{Text: ""}}}, true},
 		{"ValidTextPart", &Content{Parts: []*Part{&Part{Text: "hello"}}}, true},
 		{"ValidFunctionCall", &Content{Parts: []*Part{&Part{FunctionCall: &FunctionCall{Name: "test"}}}}, true},
 	}
@@ -58,7 +58,7 @@ func TestValidateResponse(t *testing.T) {
 		{"NilResponse", nil, false},
 		{"EmptyCandidates", &GenerateContentResponse{Candidates: []*Candidate{}}, false},
 		{"NilContentInCandidate", &GenerateContentResponse{Candidates: []*Candidate{{Content: nil}}}, false},
-		{"InvalidContent", &GenerateContentResponse{Candidates: []*Candidate{{Content: &Content{Parts: []*Part{{Text: ""}}}}}}, false},
+		{"InvalidContent", &GenerateContentResponse{Candidates: []*Candidate{{Content: &Content{Parts: []*Part{}}}}}, false},
 		{"ValidContent", &GenerateContentResponse{Candidates: []*Candidate{{Content: &Content{Parts: []*Part{{Text: "hello"}}}}}}, true},
 	}
 
@@ -75,7 +75,7 @@ func TestExtractCuratedHistory(t *testing.T) {
 	validUser1 := &Content{Role: RoleUser, Parts: []*Part{{Text: "User 1"}}}
 	validModel1 := &Content{Role: RoleModel, Parts: []*Part{{Text: "Model 1"}}}
 	validUser2 := &Content{Role: RoleUser, Parts: []*Part{{Text: "User 2"}}}
-	invalidModel := &Content{Role: RoleModel, Parts: []*Part{{Text: ""}}}
+	invalidModel := &Content{Role: RoleModel, Parts: []*Part{}}
 	validModel2 := &Content{Role: RoleModel, Parts: []*Part{{Text: "Model 2"}}}
 
 	tests := []struct {
@@ -454,7 +454,7 @@ func TestChatsStreamInvalidResponse(t *testing.T) {
 		fmt.Fprintln(w, `data:{
 			"candidates": [
 				{
-					"content": { "role": "model", "parts": [{"text": ""}] },
+					"content": { "role": "model", "parts": [] },
 					"finishReason": "STOP"
 				}
 			]

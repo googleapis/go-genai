@@ -55,17 +55,6 @@ func validateContent(content *Content) bool {
 		if part == nil {
 			return false
 		}
-		if part.Text != "" {
-			continue
-		}
-		if part.InlineData == nil &&
-			part.FileData == nil &&
-			part.FunctionCall == nil &&
-			part.FunctionResponse == nil &&
-			part.ExecutableCode == nil &&
-			part.CodeExecutionResult == nil {
-			return false
-		}
 	}
 	return true
 }

@@ -296,6 +296,64 @@ func TestModelsGenerateVideosFromSource(t *testing.T) {
 	}
 }
 
+func TestModelsGenerateVideosEditOutpaint(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) || backend.Backend != BackendVertexAI {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			video := &Video{
+				URI:      "gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+				MIMEType: "video/mp4",
+			}
+			outputGCSURI := "gs://genai-sdk-tests/outputs/videos"
+			generateVideosSource := &GenerateVideosSource{
+				Prompt: "A mountain landscape",
+				Video:  video,
+			}
+			config := &GenerateVideosConfig{
+				NumberOfVideos: 1,
+				OutputGCSURI:   outputGCSURI,
+				AspectRatio:    "16:9",
+				Mask: &VideoGenerationMask{
+					Image: &Image{
+						GCSURI:   "gs://genai-sdk-tests/inputs/videos/video_outpaint_mask.png",
+						MIMEType: "image/png",
+					},
+					MaskMode: "OUTPAINT",
+				},
+			}
+			operation, err := client.Models.GenerateVideosFromSource(ctx, "veo-2.0-generate-exp", generateVideosSource, config)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation, err = client.Operations.GetVideosOperation(ctx, operation, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation == nil || operation.Response == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if operation.Response.GeneratedVideos[0].Video.URI == "" && operation.Response.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have either URI or video bytes")
+			}
+		})
+	}
+}
+
 func TestModelsGenerateContentImage(t *testing.T) {
 	if *mode != apiMode {
 		t.Skip("Skip. This test is only in the API mode")

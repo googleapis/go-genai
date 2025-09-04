@@ -144,8 +144,17 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 			log.Println("Error. Cannot set value for an existing key. Key: ", finalKey, "; Existing value: ", existingValue, "; New value: ", value)
 		}
 	} else {
-		// If existing_data is None (or key doesn't exist), set the value directly.
-		data[finalKey] = value
+		if finalKey == "_self" && reflect.TypeOf(value).Kind() == reflect.Map {
+			// Iterate through the `value` map and copy its contents to `data`.
+			if valMap, ok := value.(map[string]any); ok {
+				for k, v := range valMap {
+					data[k] = v
+				}
+			}
+		} else {
+			// If existing_data is None (or key doesn't exist), set the value directly.
+			data[finalKey] = value
+		}
 	}
 }
 

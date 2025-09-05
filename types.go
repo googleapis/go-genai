@@ -5351,3 +5351,15 @@ func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage
 		ToolResponse: &LiveClientToolResponse{FunctionResponses: p.FunctionResponses},
 	}
 }
+
+// Local tokenizer count tokens result.
+type CountTokensResult struct {
+	// Optional. The total number of tokens.
+	TotalTokens int32 `json:"totalTokens,omitempty"`
+}
+
+// Local tokenizer compute tokens result.
+type ComputeTokensResult struct {
+	// Optional. Lists of tokens info from the input.
+	TokensInfo []*TokensInfo `json:"tokensInfo,omitempty"`
+}

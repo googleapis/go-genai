@@ -1395,8 +1395,9 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
 	}
 
-	if getValueByPath(fromObject, []string{"resolution"}) != nil {
-		return nil, fmt.Errorf("resolution parameter is not supported in Gemini API")
+	fromResolution := getValueByPath(fromObject, []string{"resolution"})
+	if fromResolution != nil {
+		setValueByPath(parentObject, []string{"parameters", "resolution"}, fromResolution)
 	}
 
 	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})

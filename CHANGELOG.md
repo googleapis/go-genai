@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/googleapis/go-genai/compare/v1.22.0...v1.23.0) (2025-09-02)
+
+
+### Features
+
+* Add resolution field for Gemini Developer API Veo 3 generation ([b6a989c](https://github.com/googleapis/go-genai/commit/b6a989cdcad0a3f006a1753f6bac5e91df2914ba))
+
 ## [1.22.0](https://github.com/googleapis/go-genai/compare/v1.21.0...v1.22.0) (2025-08-27)
 
 

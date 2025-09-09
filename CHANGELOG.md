@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.24.0](https://github.com/googleapis/go-genai/compare/v1.23.0...v1.24.0) (2025-09-09)
+
+
+### Features
+
+* [Python] Implement async embedding batches for MLDev. ([f32fb26](https://github.com/googleapis/go-genai/commit/f32fb26a125e0df212c1a27615de4899f4ba791a))
+* Add labels to create tuning job config ([c13a2a5](https://github.com/googleapis/go-genai/commit/c13a2a5f68d867122d2d7e3a7f2b58784c9df20f))
+* generate the function_call class's converters ([995a3ac](https://github.com/googleapis/go-genai/commit/995a3acc0a7bd9bdf3048fb332f23c21a36a2b62))
+* Support Veo 2 Editing on Vertex ([7fd6940](https://github.com/googleapis/go-genai/commit/7fd694074b5488b0eb2d5d0cf2f4e0d75de16533))
+
+
+### Bug Fixes
+
+* Enable `id` field in `FunctionCall` for Vertex AI. ([a3f3c2b](https://github.com/googleapis/go-genai/commit/a3f3c2b37ef065b43cb4ab27f7b60c0c89a8684c))
+
 ## [1.23.0](https://github.com/googleapis/go-genai/compare/v1.22.0...v1.23.0) (2025-09-02)
 
 

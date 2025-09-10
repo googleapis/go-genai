@@ -337,11 +337,6 @@ func cancelBatchJobParametersToMldev(ac *apiClient, fromObject map[string]any, p
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -356,11 +351,6 @@ func cancelBatchJobParametersToVertex(ac *apiClient, fromObject map[string]any, 
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -437,12 +427,10 @@ func createBatchJobParametersToMldev(ac *apiClient, fromObject map[string]any, p
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = createBatchJobConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = createBatchJobConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -478,12 +466,10 @@ func createBatchJobParametersToVertex(ac *apiClient, fromObject map[string]any, 
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = createBatchJobConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = createBatchJobConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -502,11 +488,6 @@ func deleteBatchJobParametersToMldev(ac *apiClient, fromObject map[string]any, p
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -521,11 +502,6 @@ func deleteBatchJobParametersToVertex(ac *apiClient, fromObject map[string]any, 
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -606,11 +582,6 @@ func getBatchJobParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -625,11 +596,6 @@ func getBatchJobParametersToVertex(ac *apiClient, fromObject map[string]any, par
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -816,12 +782,10 @@ func listBatchJobsParametersToMldev(fromObject map[string]any, parentObject map[
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listBatchJobsConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = listBatchJobsConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -832,12 +796,10 @@ func listBatchJobsParametersToVertex(fromObject map[string]any, parentObject map
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listBatchJobsConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = listBatchJobsConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -976,10 +938,6 @@ func (m Batches) create(ctx context.Context, model *string, src *BatchJobSource,
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -1059,10 +1017,6 @@ func (m Batches) Get(ctx context.Context, name string, config *GetBatchJobConfig
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
@@ -1205,10 +1159,6 @@ func (m Batches) list(ctx context.Context, config *ListBatchJobsConfig) (*ListBa
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -1278,10 +1228,6 @@ func (m Batches) Delete(ctx context.Context, name string, config *DeleteBatchJob
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodDelete, body, httpOptions)
 	if err != nil {

@@ -366,11 +366,6 @@ func computeTokensParametersToVertex(ac *apiClient, fromObject map[string]any, p
 		setValueByPath(toObject, []string{"contents"}, fromContents)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -622,12 +617,10 @@ func countTokensParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = countTokensConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = countTokensConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -663,12 +656,10 @@ func countTokensParametersToVertex(ac *apiClient, fromObject map[string]any, par
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = countTokensConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = countTokensConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -724,11 +715,6 @@ func deleteModelParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -743,11 +729,6 @@ func deleteModelParametersToVertex(ac *apiClient, fromObject map[string]any, par
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -923,12 +904,10 @@ func editImageParametersToVertex(ac *apiClient, fromObject map[string]any, paren
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = editImageConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = editImageConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -1057,12 +1036,10 @@ func embedContentParametersToMldev(ac *apiClient, fromObject map[string]any, par
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = embedContentConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = embedContentConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	setValueByPath(toObject, []string{"requests[]", "model"}, fromModel)
@@ -1095,12 +1072,10 @@ func embedContentParametersToVertex(ac *apiClient, fromObject map[string]any, pa
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = embedContentConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = embedContentConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -2253,12 +2228,10 @@ func generateImagesParametersToMldev(ac *apiClient, fromObject map[string]any, p
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = generateImagesConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = generateImagesConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -2284,12 +2257,10 @@ func generateImagesParametersToVertex(ac *apiClient, fromObject map[string]any, 
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = generateImagesConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = generateImagesConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -2641,22 +2612,18 @@ func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, p
 
 	fromSource := getValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
-		fromSource, err = generateVideosSourceToMldev(fromSource.(map[string]any), toObject)
+		_, err = generateVideosSourceToMldev(fromSource.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromSource)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = generateVideosConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = generateVideosConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -2702,22 +2669,18 @@ func generateVideosParametersToVertex(ac *apiClient, fromObject map[string]any, 
 
 	fromSource := getValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
-		fromSource, err = generateVideosSourceToVertex(fromSource.(map[string]any), toObject)
+		_, err = generateVideosSourceToVertex(fromSource.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromSource)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = generateVideosConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = generateVideosConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -2969,11 +2932,6 @@ func getModelParametersToMldev(ac *apiClient, fromObject map[string]any, parentO
 		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -2988,11 +2946,6 @@ func getModelParametersToVertex(ac *apiClient, fromObject map[string]any, parent
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -3315,12 +3268,10 @@ func listModelsParametersToMldev(ac *apiClient, fromObject map[string]any, paren
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listModelsConfigToMldev(ac, fromConfig.(map[string]any), toObject)
+		_, err = listModelsConfigToMldev(ac, fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -3331,12 +3282,10 @@ func listModelsParametersToVertex(ac *apiClient, fromObject map[string]any, pare
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listModelsConfigToVertex(ac, fromConfig.(map[string]any), toObject)
+		_, err = listModelsConfigToVertex(ac, fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -3982,22 +3931,18 @@ func recontextImageParametersToVertex(ac *apiClient, fromObject map[string]any, 
 
 	fromSource := getValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
-		fromSource, err = recontextImageSourceToVertex(fromSource.(map[string]any), toObject)
+		_, err = recontextImageSourceToVertex(fromSource.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromSource)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = recontextImageConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = recontextImageConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -4534,22 +4479,18 @@ func segmentImageParametersToVertex(ac *apiClient, fromObject map[string]any, pa
 
 	fromSource := getValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
-		fromSource, err = segmentImageSourceToVertex(fromSource.(map[string]any), toObject)
+		_, err = segmentImageSourceToVertex(fromSource.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromSource)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = segmentImageConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = segmentImageConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -5070,12 +5011,10 @@ func updateModelParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = updateModelConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = updateModelConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -5096,12 +5035,10 @@ func updateModelParametersToVertex(ac *apiClient, fromObject map[string]any, par
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = updateModelConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = updateModelConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -5183,12 +5120,10 @@ func upscaleImageAPIParametersToVertex(ac *apiClient, fromObject map[string]any,
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = upscaleImageAPIConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = upscaleImageAPIConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -5587,10 +5522,6 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -5725,10 +5656,6 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -5798,10 +5725,6 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
@@ -5874,10 +5797,6 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -5948,10 +5867,6 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
@@ -6027,10 +5942,6 @@ func (m Models) RecontextImage(ctx context.Context, model string, source *Recont
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
@@ -6113,10 +6024,6 @@ func (m Models) SegmentImage(ctx context.Context, model string, source *SegmentI
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -6197,10 +6104,6 @@ func (m Models) Get(ctx context.Context, model string, config *GetModelConfig) (
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -6280,10 +6183,6 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -6353,10 +6252,6 @@ func (m Models) Update(ctx context.Context, model string, config *UpdateModelCon
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPatch, body, httpOptions)
 	if err != nil {
@@ -6438,10 +6333,6 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodDelete, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -6511,10 +6402,6 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
@@ -6587,10 +6474,6 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -6660,10 +6543,6 @@ func (m Models) generateVideos(ctx context.Context, model string, prompt *string
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {

@@ -272,12 +272,10 @@ func createCachedContentParametersToMldev(ac *apiClient, fromObject map[string]a
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = createCachedContentConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = createCachedContentConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -298,12 +296,10 @@ func createCachedContentParametersToVertex(ac *apiClient, fromObject map[string]
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = createCachedContentConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = createCachedContentConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -322,11 +318,6 @@ func deleteCachedContentParametersToMldev(ac *apiClient, fromObject map[string]a
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -341,11 +332,6 @@ func deleteCachedContentParametersToVertex(ac *apiClient, fromObject map[string]
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -386,11 +372,6 @@ func getCachedContentParametersToMldev(ac *apiClient, fromObject map[string]any,
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -405,11 +386,6 @@ func getCachedContentParametersToVertex(ac *apiClient, fromObject map[string]any
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -452,12 +428,10 @@ func listCachedContentsParametersToMldev(fromObject map[string]any, parentObject
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listCachedContentsConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = listCachedContentsConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -468,12 +442,10 @@ func listCachedContentsParametersToVertex(fromObject map[string]any, parentObjec
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listCachedContentsConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = listCachedContentsConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -578,12 +550,10 @@ func updateCachedContentParametersToMldev(ac *apiClient, fromObject map[string]a
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = updateCachedContentConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = updateCachedContentConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -604,12 +574,10 @@ func updateCachedContentParametersToVertex(ac *apiClient, fromObject map[string]
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = updateCachedContentConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = updateCachedContentConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -675,10 +643,6 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
@@ -760,10 +724,6 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -844,10 +804,6 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodDelete, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -917,10 +873,6 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPatch, body, httpOptions)
 	if err != nil {
@@ -1000,10 +952,6 @@ func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*Li
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {

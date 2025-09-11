@@ -24,6 +24,27 @@ import (
 	"strings"
 )
 
+func fetchPredictOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
+	if fromOperationName != nil {
+		setValueByPath(toObject, []string{"operationName"}, fromOperationName)
+	}
+
+	fromResourceName := getValueByPath(fromObject, []string{"resourceName"})
+	if fromResourceName != nil {
+		setValueByPath(toObject, []string{"_url", "resourceName"}, fromResourceName)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func getOperationParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -46,27 +67,6 @@ func getOperationParametersToVertex(fromObject map[string]any, parentObject map[
 	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
 	if fromOperationName != nil {
 		setValueByPath(toObject, []string{"_url", "operationName"}, fromOperationName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func fetchPredictOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
-	if fromOperationName != nil {
-		setValueByPath(toObject, []string{"operationName"}, fromOperationName)
-	}
-
-	fromResourceName := getValueByPath(fromObject, []string{"resourceName"})
-	if fromResourceName != nil {
-		setValueByPath(toObject, []string{"_url", "resourceName"}, fromResourceName)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})

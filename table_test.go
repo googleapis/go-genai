@@ -107,6 +107,15 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 		parameterName := snakeToCamel(testTableFile.ParameterNames[i-1])
 		parameterValue, ok := testTableItem.Parameters[parameterName]
 		if ok {
+			// converts string contents to []*Content, required for some streaming tests.
+			if parameterName == "contents" {
+				if s, ok := parameterValue.(string); ok {
+					part := map[string]any{"text": s}
+					parameterValue = []any{
+						map[string]any{"parts": []any{part}, "role": "user"},
+					}
+				}
+			}
 			paramType := method.Type().In(i)
 			if paramType == nil {
 				_, methodName := moduleAndMethodName(t, testTableFile)
@@ -239,10 +248,14 @@ func TestTable(t *testing.T) {
 	// breakages if the behavior of the ReplayAPIClient changes, e.g. takes the replay directory
 	// from a different source, as the tests must read the replay files from the same source.
 	replayPath := newReplayAPIClient(t).ReplaysDirectory
+	walkPath := replayPath
+	if testsSubDir := os.Getenv("GOOGLE_GENAI_TESTS_SUBDIR"); testsSubDir != "" {
+		walkPath = path.Join(replayPath, "tests", testsSubDir)
+	}
 
 	for _, backend := range backends {
 		t.Run(backend.name, func(t *testing.T) {
-			err := filepath.Walk(replayPath, func(testFilePath string, info os.FileInfo, err error) error {
+			err := filepath.Walk(walkPath, func(testFilePath string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
@@ -270,6 +283,16 @@ func TestTable(t *testing.T) {
 							if testTableItem.SkipInAPIMode != "" {
 								t.Skipf("Skipping because %s", testTableItem.SkipInAPIMode)
 							}
+
+							if !strings.Contains(testTableFile.TestMethod, ".") {
+								if *mode == apiMode {
+									t.Skipf("Custom test method %s not supported in Go yet", testTableFile.TestMethod)
+								} else { // replay mode
+									t.Skipf("Custom test method %s not supported in replay mode in Go", testTableFile.TestMethod)
+								}
+								return
+							}
+
 							config := ClientConfig{Backend: backend.Backend}
 							replayClient := createReplayAPIClient(t, testTableDirectory, testTableItem, backend.name)
 							if *mode == replayMode {

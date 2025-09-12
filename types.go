@@ -2575,6 +2575,7 @@ func (r *referenceImageAPI) referenceImageAPI() *referenceImageAPI {
 //   - NewControlReferenceImage
 //   - NewStyleReferenceImage
 //   - NewSubjectReferenceImage
+//   - NewContentReferenceImage
 //   - ...
 type ReferenceImage interface {
 	referenceImageAPI() *referenceImageAPI
@@ -2626,6 +2627,15 @@ func NewSubjectReferenceImage(referenceImage *Image, referenceID int32, config *
 		ReferenceID:    referenceID,
 		Config:         config,
 		referenceType:  "REFERENCE_TYPE_SUBJECT",
+	}
+}
+
+// NewContentReferenceImage creates a new ContentReferenceImage.
+func NewContentReferenceImage(referenceImage *Image, referenceID int32) *ContentReferenceImage {
+	return &ContentReferenceImage{
+		ReferenceImage: referenceImage,
+		ReferenceID:    referenceID,
+		referenceType:  "REFERENCE_TYPE_CONTENT",
 	}
 }
 
@@ -4846,6 +4856,27 @@ func (r *SubjectReferenceImage) referenceImageAPI() *referenceImageAPI {
 		ReferenceID:        r.ReferenceID,
 		ReferenceType:      "REFERENCE_TYPE_CONTROL",
 		SubjectImageConfig: r.Config,
+	}
+}
+
+// A content reference image.
+// A content reference image represents a subject to reference (ex. person,
+// product, animal) provided by the user. It can optionally be provided in
+// addition to a style reference image (ex. background, style reference).
+type ContentReferenceImage struct {
+	// Optional. The reference image for the editing operation.
+	ReferenceImage *Image `json:"referenceImage,omitempty"`
+	// Optional. The ID of the reference image.
+	ReferenceID int32 `json:"referenceId,omitempty"`
+	// Optional. The type of the reference image. Only set by the SDK.
+	referenceType string
+}
+
+func (r *ContentReferenceImage) referenceImageAPI() *referenceImageAPI {
+	return &referenceImageAPI{
+		ReferenceImage: r.ReferenceImage,
+		ReferenceID:    r.ReferenceID,
+		ReferenceType:  "REFERENCE_TYPE_CONTENT",
 	}
 }
 

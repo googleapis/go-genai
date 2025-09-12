@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.0](https://github.com/googleapis/go-genai/compare/v1.24.0...v1.25.0) (2025-09-12)
+
+
+### Features
+
+* Add `VideoGenerationMaskMode` enum for Veo 2 Editing ([65f9058](https://github.com/googleapis/go-genai/commit/65f9058b728748bfe8b83d0178300249c3700d10))
+
 ## [1.24.0](https://github.com/googleapis/go-genai/compare/v1.23.0...v1.24.0) (2025-09-09)
 
 

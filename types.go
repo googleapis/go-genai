@@ -4907,6 +4907,10 @@ type LiveServerContent struct {
 	OutputTranscription *Transcription `json:"outputTranscription,omitempty"`
 	// Optional. Metadata related to URL context retrieval tool.
 	URLContextMetadata *URLContextMetadata `json:"urlContextMetadata,omitempty"`
+	// Optional. If true, indicates that the model is not generating content because
+	// it is waiting for more input from the user, e.g. because it expects the
+	// user to continue talking.
+	WaitingForInput bool `json:"waitingForInput,omitempty"`
 }
 
 // Request for the client to execute the `function_calls` and return the responses with

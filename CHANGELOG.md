@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.25.0](https://github.com/googleapis/go-genai/compare/v1.24.0...v1.25.0) (2025-09-16)
+
+
+### Features
+
+* Add 'turn_complete_reason' and 'waiting_for_input' fields. ([2d48288](https://github.com/googleapis/go-genai/commit/2d48288d405b16474011e018cbb10096c5957c93))
+* Add `VideoGenerationMaskMode` enum for Veo 2 Editing ([65f9058](https://github.com/googleapis/go-genai/commit/65f9058b728748bfe8b83d0178300249c3700d10))
+* local tokenizer for text ([ee46a52](https://github.com/googleapis/go-genai/commit/ee46a52de5e0e8678f0be3269de4cf6a60c90696))
+
 ## [1.24.0](https://github.com/googleapis/go-genai/compare/v1.23.0...v1.24.0) (2025-09-09)
 
 

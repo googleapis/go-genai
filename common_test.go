@@ -397,3 +397,78 @@ func TestGetValueByPath(t *testing.T) {
 		})
 	}
 }
+
+func TestGetValueByPathOrDefault(t *testing.T) {
+	tests := []struct {
+		name         string
+		data         any
+		keys         []string
+		defaultValue any
+		want         any
+	}{
+		{
+			name:         "Simple_Exists",
+			data:         map[string]any{"a": map[string]any{"b": "v"}},
+			keys:         []string{"a", "b"},
+			defaultValue: "default",
+			want:         "v",
+		},
+		{
+			name:         "Simple_Not_Exists",
+			data:         map[string]any{"a": map[string]any{"b": "v"}},
+			keys:         []string{"a", "c"},
+			defaultValue: "default",
+			want:         "default",
+		},
+		{
+			name:         "Array_Exists",
+			data:         map[string]any{"a": map[string]any{"b": []map[string]any{{"c": "v1"}, {"c": "v2"}}}},
+			keys:         []string{"a", "b[]", "c"},
+			defaultValue: "default",
+			want:         []any{"v1", "v2"},
+		},
+		{
+			name:         "Array_Not_Exists",
+			data:         map[string]any{"a": map[string]any{"b": []map[string]any{{"c": "v1"}, {"c": "v2"}}}},
+			keys:         []string{"a", "b[]", "d"},
+			defaultValue: "default",
+			want:         []any{"default", "default"},
+		},
+		{
+			name:         "Nil_Value_Returns_Default",
+			data:         map[string]any{"a": map[string]any{"b": nil}},
+			keys:         []string{"a", "b"},
+			defaultValue: "default",
+			want:         "default",
+		},
+		{
+			name:         "Self_Key",
+			data:         map[string]any{"a": "v"},
+			keys:         []string{"_self"},
+			defaultValue: "default",
+			want:         map[string]any{"a": "v"},
+		},
+		{
+			name:         "Empty_Keys",
+			data:         map[string]any{"a": "v"},
+			keys:         []string{},
+			defaultValue: "default",
+			want:         "default",
+		},
+		{
+			name:         "Integer_Default",
+			data:         map[string]any{"a": "v"},
+			keys:         []string{"b"},
+			defaultValue: 123,
+			want:         123,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getValueByPathOrDefault(tt.data, tt.keys, tt.defaultValue)
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf("getValueByPathOrDefault() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

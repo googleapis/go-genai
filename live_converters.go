@@ -564,37 +564,6 @@ func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[
 	return toObject, nil
 }
 
-func functionResponseToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromWillContinue := getValueByPath(fromObject, []string{"willContinue"})
-	if fromWillContinue != nil {
-		setValueByPath(toObject, []string{"willContinue"}, fromWillContinue)
-	}
-
-	fromScheduling := getValueByPath(fromObject, []string{"scheduling"})
-	if fromScheduling != nil {
-		setValueByPath(toObject, []string{"scheduling"}, fromScheduling)
-	}
-
-	fromId := getValueByPath(fromObject, []string{"id"})
-	if fromId != nil {
-		setValueByPath(toObject, []string{"id"}, fromId)
-	}
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromResponse := getValueByPath(fromObject, []string{"response"})
-	if fromResponse != nil {
-		setValueByPath(toObject, []string{"response"}, fromResponse)
-	}
-
-	return toObject, nil
-}
-
 func liveClientToolResponseToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1197,34 +1166,6 @@ func liveClientRealtimeInputToVertex(fromObject map[string]any, parentObject map
 		}
 
 		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
-	}
-
-	return toObject, nil
-}
-
-func functionResponseToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"willContinue"}) != nil {
-		return nil, fmt.Errorf("willContinue parameter is not supported in Vertex AI")
-	}
-
-	if getValueByPath(fromObject, []string{"scheduling"}) != nil {
-		return nil, fmt.Errorf("scheduling parameter is not supported in Vertex AI")
-	}
-
-	fromId := getValueByPath(fromObject, []string{"id"})
-	if fromId != nil {
-		setValueByPath(toObject, []string{"id"}, fromId)
-	}
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromResponse := getValueByPath(fromObject, []string{"response"})
-	if fromResponse != nil {
-		setValueByPath(toObject, []string{"response"}, fromResponse)
 	}
 
 	return toObject, nil

@@ -26,59 +26,6 @@ import (
 	"sync"
 )
 
-func getTuningJobParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func listTuningJobsConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
-	if fromPageSize != nil {
-		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
-	}
-
-	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
-	if fromPageToken != nil {
-		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
-	}
-
-	fromFilter := getValueByPath(fromObject, []string{"filter"})
-	if fromFilter != nil {
-		setValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
-	}
-
-	return toObject, nil
-}
-
-func listTuningJobsParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		fromConfig, err = listTuningJobsConfigToMldev(fromConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
 func cancelTuningJobParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -95,40 +42,17 @@ func cancelTuningJobParametersToMldev(fromObject map[string]any, parentObject ma
 	return toObject, nil
 }
 
-func tuningExampleToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func cancelTuningJobParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromTextInput := getValueByPath(fromObject, []string{"textInput"})
-	if fromTextInput != nil {
-		setValueByPath(toObject, []string{"textInput"}, fromTextInput)
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
-	fromOutput := getValueByPath(fromObject, []string{"output"})
-	if fromOutput != nil {
-		setValueByPath(toObject, []string{"output"}, fromOutput)
-	}
-
-	return toObject, nil
-}
-
-func tuningDatasetToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"gcsUri"}) != nil {
-		return nil, fmt.Errorf("gcsUri parameter is not supported in Gemini API")
-	}
-
-	if getValueByPath(fromObject, []string{"vertexDatasetResource"}) != nil {
-		return nil, fmt.Errorf("vertexDatasetResource parameter is not supported in Gemini API")
-	}
-
-	fromExamples := getValueByPath(fromObject, []string{"examples"})
-	if fromExamples != nil {
-		fromExamples, err = applyConverterToSlice(fromExamples.([]any), tuningExampleToMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"examples", "examples"}, fromExamples)
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -184,147 +108,6 @@ func createTuningJobConfigToMldev(fromObject map[string]any, parentObject map[st
 
 	if getValueByPath(fromObject, []string{"labels"}) != nil {
 		return nil, fmt.Errorf("labels parameter is not supported in Gemini API")
-	}
-
-	return toObject, nil
-}
-
-func createTuningJobParametersPrivateToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromBaseModel := getValueByPath(fromObject, []string{"baseModel"})
-	if fromBaseModel != nil {
-		setValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
-	}
-
-	fromPreTunedModel := getValueByPath(fromObject, []string{"preTunedModel"})
-	if fromPreTunedModel != nil {
-		setValueByPath(toObject, []string{"preTunedModel"}, fromPreTunedModel)
-	}
-
-	fromTrainingDataset := getValueByPath(fromObject, []string{"trainingDataset"})
-	if fromTrainingDataset != nil {
-		fromTrainingDataset, err = tuningDatasetToMldev(fromTrainingDataset.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"tuningTask", "trainingData"}, fromTrainingDataset)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		fromConfig, err = createTuningJobConfigToMldev(fromConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func getTuningJobParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func listTuningJobsConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
-	if fromPageSize != nil {
-		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
-	}
-
-	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
-	if fromPageToken != nil {
-		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
-	}
-
-	fromFilter := getValueByPath(fromObject, []string{"filter"})
-	if fromFilter != nil {
-		setValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
-	}
-
-	return toObject, nil
-}
-
-func listTuningJobsParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		fromConfig, err = listTuningJobsConfigToVertex(fromConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func cancelTuningJobParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
-	if fromGcsUri != nil {
-		setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromGcsUri)
-	}
-
-	fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
-	if fromVertexDatasetResource != nil {
-		setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
-	}
-
-	if getValueByPath(fromObject, []string{"examples"}) != nil {
-		return nil, fmt.Errorf("examples parameter is not supported in Vertex AI")
-	}
-
-	return toObject, nil
-}
-
-func tuningValidationDatasetToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
-	if fromGcsUri != nil {
-		setValueByPath(toObject, []string{"validationDatasetUri"}, fromGcsUri)
-	}
-
-	fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
-	if fromVertexDatasetResource != nil {
-		setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
 	}
 
 	return toObject, nil
@@ -394,6 +177,42 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 	return toObject, nil
 }
 
+func createTuningJobParametersPrivateToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromBaseModel := getValueByPath(fromObject, []string{"baseModel"})
+	if fromBaseModel != nil {
+		setValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
+	}
+
+	fromPreTunedModel := getValueByPath(fromObject, []string{"preTunedModel"})
+	if fromPreTunedModel != nil {
+		setValueByPath(toObject, []string{"preTunedModel"}, fromPreTunedModel)
+	}
+
+	fromTrainingDataset := getValueByPath(fromObject, []string{"trainingDataset"})
+	if fromTrainingDataset != nil {
+		fromTrainingDataset, err = tuningDatasetToMldev(fromTrainingDataset.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"tuningTask", "trainingData"}, fromTrainingDataset)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = createTuningJobConfigToMldev(fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
 func createTuningJobParametersPrivateToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -430,6 +249,190 @@ func createTuningJobParametersPrivateToVertex(fromObject map[string]any, parentO
 	return toObject, nil
 }
 
+func getTuningJobParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
+func getTuningJobParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+	}
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
+func listTuningJobsConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	if fromPageSize != nil {
+		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+	}
+
+	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	if fromPageToken != nil {
+		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+	}
+
+	fromFilter := getValueByPath(fromObject, []string{"filter"})
+	if fromFilter != nil {
+		setValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
+	}
+
+	return toObject, nil
+}
+
+func listTuningJobsConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	if fromPageSize != nil {
+		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+	}
+
+	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	if fromPageToken != nil {
+		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+	}
+
+	fromFilter := getValueByPath(fromObject, []string{"filter"})
+	if fromFilter != nil {
+		setValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
+	}
+
+	return toObject, nil
+}
+
+func listTuningJobsParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = listTuningJobsConfigToMldev(fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
+func listTuningJobsParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromConfig := getValueByPath(fromObject, []string{"config"})
+	if fromConfig != nil {
+		fromConfig, err = listTuningJobsConfigToVertex(fromConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"config"}, fromConfig)
+	}
+
+	return toObject, nil
+}
+
+func listTuningJobsResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
+	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	if fromNextPageToken != nil {
+		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+	}
+
+	fromTuningJobs := getValueByPath(fromObject, []string{"tunedModels"})
+	if fromTuningJobs != nil {
+		fromTuningJobs, err = applyConverterToSlice(fromTuningJobs.([]any), tuningJobFromMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"tuningJobs"}, fromTuningJobs)
+	}
+
+	return toObject, nil
+}
+
+func listTuningJobsResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
+	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	if fromNextPageToken != nil {
+		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+	}
+
+	fromTuningJobs := getValueByPath(fromObject, []string{"tuningJobs"})
+	if fromTuningJobs != nil {
+		fromTuningJobs, err = applyConverterToSlice(fromTuningJobs.([]any), tuningJobFromVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"tuningJobs"}, fromTuningJobs)
+	}
+
+	return toObject, nil
+}
+
+func tunedModelCheckpointFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromCheckpointId := getValueByPath(fromObject, []string{"checkpointId"})
+	if fromCheckpointId != nil {
+		setValueByPath(toObject, []string{"checkpointId"}, fromCheckpointId)
+	}
+
+	fromEpoch := getValueByPath(fromObject, []string{"epoch"})
+	if fromEpoch != nil {
+		setValueByPath(toObject, []string{"epoch"}, fromEpoch)
+	}
+
+	fromStep := getValueByPath(fromObject, []string{"step"})
+	if fromStep != nil {
+		setValueByPath(toObject, []string{"step"}, fromStep)
+	}
+
+	fromEndpoint := getValueByPath(fromObject, []string{"endpoint"})
+	if fromEndpoint != nil {
+		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
+	}
+
+	return toObject, nil
+}
+
 func tunedModelFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -441,6 +444,91 @@ func tunedModelFromMldev(fromObject map[string]any, parentObject map[string]any)
 	fromEndpoint := getValueByPath(fromObject, []string{"name"})
 	if fromEndpoint != nil {
 		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
+	}
+
+	return toObject, nil
+}
+
+func tunedModelFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		setValueByPath(toObject, []string{"model"}, fromModel)
+	}
+
+	fromEndpoint := getValueByPath(fromObject, []string{"endpoint"})
+	if fromEndpoint != nil {
+		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
+	}
+
+	fromCheckpoints := getValueByPath(fromObject, []string{"checkpoints"})
+	if fromCheckpoints != nil {
+		fromCheckpoints, err = applyConverterToSlice(fromCheckpoints.([]any), tunedModelCheckpointFromVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"checkpoints"}, fromCheckpoints)
+	}
+
+	return toObject, nil
+}
+
+func tuningDatasetToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"gcsUri"}) != nil {
+		return nil, fmt.Errorf("gcsUri parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"vertexDatasetResource"}) != nil {
+		return nil, fmt.Errorf("vertexDatasetResource parameter is not supported in Gemini API")
+	}
+
+	fromExamples := getValueByPath(fromObject, []string{"examples"})
+	if fromExamples != nil {
+		fromExamples, err = applyConverterToSlice(fromExamples.([]any), tuningExampleToMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"examples", "examples"}, fromExamples)
+	}
+
+	return toObject, nil
+}
+
+func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+	if fromGcsUri != nil {
+		setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromGcsUri)
+	}
+
+	fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
+	if fromVertexDatasetResource != nil {
+		setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
+	}
+
+	if getValueByPath(fromObject, []string{"examples"}) != nil {
+		return nil, fmt.Errorf("examples parameter is not supported in Vertex AI")
+	}
+
+	return toObject, nil
+}
+
+func tuningExampleToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromTextInput := getValueByPath(fromObject, []string{"textInput"})
+	if fromTextInput != nil {
+		setValueByPath(toObject, []string{"textInput"}, fromTextInput)
+	}
+
+	fromOutput := getValueByPath(fromObject, []string{"output"})
+	if fromOutput != nil {
+		setValueByPath(toObject, []string{"output"}, fromOutput)
 	}
 
 	return toObject, nil
@@ -542,115 +630,6 @@ func tuningJobFromMldev(fromObject map[string]any, parentObject map[string]any) 
 	fromTunedModelDisplayName := getValueByPath(fromObject, []string{"tunedModelDisplayName"})
 	if fromTunedModelDisplayName != nil {
 		setValueByPath(toObject, []string{"tunedModelDisplayName"}, fromTunedModelDisplayName)
-	}
-
-	return toObject, nil
-}
-
-func listTuningJobsResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
-	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
-	}
-
-	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
-	if fromNextPageToken != nil {
-		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
-	}
-
-	fromTuningJobs := getValueByPath(fromObject, []string{"tunedModels"})
-	if fromTuningJobs != nil {
-		fromTuningJobs, err = applyConverterToSlice(fromTuningJobs.([]any), tuningJobFromMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"tuningJobs"}, fromTuningJobs)
-	}
-
-	return toObject, nil
-}
-
-func tuningOperationFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
-	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
-	}
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
-	if fromMetadata != nil {
-		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
-	}
-
-	fromDone := getValueByPath(fromObject, []string{"done"})
-	if fromDone != nil {
-		setValueByPath(toObject, []string{"done"}, fromDone)
-	}
-
-	fromError := getValueByPath(fromObject, []string{"error"})
-	if fromError != nil {
-		setValueByPath(toObject, []string{"error"}, fromError)
-	}
-
-	return toObject, nil
-}
-
-func tunedModelCheckpointFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromCheckpointId := getValueByPath(fromObject, []string{"checkpointId"})
-	if fromCheckpointId != nil {
-		setValueByPath(toObject, []string{"checkpointId"}, fromCheckpointId)
-	}
-
-	fromEpoch := getValueByPath(fromObject, []string{"epoch"})
-	if fromEpoch != nil {
-		setValueByPath(toObject, []string{"epoch"}, fromEpoch)
-	}
-
-	fromStep := getValueByPath(fromObject, []string{"step"})
-	if fromStep != nil {
-		setValueByPath(toObject, []string{"step"}, fromStep)
-	}
-
-	fromEndpoint := getValueByPath(fromObject, []string{"endpoint"})
-	if fromEndpoint != nil {
-		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
-	}
-
-	return toObject, nil
-}
-
-func tunedModelFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromModel := getValueByPath(fromObject, []string{"model"})
-	if fromModel != nil {
-		setValueByPath(toObject, []string{"model"}, fromModel)
-	}
-
-	fromEndpoint := getValueByPath(fromObject, []string{"endpoint"})
-	if fromEndpoint != nil {
-		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
-	}
-
-	fromCheckpoints := getValueByPath(fromObject, []string{"checkpoints"})
-	if fromCheckpoints != nil {
-		fromCheckpoints, err = applyConverterToSlice(fromCheckpoints.([]any), tunedModelCheckpointFromVertex)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"checkpoints"}, fromCheckpoints)
 	}
 
 	return toObject, nil
@@ -787,7 +766,7 @@ func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any)
 	return toObject, nil
 }
 
-func listTuningJobsResponseFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func tuningOperationFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
@@ -795,19 +774,40 @@ func listTuningJobsResponseFromVertex(fromObject map[string]any, parentObject ma
 		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
-	if fromNextPageToken != nil {
-		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromTuningJobs := getValueByPath(fromObject, []string{"tuningJobs"})
-	if fromTuningJobs != nil {
-		fromTuningJobs, err = applyConverterToSlice(fromTuningJobs.([]any), tuningJobFromVertex)
-		if err != nil {
-			return nil, err
-		}
+	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	if fromMetadata != nil {
+		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
 
-		setValueByPath(toObject, []string{"tuningJobs"}, fromTuningJobs)
+	fromDone := getValueByPath(fromObject, []string{"done"})
+	if fromDone != nil {
+		setValueByPath(toObject, []string{"done"}, fromDone)
+	}
+
+	fromError := getValueByPath(fromObject, []string{"error"})
+	if fromError != nil {
+		setValueByPath(toObject, []string{"error"}, fromError)
+	}
+
+	return toObject, nil
+}
+
+func tuningValidationDatasetToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+	if fromGcsUri != nil {
+		setValueByPath(toObject, []string{"validationDatasetUri"}, fromGcsUri)
+	}
+
+	fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
+	if fromVertexDatasetResource != nil {
+		setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
 	}
 
 	return toObject, nil

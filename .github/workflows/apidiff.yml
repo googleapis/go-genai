@@ -87,7 +87,7 @@ jobs:
         fi
         # Ignore struct comparability changes, as they are common and accepted.
         sed -i '/: old is comparable, new is not/d' ./diff.txt
-        sed -i '/VideoGenerationReferenceImage.ReferenceType: changed from string to VideoGenerationReferenceType/d' ./diff.txt
+        sed -i '/VideoGenerationMask.MaskMode: changed from string to VideoGenerationMaskMode/d' ./diff.txt
         cat diff.txt && ! [ -s diff.txt ]
     # TODO(b/425394445): figure out how to solve permission issue.
     # - name: Add breaking change label

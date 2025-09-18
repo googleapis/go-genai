@@ -329,7 +329,7 @@ func TestModelsGenerateVideosEditOutpaint(t *testing.T) {
 						GCSURI:   "gs://genai-sdk-tests/inputs/videos/video_outpaint_mask.png",
 						MIMEType: "image/png",
 					},
-					MaskMode: "OUTPAINT",
+					MaskMode: VideoGenerationMaskModeOutpaint,
 				},
 			}
 			operation, err := client.Models.GenerateVideosFromSource(ctx, "veo-2.0-generate-exp", generateVideosSource, config)

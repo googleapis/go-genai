@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.26.0](https://github.com/googleapis/go-genai/compare/v1.25.0...v1.26.0) (2025-09-19)
+
+
+### Features
+
+* Support Imagen 4 Ingredients on Vertex ([a9ab364](https://github.com/googleapis/go-genai/commit/a9ab364b51b120b119abf62f6bb6aecc32684775))
+
+
+### Bug Fixes
+
+* Prevent adding `,string` JSON tag for `int64`/`uint64` fields in `Schema` class. fixes [#511](https://github.com/googleapis/go-genai/issues/511) [#481](https://github.com/googleapis/go-genai/issues/481) ([3423dd3](https://github.com/googleapis/go-genai/commit/3423dd359db32d55c7e91008f7a5475cc1eb790c))
+
 ## [1.25.0](https://github.com/googleapis/go-genai/compare/v1.24.0...v1.25.0) (2025-09-16)
 
 

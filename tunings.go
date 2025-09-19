@@ -34,11 +34,6 @@ func cancelTuningJobParametersToMldev(fromObject map[string]any, parentObject ma
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -48,11 +43,6 @@ func cancelTuningJobParametersToVertex(fromObject map[string]any, parentObject m
 	fromName := getValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -202,12 +192,10 @@ func createTuningJobParametersPrivateToMldev(fromObject map[string]any, parentOb
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = createTuningJobConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = createTuningJobConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -238,12 +226,10 @@ func createTuningJobParametersPrivateToVertex(fromObject map[string]any, parentO
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = createTuningJobConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = createTuningJobConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -257,11 +243,6 @@ func getTuningJobParametersToMldev(fromObject map[string]any, parentObject map[s
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -271,11 +252,6 @@ func getTuningJobParametersToVertex(fromObject map[string]any, parentObject map[
 	fromName := getValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -328,12 +304,10 @@ func listTuningJobsParametersToMldev(fromObject map[string]any, parentObject map
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listTuningJobsConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = listTuningJobsConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -344,12 +318,10 @@ func listTuningJobsParametersToVertex(fromObject map[string]any, parentObject ma
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listTuningJobsConfigToVertex(fromConfig.(map[string]any), toObject)
+		_, err = listTuningJobsConfigToVertex(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -870,10 +842,6 @@ func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfi
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -942,10 +910,6 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
@@ -1079,10 +1043,6 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -1152,10 +1112,6 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {

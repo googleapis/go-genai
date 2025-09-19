@@ -42,11 +42,6 @@ func createFileParametersToMldev(fromObject map[string]any, parentObject map[str
 		setValueByPath(toObject, []string{"file"}, fromFile)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -72,11 +67,6 @@ func deleteFileParametersToMldev(fromObject map[string]any, parentObject map[str
 		}
 
 		setValueByPath(toObject, []string{"_url", "file"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -310,11 +300,6 @@ func getFileParametersToMldev(fromObject map[string]any, parentObject map[string
 		setValueByPath(toObject, []string{"_url", "file"}, fromName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
 	return toObject, nil
 }
 
@@ -339,12 +324,10 @@ func listFilesParametersToMldev(fromObject map[string]any, parentObject map[stri
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listFilesConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = listFilesConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -434,10 +417,6 @@ func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesRes
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -507,10 +486,6 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
@@ -582,10 +557,6 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
@@ -655,10 +626,6 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 		}
 		path += "?" + query
 		delete(body, "_query")
-	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
 	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodDelete, body, httpOptions)
 	if err != nil {

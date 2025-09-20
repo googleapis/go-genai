@@ -4469,7 +4469,7 @@ type BatchJobDestination struct {
 type CreateBatchJobConfig struct {
 	// Optional. Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
-	// Optional. The user-defined name of this BatchJob.
+	// The user-defined name of this BatchJob.
 	DisplayName string `json:"displayName,omitempty"`
 	// GCS or BigQuery URI prefix for the output predictions. Example:
 	// "gs://path/to/output/data" or "bq://projectId.bqDatasetId.bqTableId".

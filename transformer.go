@@ -220,8 +220,8 @@ func tFileName(name any) (string, error) {
 					return "", fmt.Errorf("could not extract file name from URI: %s", name)
 				}
 				name = match[0]
-			} else if strings.HasPrefix(name, "files/") {
-				name = strings.TrimPrefix(name, "files/")
+			} else if after, ok := strings.CutPrefix(name, "files/"); ok {
+				name = after
 			}
 			return name, nil
 		}

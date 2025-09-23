@@ -60,7 +60,7 @@ func sanitizeMapWithSourceType(t *testing.T, sourceType reflect.Type, m any) {
 	for _, path := range paths {
 		if sourceType.Kind() == reflect.Slice {
 			data := m.([]any)
-			for i := 0; i < len(data); i++ {
+			for i := range data {
 				sanitizeMapByPath(data[i], path, stdBase64Handler, false)
 			}
 		} else {

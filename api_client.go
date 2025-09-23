@@ -575,7 +575,7 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 		} else if err != nil {
 			return nil, fmt.Errorf("Failed to read bytes from file at offset %d: %w. Bytes actually read: %d", offset, err, bytesRead)
 		}
-		for attempt := 0; attempt < maxRetryCount; attempt++ {
+		for attempt := range maxRetryCount {
 			patchedHTTPOptions, err := patchHTTPOptions(ac.clientConfig.HTTPOptions, *httpOptions)
 			if err != nil {
 				return nil, err

@@ -1310,7 +1310,7 @@ func createTestFile(t *testing.T, size int64) (string, func()) {
 
 	buf := make([]byte, 1024*1024) // 1MB buffer
 	pattern := []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()")
-	for i := 0; i < len(buf); i++ {
+	for i := range buf {
 		buf[i] = pattern[i%len(pattern)]
 	}
 

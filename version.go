@@ -14,7 +14,5 @@
 
 package genai
 
-var (
-	// Version is the version of the SDK.
-	version = "1.29.0" // x-release-please-version
-)
+// Version is the version of the SDK.
+var version = "1.29.0" // x-release-please-version

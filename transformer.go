@@ -139,6 +139,7 @@ func tLiveSpeechConfig(speechConfig any) (any, error) {
 		return nil, fmt.Errorf("unsupported speechConfig type: %T", speechConfig)
 	}
 }
+
 func tBytes(fromImageBytes any) (any, error) {
 	// TODO(b/389133914): Remove dummy bytes converter.
 	return fromImageBytes, nil

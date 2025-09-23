@@ -70,7 +70,8 @@ func run(ctx context.Context) {
 					},
 				},
 			},
-		}})
+		},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

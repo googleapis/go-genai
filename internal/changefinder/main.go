@@ -156,7 +156,7 @@ func touchModule(root, mod string) error {
 	c := exec.Command("echo")
 	log.Printf(c.String())
 
-	f, err := os.OpenFile(path.Join(root, mod, "CHANGES.md"), os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(path.Join(root, mod, "CHANGES.md"), os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}

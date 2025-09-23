@@ -30,10 +30,10 @@ var (
 		"mldev/models/generate_images/test_all_vertexai_config_person_generation_enum_parameters_3",
 	}
 	disabledTestsByMode = map[string][]string{
-		apiMode: []string{
+		apiMode: {
 			"TestModelsGenerateContentAudio/",
 		},
-		replayMode: []string{
+		replayMode: {
 			// TODO(b/372730941): httpOptions related tests are not covered in replay mode.
 			"models/delete/test_delete_model_with_http_options_in_method",
 			"models/generate_content/test_http_options_in_method",
@@ -60,7 +60,7 @@ var (
 			// filter=display_name%3A%22genai_%2A%22&pageSize=5 are reordered and mismatched
 			"batches/list/test_list_batch_jobs_with_config",
 		},
-		unitMode: []string{
+		unitMode: {
 			// We don't run table tests in unit mode.
 			"TestTable/",
 		},

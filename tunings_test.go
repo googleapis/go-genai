@@ -117,6 +117,7 @@ func TestTuningsTuneUnit(t *testing.T) {
 		})
 	}
 }
+
 func TestTuningsTuneAPIMode(t *testing.T) {
 	if *mode != apiMode {
 		t.Skip("Skip. This test is only in the API mode")
@@ -164,7 +165,6 @@ func TestTuningsTuneAPIMode(t *testing.T) {
 
 		// Test tuning with a pre-tuned model.
 		continuousJob, err := client.Tunings.Tune(ctx, preTunedModelName, trainingDataset, nil)
-
 		if err != nil {
 			t.Fatalf("Tunings.Tune() with pre-tuned model failed: %v", err)
 		}

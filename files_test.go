@@ -245,7 +245,8 @@ func TestFilesAll(t *testing.T) {
 			}))
 			defer ts.Close()
 
-			client, err := NewClient(ctx, &ClientConfig{HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			client, err := NewClient(ctx, &ClientConfig{
+				HTTPOptions: HTTPOptions{BaseURL: ts.URL},
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY": "test-api-key",
@@ -692,7 +693,7 @@ func TestFilesUploadFromPath(t *testing.T) {
 	tempDir := t.TempDir()
 	filePath := filepath.Join(tempDir, "testfile.txt")
 	fileContent := "Content for UploadFromPath test."
-	err = os.WriteFile(filePath, []byte(fileContent), 0644)
+	err = os.WriteFile(filePath, []byte(fileContent), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
@@ -754,7 +755,7 @@ func TestFilesUploadFromPath(t *testing.T) {
 			name: "Error - Unknown MIME Type",
 			path: func() string { // Create a file with an unknown extension
 				p := filepath.Join(tempDir, "file.unknownext")
-				_ = os.WriteFile(p, []byte("data"), 0644)
+				_ = os.WriteFile(p, []byte("data"), 0o644)
 				return p
 			}(),
 			config:     nil, // No MIME override

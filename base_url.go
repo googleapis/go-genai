@@ -14,8 +14,10 @@
 
 package genai
 
-var defaultBaseGeminiURL string = ""
-var defaultBaseVertexURL string = ""
+var (
+	defaultBaseGeminiURL string = ""
+	defaultBaseVertexURL string = ""
+)
 
 // BaseURLParameters are parameters for setting the base URLs for the Gemini API and Vertex AI API.
 type BaseURLParameters struct {

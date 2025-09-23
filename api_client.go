@@ -34,10 +34,12 @@ import (
 	"time"
 )
 
-const maxChunkSize = 8 * 1024 * 1024 // 8 MB chunk size
-const maxRetryCount = 3
-const initialRetryDelay = time.Second
-const delayMultiplier = 2
+const (
+	maxChunkSize      = 8 * 1024 * 1024 // 8 MB chunk size
+	maxRetryCount     = 3
+	initialRetryDelay = time.Second
+	delayMultiplier   = 2
+)
 
 type apiClient struct {
 	clientConfig *ClientConfig
@@ -75,7 +77,6 @@ func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiC
 
 // sendRequest issues an API request and returns a map of the response contents.
 func sendRequest(ctx context.Context, ac *apiClient, path string, method string, body map[string]any, httpOptions *HTTPOptions) (map[string]any, error) {
-
 	req, httpOptions, err := buildRequest(ctx, ac, path, body, method, httpOptions)
 	if err != nil {
 		return nil, err
@@ -435,7 +436,7 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 			default:
 				var err error
 				if len(line) > 0 {
-					var respWithError = new(responseWithError)
+					respWithError := new(responseWithError)
 					// Stream chunk that doesn't matches error format.
 					if marshalErr := json.Unmarshal(line, respWithError); marshalErr != nil {
 						err = fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))
@@ -479,7 +480,7 @@ type responseWithError struct {
 }
 
 func newAPIError(resp *http.Response) error {
-	var respWithError = new(responseWithError)
+	respWithError := new(responseWithError)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("newAPIError: error reading response body: %w. Response: %v", err, string(body))
@@ -561,7 +562,7 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 	var offset int64 = 0
 	var resp *http.Response
 	var respBody map[string]any
-	var uploadCommand = "upload"
+	uploadCommand := "upload"
 
 	buffer := make([]byte, maxChunkSize)
 	for {
@@ -641,7 +642,7 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 		return nil, fmt.Errorf("Failed to upload file: Upload status is not finalized")
 	}
 
-	var response = new(File)
+	response := new(File)
 	err := mapToStruct(respBody["file"].(map[string]any), &response)
 	if err != nil {
 		return nil, err

@@ -21,9 +21,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var (
-	dummyExtrasProvider = func(body map[string]any) map[string]any { return body }
-)
+var dummyExtrasProvider = func(body map[string]any) map[string]any { return body }
 
 func TestMergeHTTPOptions(t *testing.T) {
 	tests := []struct {
@@ -304,12 +302,10 @@ func TestSetValueByPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			setValueByPath(tt.data, tt.keys, tt.value)
 			if diff := cmp.Diff(tt.data, tt.want); diff != "" {
 				t.Errorf("setValueByPath() mismatch (-want +got):\n%s", diff)
 			}
-
 		})
 	}
 }
@@ -393,7 +389,6 @@ func TestGetValueByPath(t *testing.T) {
 					t.Errorf("getValueByPath() mismatch (-want +got):\n%s", diff)
 				}
 			}
-
 		})
 	}
 }

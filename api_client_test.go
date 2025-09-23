@@ -777,7 +777,7 @@ func TestBuildRequest(t *testing.T) {
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
 				HTTPClient:  &http.Client{},
-				Credentials: &auth.Credentials{},
+				Credentials: &auth.Credentials{TokenProvider: vertexTokenProvider{}},
 			},
 			path:   "models/test-model:generateContent",
 			body:   map[string]any{"key": "value"},
@@ -797,6 +797,7 @@ func TestBuildRequest(t *testing.T) {
 					Path:   "/v1beta1/projects/test-project/locations/test-location/models/test-model:generateContent",
 				},
 				Header: http.Header{
+					"Authorization":     []string{"Bearer vertex-token"},
 					"Content-Type":      []string{"application/json"},
 					"X-Test-Header":     []string{"test-value"},
 					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
@@ -813,7 +814,7 @@ func TestBuildRequest(t *testing.T) {
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
 				HTTPClient:  &http.Client{},
-				Credentials: &auth.Credentials{},
+				Credentials: &auth.Credentials{TokenProvider: vertexTokenProvider{}},
 			},
 			path:   "projects/test-project/locations/test-location/models/test-model:generateContent",
 			body:   map[string]any{"key": "value"},
@@ -833,6 +834,7 @@ func TestBuildRequest(t *testing.T) {
 					Path:   "/v1beta1/projects/test-project/locations/test-location/models/test-model:generateContent",
 				},
 				Header: http.Header{
+					"Authorization":     []string{"Bearer vertex-token"},
 					"Content-Type":      []string{"application/json"},
 					"X-Test-Header":     []string{"test-value"},
 					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
@@ -849,7 +851,7 @@ func TestBuildRequest(t *testing.T) {
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
 				HTTPClient:  &http.Client{},
-				Credentials: &auth.Credentials{},
+				Credentials: &auth.Credentials{TokenProvider: vertexTokenProvider{}},
 			},
 			path:   "publishers/google/models/model-name",
 			body:   map[string]any{},
@@ -866,6 +868,7 @@ func TestBuildRequest(t *testing.T) {
 					Path:   "/v1beta1/publishers/google/models/model-name",
 				},
 				Header: http.Header{
+					"Authorization":     []string{"Bearer vertex-token"},
 					"Content-Type":      []string{"application/json"},
 					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
 					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
@@ -912,7 +915,7 @@ func TestBuildRequest(t *testing.T) {
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
 				HTTPClient:  &http.Client{},
-				Credentials: &auth.Credentials{},
+				Credentials: &auth.Credentials{TokenProvider: vertexTokenProvider{}},
 			},
 			path:   "models/test-model:generateContent",
 			body:   map[string]any{},
@@ -929,6 +932,7 @@ func TestBuildRequest(t *testing.T) {
 					Path:   "/v1beta1/projects/test-project/locations/test-location/models/test-model:generateContent",
 				},
 				Header: http.Header{
+					"Authorization":     []string{"Bearer vertex-token"},
 					"Content-Type":      []string{"application/json"},
 					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
 					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
@@ -1747,4 +1751,10 @@ func TestRecursiveMapMerge(t *testing.T) {
 			}
 		})
 	}
+}
+
+type vertexTokenProvider struct{}
+
+func (vertexTokenProvider) Token(ctx context.Context) (*auth.Token, error) {
+	return &auth.Token{Value: "vertex-token"}, nil
 }

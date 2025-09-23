@@ -24,88 +24,6 @@ import (
 	"reflect"
 )
 
-func cachedContentFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
-	if fromDisplayName != nil {
-		setValueByPath(toObject, []string{"displayName"}, fromDisplayName)
-	}
-
-	fromModel := getValueByPath(fromObject, []string{"model"})
-	if fromModel != nil {
-		setValueByPath(toObject, []string{"model"}, fromModel)
-	}
-
-	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
-	if fromCreateTime != nil {
-		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
-	}
-
-	fromUpdateTime := getValueByPath(fromObject, []string{"updateTime"})
-	if fromUpdateTime != nil {
-		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
-	}
-
-	fromExpireTime := getValueByPath(fromObject, []string{"expireTime"})
-	if fromExpireTime != nil {
-		setValueByPath(toObject, []string{"expireTime"}, fromExpireTime)
-	}
-
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
-	if fromUsageMetadata != nil {
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
-	}
-
-	return toObject, nil
-}
-
-func cachedContentFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
-	if fromDisplayName != nil {
-		setValueByPath(toObject, []string{"displayName"}, fromDisplayName)
-	}
-
-	fromModel := getValueByPath(fromObject, []string{"model"})
-	if fromModel != nil {
-		setValueByPath(toObject, []string{"model"}, fromModel)
-	}
-
-	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
-	if fromCreateTime != nil {
-		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
-	}
-
-	fromUpdateTime := getValueByPath(fromObject, []string{"updateTime"})
-	if fromUpdateTime != nil {
-		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
-	}
-
-	fromExpireTime := getValueByPath(fromObject, []string{"expireTime"})
-	if fromExpireTime != nil {
-		setValueByPath(toObject, []string{"expireTime"}, fromExpireTime)
-	}
-
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
-	if fromUsageMetadata != nil {
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
-	}
-
-	return toObject, nil
-}
-
 func createCachedContentConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -166,11 +84,6 @@ func createCachedContentConfigToMldev(fromObject map[string]any, parentObject ma
 
 	fromToolConfig := getValueByPath(fromObject, []string{"toolConfig"})
 	if fromToolConfig != nil {
-		fromToolConfig, err = toolConfigToMldev(fromToolConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
@@ -206,22 +119,12 @@ func createCachedContentConfigToVertex(fromObject map[string]any, parentObject m
 			return nil, err
 		}
 
-		fromContents, err = applyConverterToSlice(fromContents.([]any), contentToVertex)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"contents"}, fromContents)
 	}
 
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
-		if err != nil {
-			return nil, err
-		}
-
-		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -241,11 +144,6 @@ func createCachedContentConfigToVertex(fromObject map[string]any, parentObject m
 
 	fromToolConfig := getValueByPath(fromObject, []string{"toolConfig"})
 	if fromToolConfig != nil {
-		fromToolConfig, err = toolConfigToVertex(fromToolConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
@@ -466,11 +364,6 @@ func listCachedContentsResponseFromMldev(fromObject map[string]any, parentObject
 
 	fromCachedContents := getValueByPath(fromObject, []string{"cachedContents"})
 	if fromCachedContents != nil {
-		fromCachedContents, err = applyConverterToSlice(fromCachedContents.([]any), cachedContentFromMldev)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"cachedContents"}, fromCachedContents)
 	}
 
@@ -492,11 +385,6 @@ func listCachedContentsResponseFromVertex(fromObject map[string]any, parentObjec
 
 	fromCachedContents := getValueByPath(fromObject, []string{"cachedContents"})
 	if fromCachedContents != nil {
-		fromCachedContents, err = applyConverterToSlice(fromCachedContents.([]any), cachedContentFromVertex)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"cachedContents"}, fromCachedContents)
 	}
 
@@ -608,14 +496,13 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 	}
 	var response = new(CachedContent)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = createCachedContentParametersToVertex
-		fromConverter = cachedContentFromVertex
+
 	} else {
 		toConverter = createCachedContentParametersToMldev
-		fromConverter = cachedContentFromMldev
+
 	}
 
 	body, err := toConverter(m.apiClient, parameterMap, nil)
@@ -648,7 +535,6 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -688,14 +574,13 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 	}
 	var response = new(CachedContent)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = getCachedContentParametersToVertex
-		fromConverter = cachedContentFromVertex
+
 	} else {
 		toConverter = getCachedContentParametersToMldev
-		fromConverter = cachedContentFromMldev
+
 	}
 
 	body, err := toConverter(m.apiClient, parameterMap, nil)
@@ -728,7 +613,6 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -808,7 +692,9 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -838,14 +724,13 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 	}
 	var response = new(CachedContent)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = updateCachedContentParametersToVertex
-		fromConverter = cachedContentFromVertex
+
 	} else {
 		toConverter = updateCachedContentParametersToMldev
-		fromConverter = cachedContentFromMldev
+
 	}
 
 	body, err := toConverter(m.apiClient, parameterMap, nil)
@@ -878,7 +763,6 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -957,7 +841,9 @@ func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*Li
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

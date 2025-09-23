@@ -181,11 +181,6 @@ func batchJobFromVertex(fromObject map[string]any, parentObject map[string]any) 
 
 	fromError := getValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
-		fromError, err = jobErrorFromVertex(fromError.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"error"}, fromError)
 	}
 
@@ -527,11 +522,6 @@ func deleteResourceJobFromMldev(fromObject map[string]any, parentObject map[stri
 
 	fromError := getValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
-		fromError, err = jobErrorFromMldev(fromError.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"error"}, fromError)
 	}
 
@@ -558,11 +548,6 @@ func deleteResourceJobFromVertex(fromObject map[string]any, parentObject map[str
 
 	fromError := getValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
-		fromError, err = jobErrorFromVertex(fromError.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"error"}, fromError)
 	}
 
@@ -596,32 +581,6 @@ func getBatchJobParametersToVertex(ac *apiClient, fromObject map[string]any, par
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
-	}
-
-	return toObject, nil
-}
-
-func inlinedEmbedContentResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromResponse := getValueByPath(fromObject, []string{"response"})
-	if fromResponse != nil {
-		fromResponse, err = singleEmbedContentResponseFromMldev(fromResponse.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"response"}, fromResponse)
-	}
-
-	fromError := getValueByPath(fromObject, []string{"error"})
-	if fromError != nil {
-		fromError, err = jobErrorFromMldev(fromError.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"error"}, fromError)
 	}
 
 	return toObject, nil
@@ -683,54 +642,7 @@ func inlinedResponseFromMldev(fromObject map[string]any, parentObject map[string
 
 	fromError := getValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
-		fromError, err = jobErrorFromMldev(fromError.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"error"}, fromError)
-	}
-
-	return toObject, nil
-}
-
-func jobErrorFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromDetails := getValueByPath(fromObject, []string{"details"})
-	if fromDetails != nil {
-		setValueByPath(toObject, []string{"details"}, fromDetails)
-	}
-
-	fromCode := getValueByPath(fromObject, []string{"code"})
-	if fromCode != nil {
-		setValueByPath(toObject, []string{"code"}, fromCode)
-	}
-
-	fromMessage := getValueByPath(fromObject, []string{"message"})
-	if fromMessage != nil {
-		setValueByPath(toObject, []string{"message"}, fromMessage)
-	}
-
-	return toObject, nil
-}
-
-func jobErrorFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromDetails := getValueByPath(fromObject, []string{"details"})
-	if fromDetails != nil {
-		setValueByPath(toObject, []string{"details"}, fromDetails)
-	}
-
-	fromCode := getValueByPath(fromObject, []string{"code"})
-	if fromCode != nil {
-		setValueByPath(toObject, []string{"code"}, fromCode)
-	}
-
-	fromMessage := getValueByPath(fromObject, []string{"message"})
-	if fromMessage != nil {
-		setValueByPath(toObject, []string{"message"}, fromMessage)
 	}
 
 	return toObject, nil
@@ -857,27 +769,6 @@ func listBatchJobsResponseFromVertex(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
-func singleEmbedContentResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromEmbedding := getValueByPath(fromObject, []string{"embedding"})
-	if fromEmbedding != nil {
-		fromEmbedding, err = contentEmbeddingFromMldev(fromEmbedding.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"embedding"}, fromEmbedding)
-	}
-
-	fromTokenCount := getValueByPath(fromObject, []string{"tokenCount"})
-	if fromTokenCount != nil {
-		setValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
-	}
-
-	return toObject, nil
-}
-
 // Batches provides methods for managing the batch jobs.
 // You don't need to initiate this struct. Create a client instance via NewClient, and
 // then access Batches through client.Batches field.
@@ -942,7 +833,9 @@ func (m Batches) create(ctx context.Context, model *string, src *BatchJobSource,
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1022,7 +915,9 @@ func (m Batches) Get(ctx context.Context, name string, config *GetBatchJobConfig
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1163,7 +1058,9 @@ func (m Batches) list(ctx context.Context, config *ListBatchJobsConfig) (*ListBa
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1233,7 +1130,9 @@ func (m Batches) Delete(ctx context.Context, name string, config *DeleteBatchJob
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

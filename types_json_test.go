@@ -917,7 +917,7 @@ func TestJSONCustomTypes(t *testing.T) {
 
 	t.Run("dateJSON", func(t *testing.T) {
 		type valueStruct struct {
-			Val dateJSON `json:"val,omitempty"`
+			Val dateJSON `json:"val"`
 		}
 		type pointerStruct struct {
 			Val *dateJSON `json:"val,omitempty"`

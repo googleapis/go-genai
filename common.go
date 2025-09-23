@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"iter"
 	"log"
+	"maps"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -135,9 +136,7 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 			if newMap, ok2 := value.(map[string]any); ok2 {
 				// Instead of overwriting dictionary with another dictionary, merge them.
 				// This is important for handling training and validation datasets in tuning.
-				for k, v := range newMap {
-					existingMap[k] = v
-				}
+				maps.Copy(existingMap, newMap)
 				data[finalKey] = existingMap // Assign the updated map back
 			}
 		} else {
@@ -147,9 +146,7 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 		if finalKey == "_self" && reflect.TypeOf(value).Kind() == reflect.Map {
 			// Iterate through the `value` map and copy its contents to `data`.
 			if valMap, ok := value.(map[string]any); ok {
-				for k, v := range valMap {
-					data[k] = v
-				}
+				maps.Copy(data, valMap)
 			}
 		} else {
 			// If existing_data is None (or key doesn't exist), set the value directly.

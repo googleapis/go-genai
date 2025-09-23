@@ -658,11 +658,13 @@ func TestMapToStruct(t *testing.T) {
 			inputMap: map[string]any{
 				"role":     "test-role",
 				"TokenIDs": []string{"123", "456"},
-				"Tokens":   [][]byte{[]byte("token1"), []byte("token2")}},
+				"Tokens":   [][]byte{[]byte("token1"), []byte("token2")},
+			},
 			wantValue: TokensInfo{
 				Role:     "test-role",
 				TokenIDs: []int64{123, 456},
-				Tokens:   [][]byte{[]byte("token1"), []byte("token2")}},
+				Tokens:   [][]byte{[]byte("token1"), []byte("token2")},
+			},
 		},
 		{
 			name: "Citation",
@@ -705,7 +707,6 @@ func TestMapToStruct(t *testing.T) {
 			outputValue := reflect.New(reflect.TypeOf(tc.wantValue)).Interface()
 
 			err := mapToStruct(tc.inputMap, &outputValue)
-
 			if err != nil {
 				t.Fatalf("mapToStruct failed: %v", err)
 			}
@@ -1504,7 +1505,6 @@ func TestUploadFile(t *testing.T) {
 			uploadURL := server.URL + "/upload"
 
 			uploadedFile, err := ac.uploadFile(ctx, fileReader, uploadURL, httpOpts)
-
 			if err != nil {
 				t.Fatalf("uploadFile failed: %v", err)
 			}
@@ -1530,7 +1530,6 @@ func TestUploadFile(t *testing.T) {
 			if uploadedFile.MIMEType != "text/plain" { // Matches mock server response
 				t.Errorf("uploadedFile.MIMEType mismatch: want 'text/plain', got '%s'", uploadedFile.MIMEType)
 			}
-
 		})
 	}
 }

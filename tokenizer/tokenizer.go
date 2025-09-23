@@ -404,11 +404,11 @@ func loadModelData(url string, wantHash string) ([]byte, error) {
 			return nil, fmt.Errorf("downloaded model hash mismatch")
 		}
 
-		err = os.MkdirAll(cacheDir, 0770)
+		err = os.MkdirAll(cacheDir, 0o770)
 		if err != nil {
 			return nil, fmt.Errorf("creating cache dir: %w", err)
 		}
-		err = os.WriteFile(cachePath, cacheData, 0660)
+		err = os.WriteFile(cachePath, cacheData, 0o660)
 		if err != nil {
 			return nil, fmt.Errorf("writing cache file: %w", err)
 		}

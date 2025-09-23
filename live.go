@@ -283,10 +283,10 @@ func (s *Session) Receive() (*LiveServerMessage, error) {
 	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
 	if s.apiClient.clientConfig.Backend == BackendVertexAI {
 		fromConverter = liveServerMessageFromVertex
-	} else {
-		fromConverter = liveServerMessageFromMldev
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

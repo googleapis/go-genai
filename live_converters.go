@@ -20,368 +20,12 @@ import (
 	"fmt"
 )
 
-func activityEndToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityEndToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityStartToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func activityStartToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func audioTranscriptionConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func audioTranscriptionConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func automaticActivityDetectionToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromDisabled := getValueByPath(fromObject, []string{"disabled"})
-	if fromDisabled != nil {
-		setValueByPath(toObject, []string{"disabled"}, fromDisabled)
-	}
-
-	fromStartOfSpeechSensitivity := getValueByPath(fromObject, []string{"startOfSpeechSensitivity"})
-	if fromStartOfSpeechSensitivity != nil {
-		setValueByPath(toObject, []string{"startOfSpeechSensitivity"}, fromStartOfSpeechSensitivity)
-	}
-
-	fromEndOfSpeechSensitivity := getValueByPath(fromObject, []string{"endOfSpeechSensitivity"})
-	if fromEndOfSpeechSensitivity != nil {
-		setValueByPath(toObject, []string{"endOfSpeechSensitivity"}, fromEndOfSpeechSensitivity)
-	}
-
-	fromPrefixPaddingMs := getValueByPath(fromObject, []string{"prefixPaddingMs"})
-	if fromPrefixPaddingMs != nil {
-		setValueByPath(toObject, []string{"prefixPaddingMs"}, fromPrefixPaddingMs)
-	}
-
-	fromSilenceDurationMs := getValueByPath(fromObject, []string{"silenceDurationMs"})
-	if fromSilenceDurationMs != nil {
-		setValueByPath(toObject, []string{"silenceDurationMs"}, fromSilenceDurationMs)
-	}
-
-	return toObject, nil
-}
-
-func automaticActivityDetectionToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromDisabled := getValueByPath(fromObject, []string{"disabled"})
-	if fromDisabled != nil {
-		setValueByPath(toObject, []string{"disabled"}, fromDisabled)
-	}
-
-	fromStartOfSpeechSensitivity := getValueByPath(fromObject, []string{"startOfSpeechSensitivity"})
-	if fromStartOfSpeechSensitivity != nil {
-		setValueByPath(toObject, []string{"startOfSpeechSensitivity"}, fromStartOfSpeechSensitivity)
-	}
-
-	fromEndOfSpeechSensitivity := getValueByPath(fromObject, []string{"endOfSpeechSensitivity"})
-	if fromEndOfSpeechSensitivity != nil {
-		setValueByPath(toObject, []string{"endOfSpeechSensitivity"}, fromEndOfSpeechSensitivity)
-	}
-
-	fromPrefixPaddingMs := getValueByPath(fromObject, []string{"prefixPaddingMs"})
-	if fromPrefixPaddingMs != nil {
-		setValueByPath(toObject, []string{"prefixPaddingMs"}, fromPrefixPaddingMs)
-	}
-
-	fromSilenceDurationMs := getValueByPath(fromObject, []string{"silenceDurationMs"})
-	if fromSilenceDurationMs != nil {
-		setValueByPath(toObject, []string{"silenceDurationMs"}, fromSilenceDurationMs)
-	}
-
-	return toObject, nil
-}
-
-func contextWindowCompressionConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTriggerTokens := getValueByPath(fromObject, []string{"triggerTokens"})
-	if fromTriggerTokens != nil {
-		setValueByPath(toObject, []string{"triggerTokens"}, fromTriggerTokens)
-	}
-
-	fromSlidingWindow := getValueByPath(fromObject, []string{"slidingWindow"})
-	if fromSlidingWindow != nil {
-		fromSlidingWindow, err = slidingWindowToMldev(fromSlidingWindow.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"slidingWindow"}, fromSlidingWindow)
-	}
-
-	return toObject, nil
-}
-
-func contextWindowCompressionConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTriggerTokens := getValueByPath(fromObject, []string{"triggerTokens"})
-	if fromTriggerTokens != nil {
-		setValueByPath(toObject, []string{"triggerTokens"}, fromTriggerTokens)
-	}
-
-	fromSlidingWindow := getValueByPath(fromObject, []string{"slidingWindow"})
-	if fromSlidingWindow != nil {
-		fromSlidingWindow, err = slidingWindowToVertex(fromSlidingWindow.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"slidingWindow"}, fromSlidingWindow)
-	}
-
-	return toObject, nil
-}
-
-func functionResponseBlobToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
-	}
-
-	fromData := getValueByPath(fromObject, []string{"data"})
-	if fromData != nil {
-		setValueByPath(toObject, []string{"data"}, fromData)
-	}
-
-	return toObject, nil
-}
-
-func functionResponseBlobToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
-	}
-
-	fromData := getValueByPath(fromObject, []string{"data"})
-	if fromData != nil {
-		setValueByPath(toObject, []string{"data"}, fromData)
-	}
-
-	return toObject, nil
-}
-
-func functionResponseFileDataToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromFileUri := getValueByPath(fromObject, []string{"fileUri"})
-	if fromFileUri != nil {
-		setValueByPath(toObject, []string{"fileUri"}, fromFileUri)
-	}
-
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
-	}
-
-	return toObject, nil
-}
-
-func functionResponseFileDataToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromFileUri := getValueByPath(fromObject, []string{"fileUri"})
-	if fromFileUri != nil {
-		setValueByPath(toObject, []string{"fileUri"}, fromFileUri)
-	}
-
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
-	}
-
-	return toObject, nil
-}
-
-func functionResponsePartToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromInlineData := getValueByPath(fromObject, []string{"inlineData"})
-	if fromInlineData != nil {
-		fromInlineData, err = functionResponseBlobToMldev(fromInlineData.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"inlineData"}, fromInlineData)
-	}
-
-	fromFileData := getValueByPath(fromObject, []string{"fileData"})
-	if fromFileData != nil {
-		fromFileData, err = functionResponseFileDataToMldev(fromFileData.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"fileData"}, fromFileData)
-	}
-
-	return toObject, nil
-}
-
-func functionResponsePartToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromInlineData := getValueByPath(fromObject, []string{"inlineData"})
-	if fromInlineData != nil {
-		fromInlineData, err = functionResponseBlobToVertex(fromInlineData.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"inlineData"}, fromInlineData)
-	}
-
-	fromFileData := getValueByPath(fromObject, []string{"fileData"})
-	if fromFileData != nil {
-		fromFileData, err = functionResponseFileDataToVertex(fromFileData.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"fileData"}, fromFileData)
-	}
-
-	return toObject, nil
-}
-
-func functionResponseToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromWillContinue := getValueByPath(fromObject, []string{"willContinue"})
-	if fromWillContinue != nil {
-		setValueByPath(toObject, []string{"willContinue"}, fromWillContinue)
-	}
-
-	fromScheduling := getValueByPath(fromObject, []string{"scheduling"})
-	if fromScheduling != nil {
-		setValueByPath(toObject, []string{"scheduling"}, fromScheduling)
-	}
-
-	fromParts := getValueByPath(fromObject, []string{"parts"})
-	if fromParts != nil {
-		fromParts, err = applyConverterToSlice(fromParts.([]any), functionResponsePartToMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"parts"}, fromParts)
-	}
-
-	fromId := getValueByPath(fromObject, []string{"id"})
-	if fromId != nil {
-		setValueByPath(toObject, []string{"id"}, fromId)
-	}
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromResponse := getValueByPath(fromObject, []string{"response"})
-	if fromResponse != nil {
-		setValueByPath(toObject, []string{"response"}, fromResponse)
-	}
-
-	return toObject, nil
-}
-
-func functionResponseToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"willContinue"}) != nil {
-		return nil, fmt.Errorf("willContinue parameter is not supported in Vertex AI")
-	}
-
-	if getValueByPath(fromObject, []string{"scheduling"}) != nil {
-		return nil, fmt.Errorf("scheduling parameter is not supported in Vertex AI")
-	}
-
-	fromParts := getValueByPath(fromObject, []string{"parts"})
-	if fromParts != nil {
-		fromParts, err = applyConverterToSlice(fromParts.([]any), functionResponsePartToVertex)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"parts"}, fromParts)
-	}
-
-	fromId := getValueByPath(fromObject, []string{"id"})
-	if fromId != nil {
-		setValueByPath(toObject, []string{"id"}, fromId)
-	}
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromResponse := getValueByPath(fromObject, []string{"response"})
-	if fromResponse != nil {
-		setValueByPath(toObject, []string{"response"}, fromResponse)
-	}
-
-	return toObject, nil
-}
-
 func liveClientContentToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromTurns := getValueByPath(fromObject, []string{"turns"})
 	if fromTurns != nil {
 		fromTurns, err = applyConverterToSlice(fromTurns.([]any), contentToMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"turns"}, fromTurns)
-	}
-
-	fromTurnComplete := getValueByPath(fromObject, []string{"turnComplete"})
-	if fromTurnComplete != nil {
-		setValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
-	}
-
-	return toObject, nil
-}
-
-func liveClientContentToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTurns := getValueByPath(fromObject, []string{"turns"})
-	if fromTurns != nil {
-		fromTurns, err = applyConverterToSlice(fromTurns.([]any), contentToVertex)
 		if err != nil {
 			return nil, err
 		}
@@ -432,11 +76,6 @@ func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string
 
 	fromToolResponse := getValueByPath(fromObject, []string{"toolResponse"})
 	if fromToolResponse != nil {
-		fromToolResponse, err = liveClientToolResponseToMldev(fromToolResponse.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
 	}
 
@@ -458,11 +97,6 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromClientContent := getValueByPath(fromObject, []string{"clientContent"})
 	if fromClientContent != nil {
-		fromClientContent, err = liveClientContentToVertex(fromClientContent.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"clientContent"}, fromClientContent)
 	}
 
@@ -478,11 +112,6 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromToolResponse := getValueByPath(fromObject, []string{"toolResponse"})
 	if fromToolResponse != nil {
-		fromToolResponse, err = liveClientToolResponseToVertex(fromToolResponse.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
 	}
 
@@ -494,26 +123,21 @@ func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[
 
 	fromMediaChunks := getValueByPath(fromObject, []string{"mediaChunks"})
 	if fromMediaChunks != nil {
+		fromMediaChunks, err = applyConverterToSlice(fromMediaChunks.([]any), blobToMldev)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"mediaChunks"}, fromMediaChunks)
 	}
 
 	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
 	if fromActivityStart != nil {
-		fromActivityStart, err = activityStartToMldev(fromActivityStart.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
 	}
 
 	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
 	if fromActivityEnd != nil {
-		fromActivityEnd, err = activityEndToMldev(fromActivityEnd.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
 	}
 
@@ -530,21 +154,11 @@ func liveClientRealtimeInputToVertex(fromObject map[string]any, parentObject map
 
 	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
 	if fromActivityStart != nil {
-		fromActivityStart, err = activityStartToVertex(fromActivityStart.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
 	}
 
 	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
 	if fromActivityEnd != nil {
-		fromActivityEnd, err = activityEndToVertex(fromActivityEnd.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
 	}
 
@@ -601,11 +215,6 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 
 	fromRealtimeInputConfig := getValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
-		fromRealtimeInputConfig, err = realtimeInputConfigToMldev(fromRealtimeInputConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
@@ -621,41 +230,21 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 
 	fromContextWindowCompression := getValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
-		fromContextWindowCompression, err = contextWindowCompressionConfigToMldev(fromContextWindowCompression.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"contextWindowCompression"}, fromContextWindowCompression)
 	}
 
 	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		fromInputAudioTranscription, err = audioTranscriptionConfigToMldev(fromInputAudioTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		fromOutputAudioTranscription, err = audioTranscriptionConfigToMldev(fromOutputAudioTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
 	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
-		fromProactivity, err = proactivityConfigToMldev(fromProactivity.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"proactivity"}, fromProactivity)
 	}
 
@@ -672,17 +261,17 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 
 	fromGenerationConfig := getValueByPath(fromObject, []string{"generationConfig"})
 	if fromGenerationConfig != nil {
+		fromGenerationConfig, err = generationConfigToVertex(fromGenerationConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"generationConfig"}, fromGenerationConfig)
 	}
 
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
-		if err != nil {
-			return nil, err
-		}
-
-		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -712,94 +301,32 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 
 	fromRealtimeInputConfig := getValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
-		fromRealtimeInputConfig, err = realtimeInputConfigToVertex(fromRealtimeInputConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
 	fromSessionResumption := getValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
-		fromSessionResumption, err = sessionResumptionConfigToVertex(fromSessionResumption.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"sessionResumption"}, fromSessionResumption)
 	}
 
 	fromContextWindowCompression := getValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
-		fromContextWindowCompression, err = contextWindowCompressionConfigToVertex(fromContextWindowCompression.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"contextWindowCompression"}, fromContextWindowCompression)
 	}
 
 	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		fromInputAudioTranscription, err = audioTranscriptionConfigToVertex(fromInputAudioTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		fromOutputAudioTranscription, err = audioTranscriptionConfigToVertex(fromOutputAudioTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
 	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
-		fromProactivity, err = proactivityConfigToVertex(fromProactivity.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"proactivity"}, fromProactivity)
-	}
-
-	return toObject, nil
-}
-
-func liveClientToolResponseToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromFunctionResponses := getValueByPath(fromObject, []string{"functionResponses"})
-	if fromFunctionResponses != nil {
-		fromFunctionResponses, err = applyConverterToSlice(fromFunctionResponses.([]any), functionResponseToMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"functionResponses"}, fromFunctionResponses)
-	}
-
-	return toObject, nil
-}
-
-func liveClientToolResponseToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromFunctionResponses := getValueByPath(fromObject, []string{"functionResponses"})
-	if fromFunctionResponses != nil {
-		fromFunctionResponses, err = applyConverterToSlice(fromFunctionResponses.([]any), functionResponseToVertex)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"functionResponses"}, fromFunctionResponses)
 	}
 
 	return toObject, nil
@@ -850,21 +377,11 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 			return nil, err
 		}
 
-		fromSpeechConfig, err = speechConfigToMldev(fromSpeechConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "generationConfig", "speechConfig"}, fromSpeechConfig)
 	}
 
 	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
-		fromThinkingConfig, err = thinkingConfigToMldev(fromThinkingConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "generationConfig", "thinkingConfig"}, fromThinkingConfig)
 	}
 
@@ -920,51 +437,26 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 
 	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		fromInputAudioTranscription, err = audioTranscriptionConfigToMldev(fromInputAudioTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		fromOutputAudioTranscription, err = audioTranscriptionConfigToMldev(fromOutputAudioTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
 	fromRealtimeInputConfig := getValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
-		fromRealtimeInputConfig, err = realtimeInputConfigToMldev(fromRealtimeInputConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
 	fromContextWindowCompression := getValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
-		fromContextWindowCompression, err = contextWindowCompressionConfigToMldev(fromContextWindowCompression.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "contextWindowCompression"}, fromContextWindowCompression)
 	}
 
 	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
-		fromProactivity, err = proactivityConfigToMldev(fromProactivity.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
 	}
 
@@ -1026,11 +518,6 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
-		fromThinkingConfig, err = thinkingConfigToVertex(fromThinkingConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "generationConfig", "thinkingConfig"}, fromThinkingConfig)
 	}
 
@@ -1042,11 +529,6 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
-		if err != nil {
-			return nil, err
-		}
-
-		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -1076,61 +558,31 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromSessionResumption := getValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
-		fromSessionResumption, err = sessionResumptionConfigToVertex(fromSessionResumption.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "sessionResumption"}, fromSessionResumption)
 	}
 
 	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		fromInputAudioTranscription, err = audioTranscriptionConfigToVertex(fromInputAudioTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		fromOutputAudioTranscription, err = audioTranscriptionConfigToVertex(fromOutputAudioTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
 	fromRealtimeInputConfig := getValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
-		fromRealtimeInputConfig, err = realtimeInputConfigToVertex(fromRealtimeInputConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
 	fromContextWindowCompression := getValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
-		fromContextWindowCompression, err = contextWindowCompressionConfigToVertex(fromContextWindowCompression.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "contextWindowCompression"}, fromContextWindowCompression)
 	}
 
 	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
-		fromProactivity, err = proactivityConfigToVertex(fromProactivity.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
 	}
 
@@ -1199,12 +651,22 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
+		fromMedia, err = applyConverterToSlice(fromMedia.([]any), blobToMldev)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"mediaChunks"}, fromMedia)
 	}
 
 	fromAudio := getValueByPath(fromObject, []string{"audio"})
 	if fromAudio != nil {
 		fromAudio, err = tAudioBlob(fromAudio)
+		if err != nil {
+			return nil, err
+		}
+
+		fromAudio, err = blobToMldev(fromAudio.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -1224,6 +686,11 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
+		fromVideo, err = blobToMldev(fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"video"}, fromVideo)
 	}
 
@@ -1234,21 +701,11 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 
 	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
 	if fromActivityStart != nil {
-		fromActivityStart, err = activityStartToMldev(fromActivityStart.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
 	}
 
 	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
 	if fromActivityEnd != nil {
-		fromActivityEnd, err = activityEndToMldev(fromActivityEnd.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
 	}
 
@@ -1300,262 +757,12 @@ func liveSendRealtimeInputParametersToVertex(fromObject map[string]any, parentOb
 
 	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
 	if fromActivityStart != nil {
-		fromActivityStart, err = activityStartToVertex(fromActivityStart.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
 	}
 
 	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
 	if fromActivityEnd != nil {
-		fromActivityEnd, err = activityEndToVertex(fromActivityEnd.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
-	}
-
-	return toObject, nil
-}
-
-func liveServerContentFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromModelTurn := getValueByPath(fromObject, []string{"modelTurn"})
-	if fromModelTurn != nil {
-		fromModelTurn, err = contentFromMldev(fromModelTurn.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"modelTurn"}, fromModelTurn)
-	}
-
-	fromTurnComplete := getValueByPath(fromObject, []string{"turnComplete"})
-	if fromTurnComplete != nil {
-		setValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
-	}
-
-	fromInterrupted := getValueByPath(fromObject, []string{"interrupted"})
-	if fromInterrupted != nil {
-		setValueByPath(toObject, []string{"interrupted"}, fromInterrupted)
-	}
-
-	fromGroundingMetadata := getValueByPath(fromObject, []string{"groundingMetadata"})
-	if fromGroundingMetadata != nil {
-		setValueByPath(toObject, []string{"groundingMetadata"}, fromGroundingMetadata)
-	}
-
-	fromGenerationComplete := getValueByPath(fromObject, []string{"generationComplete"})
-	if fromGenerationComplete != nil {
-		setValueByPath(toObject, []string{"generationComplete"}, fromGenerationComplete)
-	}
-
-	fromInputTranscription := getValueByPath(fromObject, []string{"inputTranscription"})
-	if fromInputTranscription != nil {
-		fromInputTranscription, err = transcriptionFromMldev(fromInputTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"inputTranscription"}, fromInputTranscription)
-	}
-
-	fromOutputTranscription := getValueByPath(fromObject, []string{"outputTranscription"})
-	if fromOutputTranscription != nil {
-		fromOutputTranscription, err = transcriptionFromMldev(fromOutputTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"outputTranscription"}, fromOutputTranscription)
-	}
-
-	fromUrlContextMetadata := getValueByPath(fromObject, []string{"urlContextMetadata"})
-	if fromUrlContextMetadata != nil {
-		fromUrlContextMetadata, err = urlContextMetadataFromMldev(fromUrlContextMetadata.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"urlContextMetadata"}, fromUrlContextMetadata)
-	}
-
-	fromTurnCompleteReason := getValueByPath(fromObject, []string{"turnCompleteReason"})
-	if fromTurnCompleteReason != nil {
-		setValueByPath(toObject, []string{"turnCompleteReason"}, fromTurnCompleteReason)
-	}
-
-	fromWaitingForInput := getValueByPath(fromObject, []string{"waitingForInput"})
-	if fromWaitingForInput != nil {
-		setValueByPath(toObject, []string{"waitingForInput"}, fromWaitingForInput)
-	}
-
-	return toObject, nil
-}
-
-func liveServerContentFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromModelTurn := getValueByPath(fromObject, []string{"modelTurn"})
-	if fromModelTurn != nil {
-		fromModelTurn, err = contentFromVertex(fromModelTurn.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"modelTurn"}, fromModelTurn)
-	}
-
-	fromTurnComplete := getValueByPath(fromObject, []string{"turnComplete"})
-	if fromTurnComplete != nil {
-		setValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
-	}
-
-	fromInterrupted := getValueByPath(fromObject, []string{"interrupted"})
-	if fromInterrupted != nil {
-		setValueByPath(toObject, []string{"interrupted"}, fromInterrupted)
-	}
-
-	fromGroundingMetadata := getValueByPath(fromObject, []string{"groundingMetadata"})
-	if fromGroundingMetadata != nil {
-		setValueByPath(toObject, []string{"groundingMetadata"}, fromGroundingMetadata)
-	}
-
-	fromGenerationComplete := getValueByPath(fromObject, []string{"generationComplete"})
-	if fromGenerationComplete != nil {
-		setValueByPath(toObject, []string{"generationComplete"}, fromGenerationComplete)
-	}
-
-	fromInputTranscription := getValueByPath(fromObject, []string{"inputTranscription"})
-	if fromInputTranscription != nil {
-		fromInputTranscription, err = transcriptionFromVertex(fromInputTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"inputTranscription"}, fromInputTranscription)
-	}
-
-	fromOutputTranscription := getValueByPath(fromObject, []string{"outputTranscription"})
-	if fromOutputTranscription != nil {
-		fromOutputTranscription, err = transcriptionFromVertex(fromOutputTranscription.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"outputTranscription"}, fromOutputTranscription)
-	}
-
-	fromTurnCompleteReason := getValueByPath(fromObject, []string{"turnCompleteReason"})
-	if fromTurnCompleteReason != nil {
-		setValueByPath(toObject, []string{"turnCompleteReason"}, fromTurnCompleteReason)
-	}
-
-	fromWaitingForInput := getValueByPath(fromObject, []string{"waitingForInput"})
-	if fromWaitingForInput != nil {
-		setValueByPath(toObject, []string{"waitingForInput"}, fromWaitingForInput)
-	}
-
-	return toObject, nil
-}
-
-func liveServerGoAwayFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTimeLeft := getValueByPath(fromObject, []string{"timeLeft"})
-	if fromTimeLeft != nil {
-		setValueByPath(toObject, []string{"timeLeft"}, fromTimeLeft)
-	}
-
-	return toObject, nil
-}
-
-func liveServerGoAwayFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTimeLeft := getValueByPath(fromObject, []string{"timeLeft"})
-	if fromTimeLeft != nil {
-		setValueByPath(toObject, []string{"timeLeft"}, fromTimeLeft)
-	}
-
-	return toObject, nil
-}
-
-func liveServerMessageFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromSetupComplete := getValueByPath(fromObject, []string{"setupComplete"})
-	if fromSetupComplete != nil {
-		fromSetupComplete, err = liveServerSetupCompleteFromMldev(fromSetupComplete.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"setupComplete"}, fromSetupComplete)
-	}
-
-	fromServerContent := getValueByPath(fromObject, []string{"serverContent"})
-	if fromServerContent != nil {
-		fromServerContent, err = liveServerContentFromMldev(fromServerContent.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"serverContent"}, fromServerContent)
-	}
-
-	fromToolCall := getValueByPath(fromObject, []string{"toolCall"})
-	if fromToolCall != nil {
-		fromToolCall, err = liveServerToolCallFromMldev(fromToolCall.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"toolCall"}, fromToolCall)
-	}
-
-	fromToolCallCancellation := getValueByPath(fromObject, []string{"toolCallCancellation"})
-	if fromToolCallCancellation != nil {
-		fromToolCallCancellation, err = liveServerToolCallCancellationFromMldev(fromToolCallCancellation.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"toolCallCancellation"}, fromToolCallCancellation)
-	}
-
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
-	if fromUsageMetadata != nil {
-		fromUsageMetadata, err = usageMetadataFromMldev(fromUsageMetadata.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
-	}
-
-	fromGoAway := getValueByPath(fromObject, []string{"goAway"})
-	if fromGoAway != nil {
-		fromGoAway, err = liveServerGoAwayFromMldev(fromGoAway.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"goAway"}, fromGoAway)
-	}
-
-	fromSessionResumptionUpdate := getValueByPath(fromObject, []string{"sessionResumptionUpdate"})
-	if fromSessionResumptionUpdate != nil {
-		fromSessionResumptionUpdate, err = liveServerSessionResumptionUpdateFromMldev(fromSessionResumptionUpdate.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"sessionResumptionUpdate"}, fromSessionResumptionUpdate)
 	}
 
 	return toObject, nil
@@ -1566,41 +773,21 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 
 	fromSetupComplete := getValueByPath(fromObject, []string{"setupComplete"})
 	if fromSetupComplete != nil {
-		fromSetupComplete, err = liveServerSetupCompleteFromVertex(fromSetupComplete.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"setupComplete"}, fromSetupComplete)
 	}
 
 	fromServerContent := getValueByPath(fromObject, []string{"serverContent"})
 	if fromServerContent != nil {
-		fromServerContent, err = liveServerContentFromVertex(fromServerContent.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"serverContent"}, fromServerContent)
 	}
 
 	fromToolCall := getValueByPath(fromObject, []string{"toolCall"})
 	if fromToolCall != nil {
-		fromToolCall, err = liveServerToolCallFromVertex(fromToolCall.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"toolCall"}, fromToolCall)
 	}
 
 	fromToolCallCancellation := getValueByPath(fromObject, []string{"toolCallCancellation"})
 	if fromToolCallCancellation != nil {
-		fromToolCallCancellation, err = liveServerToolCallCancellationFromVertex(fromToolCallCancellation.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"toolCallCancellation"}, fromToolCallCancellation)
 	}
 
@@ -1616,241 +803,12 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 
 	fromGoAway := getValueByPath(fromObject, []string{"goAway"})
 	if fromGoAway != nil {
-		fromGoAway, err = liveServerGoAwayFromVertex(fromGoAway.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"goAway"}, fromGoAway)
 	}
 
 	fromSessionResumptionUpdate := getValueByPath(fromObject, []string{"sessionResumptionUpdate"})
 	if fromSessionResumptionUpdate != nil {
-		fromSessionResumptionUpdate, err = liveServerSessionResumptionUpdateFromVertex(fromSessionResumptionUpdate.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"sessionResumptionUpdate"}, fromSessionResumptionUpdate)
-	}
-
-	return toObject, nil
-}
-
-func liveServerSessionResumptionUpdateFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromNewHandle := getValueByPath(fromObject, []string{"newHandle"})
-	if fromNewHandle != nil {
-		setValueByPath(toObject, []string{"newHandle"}, fromNewHandle)
-	}
-
-	fromResumable := getValueByPath(fromObject, []string{"resumable"})
-	if fromResumable != nil {
-		setValueByPath(toObject, []string{"resumable"}, fromResumable)
-	}
-
-	fromLastConsumedClientMessageIndex := getValueByPath(fromObject, []string{"lastConsumedClientMessageIndex"})
-	if fromLastConsumedClientMessageIndex != nil {
-		setValueByPath(toObject, []string{"lastConsumedClientMessageIndex"}, fromLastConsumedClientMessageIndex)
-	}
-
-	return toObject, nil
-}
-
-func liveServerSessionResumptionUpdateFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromNewHandle := getValueByPath(fromObject, []string{"newHandle"})
-	if fromNewHandle != nil {
-		setValueByPath(toObject, []string{"newHandle"}, fromNewHandle)
-	}
-
-	fromResumable := getValueByPath(fromObject, []string{"resumable"})
-	if fromResumable != nil {
-		setValueByPath(toObject, []string{"resumable"}, fromResumable)
-	}
-
-	fromLastConsumedClientMessageIndex := getValueByPath(fromObject, []string{"lastConsumedClientMessageIndex"})
-	if fromLastConsumedClientMessageIndex != nil {
-		setValueByPath(toObject, []string{"lastConsumedClientMessageIndex"}, fromLastConsumedClientMessageIndex)
-	}
-
-	return toObject, nil
-}
-
-func liveServerSetupCompleteFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	return toObject, nil
-}
-
-func liveServerSetupCompleteFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromSessionId := getValueByPath(fromObject, []string{"sessionId"})
-	if fromSessionId != nil {
-		setValueByPath(toObject, []string{"sessionId"}, fromSessionId)
-	}
-
-	return toObject, nil
-}
-
-func liveServerToolCallCancellationFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromIds := getValueByPath(fromObject, []string{"ids"})
-	if fromIds != nil {
-		setValueByPath(toObject, []string{"ids"}, fromIds)
-	}
-
-	return toObject, nil
-}
-
-func liveServerToolCallCancellationFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromIds := getValueByPath(fromObject, []string{"ids"})
-	if fromIds != nil {
-		setValueByPath(toObject, []string{"ids"}, fromIds)
-	}
-
-	return toObject, nil
-}
-
-func liveServerToolCallFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromFunctionCalls := getValueByPath(fromObject, []string{"functionCalls"})
-	if fromFunctionCalls != nil {
-		fromFunctionCalls, err = applyConverterToSlice(fromFunctionCalls.([]any), functionCallFromMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"functionCalls"}, fromFunctionCalls)
-	}
-
-	return toObject, nil
-}
-
-func liveServerToolCallFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromFunctionCalls := getValueByPath(fromObject, []string{"functionCalls"})
-	if fromFunctionCalls != nil {
-		fromFunctionCalls, err = applyConverterToSlice(fromFunctionCalls.([]any), functionCallFromVertex)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"functionCalls"}, fromFunctionCalls)
-	}
-
-	return toObject, nil
-}
-
-func modalityTokenCountFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromModality := getValueByPath(fromObject, []string{"modality"})
-	if fromModality != nil {
-		setValueByPath(toObject, []string{"modality"}, fromModality)
-	}
-
-	fromTokenCount := getValueByPath(fromObject, []string{"tokenCount"})
-	if fromTokenCount != nil {
-		setValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
-	}
-
-	return toObject, nil
-}
-
-func modalityTokenCountFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromModality := getValueByPath(fromObject, []string{"modality"})
-	if fromModality != nil {
-		setValueByPath(toObject, []string{"modality"}, fromModality)
-	}
-
-	fromTokenCount := getValueByPath(fromObject, []string{"tokenCount"})
-	if fromTokenCount != nil {
-		setValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
-	}
-
-	return toObject, nil
-}
-
-func proactivityConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromProactiveAudio := getValueByPath(fromObject, []string{"proactiveAudio"})
-	if fromProactiveAudio != nil {
-		setValueByPath(toObject, []string{"proactiveAudio"}, fromProactiveAudio)
-	}
-
-	return toObject, nil
-}
-
-func proactivityConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromProactiveAudio := getValueByPath(fromObject, []string{"proactiveAudio"})
-	if fromProactiveAudio != nil {
-		setValueByPath(toObject, []string{"proactiveAudio"}, fromProactiveAudio)
-	}
-
-	return toObject, nil
-}
-
-func realtimeInputConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromAutomaticActivityDetection := getValueByPath(fromObject, []string{"automaticActivityDetection"})
-	if fromAutomaticActivityDetection != nil {
-		fromAutomaticActivityDetection, err = automaticActivityDetectionToMldev(fromAutomaticActivityDetection.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"automaticActivityDetection"}, fromAutomaticActivityDetection)
-	}
-
-	fromActivityHandling := getValueByPath(fromObject, []string{"activityHandling"})
-	if fromActivityHandling != nil {
-		setValueByPath(toObject, []string{"activityHandling"}, fromActivityHandling)
-	}
-
-	fromTurnCoverage := getValueByPath(fromObject, []string{"turnCoverage"})
-	if fromTurnCoverage != nil {
-		setValueByPath(toObject, []string{"turnCoverage"}, fromTurnCoverage)
-	}
-
-	return toObject, nil
-}
-
-func realtimeInputConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromAutomaticActivityDetection := getValueByPath(fromObject, []string{"automaticActivityDetection"})
-	if fromAutomaticActivityDetection != nil {
-		fromAutomaticActivityDetection, err = automaticActivityDetectionToVertex(fromAutomaticActivityDetection.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"automaticActivityDetection"}, fromAutomaticActivityDetection)
-	}
-
-	fromActivityHandling := getValueByPath(fromObject, []string{"activityHandling"})
-	if fromActivityHandling != nil {
-		setValueByPath(toObject, []string{"activityHandling"}, fromActivityHandling)
-	}
-
-	fromTurnCoverage := getValueByPath(fromObject, []string{"turnCoverage"})
-	if fromTurnCoverage != nil {
-		setValueByPath(toObject, []string{"turnCoverage"}, fromTurnCoverage)
 	}
 
 	return toObject, nil
@@ -1866,152 +824,6 @@ func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[
 
 	if getValueByPath(fromObject, []string{"transparent"}) != nil {
 		return nil, fmt.Errorf("transparent parameter is not supported in Gemini API")
-	}
-
-	return toObject, nil
-}
-
-func sessionResumptionConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromHandle := getValueByPath(fromObject, []string{"handle"})
-	if fromHandle != nil {
-		setValueByPath(toObject, []string{"handle"}, fromHandle)
-	}
-
-	fromTransparent := getValueByPath(fromObject, []string{"transparent"})
-	if fromTransparent != nil {
-		setValueByPath(toObject, []string{"transparent"}, fromTransparent)
-	}
-
-	return toObject, nil
-}
-
-func slidingWindowToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTargetTokens := getValueByPath(fromObject, []string{"targetTokens"})
-	if fromTargetTokens != nil {
-		setValueByPath(toObject, []string{"targetTokens"}, fromTargetTokens)
-	}
-
-	return toObject, nil
-}
-
-func slidingWindowToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTargetTokens := getValueByPath(fromObject, []string{"targetTokens"})
-	if fromTargetTokens != nil {
-		setValueByPath(toObject, []string{"targetTokens"}, fromTargetTokens)
-	}
-
-	return toObject, nil
-}
-
-func transcriptionFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromText := getValueByPath(fromObject, []string{"text"})
-	if fromText != nil {
-		setValueByPath(toObject, []string{"text"}, fromText)
-	}
-
-	fromFinished := getValueByPath(fromObject, []string{"finished"})
-	if fromFinished != nil {
-		setValueByPath(toObject, []string{"finished"}, fromFinished)
-	}
-
-	return toObject, nil
-}
-
-func transcriptionFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromText := getValueByPath(fromObject, []string{"text"})
-	if fromText != nil {
-		setValueByPath(toObject, []string{"text"}, fromText)
-	}
-
-	fromFinished := getValueByPath(fromObject, []string{"finished"})
-	if fromFinished != nil {
-		setValueByPath(toObject, []string{"finished"}, fromFinished)
-	}
-
-	return toObject, nil
-}
-
-func usageMetadataFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromPromptTokenCount := getValueByPath(fromObject, []string{"promptTokenCount"})
-	if fromPromptTokenCount != nil {
-		setValueByPath(toObject, []string{"promptTokenCount"}, fromPromptTokenCount)
-	}
-
-	fromCachedContentTokenCount := getValueByPath(fromObject, []string{"cachedContentTokenCount"})
-	if fromCachedContentTokenCount != nil {
-		setValueByPath(toObject, []string{"cachedContentTokenCount"}, fromCachedContentTokenCount)
-	}
-
-	fromResponseTokenCount := getValueByPath(fromObject, []string{"responseTokenCount"})
-	if fromResponseTokenCount != nil {
-		setValueByPath(toObject, []string{"responseTokenCount"}, fromResponseTokenCount)
-	}
-
-	fromToolUsePromptTokenCount := getValueByPath(fromObject, []string{"toolUsePromptTokenCount"})
-	if fromToolUsePromptTokenCount != nil {
-		setValueByPath(toObject, []string{"toolUsePromptTokenCount"}, fromToolUsePromptTokenCount)
-	}
-
-	fromThoughtsTokenCount := getValueByPath(fromObject, []string{"thoughtsTokenCount"})
-	if fromThoughtsTokenCount != nil {
-		setValueByPath(toObject, []string{"thoughtsTokenCount"}, fromThoughtsTokenCount)
-	}
-
-	fromTotalTokenCount := getValueByPath(fromObject, []string{"totalTokenCount"})
-	if fromTotalTokenCount != nil {
-		setValueByPath(toObject, []string{"totalTokenCount"}, fromTotalTokenCount)
-	}
-
-	fromPromptTokensDetails := getValueByPath(fromObject, []string{"promptTokensDetails"})
-	if fromPromptTokensDetails != nil {
-		fromPromptTokensDetails, err = applyConverterToSlice(fromPromptTokensDetails.([]any), modalityTokenCountFromMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"promptTokensDetails"}, fromPromptTokensDetails)
-	}
-
-	fromCacheTokensDetails := getValueByPath(fromObject, []string{"cacheTokensDetails"})
-	if fromCacheTokensDetails != nil {
-		fromCacheTokensDetails, err = applyConverterToSlice(fromCacheTokensDetails.([]any), modalityTokenCountFromMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"cacheTokensDetails"}, fromCacheTokensDetails)
-	}
-
-	fromResponseTokensDetails := getValueByPath(fromObject, []string{"responseTokensDetails"})
-	if fromResponseTokensDetails != nil {
-		fromResponseTokensDetails, err = applyConverterToSlice(fromResponseTokensDetails.([]any), modalityTokenCountFromMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"responseTokensDetails"}, fromResponseTokensDetails)
-	}
-
-	fromToolUsePromptTokensDetails := getValueByPath(fromObject, []string{"toolUsePromptTokensDetails"})
-	if fromToolUsePromptTokensDetails != nil {
-		fromToolUsePromptTokensDetails, err = applyConverterToSlice(fromToolUsePromptTokensDetails.([]any), modalityTokenCountFromMldev)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"toolUsePromptTokensDetails"}, fromToolUsePromptTokensDetails)
 	}
 
 	return toObject, nil
@@ -2052,41 +864,21 @@ func usageMetadataFromVertex(fromObject map[string]any, parentObject map[string]
 
 	fromPromptTokensDetails := getValueByPath(fromObject, []string{"promptTokensDetails"})
 	if fromPromptTokensDetails != nil {
-		fromPromptTokensDetails, err = applyConverterToSlice(fromPromptTokensDetails.([]any), modalityTokenCountFromVertex)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"promptTokensDetails"}, fromPromptTokensDetails)
 	}
 
 	fromCacheTokensDetails := getValueByPath(fromObject, []string{"cacheTokensDetails"})
 	if fromCacheTokensDetails != nil {
-		fromCacheTokensDetails, err = applyConverterToSlice(fromCacheTokensDetails.([]any), modalityTokenCountFromVertex)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"cacheTokensDetails"}, fromCacheTokensDetails)
 	}
 
 	fromResponseTokensDetails := getValueByPath(fromObject, []string{"candidatesTokensDetails"})
 	if fromResponseTokensDetails != nil {
-		fromResponseTokensDetails, err = applyConverterToSlice(fromResponseTokensDetails.([]any), modalityTokenCountFromVertex)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"responseTokensDetails"}, fromResponseTokensDetails)
 	}
 
 	fromToolUsePromptTokensDetails := getValueByPath(fromObject, []string{"toolUsePromptTokensDetails"})
 	if fromToolUsePromptTokensDetails != nil {
-		fromToolUsePromptTokensDetails, err = applyConverterToSlice(fromToolUsePromptTokensDetails.([]any), modalityTokenCountFromVertex)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"toolUsePromptTokensDetails"}, fromToolUsePromptTokensDetails)
 	}
 

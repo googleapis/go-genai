@@ -374,32 +374,6 @@ func listTuningJobsResponseFromVertex(fromObject map[string]any, parentObject ma
 	return toObject, nil
 }
 
-func tunedModelCheckpointFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromCheckpointId := getValueByPath(fromObject, []string{"checkpointId"})
-	if fromCheckpointId != nil {
-		setValueByPath(toObject, []string{"checkpointId"}, fromCheckpointId)
-	}
-
-	fromEpoch := getValueByPath(fromObject, []string{"epoch"})
-	if fromEpoch != nil {
-		setValueByPath(toObject, []string{"epoch"}, fromEpoch)
-	}
-
-	fromStep := getValueByPath(fromObject, []string{"step"})
-	if fromStep != nil {
-		setValueByPath(toObject, []string{"step"}, fromStep)
-	}
-
-	fromEndpoint := getValueByPath(fromObject, []string{"endpoint"})
-	if fromEndpoint != nil {
-		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
-	}
-
-	return toObject, nil
-}
-
 func tunedModelFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -411,32 +385,6 @@ func tunedModelFromMldev(fromObject map[string]any, parentObject map[string]any)
 	fromEndpoint := getValueByPath(fromObject, []string{"name"})
 	if fromEndpoint != nil {
 		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
-	}
-
-	return toObject, nil
-}
-
-func tunedModelFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromModel := getValueByPath(fromObject, []string{"model"})
-	if fromModel != nil {
-		setValueByPath(toObject, []string{"model"}, fromModel)
-	}
-
-	fromEndpoint := getValueByPath(fromObject, []string{"endpoint"})
-	if fromEndpoint != nil {
-		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
-	}
-
-	fromCheckpoints := getValueByPath(fromObject, []string{"checkpoints"})
-	if fromCheckpoints != nil {
-		fromCheckpoints, err = applyConverterToSlice(fromCheckpoints.([]any), tunedModelCheckpointFromVertex)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"checkpoints"}, fromCheckpoints)
 	}
 
 	return toObject, nil
@@ -454,11 +402,6 @@ func tuningDatasetToMldev(fromObject map[string]any, parentObject map[string]any
 
 	fromExamples := getValueByPath(fromObject, []string{"examples"})
 	if fromExamples != nil {
-		fromExamples, err = applyConverterToSlice(fromExamples.([]any), tuningExampleToMldev)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"examples", "examples"}, fromExamples)
 	}
 
@@ -480,22 +423,6 @@ func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]an
 
 	if getValueByPath(fromObject, []string{"examples"}) != nil {
 		return nil, fmt.Errorf("examples parameter is not supported in Vertex AI")
-	}
-
-	return toObject, nil
-}
-
-func tuningExampleToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromTextInput := getValueByPath(fromObject, []string{"textInput"})
-	if fromTextInput != nil {
-		setValueByPath(toObject, []string{"textInput"}, fromTextInput)
-	}
-
-	fromOutput := getValueByPath(fromObject, []string{"output"})
-	if fromOutput != nil {
-		setValueByPath(toObject, []string{"output"}, fromOutput)
 	}
 
 	return toObject, nil
@@ -667,11 +594,6 @@ func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any)
 
 	fromTunedModel := getValueByPath(fromObject, []string{"tunedModel"})
 	if fromTunedModel != nil {
-		fromTunedModel, err = tunedModelFromVertex(fromTunedModel.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"tunedModel"}, fromTunedModel)
 	}
 
@@ -851,7 +773,9 @@ func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfi
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -920,7 +844,9 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1052,7 +978,9 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1122,7 +1050,9 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

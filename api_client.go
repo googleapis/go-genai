@@ -490,7 +490,14 @@ func newAPIError(resp *http.Response) error {
 			// Handle plain text error message. File upload backend doesn't return json error message.
 			return APIError{Code: resp.StatusCode, Status: resp.Status, Message: string(body)}
 		}
-		return *respWithError.ErrorInfo
+
+		// Check if we successfully parsed an error response
+		if respWithError.ErrorInfo != nil {
+			return *respWithError.ErrorInfo
+		}
+
+		// Valid JSON but no error field - treat as generic error with body content
+		return APIError{Code: resp.StatusCode, Status: resp.Status, Message: string(body)}
 	}
 	return APIError{Code: resp.StatusCode, Status: resp.Status}
 }

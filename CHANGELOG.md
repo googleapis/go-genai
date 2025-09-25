@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.26.0](https://github.com/googleapis/go-genai/compare/v1.25.0...v1.26.0) (2025-09-25)
+
+
+### Features
+
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([8b97cef](https://github.com/googleapis/go-genai/commit/8b97cefe4683fdba3be021d8c7025b46c5327a42))
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([ca376d1](https://github.com/googleapis/go-genai/commit/ca376d103ecf0895af4ec459c0b07f3434c922ba))
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([ba5c383](https://github.com/googleapis/go-genai/commit/ba5c3834d2489db981fc70ca7c8d2922d3dc3c11))
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([a075d35](https://github.com/googleapis/go-genai/commit/a075d35ad44a2c2399578bc1f165443f990c98b2))
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([f9db3b1](https://github.com/googleapis/go-genai/commit/f9db3b1bce6441f44222a04eaed992fa12d6b45b))
+* Support Imagen 4 Ingredients on Vertex ([a9ab364](https://github.com/googleapis/go-genai/commit/a9ab364b51b120b119abf62f6bb6aecc32684775))
+
+
+### Bug Fixes
+
+* Expose `JOB_STATE_RUNNING` and `JOB_STATE_EXPIRED` for Gemini Batches states ([26e0182](https://github.com/googleapis/go-genai/commit/26e01826137144aaaa0035600eb28c6b194283ab))
+* fix systemInstruction mapping issue in batch generate content. fixes [#505](https://github.com/googleapis/go-genai/issues/505) ([3997ea2](https://github.com/googleapis/go-genai/commit/3997ea21bb6447848980037eb3d269f4bf7eacda))
+* initialization of `pre_tuned_model_checkpoint_id` from tuning config. ([b093bcf](https://github.com/googleapis/go-genai/commit/b093bcf876c8e84fe5675373e4485554aa3015a7))
+* Prevent adding `,string` JSON tag for `int64`/`uint64` fields in `Schema` class. fixes [#511](https://github.com/googleapis/go-genai/issues/511) [#481](https://github.com/googleapis/go-genai/issues/481) ([3423dd3](https://github.com/googleapis/go-genai/commit/3423dd359db32d55c7e91008f7a5475cc1eb790c))
+
 ## [1.25.0](https://github.com/googleapis/go-genai/compare/v1.24.0...v1.25.0) (2025-09-16)
 
 

@@ -6,10 +6,6 @@
 ### Features
 
 * Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([8b97cef](https://github.com/googleapis/go-genai/commit/8b97cefe4683fdba3be021d8c7025b46c5327a42))
-* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([ca376d1](https://github.com/googleapis/go-genai/commit/ca376d103ecf0895af4ec459c0b07f3434c922ba))
-* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([ba5c383](https://github.com/googleapis/go-genai/commit/ba5c3834d2489db981fc70ca7c8d2922d3dc3c11))
-* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([a075d35](https://github.com/googleapis/go-genai/commit/a075d35ad44a2c2399578bc1f165443f990c98b2))
-* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([f9db3b1](https://github.com/googleapis/go-genai/commit/f9db3b1bce6441f44222a04eaed992fa12d6b45b))
 * Support Imagen 4 Ingredients on Vertex ([a9ab364](https://github.com/googleapis/go-genai/commit/a9ab364b51b120b119abf62f6bb6aecc32684775))
 
 

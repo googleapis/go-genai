@@ -126,7 +126,9 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +208,9 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

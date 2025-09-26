@@ -37,7 +37,7 @@ func run(ctx context.Context) {
 	} else {
 		fmt.Println("Calling GeminiAI.GenerateContentStream API...")
 	}
-	var config *genai.GenerateContentConfig = &genai.GenerateContentConfig{SystemInstruction: &genai.Content{Parts: []*genai.Part{&genai.Part{Text: "You are a story writer."}}}}
+	var config *genai.GenerateContentConfig = &genai.GenerateContentConfig{SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: "You are a story writer."}}}}
 	// Call the GenerateContent method.
 	for result, err := range client.Models.GenerateContentStream(ctx, *model, genai.Text("Tell me a story in 300 words."), config) {
 		if err != nil {

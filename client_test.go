@@ -28,7 +28,6 @@ import (
 
 // TestNewClient only runs in replay mode.
 func TestNewClient(t *testing.T) {
-
 	ctx := context.Background()
 	t.Run("VertexAI with default credentials", func(t *testing.T) {
 		// Needed for account default credential.
@@ -85,7 +84,8 @@ func TestNewClient(t *testing.T) {
 		})
 
 		t.Run("Explicit project and location takes precedence over project and location from environment when set VertexAI", func(t *testing.T) {
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Project: "constructor-project", Location: "constructor-location",
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendVertexAI, Project: "constructor-project", Location: "constructor-location",
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_CLOUD_PROJECT":  "env-project-id",
@@ -113,7 +113,8 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("API key from config when set VertexAI", func(t *testing.T) {
 			apiKey := "test-api-key-constructor"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, APIKey: apiKey,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendVertexAI, APIKey: apiKey,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY": "test-api-key-env",
@@ -139,7 +140,8 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("API key from environment when set VertexAI", func(t *testing.T) {
 			apiKey := "test-api-key-env"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendVertexAI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY": apiKey,
@@ -165,7 +167,8 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("Project from environment", func(t *testing.T) {
 			projectID := "test-project-env"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Location: "test-location",
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendVertexAI, Location: "test-location",
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_CLOUD_PROJECT": projectID,
@@ -182,7 +185,8 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("Location from GOOGLE_CLOUD_REGION environment", func(t *testing.T) {
 			location := "test-region-env"
-			client, err := NewClient(ctx, &ClientConfig{Project: "test-project", Backend: BackendVertexAI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Project: "test-project", Backend: BackendVertexAI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_CLOUD_REGION": location,
@@ -199,12 +203,14 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("Location from GOOGLE_CLOUD_LOCATION environment", func(t *testing.T) {
 			location := "test-location-env"
-			client, err := NewClient(ctx, &ClientConfig{Project: "test-project", Backend: BackendVertexAI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Project: "test-project", Backend: BackendVertexAI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_CLOUD_LOCATION": location,
 					}
-				}})
+				},
+			})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
@@ -214,7 +220,8 @@ func TestNewClient(t *testing.T) {
 		})
 
 		t.Run("VertexAI set from environment", func(t *testing.T) {
-			client, err := NewClient(ctx, &ClientConfig{Project: "test-project", Location: "test-location",
+			client, err := NewClient(ctx, &ClientConfig{
+				Project: "test-project", Location: "test-location",
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_GENAI_USE_VERTEXAI": "true",
@@ -230,7 +237,8 @@ func TestNewClient(t *testing.T) {
 		})
 
 		t.Run("VertexAI false from environment", func(t *testing.T) {
-			client, err := NewClient(ctx, &ClientConfig{APIKey: "test-api-key",
+			client, err := NewClient(ctx, &ClientConfig{
+				APIKey: "test-api-key",
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_GENAI_USE_VERTEXAI": "false",
@@ -246,7 +254,8 @@ func TestNewClient(t *testing.T) {
 		})
 
 		t.Run("VertexAI from config", func(t *testing.T) {
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Project: "test-project", Location: "test-location",
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendVertexAI, Project: "test-project", Location: "test-location",
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_GENAI_USE_VERTEXAI": "false",
@@ -262,7 +271,8 @@ func TestNewClient(t *testing.T) {
 		})
 
 		t.Run("VertexAI is unset from config and environment is false", func(t *testing.T) {
-			client, err := NewClient(ctx, &ClientConfig{APIKey: "test-api-key",
+			client, err := NewClient(ctx, &ClientConfig{
+				APIKey: "test-api-key",
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_GENAI_USE_VERTEXAI": "false",
@@ -278,7 +288,8 @@ func TestNewClient(t *testing.T) {
 		})
 
 		t.Run("VertexAI is unset from config but environment is true", func(t *testing.T) {
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI, APIKey: "test-api-key",
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendGeminiAPI, APIKey: "test-api-key",
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_GENAI_USE_VERTEXAI": "true",
@@ -296,7 +307,8 @@ func TestNewClient(t *testing.T) {
 		t.Run("API key from constructor takes precedence over proj/location from environment", func(t *testing.T) {
 			// Vertex AI API key combo 1
 			apiKey := "vertexai-api-key"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, APIKey: apiKey,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendVertexAI, APIKey: apiKey,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY":        "",
@@ -331,7 +343,8 @@ func TestNewClient(t *testing.T) {
 			// Vertex AI API key combo 2
 			project := "test-project"
 			location := "test-location"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Project: project, Location: location,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendVertexAI, Project: project, Location: location,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY":        "vertexai-api-key-env",
@@ -366,7 +379,8 @@ func TestNewClient(t *testing.T) {
 			// Vertex AI API key combo 3
 			project := "test-project-env"
 			location := "test-location-env"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendVertexAI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY":        "vertexai-api-key-env",
@@ -399,10 +413,12 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("Base URL from HTTPOptions", func(t *testing.T) {
 			baseURL := "https://test-base-url.com/"
-			client, err := NewClient(ctx, &ClientConfig{Project: "test-project", Location: "test-location", Backend: BackendVertexAI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Project: "test-project", Location: "test-location", Backend: BackendVertexAI,
 				HTTPOptions: HTTPOptions{
 					BaseURL: baseURL,
-				}})
+				},
+			})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
@@ -431,12 +447,14 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("Base URL from environment", func(t *testing.T) {
 			baseURL := "https://test-base-url.com/"
-			client, err := NewClient(ctx, &ClientConfig{Project: "test-project", Location: "test-location", Backend: BackendVertexAI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Project: "test-project", Location: "test-location", Backend: BackendVertexAI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_VERTEX_BASE_URL": baseURL,
 					}
-				}})
+				},
+			})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
@@ -469,7 +487,8 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("API Key from config", func(t *testing.T) {
 			apiKey := "test-constructor-api-key"
-			client, err := NewClient(ctx, &ClientConfig{APIKey: apiKey,
+			client, err := NewClient(ctx, &ClientConfig{
+				APIKey: apiKey,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY": "test-env-api-key",
@@ -493,7 +512,8 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("API Key from GOOGLE_API_KEY only", func(t *testing.T) {
 			apiKey := "test-api-key-env"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendGeminiAPI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY": apiKey,
@@ -509,7 +529,8 @@ func TestNewClient(t *testing.T) {
 		})
 		t.Run("API Key from GEMINI_API_KEY only", func(t *testing.T) {
 			apiKey := "test-api-key-env"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendGeminiAPI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GEMINI_API_KEY": apiKey,
@@ -526,7 +547,8 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("API Key from GEMINI_API_KEY and GOOGLE_API_KEY as empty string", func(t *testing.T) {
 			apiKey := "test-api-key-env"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendGeminiAPI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY": "",
@@ -545,7 +567,8 @@ func TestNewClient(t *testing.T) {
 		t.Run("API Key both GEMINI_API_KEY and GOOGLE_API_KEY", func(t *testing.T) {
 			geminiAPIKey := "gemini-api-key-env"
 			googleAPIKey := "google-api-key-env"
-			client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI,
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend: BackendGeminiAPI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY": googleAPIKey,
@@ -563,10 +586,12 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("Base URL from HTTPOptions", func(t *testing.T) {
 			baseURL := "https://test-base-url.com/"
-			client, err := NewClient(ctx, &ClientConfig{APIKey: "test-api-key", Backend: BackendGeminiAPI,
+			client, err := NewClient(ctx, &ClientConfig{
+				APIKey: "test-api-key", Backend: BackendGeminiAPI,
 				HTTPOptions: HTTPOptions{
 					BaseURL: baseURL,
-				}})
+				},
+			})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
@@ -595,12 +620,14 @@ func TestNewClient(t *testing.T) {
 
 		t.Run("Base URL from environment", func(t *testing.T) {
 			baseURL := "https://test-base-url.com/"
-			client, err := NewClient(ctx, &ClientConfig{APIKey: "test-api-key", Backend: BackendGeminiAPI,
+			client, err := NewClient(ctx, &ClientConfig{
+				APIKey: "test-api-key", Backend: BackendGeminiAPI,
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_GEMINI_BASE_URL": baseURL,
 					}
-				}})
+				},
+			})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
@@ -690,7 +717,6 @@ func TestNewClient(t *testing.T) {
 			t.Errorf("Models.apiClient.clientConfig mismatch (-want +got):\n%s", diff)
 		}
 	})
-
 }
 
 func TestClientConfigHTTPOptions(t *testing.T) {

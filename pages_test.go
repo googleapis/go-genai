@@ -137,7 +137,5 @@ func TestPageAll(t *testing.T) {
 
 			t.Fatalf("Unexpected error during iteration: %v", err)
 		}
-
 	}
-
 }

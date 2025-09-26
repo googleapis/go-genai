@@ -29,7 +29,7 @@ import (
 var model = flag.String("model", "gemini-2.0-flash", "the model name, e.g. gemini-2.0-flash")
 
 func run(ctx context.Context) {
-	var parameterSchema = map[string]any{
+	parameterSchema := map[string]any{
 		"type": "object",
 		"properties": map[string]any{
 			"brightness": map[string]any{
@@ -44,7 +44,7 @@ func run(ctx context.Context) {
 		"required": []string{"brightness", "colorTemperature"},
 	}
 
-	var tools = []*genai.Tool{
+	tools := []*genai.Tool{
 		{
 			FunctionDeclarations: []*genai.FunctionDeclaration{
 				{

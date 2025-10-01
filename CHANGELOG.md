@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.27.0](https://github.com/googleapis/go-genai/compare/v1.26.0...v1.27.0) (2025-10-01)
+
+
+### Features
+
+* Add `ImageConfig` to `GenerateContentConfig` ([55399fd](https://github.com/googleapis/go-genai/commit/55399fdab38bdf88857ed1a4bc50822780f42520))
+* rename ComputerUse tool (early access) ([d976966](https://github.com/googleapis/go-genai/commit/d9769665237fb266eb0063af26124e7d76557ca4))
+
+
+### Bug Fixes
+
+* fix system_instruction mapping issue in batches module ([c862a6d](https://github.com/googleapis/go-genai/commit/c862a6de5307a363478bee210d73c6f1e3199d8b))
+
 ## [1.26.0](https://github.com/googleapis/go-genai/compare/v1.25.0...v1.26.0) (2025-09-25)
 
 

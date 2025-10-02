@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.0](https://github.com/googleapis/go-genai/compare/v1.27.0...v1.28.0) (2025-10-02)
+
+
+### Features
+
+* Add `NO_IMAGE` enum value to `FinishReason` ([4f65f45](https://github.com/googleapis/go-genai/commit/4f65f457b41b112312dc3fa771ee61ef4692b402))
+* Add thinking_config for live ([54152b2](https://github.com/googleapis/go-genai/commit/54152b2e6509b1a6fea20df829e366e388bfe6fc))
+
 ## [1.27.0](https://github.com/googleapis/go-genai/compare/v1.26.0...v1.27.0) (2025-10-01)
 
 

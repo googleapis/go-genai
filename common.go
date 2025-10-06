@@ -144,8 +144,17 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 			log.Println("Error. Cannot set value for an existing key. Key: ", finalKey, "; Existing value: ", existingValue, "; New value: ", value)
 		}
 	} else {
-		// If existing_data is None (or key doesn't exist), set the value directly.
-		data[finalKey] = value
+		if finalKey == "_self" && reflect.TypeOf(value).Kind() == reflect.Map {
+			// Iterate through the `value` map and copy its contents to `data`.
+			if valMap, ok := value.(map[string]any); ok {
+				for k, v := range valMap {
+					data[k] = v
+				}
+			}
+		} else {
+			// If existing_data is None (or key doesn't exist), set the value directly.
+			data[finalKey] = value
+		}
 	}
 }
 
@@ -167,6 +176,7 @@ func getValueByPath(data any, keys []string) any {
 	var current any = data
 	for i, key := range keys {
 		if strings.HasSuffix(key, "[]") {
+
 			keyName := key[:len(key)-2]
 			switch v := current.(type) {
 			case map[string]any:
@@ -199,6 +209,62 @@ func getValueByPath(data any, keys []string) any {
 				return nil
 			}
 		}
+	}
+	return current
+}
+
+// getValueByPathOrDefault retrieves a value from a nested map or slice or struct based on a path of
+// keys, or returns a default value.
+func getValueByPathOrDefault(data any, keys []string, defaultValue any) any {
+	if len(keys) == 1 && keys[0] == "_self" {
+		return data
+	}
+	if len(keys) == 0 {
+		return defaultValue
+	}
+	var current any = data
+	for i, key := range keys {
+		if strings.HasSuffix(key, "[]") {
+
+			keyName := key[:len(key)-2]
+			switch v := current.(type) {
+			case map[string]any:
+				if sliceData, ok := v[keyName]; ok {
+					var result []any
+					switch concreteSliceData := sliceData.(type) {
+					case []map[string]any:
+						for _, d := range concreteSliceData {
+							result = append(result, getValueByPathOrDefault(d, keys[i+1:], defaultValue))
+						}
+					case []any:
+						for _, d := range concreteSliceData {
+							result = append(result, getValueByPathOrDefault(d, keys[i+1:], defaultValue))
+						}
+					default:
+						return defaultValue
+					}
+					return result
+				} else {
+					return defaultValue
+				}
+			default:
+				return defaultValue
+			}
+		} else {
+			switch v := current.(type) {
+			case map[string]any:
+				var ok bool
+				current, ok = v[key]
+				if !ok {
+					return defaultValue
+				}
+			default:
+				return defaultValue
+			}
+		}
+	}
+	if current == nil {
+		return defaultValue
 	}
 	return current
 }

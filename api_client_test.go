@@ -447,7 +447,7 @@ func TestSendStreamRequest(t *testing.T) {
 				BaseURL: "invalid-url",
 			},
 			wantErr:          true,
-			wantErrorMessage: "doRequest: error sending request: Post \"invalid-url//test\": unsupported protocol scheme",
+			wantErrorMessage: "doRequest: error sending request: Post \"invalid-url/test\": unsupported protocol scheme",
 		},
 		{
 			name:           "With client timeout",
@@ -952,7 +952,7 @@ func TestBuildRequest(t *testing.T) {
 				APIVersion: "v1beta",
 			},
 			wantErr:       true,
-			expectedError: "createAPIURL: error parsing ML Dev URL",
+			expectedError: "createAPIURL: error parsing base URL: parse \":invalid\": missing protocol scheme",
 		},
 		{
 			name: "Invalid json",

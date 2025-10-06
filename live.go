@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 
 	"github.com/gorilla/websocket"
 )
@@ -78,7 +79,7 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 		u = url.URL{
 			Scheme: scheme,
 			Host:   baseURL.Host,
-			Path:   fmt.Sprintf("%s/ws/google.cloud.aiplatform.%s.LlmBidiService/BidiGenerateContent", baseURL.Path, httpOptions.APIVersion),
+			Path:   path.Join(baseURL.Path, fmt.Sprintf("ws/google.cloud.aiplatform.%s.LlmBidiService/BidiGenerateContent", httpOptions.APIVersion)),
 		}
 	} else {
 		apiKey := r.apiClient.clientConfig.APIKey
@@ -88,7 +89,7 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 		u = url.URL{
 			Scheme: scheme,
 			Host:   baseURL.Host,
-			Path:   fmt.Sprintf("%s/ws/google.ai.generativelanguage.%s.GenerativeService.BidiGenerateContent", baseURL.Path, httpOptions.APIVersion),
+			Path:   path.Join(baseURL.Path, fmt.Sprintf("ws/google.ai.generativelanguage.%s.GenerativeService.BidiGenerateContent", httpOptions.APIVersion)),
 		}
 	}
 
@@ -282,10 +283,10 @@ func (s *Session) Receive() (*LiveServerMessage, error) {
 	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
 	if s.apiClient.clientConfig.Backend == BackendVertexAI {
 		fromConverter = liveServerMessageFromVertex
-	} else {
-		fromConverter = liveServerMessageFromMldev
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

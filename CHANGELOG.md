@@ -1,5 +1,108 @@
 # Changelog
 
+## [1.28.0](https://github.com/googleapis/go-genai/compare/v1.27.0...v1.28.0) (2025-10-02)
+
+
+### Features
+
+* Add `NO_IMAGE` enum value to `FinishReason` ([4f65f45](https://github.com/googleapis/go-genai/commit/4f65f457b41b112312dc3fa771ee61ef4692b402))
+* Add thinking_config for live ([54152b2](https://github.com/googleapis/go-genai/commit/54152b2e6509b1a6fea20df829e366e388bfe6fc))
+
+## [1.27.0](https://github.com/googleapis/go-genai/compare/v1.26.0...v1.27.0) (2025-10-01)
+
+
+### Features
+
+* Add `ImageConfig` to `GenerateContentConfig` ([55399fd](https://github.com/googleapis/go-genai/commit/55399fdab38bdf88857ed1a4bc50822780f42520))
+* rename ComputerUse tool (early access) ([d976966](https://github.com/googleapis/go-genai/commit/d9769665237fb266eb0063af26124e7d76557ca4))
+
+
+### Bug Fixes
+
+* fix system_instruction mapping issue in batches module ([c862a6d](https://github.com/googleapis/go-genai/commit/c862a6de5307a363478bee210d73c6f1e3199d8b))
+
+## [1.26.0](https://github.com/googleapis/go-genai/compare/v1.25.0...v1.26.0) (2025-09-25)
+
+
+### Features
+
+* Add FunctionResponsePart & ToolComputerUse.excludedPredefinedFunctions ([8b97cef](https://github.com/googleapis/go-genai/commit/8b97cefe4683fdba3be021d8c7025b46c5327a42))
+* Support Imagen 4 Ingredients on Vertex ([a9ab364](https://github.com/googleapis/go-genai/commit/a9ab364b51b120b119abf62f6bb6aecc32684775))
+
+
+### Bug Fixes
+
+* Expose `JOB_STATE_RUNNING` and `JOB_STATE_EXPIRED` for Gemini Batches states ([26e0182](https://github.com/googleapis/go-genai/commit/26e01826137144aaaa0035600eb28c6b194283ab))
+* fix systemInstruction mapping issue in batch generate content. fixes [#505](https://github.com/googleapis/go-genai/issues/505) ([3997ea2](https://github.com/googleapis/go-genai/commit/3997ea21bb6447848980037eb3d269f4bf7eacda))
+* initialization of `pre_tuned_model_checkpoint_id` from tuning config. ([b093bcf](https://github.com/googleapis/go-genai/commit/b093bcf876c8e84fe5675373e4485554aa3015a7))
+* Prevent adding `,string` JSON tag for `int64`/`uint64` fields in `Schema` class. fixes [#511](https://github.com/googleapis/go-genai/issues/511) [#481](https://github.com/googleapis/go-genai/issues/481) ([3423dd3](https://github.com/googleapis/go-genai/commit/3423dd359db32d55c7e91008f7a5475cc1eb790c))
+
+## [1.25.0](https://github.com/googleapis/go-genai/compare/v1.24.0...v1.25.0) (2025-09-16)
+
+
+### Features
+
+* Add 'turn_complete_reason' and 'waiting_for_input' fields. ([2d48288](https://github.com/googleapis/go-genai/commit/2d48288d405b16474011e018cbb10096c5957c93))
+* Add `VideoGenerationMaskMode` enum for Veo 2 Editing ([65f9058](https://github.com/googleapis/go-genai/commit/65f9058b728748bfe8b83d0178300249c3700d10))
+* local tokenizer for text ([ee46a52](https://github.com/googleapis/go-genai/commit/ee46a52de5e0e8678f0be3269de4cf6a60c90696))
+
+## [1.24.0](https://github.com/googleapis/go-genai/compare/v1.23.0...v1.24.0) (2025-09-09)
+
+
+### Features
+
+* [Python] Implement async embedding batches for MLDev. ([f32fb26](https://github.com/googleapis/go-genai/commit/f32fb26a125e0df212c1a27615de4899f4ba791a))
+* Add labels to create tuning job config ([c13a2a5](https://github.com/googleapis/go-genai/commit/c13a2a5f68d867122d2d7e3a7f2b58784c9df20f))
+* generate the function_call class's converters ([995a3ac](https://github.com/googleapis/go-genai/commit/995a3acc0a7bd9bdf3048fb332f23c21a36a2b62))
+* Support Veo 2 Editing on Vertex ([7fd6940](https://github.com/googleapis/go-genai/commit/7fd694074b5488b0eb2d5d0cf2f4e0d75de16533))
+
+
+### Bug Fixes
+
+* Enable `id` field in `FunctionCall` for Vertex AI. ([a3f3c2b](https://github.com/googleapis/go-genai/commit/a3f3c2b37ef065b43cb4ab27f7b60c0c89a8684c))
+
+## [1.23.0](https://github.com/googleapis/go-genai/compare/v1.22.0...v1.23.0) (2025-09-02)
+
+
+### Features
+
+* Add resolution field for Gemini Developer API Veo 3 generation ([b6a989c](https://github.com/googleapis/go-genai/commit/b6a989cdcad0a3f006a1753f6bac5e91df2914ba))
+
+## [1.22.0](https://github.com/googleapis/go-genai/compare/v1.21.0...v1.22.0) (2025-08-27)
+
+
+### Features
+
+* add `sdkHttpResponse.headers` to *Delete responses. ([ac0e763](https://github.com/googleapis/go-genai/commit/ac0e7632e5760378d0751cc8c9224bbd6a1bad0c))
+* Add add_watermark field for recontext_image (Virtual Try-On, Product Recontext) ([07b6f57](https://github.com/googleapis/go-genai/commit/07b6f573b2941fd22e5d68df09610f0d910b3463))
+* Add output_gcs_uri to Imagen upscale_image ([c08d9f3](https://github.com/googleapis/go-genai/commit/c08d9f35c3dce6da9854842926aeec61593ff02a))
+* Add VALIDATED mode into FunctionCallingConfigMode ([c282e79](https://github.com/googleapis/go-genai/commit/c282e79bed1ac0fd60facbffe3dde74b8d240a01))
+* Add VideoGenerationReferenceType enum for generate_videos ([635b825](https://github.com/googleapis/go-genai/commit/635b825bedd2bbe5d2e84eca78e0d3b08eecdc31))
+* refactor Go SDK to use pointers for optional parameters ([3ff328a](https://github.com/googleapis/go-genai/commit/3ff328ac19ce7b4429ce6d75f2fe2d1ffaf37a37))
+* support tunings.cancel in the genai SDK for Python, Java, JS, and Go ([8c46fd2](https://github.com/googleapis/go-genai/commit/8c46fd26e1985f15d510ed0f4d4cefcdd2110af7))
+
+## [1.21.0](https://github.com/googleapis/go-genai/compare/v1.20.0...v1.21.0) (2025-08-18)
+
+
+### Features
+
+* Support Imagen image segmentation on Vertex ([2a38843](https://github.com/googleapis/go-genai/commit/2a388434bc2bd9d564479e1d8db6eb4ffdadcb68))
+* Support Veo 2 Reference Images to Video Generation on Vertex ([9894324](https://github.com/googleapis/go-genai/commit/9894324c30a4a73614f1c4ed9ce9ebf67eb7a5a9))
+
+
+### Bug Fixes
+
+* Add a missing resp.Body.Close() to deserializeStreamResponse. ([bf3fb3f](https://github.com/googleapis/go-genai/commit/bf3fb3f37172fbff4d4045ebe781d8f03f7fb23a))
+
+## [1.20.0](https://github.com/googleapis/go-genai/compare/v1.19.0...v1.20.0) (2025-08-13)
+
+
+### Features
+
+* enable continuous fine-tuning on a pre-tuned model in the SDK. ([1f20493](https://github.com/googleapis/go-genai/commit/1f204939b8d68d8f5c9d739ade69716a03be28f1))
+* support document name in grounding metadata ([f673e20](https://github.com/googleapis/go-genai/commit/f673e200ce5663de3f62b832a4bafc756494da75))
+* Support exclude_domains in Google Search and Enterprise Web Search ([2547ad1](https://github.com/googleapis/go-genai/commit/2547ad1a4f07ac1111b14a6352a64bc4d7bea5a5))
+
 ## [1.19.0](https://github.com/googleapis/go-genai/compare/v1.18.0...v1.19.0) (2025-08-06)
 
 

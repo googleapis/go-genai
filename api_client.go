@@ -131,26 +131,29 @@ func mapToStruct[R any](input map[string]any, output *R) error {
 }
 
 func (ac *apiClient) createAPIURL(suffix, method string, httpOptions *HTTPOptions) (*url.URL, error) {
-	if ac.clientConfig.Backend == BackendVertexAI {
-		queryVertexBaseModel := ac.clientConfig.Backend == BackendVertexAI && method == http.MethodGet && strings.HasPrefix(suffix, "publishers/google/models")
-		if !strings.HasPrefix(suffix, "projects/") && !queryVertexBaseModel {
-			suffix = fmt.Sprintf("projects/%s/locations/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, suffix)
-		}
-		u, err := url.Parse(fmt.Sprintf("%s/%s/%s", httpOptions.BaseURL, httpOptions.APIVersion, suffix))
-		if err != nil {
-			return nil, fmt.Errorf("createAPIURL: error parsing Vertex AI URL: %w", err)
-		}
-		return u, nil
-	} else {
-		if !strings.Contains(suffix, fmt.Sprintf("/%s/", httpOptions.APIVersion)) {
-			suffix = fmt.Sprintf("%s/%s", httpOptions.APIVersion, suffix)
-		}
-		u, err := url.Parse(fmt.Sprintf("%s/%s", httpOptions.BaseURL, suffix))
-		if err != nil {
-			return nil, fmt.Errorf("createAPIURL: error parsing ML Dev URL: %w", err)
-		}
-		return u, nil
+	path, query, _ := strings.Cut(suffix, "?")
+
+	u, err := url.Parse(httpOptions.BaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("createAPIURL: error parsing base URL: %w", err)
 	}
+
+	var finalURL *url.URL
+	if ac.clientConfig.Backend == BackendVertexAI {
+		queryVertexBaseModel := ac.clientConfig.Backend == BackendVertexAI && method == http.MethodGet && strings.HasPrefix(path, "publishers/google/models")
+		if !strings.HasPrefix(path, "projects/") && !queryVertexBaseModel {
+			path = fmt.Sprintf("projects/%s/locations/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, path)
+		}
+		finalURL = u.JoinPath(httpOptions.APIVersion, path)
+	} else {
+		if !strings.Contains(path, fmt.Sprintf("/%s/", httpOptions.APIVersion)) {
+			path = fmt.Sprintf("%s/%s", httpOptions.APIVersion, path)
+		}
+		finalURL = u.JoinPath(path)
+	}
+
+	finalURL.RawQuery = query
+	return finalURL, nil
 }
 
 // patchHTTPOptions merges two HttpOptions objects, creating a new one.
@@ -513,6 +516,7 @@ func httpStatusOk(resp *http.Response) bool {
 
 func deserializeStreamResponse[T responseStream[R], R any](resp *http.Response, output *responseStream[R]) error {
 	if !httpStatusOk(resp) {
+		defer resp.Body.Close()
 		return newAPIError(resp)
 	}
 	output.r = bufio.NewScanner(resp.Body)

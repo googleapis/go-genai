@@ -291,6 +291,25 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 	}
 }
 
+func isConsideredEmpty(v any) bool {
+	if v == nil {
+		return true
+	}
+	val := reflect.ValueOf(v)
+	if val.Kind() == reflect.String && val.String() == "0001-01-01T00:00:00Z" {
+		return true
+	}
+	if val.IsZero() {
+		return true
+	}
+	switch val.Kind() {
+	case reflect.Map, reflect.Slice:
+		return val.Len() == 0
+	}
+
+	return false
+}
+
 // omitEmptyValues recursively traverses the given value and if it is a `map[string]any` or
 // `[]any`, it omits the empty values.
 func omitEmptyValues(v any) {
@@ -299,12 +318,15 @@ func omitEmptyValues(v any) {
 	}
 	switch m := v.(type) {
 	case map[string]any:
-		for k, v := range m {
-			// If the value is empty, delete the key from the map.
-			if reflect.ValueOf(v).IsZero() || v == "0001-01-01T00:00:00Z" {
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+		for _, k := range keys {
+			val := m[k]
+			omitEmptyValues(val)
+			if isConsideredEmpty(val) {
 				delete(m, k)
-			} else {
-				omitEmptyValues(v)
 			}
 		}
 	case []any:
@@ -326,6 +348,10 @@ func convertKeysToCamelCase(v any, parentKey string) any {
 	case map[string]any:
 		newMap := make(map[string]any)
 		for key, value := range m {
+			if parentKey == "args" {
+				newMap[key] = value
+				continue
+			}
 			camelCaseKey := toCamelCase(key)
 			if parentKey == "response" && key == "body_segments" {
 				newMap[camelCaseKey] = value

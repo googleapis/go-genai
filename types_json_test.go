@@ -28,7 +28,7 @@ func TestUnmarshalJSON(t *testing.T) {
 		},
 		{
 			name:    "Schema all fields",
-			jsonStr: `{"maxLength":"10","minLength":"5","minProperties":"2","maxProperties":"4","maxItems":"8","minItems":"1","maximum": 10.0, "minimum": 2.0}`,
+			jsonStr: `{"maxLength":10,"minLength":5,"minProperties":2,"maxProperties":4,"maxItems":8,"minItems":1,"maximum": 10.0, "minimum": 2.0}`,
 			want: &Schema{
 				MaxLength:     Ptr[int64](10),
 				MinLength:     Ptr[int64](5),
@@ -40,13 +40,6 @@ func TestUnmarshalJSON(t *testing.T) {
 				Minimum:       Ptr[float64](2.0),
 			},
 			wantErr: false,
-			target:  "Schema",
-		},
-		{
-			name:    "Schema invalid maxLength",
-			jsonStr: `{"maxLength":"abc"}`,
-			want:    nil,
-			wantErr: true,
 			target:  "Schema",
 		},
 		{
@@ -450,7 +443,7 @@ func TestMarshalJSON(t *testing.T) {
 				Maximum:       Ptr[float64](10.0),
 				Minimum:       Ptr[float64](2.0),
 			},
-			want:    `{"maxItems":"8","maxLength":"10","maxProperties":"4","maximum":10,"minItems":"1","minLength":"5","minProperties":"2","minimum":2}`,
+			want:    `{"maxItems":8,"maxLength":10,"maxProperties":4,"maximum":10,"minItems":1,"minLength":5,"minProperties":2,"minimum":2}`,
 			wantErr: false,
 			target:  "Schema",
 		},

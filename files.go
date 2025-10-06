@@ -29,6 +29,71 @@ import (
 	"strings"
 )
 
+func createFileParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromFile := getValueByPath(fromObject, []string{"file"})
+	if fromFile != nil {
+		setValueByPath(toObject, []string{"file"}, fromFile)
+	}
+
+	return toObject, nil
+}
+
+func createFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
+	return toObject, nil
+}
+
+func deleteFileParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		fromName, err = tFileName(fromName)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "file"}, fromName)
+	}
+
+	return toObject, nil
+}
+
+func deleteFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
+	return toObject, nil
+}
+
+func getFileParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		fromName, err = tFileName(fromName)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"_url", "file"}, fromName)
+	}
+
+	return toObject, nil
+}
+
 func listFilesConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -50,279 +115,10 @@ func listFilesParametersToMldev(fromObject map[string]any, parentObject map[stri
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = listFilesConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = listFilesConfigToMldev(fromConfig.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func fileStatusToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromDetails := getValueByPath(fromObject, []string{"details"})
-	if fromDetails != nil {
-		setValueByPath(toObject, []string{"details"}, fromDetails)
-	}
-
-	fromMessage := getValueByPath(fromObject, []string{"message"})
-	if fromMessage != nil {
-		setValueByPath(toObject, []string{"message"}, fromMessage)
-	}
-
-	fromCode := getValueByPath(fromObject, []string{"code"})
-	if fromCode != nil {
-		setValueByPath(toObject, []string{"code"}, fromCode)
-	}
-
-	return toObject, nil
-}
-
-func fileToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
-	if fromDisplayName != nil {
-		setValueByPath(toObject, []string{"displayName"}, fromDisplayName)
-	}
-
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
-	}
-
-	fromSizeBytes := getValueByPath(fromObject, []string{"sizeBytes"})
-	if fromSizeBytes != nil {
-		setValueByPath(toObject, []string{"sizeBytes"}, fromSizeBytes)
-	}
-
-	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
-	if fromCreateTime != nil {
-		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
-	}
-
-	fromExpirationTime := getValueByPath(fromObject, []string{"expirationTime"})
-	if fromExpirationTime != nil {
-		setValueByPath(toObject, []string{"expirationTime"}, fromExpirationTime)
-	}
-
-	fromUpdateTime := getValueByPath(fromObject, []string{"updateTime"})
-	if fromUpdateTime != nil {
-		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
-	}
-
-	fromSha256Hash := getValueByPath(fromObject, []string{"sha256Hash"})
-	if fromSha256Hash != nil {
-		setValueByPath(toObject, []string{"sha256Hash"}, fromSha256Hash)
-	}
-
-	fromUri := getValueByPath(fromObject, []string{"uri"})
-	if fromUri != nil {
-		setValueByPath(toObject, []string{"uri"}, fromUri)
-	}
-
-	fromDownloadUri := getValueByPath(fromObject, []string{"downloadUri"})
-	if fromDownloadUri != nil {
-		setValueByPath(toObject, []string{"downloadUri"}, fromDownloadUri)
-	}
-
-	fromState := getValueByPath(fromObject, []string{"state"})
-	if fromState != nil {
-		setValueByPath(toObject, []string{"state"}, fromState)
-	}
-
-	fromSource := getValueByPath(fromObject, []string{"source"})
-	if fromSource != nil {
-		setValueByPath(toObject, []string{"source"}, fromSource)
-	}
-
-	fromVideoMetadata := getValueByPath(fromObject, []string{"videoMetadata"})
-	if fromVideoMetadata != nil {
-		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
-	}
-
-	fromError := getValueByPath(fromObject, []string{"error"})
-	if fromError != nil {
-		fromError, err = fileStatusToMldev(fromError.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"error"}, fromError)
-	}
-
-	return toObject, nil
-}
-
-func createFileParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromFile := getValueByPath(fromObject, []string{"file"})
-	if fromFile != nil {
-		fromFile, err = fileToMldev(fromFile.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"file"}, fromFile)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func getFileParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		fromName, err = tFileName(fromName)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"_url", "file"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func deleteFileParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		fromName, err = tFileName(fromName)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"_url", "file"}, fromName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func fileStatusFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromDetails := getValueByPath(fromObject, []string{"details"})
-	if fromDetails != nil {
-		setValueByPath(toObject, []string{"details"}, fromDetails)
-	}
-
-	fromMessage := getValueByPath(fromObject, []string{"message"})
-	if fromMessage != nil {
-		setValueByPath(toObject, []string{"message"}, fromMessage)
-	}
-
-	fromCode := getValueByPath(fromObject, []string{"code"})
-	if fromCode != nil {
-		setValueByPath(toObject, []string{"code"}, fromCode)
-	}
-
-	return toObject, nil
-}
-
-func fileFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
-	if fromDisplayName != nil {
-		setValueByPath(toObject, []string{"displayName"}, fromDisplayName)
-	}
-
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
-	}
-
-	fromSizeBytes := getValueByPath(fromObject, []string{"sizeBytes"})
-	if fromSizeBytes != nil {
-		setValueByPath(toObject, []string{"sizeBytes"}, fromSizeBytes)
-	}
-
-	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
-	if fromCreateTime != nil {
-		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
-	}
-
-	fromExpirationTime := getValueByPath(fromObject, []string{"expirationTime"})
-	if fromExpirationTime != nil {
-		setValueByPath(toObject, []string{"expirationTime"}, fromExpirationTime)
-	}
-
-	fromUpdateTime := getValueByPath(fromObject, []string{"updateTime"})
-	if fromUpdateTime != nil {
-		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
-	}
-
-	fromSha256Hash := getValueByPath(fromObject, []string{"sha256Hash"})
-	if fromSha256Hash != nil {
-		setValueByPath(toObject, []string{"sha256Hash"}, fromSha256Hash)
-	}
-
-	fromUri := getValueByPath(fromObject, []string{"uri"})
-	if fromUri != nil {
-		setValueByPath(toObject, []string{"uri"}, fromUri)
-	}
-
-	fromDownloadUri := getValueByPath(fromObject, []string{"downloadUri"})
-	if fromDownloadUri != nil {
-		setValueByPath(toObject, []string{"downloadUri"}, fromDownloadUri)
-	}
-
-	fromState := getValueByPath(fromObject, []string{"state"})
-	if fromState != nil {
-		setValueByPath(toObject, []string{"state"}, fromState)
-	}
-
-	fromSource := getValueByPath(fromObject, []string{"source"})
-	if fromSource != nil {
-		setValueByPath(toObject, []string{"source"}, fromSource)
-	}
-
-	fromVideoMetadata := getValueByPath(fromObject, []string{"videoMetadata"})
-	if fromVideoMetadata != nil {
-		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
-	}
-
-	fromError := getValueByPath(fromObject, []string{"error"})
-	if fromError != nil {
-		fromError, err = fileStatusFromMldev(fromError.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"error"}, fromError)
 	}
 
 	return toObject, nil
@@ -343,34 +139,7 @@ func listFilesResponseFromMldev(fromObject map[string]any, parentObject map[stri
 
 	fromFiles := getValueByPath(fromObject, []string{"files"})
 	if fromFiles != nil {
-		fromFiles, err = applyConverterToSlice(fromFiles.([]any), fileFromMldev)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"files"}, fromFiles)
-	}
-
-	return toObject, nil
-}
-
-func createFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
-	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
-	}
-
-	return toObject, nil
-}
-
-func deleteFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
-	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	return toObject, nil
@@ -434,15 +203,13 @@ func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesRes
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -508,15 +275,13 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -545,7 +310,6 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 	}
 	var response = new(File)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
@@ -553,7 +317,7 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 
 	} else {
 		toConverter = getFileParametersToMldev
-		fromConverter = fileFromMldev
+
 	}
 
 	body, err := toConverter(parameterMap, nil)
@@ -582,15 +346,10 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -656,15 +415,13 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodDelete, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

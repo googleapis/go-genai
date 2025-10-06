@@ -24,38 +24,6 @@ import (
 	"strings"
 )
 
-func getOperationParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
-	if fromOperationName != nil {
-		setValueByPath(toObject, []string{"_url", "operationName"}, fromOperationName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
-func getOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
-	if fromOperationName != nil {
-		setValueByPath(toObject, []string{"_url", "operationName"}, fromOperationName)
-	}
-
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
-	}
-
-	return toObject, nil
-}
-
 func fetchPredictOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -69,9 +37,26 @@ func fetchPredictOperationParametersToVertex(fromObject map[string]any, parentOb
 		setValueByPath(toObject, []string{"_url", "resourceName"}, fromResourceName)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
-	if fromConfig != nil {
-		setValueByPath(toObject, []string{"config"}, fromConfig)
+	return toObject, nil
+}
+
+func getOperationParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
+	if fromOperationName != nil {
+		setValueByPath(toObject, []string{"_url", "operationName"}, fromOperationName)
+	}
+
+	return toObject, nil
+}
+
+func getOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
+	if fromOperationName != nil {
+		setValueByPath(toObject, []string{"_url", "operationName"}, fromOperationName)
 	}
 
 	return toObject, nil
@@ -137,15 +122,13 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodGet, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -221,15 +204,13 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 		path += "?" + query
 		delete(body, "_query")
 	}
-
-	if _, ok := body["config"]; ok {
-		delete(body, "config")
-	}
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
 		return nil, err
 	}
-	responseMap, err = fromConverter(responseMap, nil)
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil)
+	}
 	if err != nil {
 		return nil, err
 	}

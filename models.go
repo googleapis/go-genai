@@ -1723,12 +1723,24 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		return nil, fmt.Errorf("generateAudio parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"lastFrame"}) != nil {
-		return nil, fmt.Errorf("lastFrame parameter is not supported in Gemini API")
+	fromLastFrame := getValueByPath(fromObject, []string{"lastFrame"})
+	if fromLastFrame != nil {
+		fromLastFrame, err = imageToMldev(fromLastFrame.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
 	}
 
-	if getValueByPath(fromObject, []string{"referenceImages"}) != nil {
-		return nil, fmt.Errorf("referenceImages parameter is not supported in Gemini API")
+	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	if fromReferenceImages != nil {
+		fromReferenceImages, err = applyConverterToSlice(fromReferenceImages.([]any), videoGenerationReferenceImageToMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
 	}
 
 	if getValueByPath(fromObject, []string{"mask"}) != nil {
@@ -1943,8 +1955,14 @@ func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, p
 		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	if getValueByPath(fromObject, []string{"video"}) != nil {
-		return nil, fmt.Errorf("video parameter is not supported in Gemini API")
+	fromVideo := getValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = videoToMldev(fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
 	fromSource := getValueByPath(fromObject, []string{"source"})
@@ -2093,8 +2111,14 @@ func generateVideosSourceToMldev(fromObject map[string]any, parentObject map[str
 		setValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	if getValueByPath(fromObject, []string{"video"}) != nil {
-		return nil, fmt.Errorf("video parameter is not supported in Gemini API")
+	fromVideo := getValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = videoToMldev(fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
 	return toObject, nil
@@ -3675,6 +3699,27 @@ func videoGenerationMaskToVertex(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
+func videoGenerationReferenceImageToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToMldev(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"image"}, fromImage)
+	}
+
+	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
+	if fromReferenceType != nil {
+		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+	}
+
+	return toObject, nil
+}
+
 func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3691,6 +3736,32 @@ func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObje
 	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
 	if fromReferenceType != nil {
 		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+	}
+
+	return toObject, nil
+}
+
+func videoToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromUri := getValueByPath(fromObject, []string{"uri"})
+	if fromUri != nil {
+		setValueByPath(toObject, []string{"video", "uri"}, fromUri)
+	}
+
+	fromVideoBytes := getValueByPath(fromObject, []string{"videoBytes"})
+	if fromVideoBytes != nil {
+		fromVideoBytes, err = tBytes(fromVideoBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"video", "encodedVideo"}, fromVideoBytes)
+	}
+
+	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"encoding"}, fromMimeType)
 	}
 
 	return toObject, nil

@@ -7,7 +7,7 @@
 
 * Add labels field to Imagen configs ([d01fe5e](https://github.com/googleapis/go-genai/commit/d01fe5e157f9c27a61464ed99c816b73d64d6dbb))
 * Add utility methods for creating `FunctionResponsePart` and creating FunctionResponse `Part` with `FunctionResponseParts` ([10de2ab](https://github.com/googleapis/go-genai/commit/10de2ab112ae5d3c67f0591a5c58412f40206372))
-* Enable R2V and Advanced Controls for Veo on Gemini Developer API ([3165554](https://github.com/googleapis/go-genai/commit/31655546a8254f2c0571da7a9d15d00b6111ad6a))
+* Enable Ingredients to Video and Advanced Controls for Veo on Gemini Developer API (Early Access Program) ([3165554](https://github.com/googleapis/go-genai/commit/31655546a8254f2c0571da7a9d15d00b6111ad6a))
 
 ## [1.28.0](https://github.com/googleapis/go-genai/compare/v1.27.0...v1.28.0) (2025-10-02)
 

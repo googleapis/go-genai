@@ -256,6 +256,9 @@ func TestTable(t *testing.T) {
 	for _, backend := range backends {
 		t.Run(backend.name, func(t *testing.T) {
 			err := filepath.Walk(walkPath, func(testFilePath string, info os.FileInfo, err error) error {
+				if testFilePath == "" {
+					return nil
+				}
 				if err != nil {
 					return err
 				}

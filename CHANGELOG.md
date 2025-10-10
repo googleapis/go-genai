@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.30.0](https://github.com/googleapis/go-genai/compare/v1.29.0...v1.30.0) (2025-10-10)
+
+
+### Features
+
+* Enable Google Maps tool for Genai. ([9aba5c7](https://github.com/googleapis/go-genai/commit/9aba5c7ee99884d0ae5a8b3d94f1abc128523a37))
+* Support enableWidget feature in GoogleMaps ([cd1e6b7](https://github.com/googleapis/go-genai/commit/cd1e6b7b1b3d79b28a580f787abc5f296522f313))
+* Support Gemini batch inline request's metadata and add test coverage to safety setting ([f12f353](https://github.com/googleapis/go-genai/commit/f12f3530050f06d34fa280b8827f9c7514f3c98f))
+
 ## [1.29.0](https://github.com/googleapis/go-genai/compare/v1.28.0...v1.29.0) (2025-10-08)
 
 

@@ -2507,9 +2507,9 @@ type EmbedContentConfig struct {
 type ContentEmbeddingStatistics struct {
 	// Vertex API only. If the input text was truncated due to having
 	// a length longer than the allowed maximum input.
-	Truncated bool `json:"truncated,omitempty"`
+	Truncated *bool `json:"truncated,omitempty"`
 	// Vertex API only. Number of tokens of the input text.
-	TokenCount float32 `json:"tokenCount,omitempty"`
+	TokenCount *float32 `json:"tokenCount,omitempty"`
 }
 
 // The embedding generated from an input content.
@@ -4585,7 +4585,7 @@ type SingleEmbedContentResponse struct {
 	// The response to the request.
 	Embedding *ContentEmbedding `json:"embedding,omitempty"`
 	// Optional. The error encountered while processing the request.
-	TokenCount int64 `json:"tokenCount,omitempty,string"`
+	TokenCount *int64 `json:"tokenCount,omitempty,string"`
 }
 
 // Config for `inlined_embedding_responses` parameter.
@@ -4615,6 +4615,10 @@ type BatchJobDestination struct {
 	// built using inlined requests. The responses will be in the same order as
 	// the input requests.
 	InlinedResponses []*InlinedResponse `json:"inlinedResponses,omitempty"`
+	// Optional. The responses to the requests in the batch. Returned when the batch was
+	// built using inlined requests. The responses will be in the same order as
+	// the input requests.
+	InlinedEmbedContentResponses []*InlinedEmbedContentResponse `json:"inlinedEmbedContentResponses,omitempty"`
 }
 
 // Config for optional parameters.
@@ -4719,6 +4723,30 @@ func (b *BatchJob) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(aux)
+}
+
+// Parameters for the embed_content method.
+type EmbedContentBatch struct {
+	// The content to embed. Only the `parts.text` fields will be counted.
+	Contents []*Content `json:"contents,omitempty"`
+	// Optional. Configuration that contains optional parameters.
+	Config *EmbedContentConfig `json:"config,omitempty"`
+}
+
+type EmbeddingsBatchJobSource struct {
+	// Optional. The Gemini Developer API's file resource name of the input data
+	// (e.g. "files/12345").
+	FileName string `json:"fileName,omitempty"`
+	// Optional. The Gemini Developer API's inlined input data to run batch job.
+	InlinedRequests *EmbedContentBatch `json:"inlinedRequests,omitempty"`
+}
+
+// Config for optional parameters.
+type CreateEmbeddingsBatchJobConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. The user-defined name of this BatchJob.
+	DisplayName string `json:"displayName,omitempty"`
 }
 
 // Optional parameters.
@@ -5046,14 +5074,6 @@ func (r *ContentReferenceImage) referenceImageAPI() *referenceImageAPI {
 		ReferenceID:    r.ReferenceID,
 		ReferenceType:  "REFERENCE_TYPE_CONTENT",
 	}
-}
-
-// Parameters for the embed_content method.
-type EmbedContentBatch struct {
-	// The content to embed. Only the `parts.text` fields will be counted.
-	Contents []*Content `json:"contents,omitempty"`
-	// Optional. Configuration that contains optional parameters.
-	Config *EmbedContentConfig `json:"config,omitempty"`
 }
 
 // Sent in response to a `LiveGenerateContentSetup` message from the client.

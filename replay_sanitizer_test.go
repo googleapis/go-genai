@@ -30,7 +30,7 @@ type nestedStruct struct {
 
 type outerStruct struct {
 	PointerField      *nestedStruct   `json:"pointerField,omitempty"`
-	StructField       nestedStruct    `json:"structField,omitempty"`
+	StructField       nestedStruct    `json:"structField"`
 	SliceField        []nestedStruct  `json:"sliceField,omitempty"`
 	SlicePointerField []*nestedStruct `json:"slicePointerField,omitempty"`
 	// Recursive types.
@@ -121,9 +121,9 @@ func TestSanitizeMapByPath(t *testing.T) {
 			sanitized: map[string]any{"k1": []any{"sanitized", "sanitized"}},
 		},
 		{
-			input:     map[string]any{"k1": []map[string]any{map[string]any{"k2": "v2"}, map[string]any{"k2": "v2"}}},
+			input:     map[string]any{"k1": []map[string]any{{"k2": "v2"}, {"k2": "v2"}}},
 			path:      "[]k1.k2",
-			sanitized: map[string]any{"k1": []map[string]any{map[string]any{"k2": "sanitized"}, map[string]any{"k2": "sanitized"}}},
+			sanitized: map[string]any{"k1": []map[string]any{{"k2": "sanitized"}, {"k2": "sanitized"}}},
 		},
 		{
 			input:     map[string]any{"k1": map[string]any{"k2": []any{"v2", "v2"}}},
@@ -147,9 +147,9 @@ func TestSanitizeMapByPath(t *testing.T) {
 			sanitized: map[string]any{"k1": []any{"v1", "v1"}},
 		},
 		{
-			input:     map[string]any{"k1": []map[string]any{map[string]any{"k2": "v2"}, map[string]any{"k2": "v2"}}},
+			input:     map[string]any{"k1": []map[string]any{{"k2": "v2"}, {"k2": "v2"}}},
 			path:      "[]wrongPath.k2",
-			sanitized: map[string]any{"k1": []map[string]any{map[string]any{"k2": "v2"}, map[string]any{"k2": "v2"}}},
+			sanitized: map[string]any{"k1": []map[string]any{{"k2": "v2"}, {"k2": "v2"}}},
 		},
 		{
 			input:     map[string]any{"k1": map[string]any{"k2": []string{"v2", "v2"}}},

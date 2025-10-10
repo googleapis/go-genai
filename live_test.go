@@ -194,7 +194,7 @@ func TestLiveConnect(t *testing.T) {
 
 	for _, tt := range connectTests {
 		t.Run(tt.desc, func(t *testing.T) {
-			var upgrader = websocket.Upgrader{}
+			upgrader := websocket.Upgrader{}
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				conn, _ := upgrader.Upgrade(w, r, nil)
 				defer conn.Close()
@@ -213,7 +213,6 @@ func TestLiveConnect(t *testing.T) {
 				}
 
 				mt, message, err := conn.ReadMessage()
-
 				if err != nil {
 					if tt.wantErr {
 						return
@@ -500,7 +499,7 @@ func TestLiveConnect(t *testing.T) {
 func setupTestWebsocketServer(t *testing.T, wantRequestBodySlice []string, fakeResponseBodySlice []string) *httptest.Server {
 	t.Helper()
 
-	var upgrader = websocket.Upgrader{}
+	upgrader := websocket.Upgrader{}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		conn, _ := upgrader.Upgrade(w, r, nil)

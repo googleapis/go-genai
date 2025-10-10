@@ -29,8 +29,7 @@ import (
 var model = flag.String("model", "gemini-2.0-flash", "the model name, e.g. gemini-2.0-flash")
 
 func run(ctx context.Context) {
-
-	var tools = []*genai.Tool{
+	tools := []*genai.Tool{
 		{
 			FunctionDeclarations: []*genai.FunctionDeclaration{
 				{

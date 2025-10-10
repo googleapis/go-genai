@@ -58,7 +58,8 @@ func run(ctx context.Context) {
 		&genai.RecontextImageSource{
 			Prompt:        prompt,
 			PersonImage:   nil,
-			ProductImages: productImages},
+			ProductImages: productImages,
+		},
 		&genai.RecontextImageConfig{
 			OutputMIMEType: "image/jpeg",
 		},
@@ -79,7 +80,8 @@ func run(ctx context.Context) {
 		&genai.RecontextImageSource{
 			Prompt:        "",
 			PersonImage:   personImage,
-			ProductImages: productImages2},
+			ProductImages: productImages2,
+		},
 		&genai.RecontextImageConfig{
 			OutputMIMEType: "image/jpeg",
 		},

@@ -91,7 +91,8 @@ func TestCachesAll(t *testing.T) {
 			defer ts.Close()
 
 			// Create a client with the test server
-			client, err := NewClient(context.Background(), &ClientConfig{HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			client, err := NewClient(context.Background(), &ClientConfig{
+				HTTPOptions: HTTPOptions{BaseURL: ts.URL},
 				envVarProvider: func() map[string]string {
 					return map[string]string{
 						"GOOGLE_API_KEY": "test-api-key",

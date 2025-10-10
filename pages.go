@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"iter"
+	"maps"
 )
 
 // ErrPageDone is the error returned by an iterator's Next method when no more pages are available.
@@ -88,9 +89,7 @@ func (p Page[T]) Next(ctx context.Context) (Page[T], error) {
 		return p, ErrPageDone
 	}
 	c := make(map[string]any)
-	for k, v := range p.config {
-		c[k] = v
-	}
+	maps.Copy(c, p.config)
 	c["PageToken"] = p.NextPageToken
 
 	return newPage[T](ctx, p.Name, c, p.listFunc)

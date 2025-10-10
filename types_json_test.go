@@ -618,7 +618,7 @@ func TestMarshalJSON(t *testing.T) {
 				SizeBytes:      Ptr[int64](1024),
 				CreateTime:     time.Date(2024, 12, 31, 23, 59, 59, 0, time.UTC),
 				ExpirationTime: time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC),
-				UpdateTime:     time.Date(2025, 01, 01, 0, 0, 0, 0, time.UTC),
+				UpdateTime:     time.Date(2025, 0o1, 0o1, 0, 0, 0, 0, time.UTC),
 				Sha256Hash:     "test-hash",
 				URI:            "https://example.com/test-file",
 				DownloadURI:    "https://example.com/download/test-file",
@@ -759,13 +759,11 @@ func TestMarshalJSON(t *testing.T) {
 			if string(roundTripMarshal) != tt.want {
 				t.Errorf("%s.MarshalJSON() = %v, want %v", tt.target, string(roundTripMarshal), tt.want)
 			}
-
 		})
 	}
 }
 
 func TestJSONCustomTypes(t *testing.T) {
-
 	t.Run("int64SliceJSON", func(t *testing.T) {
 		type valueStruct struct {
 			Val int64SliceJSON `json:"val,omitempty"`
@@ -919,7 +917,7 @@ func TestJSONCustomTypes(t *testing.T) {
 
 	t.Run("dateJSON", func(t *testing.T) {
 		type valueStruct struct {
-			Val dateJSON `json:"val,omitempty"`
+			Val dateJSON `json:"val"`
 		}
 		type pointerStruct struct {
 			Val *dateJSON `json:"val,omitempty"`

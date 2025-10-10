@@ -80,7 +80,7 @@ func run(ctx context.Context) {
 		fmt.Println("Calling GeminiAPI Backend...")
 	}
 	// Upload a new file.
-	var testDataDir = filepath.Join(moduleRootDir(), "testdata")
+	testDataDir := filepath.Join(moduleRootDir(), "testdata")
 	filePath := filepath.Join(testDataDir, "google.jpg")
 	file, err := client.Files.UploadFromPath(ctx, filePath, nil)
 	if err != nil {

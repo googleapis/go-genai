@@ -291,7 +291,7 @@ func (s *Session) Receive() (*LiveServerMessage, error) {
 		return nil, err
 	}
 
-	var message = new(LiveServerMessage)
+	message := new(LiveServerMessage)
 	err = mapToStruct(responseMap, message)
 	if err != nil {
 		return nil, err

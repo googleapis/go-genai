@@ -35,9 +35,9 @@ func TestValidateContent(t *testing.T) {
 		{"NilContent", nil, false},
 		{"EmptyParts", &Content{Parts: []*Part{}}, false},
 		{"NilPart", &Content{Parts: []*Part{nil}}, false},
-		{"EmptyTextPart", &Content{Parts: []*Part{&Part{Text: ""}}}, false},
-		{"ValidTextPart", &Content{Parts: []*Part{&Part{Text: "hello"}}}, true},
-		{"ValidFunctionCall", &Content{Parts: []*Part{&Part{FunctionCall: &FunctionCall{Name: "test"}}}}, true},
+		{"EmptyTextPart", &Content{Parts: []*Part{{Text: ""}}}, false},
+		{"ValidTextPart", &Content{Parts: []*Part{{Text: "hello"}}}, true},
+		{"ValidFunctionCall", &Content{Parts: []*Part{{FunctionCall: &FunctionCall{Name: "test"}}}}, true},
 	}
 
 	for _, tt := range tests {
@@ -176,7 +176,6 @@ func TestChatsUnitTest(t *testing.T) {
 			break
 		}
 	})
-
 }
 
 func TestChatsText(t *testing.T) {
@@ -316,16 +315,16 @@ func TestChatsHistory(t *testing.T) {
 			// Create a new Chat with handwritten history.
 			var config *GenerateContentConfig = &GenerateContentConfig{Temperature: Ptr[float32](0.5)}
 			history := []*Content{
-				&Content{
+				{
 					Role: "user",
 					Parts: []*Part{
-						&Part{Text: "What is 1 + 2?"},
+						{Text: "What is 1 + 2?"},
 					},
 				},
-				&Content{
+				{
 					Role: "model",
 					Parts: []*Part{
-						&Part{Text: "3"},
+						{Text: "3"},
 					},
 				},
 			}
@@ -721,10 +720,10 @@ data:{
 		}
 
 		var expectedResponses []*Content
-		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{&Part{Text: "text1_candidate1"}}})
-		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{&Part{Text: " "}}})
-		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{&Part{Text: "text3_candidate1"}, &Part{Text: " additional text3_candidate1 "}}})
-		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{&Part{Text: "text4_candidate1"}, &Part{Text: " additional text4_candidate1"}}})
+		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{{Text: "text1_candidate1"}}})
+		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{{Text: " "}}})
+		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{{Text: "text3_candidate1"}, {Text: " additional text3_candidate1 "}}})
+		expectedResponses = append(expectedResponses, &Content{Role: "model", Parts: []*Part{{Text: "text4_candidate1"}, {Text: " additional text4_candidate1"}}})
 
 		history := chat.History(false)
 		expectedUserMessage := "What is 1 + 2?"
@@ -738,6 +737,5 @@ data:{
 				}
 			}
 		}
-
 	})
 }

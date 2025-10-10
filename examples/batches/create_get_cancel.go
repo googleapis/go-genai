@@ -44,7 +44,7 @@ func run(ctx context.Context) {
 	}
 	if client.ClientConfig().Backend == genai.BackendVertexAI {
 		fmt.Println("Calling VertexAI Backend...")
-		var model = flag.String("model", "gemini-1.5-flash-002", "the model name, e.g. gemini-1.5-pro-002")
+		model := flag.String("model", "gemini-1.5-flash-002", "the model name, e.g. gemini-1.5-pro-002")
 		// Create a batch job.
 		result, err := client.Batches.Create(
 			ctx,
@@ -84,7 +84,7 @@ func run(ctx context.Context) {
 		fmt.Println("Cancelled batch job:", result.Name)
 	} else {
 		fmt.Println("Calling GeminiAPI Backend...")
-		var model = flag.String("model", "gemini-2.0-flash", "the model name, e.g. gemini-1.5-pro-002")
+		model := flag.String("model", "gemini-2.0-flash", "the model name, e.g. gemini-1.5-pro-002")
 		// Create a batch job.
 		result, err := client.Batches.Create(
 			ctx,

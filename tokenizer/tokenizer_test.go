@@ -59,8 +59,8 @@ func TestLoadModelData(t *testing.T) {
 	// Overwrite cache file with wrong data, and try again.
 	cacheDir := filepath.Join(os.TempDir(), "vertexai_tokenizer_model")
 	cachePath := filepath.Join(cacheDir, hashString([]byte(config.modelURL)))
-	_ = os.MkdirAll(cacheDir, 0770)
-	_ = os.WriteFile(cachePath, []byte{0, 1, 2, 3}, 0660)
+	_ = os.MkdirAll(cacheDir, 0o770)
+	_ = os.WriteFile(cachePath, []byte{0, 1, 2, 3}, 0o660)
 	data, err = loadModelData(config.modelURL, config.modelHash)
 	checkDataAndErr(data, err)
 }
@@ -92,7 +92,7 @@ func TestCreateLocalTokenizer(t *testing.T) {
 }
 
 func TestCountTokens(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		contents  []*genai.Content
 		wantCount int32
 	}{

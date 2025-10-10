@@ -51,7 +51,7 @@ func snakeToCamel(s string) string {
 
 // methodParamType is extra mapping of method param name to its param type because reflect module cannot process private struct.
 var methodParamType = map[string]map[string]reflect.Type{
-	"editImage": map[string]reflect.Type{
+	"editImage": {
 		"referenceImages": reflect.TypeOf(([]ReferenceImage)(nil)),
 	},
 }

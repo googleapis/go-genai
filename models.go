@@ -3572,6 +3572,16 @@ func upscaleImageAPIConfigToVertex(fromObject map[string]any, parentObject map[s
 		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
 	}
 
+	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	if fromSafetyFilterLevel != nil {
+		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+	}
+
 	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
 	if fromIncludeRaiReason != nil {
 		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
@@ -5088,6 +5098,8 @@ func (m Models) UpscaleImage(ctx context.Context, model string, image *Image, up
 		apiConfig.OutputGCSURI = config.OutputGCSURI
 		apiConfig.OutputMIMEType = config.OutputMIMEType
 		apiConfig.OutputCompressionQuality = config.OutputCompressionQuality
+		apiConfig.SafetyFilterLevel = config.SafetyFilterLevel
+		apiConfig.PersonGeneration = config.PersonGeneration
 		apiConfig.IncludeRAIReason = config.IncludeRAIReason
 		apiConfig.EnhanceInputImage = config.EnhanceInputImage
 		apiConfig.ImagePreservationFactor = config.ImagePreservationFactor

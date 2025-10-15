@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.31.0](https://github.com/googleapis/go-genai/compare/v1.30.0...v1.31.0) (2025-10-15)
+
+
+### Features
+
+* support CreateEmebddings in batches.go ([a488476](https://github.com/googleapis/go-genai/commit/a48847605327c60c49b8276d197bb1dca443730e))
+* Support video extension for Veo on Gemini Developer API ([14ecba9](https://github.com/googleapis/go-genai/commit/14ecba9e08e02eed6c72d8bed3b381eb8f31d0fd))
+
 ## [1.30.0](https://github.com/googleapis/go-genai/compare/v1.29.0...v1.30.0) (2025-10-10)
 
 

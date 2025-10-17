@@ -457,3 +457,108 @@ func doMergeHeaders(input http.Header, output *http.Header) {
 		}
 	}
 }
+
+// moveValueByPath moves values from source paths to destination paths.
+//
+// Examples:
+//
+//	moveValueByPath(
+//	  map[string]any{"requests": []any{map[string]any{"content": "v1"}, map[string]any{"content": "v2"}}},
+//	  map[string]string{"requests[].*": "requests[].request.*"}
+//	)
+//	  -> {"requests": [{"request": {"content": "v1"}}, {"request": {"content": "v2"}}]}
+func moveValueByPath(data any, paths map[string]string) {
+	for sourcePath, destPath := range paths {
+		sourceKeys := strings.Split(sourcePath, ".")
+		destKeys := strings.Split(destPath, ".")
+
+		// Determine keys to exclude from wildcard to avoid cyclic references
+		excludeKeys := make(map[string]bool)
+		wildcardIdx := -1
+		for i, key := range sourceKeys {
+			if key == "*" {
+				wildcardIdx = i
+				break
+			}
+		}
+
+		if wildcardIdx != -1 && len(destKeys) > wildcardIdx {
+			// Extract the intermediate key between source and dest paths
+			// Example: source=["requests[]", "*"], dest=["requests[]", "request", "*"]
+			// We want to exclude "request"
+			for i := wildcardIdx; i < len(destKeys); i++ {
+				key := destKeys[i]
+				if key != "*" && !strings.HasSuffix(key, "[]") && !strings.HasSuffix(key, "[0]") {
+					excludeKeys[key] = true
+				}
+			}
+		}
+
+		moveValueRecursive(data, sourceKeys, destKeys, 0, excludeKeys)
+	}
+}
+
+// moveValueRecursive recursively moves values from source path to destination path.
+func moveValueRecursive(data any, sourceKeys []string, destKeys []string, keyIdx int, excludeKeys map[string]bool) {
+	if keyIdx >= len(sourceKeys) {
+		return
+	}
+
+	key := sourceKeys[keyIdx]
+
+	if strings.HasSuffix(key, "[]") {
+		keyName := key[:len(key)-2]
+		if dataMap, ok := data.(map[string]any); ok {
+			if sliceData, exists := dataMap[keyName]; exists {
+				switch slice := sliceData.(type) {
+				case []any:
+					for _, item := range slice {
+						moveValueRecursive(item, sourceKeys, destKeys, keyIdx+1, excludeKeys)
+					}
+				case []map[string]any:
+					for _, item := range slice {
+						moveValueRecursive(item, sourceKeys, destKeys, keyIdx+1, excludeKeys)
+					}
+				}
+			}
+		}
+	} else if key == "*" {
+		// Handle wildcard - move all fields
+		if dataMap, ok := data.(map[string]any); ok {
+			keysToMove := []string{}
+			for k := range dataMap {
+				if !strings.HasPrefix(k, "_") && !excludeKeys[k] {
+					keysToMove = append(keysToMove, k)
+				}
+			}
+			valuesToMove := make(map[string]any)
+			for _, k := range keysToMove {
+				valuesToMove[k] = dataMap[k]
+			}
+
+			// Set values at destination
+			for k, v := range valuesToMove {
+				newDestKeys := []string{}
+				for _, dk := range destKeys[keyIdx:] {
+					if dk == "*" {
+						newDestKeys = append(newDestKeys, k)
+					} else {
+						newDestKeys = append(newDestKeys, dk)
+					}
+				}
+				setValueByPath(dataMap, newDestKeys, v)
+			}
+
+			for _, k := range keysToMove {
+				delete(dataMap, k)
+			}
+		}
+	} else {
+		// Navigate to next level
+		if dataMap, ok := data.(map[string]any); ok {
+			if nextData, exists := dataMap[key]; exists {
+				moveValueRecursive(nextData, sourceKeys, destKeys, keyIdx+1, excludeKeys)
+			}
+		}
+	}
+}

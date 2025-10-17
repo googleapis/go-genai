@@ -353,6 +353,31 @@ func TestNewPartFromFunctionResponse(t *testing.T) {
 	}
 }
 
+func TestNewPartFromFunctionResponseWithParts(t *testing.T) {
+	funcName := "myFunction"
+	response := map[string]any{"result": "success"}
+	parts := []*FunctionResponsePart{
+		{
+			InlineData: &FunctionResponseBlob{
+				Data:     []byte{0x01, 0x02, 0x03},
+				MIMEType: "image/png",
+			},
+		},
+	}
+	expected := &Part{
+		FunctionResponse: &FunctionResponse{
+			Name:     "myFunction",
+			Response: map[string]any{"result": "success"},
+			Parts:    parts,
+		},
+	}
+
+	result := NewPartFromFunctionResponseWithParts(funcName, response, parts)
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("expected %v, got %v", expected, result)
+	}
+}
+
 func TestNewPartFromExecutableCode(t *testing.T) {
 	code := "print('Hello, world!')"
 	language := LanguagePython
@@ -380,6 +405,38 @@ func TestNewPartFromCodeExecutionResult(t *testing.T) {
 	}
 
 	result := NewPartFromCodeExecutionResult(outcome, output)
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("expected %v, got %v", expected, result)
+	}
+}
+
+func TestNewFunctionResponsePartFromBytes(t *testing.T) {
+	data := []byte{0x01, 0x02, 0x03}
+	mimeType := "application/octet-stream"
+	expected := &FunctionResponsePart{
+		InlineData: &FunctionResponseBlob{
+			Data:     data,
+			MIMEType: mimeType,
+		},
+	}
+
+	result := NewFunctionResponsePartFromBytes(data, mimeType)
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("expected %v, got %v", expected, result)
+	}
+}
+
+func TestNewFunctionResponsePartFromURI(t *testing.T) {
+	fileURI := "http://example.com/video.mp4"
+	mimeType := "video/mp4"
+	expected := &FunctionResponsePart{
+		FileData: &FunctionResponseFileData{
+			FileURI:  fileURI,
+			MIMEType: mimeType,
+		},
+	}
+
+	result := NewFunctionResponsePartFromURI(fileURI, mimeType)
 	if !reflect.DeepEqual(result, expected) {
 		t.Fatalf("expected %v, got %v", expected, result)
 	}

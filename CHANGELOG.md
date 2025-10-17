@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.31.0](https://github.com/googleapis/go-genai/compare/v1.30.0...v1.31.0) (2025-10-15)
+
+
+### Features
+
+* support CreateEmebddings in batches.go ([a488476](https://github.com/googleapis/go-genai/commit/a48847605327c60c49b8276d197bb1dca443730e))
+* Support video extension for Veo on Gemini Developer API ([14ecba9](https://github.com/googleapis/go-genai/commit/14ecba9e08e02eed6c72d8bed3b381eb8f31d0fd))
+
+## [1.30.0](https://github.com/googleapis/go-genai/compare/v1.29.0...v1.30.0) (2025-10-10)
+
+
+### Features
+
+* Enable Google Maps tool for Genai. ([9aba5c7](https://github.com/googleapis/go-genai/commit/9aba5c7ee99884d0ae5a8b3d94f1abc128523a37))
+* Support enableWidget feature in GoogleMaps ([cd1e6b7](https://github.com/googleapis/go-genai/commit/cd1e6b7b1b3d79b28a580f787abc5f296522f313))
+* Support Gemini batch inline request's metadata and add test coverage to safety setting ([f12f353](https://github.com/googleapis/go-genai/commit/f12f3530050f06d34fa280b8827f9c7514f3c98f))
+
+## [1.29.0](https://github.com/googleapis/go-genai/compare/v1.28.0...v1.29.0) (2025-10-08)
+
+
+### Features
+
+* Add labels field to Imagen configs ([d01fe5e](https://github.com/googleapis/go-genai/commit/d01fe5e157f9c27a61464ed99c816b73d64d6dbb))
+* Add utility methods for creating `FunctionResponsePart` and creating FunctionResponse `Part` with `FunctionResponseParts` ([10de2ab](https://github.com/googleapis/go-genai/commit/10de2ab112ae5d3c67f0591a5c58412f40206372))
+* Enable Ingredients to Video and Advanced Controls for Veo on Gemini Developer API (Early Access Program) ([3165554](https://github.com/googleapis/go-genai/commit/31655546a8254f2c0571da7a9d15d00b6111ad6a))
+
 ## [1.28.0](https://github.com/googleapis/go-genai/compare/v1.27.0...v1.28.0) (2025-10-02)
 
 

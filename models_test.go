@@ -296,6 +296,93 @@ func TestModelsGenerateVideosFromSource(t *testing.T) {
 	}
 }
 
+func TestModelsGenerateVideosExtensionFromSource(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			// Gemini only test
+			if isDisabledTest(t) || backend.Backend == BackendVertexAI {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Generate first video
+			operation1, err := client.Models.GenerateVideosFromSource(
+				ctx,
+				"veo-3-exp",
+				&GenerateVideosSource{
+					Prompt: "Rain",
+				},
+				&GenerateVideosConfig{
+					NumberOfVideos: 1,
+				},
+			)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation1.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation1, err = client.Operations.GetVideosOperation(ctx, operation1, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation1 == nil || operation1.Response == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			for _, v := range operation1.Response.GeneratedVideos {
+				data, err := client.Files.Download(ctx, NewDownloadURIFromGeneratedVideo(v), nil)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				fmt.Printf("Video file %s downloaded. Data size: %d. \n", v.Video.URI, len(data))
+			}
+			if operation1.Response.GeneratedVideos[0].Video.URI == "" || operation1.Response.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have both URI and video bytes after downloading")
+			}
+
+			// Extend the first video
+			operation2, err := client.Models.GenerateVideosFromSource(
+				ctx,
+				"veo-3-exp",
+				&GenerateVideosSource{
+					Prompt: "Sun",
+					Video:  operation1.Response.GeneratedVideos[0].Video,
+				},
+				&GenerateVideosConfig{
+					NumberOfVideos: 1,
+				},
+			)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation2.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation2, err = client.Operations.GetVideosOperation(ctx, operation2, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation2 == nil || operation2.Response == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if operation2.Response.GeneratedVideos[0].Video.URI == "" && operation2.Response.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have either URI or video bytes")
+			}
+		})
+	}
+}
+
 func TestModelsGenerateVideosEditOutpaint(t *testing.T) {
 	if *mode != apiMode {
 		t.Skip("Skip. This test is only in the API mode")

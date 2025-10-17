@@ -472,3 +472,122 @@ func TestGetValueByPathOrDefault(t *testing.T) {
 		})
 	}
 }
+
+func TestMoveValueByPath(t *testing.T) {
+	tests := []struct {
+		name     string
+		data     map[string]any
+		paths    map[string]string
+		expected map[string]any
+	}{
+		{
+			name: "DocstringExample",
+			data: map[string]any{
+				"requests": []any{
+					map[string]any{"content": "v1"},
+					map[string]any{"content": "v2"},
+				},
+			},
+			paths: map[string]string{"requests[].*": "requests[].request.*"},
+			expected: map[string]any{
+				"requests": []any{
+					map[string]any{"request": map[string]any{"content": "v1"}},
+					map[string]any{"request": map[string]any{"content": "v2"}},
+				},
+			},
+		},
+		{
+			name: "ComplexNestedStructure",
+			data: map[string]any{
+				"requests": []any{
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "1",
+									},
+								},
+							},
+						},
+						"outputDimensionality": 64,
+					},
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "2",
+									},
+								},
+							},
+						},
+						"outputDimensionality": 64,
+					},
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "3",
+									},
+								},
+							},
+						},
+						"outputDimensionality": 64,
+					},
+				},
+			},
+			paths: map[string]string{"requests[].*": "requests[].request.*"},
+			expected: map[string]any{
+				"requests": []any{
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "1",
+									},
+								},
+							},
+							"outputDimensionality": 64,
+						},
+					},
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "2",
+									},
+								},
+							},
+							"outputDimensionality": 64,
+						},
+					},
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "3",
+									},
+								},
+							},
+							"outputDimensionality": 64,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			moveValueByPath(tt.data, tt.paths)
+			if diff := cmp.Diff(tt.expected, tt.data); diff != "" {
+				t.Errorf("moveValueByPath() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

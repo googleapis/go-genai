@@ -522,6 +522,11 @@ func editImageConfigToVertex(fromObject map[string]any, parentObject map[string]
 		setValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
 	}
 
+	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+	}
+
 	fromEditMode := getValueByPath(fromObject, []string{"editMode"})
 	if fromEditMode != nil {
 		setValueByPath(parentObject, []string{"parameters", "editMode"}, fromEditMode)
@@ -1447,6 +1452,10 @@ func generateImagesConfigToMldev(fromObject map[string]any, parentObject map[str
 		return nil, fmt.Errorf("addWatermark parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"labels"}) != nil {
+		return nil, fmt.Errorf("labels parameter is not supported in Gemini API")
+	}
+
 	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
 	if fromImageSize != nil {
 		setValueByPath(parentObject, []string{"parameters", "sampleImageSize"}, fromImageSize)
@@ -1530,6 +1539,11 @@ func generateImagesConfigToVertex(fromObject map[string]any, parentObject map[st
 	fromAddWatermark := getValueByPath(fromObject, []string{"addWatermark"})
 	if fromAddWatermark != nil {
 		setValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
+	}
+
+	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		setValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
 	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
@@ -1723,12 +1737,24 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		return nil, fmt.Errorf("generateAudio parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"lastFrame"}) != nil {
-		return nil, fmt.Errorf("lastFrame parameter is not supported in Gemini API")
+	fromLastFrame := getValueByPath(fromObject, []string{"lastFrame"})
+	if fromLastFrame != nil {
+		fromLastFrame, err = imageToMldev(fromLastFrame.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
 	}
 
-	if getValueByPath(fromObject, []string{"referenceImages"}) != nil {
-		return nil, fmt.Errorf("referenceImages parameter is not supported in Gemini API")
+	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	if fromReferenceImages != nil {
+		fromReferenceImages, err = applyConverterToSlice(fromReferenceImages.([]any), videoGenerationReferenceImageToMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
 	}
 
 	if getValueByPath(fromObject, []string{"mask"}) != nil {
@@ -1943,8 +1969,14 @@ func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, p
 		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	if getValueByPath(fromObject, []string{"video"}) != nil {
-		return nil, fmt.Errorf("video parameter is not supported in Gemini API")
+	fromVideo := getValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = videoToMldev(fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
 	fromSource := getValueByPath(fromObject, []string{"source"})
@@ -2093,8 +2125,14 @@ func generateVideosSourceToMldev(fromObject map[string]any, parentObject map[str
 		setValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	if getValueByPath(fromObject, []string{"video"}) != nil {
-		return nil, fmt.Errorf("video parameter is not supported in Gemini API")
+	fromVideo := getValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = videoToMldev(fromVideo.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
 	return toObject, nil
@@ -2222,7 +2260,7 @@ func generatedImageMaskFromVertex(fromObject map[string]any, parentObject map[st
 func generatedVideoFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromVideo := getValueByPath(fromObject, []string{"_self"})
+	fromVideo := getValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
 		fromVideo, err = videoFromMldev(fromVideo.(map[string]any), toObject)
 		if err != nil {
@@ -2399,6 +2437,20 @@ func getModelParametersToVertex(ac *apiClient, fromObject map[string]any, parent
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
+	}
+
+	return toObject, nil
+}
+
+func googleMapsToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"authConfig"}) != nil {
+		return nil, fmt.Errorf("authConfig parameter is not supported in Gemini API")
+	}
+
+	fromEnableWidget := getValueByPath(fromObject, []string{"enableWidget"})
+	if fromEnableWidget != nil {
+		setValueByPath(toObject, []string{"enableWidget"}, fromEnableWidget)
 	}
 
 	return toObject, nil
@@ -2931,6 +2983,11 @@ func recontextImageConfigToVertex(fromObject map[string]any, parentObject map[st
 		setValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
 	}
 
+	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+	}
+
 	return toObject, nil
 }
 
@@ -3174,6 +3231,11 @@ func segmentImageConfigToVertex(fromObject map[string]any, parentObject map[stri
 		setValueByPath(parentObject, []string{"parameters", "binaryColorThreshold"}, fromBinaryColorThreshold)
 	}
 
+	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+	}
+
 	return toObject, nil
 }
 
@@ -3307,8 +3369,14 @@ func toolToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 		return nil, fmt.Errorf("enterpriseWebSearch parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"googleMaps"}) != nil {
-		return nil, fmt.Errorf("googleMaps parameter is not supported in Gemini API")
+	fromGoogleMaps := getValueByPath(fromObject, []string{"googleMaps"})
+	if fromGoogleMaps != nil {
+		fromGoogleMaps, err = googleMapsToMldev(fromGoogleMaps.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"googleMaps"}, fromGoogleMaps)
 	}
 
 	fromUrlContext := getValueByPath(fromObject, []string{"urlContext"})
@@ -3529,6 +3597,11 @@ func upscaleImageAPIConfigToVertex(fromObject map[string]any, parentObject map[s
 		setValueByPath(parentObject, []string{"parameters", "upscaleConfig", "imagePreservationFactor"}, fromImagePreservationFactor)
 	}
 
+	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+	}
+
 	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
 	if fromNumberOfImages != nil {
 		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
@@ -3605,12 +3678,12 @@ func upscaleImageResponseFromVertex(fromObject map[string]any, parentObject map[
 func videoFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromUri := getValueByPath(fromObject, []string{"video", "uri"})
+	fromUri := getValueByPath(fromObject, []string{"uri"})
 	if fromUri != nil {
 		setValueByPath(toObject, []string{"uri"}, fromUri)
 	}
 
-	fromVideoBytes := getValueByPath(fromObject, []string{"video", "encodedVideo"})
+	fromVideoBytes := getValueByPath(fromObject, []string{"encodedVideo"})
 	if fromVideoBytes != nil {
 		fromVideoBytes, err = tBytes(fromVideoBytes)
 		if err != nil {
@@ -3675,6 +3748,27 @@ func videoGenerationMaskToVertex(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
+func videoGenerationReferenceImageToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromImage := getValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		fromImage, err = imageToMldev(fromImage.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"image"}, fromImage)
+	}
+
+	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
+	if fromReferenceType != nil {
+		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+	}
+
+	return toObject, nil
+}
+
 func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3691,6 +3785,32 @@ func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObje
 	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
 	if fromReferenceType != nil {
 		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+	}
+
+	return toObject, nil
+}
+
+func videoToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromUri := getValueByPath(fromObject, []string{"uri"})
+	if fromUri != nil {
+		setValueByPath(toObject, []string{"uri"}, fromUri)
+	}
+
+	fromVideoBytes := getValueByPath(fromObject, []string{"videoBytes"})
+	if fromVideoBytes != nil {
+		fromVideoBytes, err = tBytes(fromVideoBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"encodedVideo"}, fromVideoBytes)
+	}
+
+	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"encoding"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -4971,6 +5091,7 @@ func (m Models) UpscaleImage(ctx context.Context, model string, image *Image, up
 		apiConfig.IncludeRAIReason = config.IncludeRAIReason
 		apiConfig.EnhanceInputImage = config.EnhanceInputImage
 		apiConfig.ImagePreservationFactor = config.ImagePreservationFactor
+		apiConfig.Labels = config.Labels
 	}
 
 	return m.upscaleImage(ctx, model, image, upscaleFactor, apiConfig)
@@ -4996,6 +5117,12 @@ func (m Models) GenerateVideos(ctx context.Context, model string, prompt string,
 func (m Models) GenerateVideosFromSource(ctx context.Context, model string, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
 	if source == nil {
 		return nil, fmt.Errorf("source is required")
+	}
+	// Gemini API does not support video bytes.
+	if m.apiClient.clientConfig.Backend == BackendGeminiAPI {
+		if source.Video != nil && source.Video.URI != "" && source.Video.VideoBytes != nil {
+			source.Video = &Video{URI: source.Video.URI, MIMEType: source.Video.MIMEType}
+		}
 	}
 	// Rely on backend validation for combinations of prompt, image, and video.
 	return m.generateVideos(ctx, model, nil, nil, nil, source, config)

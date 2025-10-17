@@ -882,6 +882,26 @@ type FunctionResponsePart struct {
 	FileData *FunctionResponseFileData `json:"fileData,omitempty"`
 }
 
+// NewFunctionResponsePartFromURI builds a FunctionResponsePart from a given file URI and mime type.
+func NewFunctionResponsePartFromURI(fileURI, mimeType string) *FunctionResponsePart {
+	return &FunctionResponsePart{
+		FileData: &FunctionResponseFileData{
+			FileURI:  fileURI,
+			MIMEType: mimeType,
+		},
+	}
+}
+
+// NewFunctionResponsePartFromBytes builds a FunctionResponsePart from a given byte array and mime type.
+func NewFunctionResponsePartFromBytes(data []byte, mimeType string) *FunctionResponsePart {
+	return &FunctionResponsePart{
+		InlineData: &FunctionResponseBlob{
+			Data:     data,
+			MIMEType: mimeType,
+		},
+	}
+}
+
 // A function response.
 type FunctionResponse struct {
 	// Optional. Signals that function call continues, and more responses will be returned,
@@ -993,6 +1013,17 @@ func NewPartFromFunctionResponse(name string, response map[string]any) *Part {
 		FunctionResponse: &FunctionResponse{
 			Name:     name,
 			Response: response,
+		},
+	}
+}
+
+// NewPartFromFunctionResponseWithParts builds a [FunctionResponse] Part from the given function name, response and function response parts.
+func NewPartFromFunctionResponseWithParts(name string, response map[string]any, parts []*FunctionResponsePart) *Part {
+	return &Part{
+		FunctionResponse: &FunctionResponse{
+			Name:     name,
+			Response: response,
+			Parts:    parts,
 		},
 	}
 }
@@ -1437,6 +1468,8 @@ type AuthConfig struct {
 type GoogleMaps struct {
 	// Optional. Auth config for the Google Maps tool.
 	AuthConfig *AuthConfig `json:"authConfig,omitempty"`
+	// Optional. If true, include the widget context token in the response.
+	EnableWidget *bool `json:"enableWidget,omitempty"`
 }
 
 // Tool to support URL context retrieval.
@@ -1999,6 +2032,10 @@ type GroundingChunkMapsPlaceAnswerSourcesReviewSnippet struct {
 	// A reference representing this place review which may be used to look up this place
 	// review again.
 	Review string `json:"review,omitempty"`
+	// ID of the review referencing the place.
+	ReviewID string `json:"reviewId,omitempty"`
+	// Title of the review.
+	Title string `json:"title,omitempty"`
 }
 
 // Sources used to generate the place answer.
@@ -2122,6 +2159,15 @@ type SearchEntryPoint struct {
 	SDKBlob []byte `json:"sdkBlob,omitempty"`
 }
 
+// Source content flagging URI for a place or review. This is currently populated only
+// for Google Maps grounding.
+type GroundingMetadataSourceFlaggingURI struct {
+	// A link where users can flag a problem with the source (place or review).
+	FlagContentURI string `json:"flagContentUri,omitempty"`
+	// ID of the place or review.
+	SourceID string `json:"sourceId,omitempty"`
+}
+
 // Metadata returned to client when grounding is enabled.
 type GroundingMetadata struct {
 	// Optional. Output only. Resource name of the Google Maps widget context token to be
@@ -2138,6 +2184,9 @@ type GroundingMetadata struct {
 	RetrievalQueries []string `json:"retrievalQueries,omitempty"`
 	// Optional. Google search entry for the following-up web searches.
 	SearchEntryPoint *SearchEntryPoint `json:"searchEntryPoint,omitempty"`
+	// Optional. Output only. List of source flagging uris. This is currently populated
+	// only for Google Maps grounding.
+	SourceFlaggingUris []*GroundingMetadataSourceFlaggingURI `json:"sourceFlaggingUris,omitempty"`
 	// Optional. Web search queries for the following-up web search.
 	WebSearchQueries []string `json:"webSearchQueries,omitempty"`
 }
@@ -2532,6 +2581,8 @@ type GenerateImagesConfig struct {
 	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
 	// Optional. Whether to add a watermark to the generated images.
 	AddWatermark bool `json:"addWatermark,omitempty"`
+	// Optional. User specified labels to track billing usage.
+	Labels map[string]string `json:"labels,omitempty"`
 	// Optional. The size of the largest dimension of the generated image.
 	// Supported sizes are 1K and 2K (not supported for Imagen 3 models).
 	ImageSize string `json:"imageSize,omitempty"`
@@ -2759,6 +2810,8 @@ type EditImageConfig struct {
 	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
 	// Optional. Whether to add a watermark to the generated images.
 	AddWatermark *bool `json:"addWatermark,omitempty"`
+	// Optional. User specified labels to track billing usage.
+	Labels map[string]string `json:"labels,omitempty"`
 	// Optional. Describes the editing mode for the request.
 	EditMode EditMode `json:"editMode,omitempty"`
 	// Optional. The number of sampling steps. A higher value has better image
@@ -2799,6 +2852,8 @@ type upscaleImageAPIConfig struct {
 	// output image will have be more different from the input image, but
 	// with finer details and less noise.
 	ImagePreservationFactor *float32 `json:"imagePreservationFactor,omitempty"`
+	// Optional. User specified labels to track billing usage.
+	Labels map[string]string `json:"labels,omitempty"`
 	// Optional.
 	NumberOfImages int32 `json:"numberOfImages,omitempty"`
 	// Optional.
@@ -2857,6 +2912,8 @@ type RecontextImageConfig struct {
 	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
 	// Optional. Whether to use the prompt rewriting logic.
 	EnhancePrompt *bool `json:"enhancePrompt,omitempty"`
+	// Optional. User specified labels to track billing usage.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // The output images response.
@@ -2904,6 +2961,8 @@ type SegmentImageConfig struct {
 	// can be set to a decimal value between 0 and 255 non-inclusive.
 	// Set to -1 for no binary color thresholding.
 	BinaryColorThreshold *float32 `json:"binaryColorThreshold,omitempty"`
+	// Optional. User specified labels to track billing usage.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // An entity representing the segmented area.
@@ -4481,6 +4540,8 @@ type InlinedRequest struct {
 	Model string `json:"model,omitempty"`
 	// Content of the request.
 	Contents []*Content `json:"contents,omitempty"`
+	// Optional. The metadata to be associated with the request.
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Optional. Configuration that contains optional model parameters.
 	Config *GenerateContentConfig `json:"config,omitempty"`
 }
@@ -4556,6 +4617,10 @@ type BatchJobDestination struct {
 	// built using inlined requests. The responses will be in the same order as
 	// the input requests.
 	InlinedResponses []*InlinedResponse `json:"inlinedResponses,omitempty"`
+	// Optional. The responses to the requests in the batch. Returned when the batch was
+	// built using inlined requests. The responses will be in the same order as
+	// the input requests.
+	InlinedEmbedContentResponses []*InlinedEmbedContentResponse `json:"inlinedEmbedContentResponses,omitempty"`
 }
 
 // Config for optional parameters.
@@ -4660,6 +4725,30 @@ func (b *BatchJob) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(aux)
+}
+
+// Parameters for the embed_content method.
+type EmbedContentBatch struct {
+	// The content to embed. Only the `parts.text` fields will be counted.
+	Contents []*Content `json:"contents,omitempty"`
+	// Optional. Configuration that contains optional parameters.
+	Config *EmbedContentConfig `json:"config,omitempty"`
+}
+
+type EmbeddingsBatchJobSource struct {
+	// Optional. The Gemini Developer API's file resource name of the input data
+	// (e.g. "files/12345").
+	FileName string `json:"fileName,omitempty"`
+	// Optional. The Gemini Developer API's inlined input data to run batch job.
+	InlinedRequests *EmbedContentBatch `json:"inlinedRequests,omitempty"`
+}
+
+// Config for optional parameters.
+type CreateEmbeddingsBatchJobConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. The user-defined name of this BatchJob.
+	DisplayName string `json:"displayName,omitempty"`
 }
 
 // Optional parameters.
@@ -4843,6 +4932,8 @@ type UpscaleImageConfig struct {
 	// output image will have be more different from the input image, but
 	// with finer details and less noise.
 	ImagePreservationFactor *float32 `json:"imagePreservationFactor,omitempty"`
+	// Optional. User specified labels to track billing usage.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // A raw reference image.
@@ -4985,14 +5076,6 @@ func (r *ContentReferenceImage) referenceImageAPI() *referenceImageAPI {
 		ReferenceID:    r.ReferenceID,
 		ReferenceType:  "REFERENCE_TYPE_CONTENT",
 	}
-}
-
-// Parameters for the embed_content method.
-type EmbedContentBatch struct {
-	// The content to embed. Only the `parts.text` fields will be counted.
-	Contents []*Content `json:"contents,omitempty"`
-	// Optional. Configuration that contains optional parameters.
-	Config *EmbedContentConfig `json:"config,omitempty"`
 }
 
 // Sent in response to a `LiveGenerateContentSetup` message from the client.

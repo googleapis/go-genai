@@ -2835,6 +2835,10 @@ type upscaleImageAPIConfig struct {
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Optional. Cloud Storage URI used to store the generated images.
 	OutputGCSURI string `json:"outputGcsUri,omitempty"`
+	// Optional. Filter level for safety filtering.
+	SafetyFilterLevel SafetyFilterLevel `json:"safetyFilterLevel,omitempty"`
+	// Optional. Allows generation of people by the model.
+	PersonGeneration PersonGeneration `json:"personGeneration,omitempty"`
 	// Optional. Whether to include a reason for filtered-out images in the
 	// response.
 	IncludeRAIReason bool `json:"includeRaiReason,omitempty"`
@@ -4916,6 +4920,10 @@ type UpscaleImageConfig struct {
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Optional. Cloud Storage URI used to store the generated images.
 	OutputGCSURI string `json:"outputGcsUri,omitempty"`
+	// Optional. Filter level for safety filtering.
+	SafetyFilterLevel SafetyFilterLevel `json:"safetyFilterLevel,omitempty"`
+	// Optional. Allows generation of people by the model.
+	PersonGeneration PersonGeneration `json:"personGeneration,omitempty"`
 	// Optional. Whether to include a reason for filtered-out images in the
 	// response.
 	IncludeRAIReason bool `json:"includeRaiReason,omitempty"`

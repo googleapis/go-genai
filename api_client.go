@@ -262,8 +262,20 @@ func buildRequest(ctx context.Context, ac *apiClient, path string, body map[stri
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	if ac.clientConfig.APIKey != "" {
-		req.Header.Set("x-goog-api-key", ac.clientConfig.APIKey)
+
+	switch ac.clientConfig.Backend {
+	case BackendVertexAI:
+		if ac.clientConfig.Credentials != nil {
+			token, err := ac.clientConfig.Credentials.Token(ctx)
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to get token: %w", err)
+			}
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.Value))
+		}
+	case BackendGeminiAPI:
+		if ac.clientConfig.APIKey != "" {
+			req.Header.Set("x-goog-api-key", ac.clientConfig.APIKey)
+		}
 	}
 
 	return req, patchedHTTPOptions, nil

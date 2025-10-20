@@ -875,6 +875,38 @@ func TestBuildRequest(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "Vertex AI with API key",
+			clientConfig: &ClientConfig{
+				APIKey:      "test-api-key",
+				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
+				Credentials: &auth.Credentials{},
+			},
+			path:   "publishers/google/models/model-name",
+			body:   map[string]any{},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://aiplatform.googleapis.com",
+				APIVersion: "v1beta1",
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "aiplatform.googleapis.com",
+					Path:   "/v1beta1/publishers/google/models/model-name",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+				},
+				Body: io.NopCloser(strings.NewReader(``)),
+			},
+			wantErr: false,
+		},
+		{
 			name: "MLDev with empty body",
 			clientConfig: &ClientConfig{
 				APIKey:     "test-api-key",

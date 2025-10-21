@@ -2407,6 +2407,10 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 		setValueByPath(toObject, []string{"topP"}, fromTopP)
 	}
 
+	if getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
+		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
+	}
+
 	return toObject, nil
 }
 

@@ -491,46 +491,6 @@ func tuningJobFromMldev(fromObject map[string]any, parentObject map[string]any) 
 		setValueByPath(toObject, []string{"tunedModel"}, fromTunedModel)
 	}
 
-	fromCustomBaseModel := getValueByPath(fromObject, []string{"customBaseModel"})
-	if fromCustomBaseModel != nil {
-		setValueByPath(toObject, []string{"customBaseModel"}, fromCustomBaseModel)
-	}
-
-	fromExperiment := getValueByPath(fromObject, []string{"experiment"})
-	if fromExperiment != nil {
-		setValueByPath(toObject, []string{"experiment"}, fromExperiment)
-	}
-
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
-	if fromLabels != nil {
-		setValueByPath(toObject, []string{"labels"}, fromLabels)
-	}
-
-	fromOutputUri := getValueByPath(fromObject, []string{"outputUri"})
-	if fromOutputUri != nil {
-		setValueByPath(toObject, []string{"outputUri"}, fromOutputUri)
-	}
-
-	fromPipelineJob := getValueByPath(fromObject, []string{"pipelineJob"})
-	if fromPipelineJob != nil {
-		setValueByPath(toObject, []string{"pipelineJob"}, fromPipelineJob)
-	}
-
-	fromServiceAccount := getValueByPath(fromObject, []string{"serviceAccount"})
-	if fromServiceAccount != nil {
-		setValueByPath(toObject, []string{"serviceAccount"}, fromServiceAccount)
-	}
-
-	fromTunedModelDisplayName := getValueByPath(fromObject, []string{"tunedModelDisplayName"})
-	if fromTunedModelDisplayName != nil {
-		setValueByPath(toObject, []string{"tunedModelDisplayName"}, fromTunedModelDisplayName)
-	}
-
-	fromVeoTuningSpec := getValueByPath(fromObject, []string{"veoTuningSpec"})
-	if fromVeoTuningSpec != nil {
-		setValueByPath(toObject, []string{"veoTuningSpec"}, fromVeoTuningSpec)
-	}
-
 	return toObject, nil
 }
 

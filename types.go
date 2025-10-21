@@ -52,6 +52,22 @@ const (
 	LanguagePython Language = "PYTHON"
 )
 
+// Specifies how the response should be scheduled in the conversation.
+type FunctionResponseScheduling string
+
+const (
+	// This value is unused.
+	FunctionResponseSchedulingUnspecified FunctionResponseScheduling = "SCHEDULING_UNSPECIFIED"
+	// Only add the result to the conversation context, do not interrupt or trigger generation.
+	FunctionResponseSchedulingSilent FunctionResponseScheduling = "SILENT"
+	// Add the result to the conversation context, and prompt to generate output without
+	// interrupting ongoing generation.
+	FunctionResponseSchedulingWhenIdle FunctionResponseScheduling = "WHEN_IDLE"
+	// Add the result to the conversation context, interrupt ongoing generation and prompt
+	// to generate output.
+	FunctionResponseSchedulingInterrupt FunctionResponseScheduling = "INTERRUPT"
+)
+
 // The type of the data.
 type Type string
 
@@ -80,14 +96,14 @@ type HarmCategory string
 const (
 	// The harm category is unspecified.
 	HarmCategoryUnspecified HarmCategory = "HARM_CATEGORY_UNSPECIFIED"
-	// The harm category is hate speech.
-	HarmCategoryHateSpeech HarmCategory = "HARM_CATEGORY_HATE_SPEECH"
-	// The harm category is dangerous content.
-	HarmCategoryDangerousContent HarmCategory = "HARM_CATEGORY_DANGEROUS_CONTENT"
 	// The harm category is harassment.
 	HarmCategoryHarassment HarmCategory = "HARM_CATEGORY_HARASSMENT"
+	// The harm category is hate speech.
+	HarmCategoryHateSpeech HarmCategory = "HARM_CATEGORY_HATE_SPEECH"
 	// The harm category is sexually explicit content.
 	HarmCategorySexuallyExplicit HarmCategory = "HARM_CATEGORY_SEXUALLY_EXPLICIT"
+	// The harm category is dangerous content.
+	HarmCategoryDangerousContent HarmCategory = "HARM_CATEGORY_DANGEROUS_CONTENT"
 	// Deprecated: Election filter is not longer supported. The harm category is civic integrity.
 	HarmCategoryCivicIntegrity HarmCategory = "HARM_CATEGORY_CIVIC_INTEGRITY"
 	// The harm category is image hate.
@@ -711,22 +727,6 @@ const (
 	TurnCoverageTurnIncludesAllInput TurnCoverage = "TURN_INCLUDES_ALL_INPUT"
 )
 
-// Specifies how the response should be scheduled in the conversation.
-type FunctionResponseScheduling string
-
-const (
-	// This value is unused.
-	FunctionResponseSchedulingUnspecified FunctionResponseScheduling = "SCHEDULING_UNSPECIFIED"
-	// Only add the result to the conversation context, do not interrupt or trigger generation.
-	FunctionResponseSchedulingSilent FunctionResponseScheduling = "SILENT"
-	// Add the result to the conversation context, and prompt to generate output without
-	// interrupting ongoing generation.
-	FunctionResponseSchedulingWhenIdle FunctionResponseScheduling = "WHEN_IDLE"
-	// Add the result to the conversation context, interrupt ongoing generation and prompt
-	// to generate output.
-	FunctionResponseSchedulingInterrupt FunctionResponseScheduling = "INTERRUPT"
-)
-
 // Describes how the video in the Part should be used by the model.
 type VideoMetadata struct {
 	// Optional. The frame rate of the video sent to the model. If not specified, the
@@ -1192,6 +1192,13 @@ type ExtrasRequestProvider = func(body map[string]any) map[string]any
 
 type UrlRetrievalStatus = URLRetrievalStatus
 
+// Config for thinking feature.
+//
+// This struct will be deprecated. Please use ThinkingConfig instead.
+type GenerationConfigThinkingConfig struct {
+	ThinkingConfig
+}
+
 // Schema is used to define the format of input/output data.
 // Represents a select subset of an [OpenAPI 3.0 schema
 // object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
@@ -1369,8 +1376,8 @@ type GoogleSearch struct {
 	// Optional. Filter search results to a specific time range.
 	// If customers set a start time, they must set an end time (and vice versa).
 	TimeRangeFilter *Interval `json:"timeRangeFilter,omitempty"`
-	// Optional. List of domains to be excluded from the search results.
-	// The default limit is 2000 domains.
+	// Optional. List of domains to be excluded from the search results. The default limit
+	// is 2000 domains. Example: ["amazon.com", "facebook.com"].
 	ExcludeDomains []string `json:"excludeDomains,omitempty"`
 }
 
@@ -3149,15 +3156,6 @@ type DeleteModelResponse struct {
 	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
 }
 
-// Config for thinking features.
-type GenerationConfigThinkingConfig struct {
-	// Optional. Indicates whether to include thoughts in the response. If true, thoughts
-	// are returned only when available.
-	IncludeThoughts bool `json:"includeThoughts,omitempty"`
-	// Optional. Indicates the thinking budget in tokens.
-	ThinkingBudget *int32 `json:"thinkingBudget,omitempty"`
-}
-
 // Generation config. You can find API default values and more details at https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#generationconfig
 // and https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters.
 type GenerationConfig struct {
@@ -3221,11 +3219,13 @@ type GenerationConfig struct {
 	Temperature *float32 `json:"temperature,omitempty"`
 	// Optional. Config for thinking features. An error will be returned if this field is
 	// set for models that don't support thinking.
-	ThinkingConfig *GenerationConfigThinkingConfig `json:"thinkingConfig,omitempty"`
+	ThinkingConfig *ThinkingConfig `json:"thinkingConfig,omitempty"`
 	// Optional. If specified, top-k sampling will be used.
 	TopK *float32 `json:"topK,omitempty"`
 	// Optional. If specified, nucleus sampling will be used.
 	TopP *float32 `json:"topP,omitempty"`
+	// Optional. Enables enhanced civic answers. It may not be available for all models.
+	EnableEnhancedCivicAnswers *bool `json:"enableEnhancedCivicAnswers,omitempty"`
 }
 
 // Config for the count_tokens method.
@@ -3481,14 +3481,17 @@ type TunedModelCheckpoint struct {
 	Endpoint string `json:"endpoint,omitempty"`
 }
 
+// TunedModel for the Tuned Model of a Tuning Job.
 type TunedModel struct {
-	// Output only. The resource name of the TunedModel. Format: `projects/{project}/locations/{location}/models/{model}@{version_id}`
-	// When tuning from a base model, the version_id will be 1. For continuous tuning, the
-	// version ID will be incremented by 1 from the last version ID in the parent model.
-	// E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id +
-	// 1}`
+	// Output only. The resource name of the TunedModel.
+	// Format: `projects/{project}/locations/{location}/models/{model}@{version_id}`
+	// When tuning from a base model, the version_id will be 1.
+	// For continuous tuning, the version ID will be incremented by 1 from the
+	// last version ID in the parent model. E.g., `projects/{project}/locations/{location}/models/{model}@{last_version_id
+	// + 1}`
 	Model string `json:"model,omitempty"`
-	// Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+	// Output only. A resource name of an Endpoint.
+	// Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.
 	Endpoint string `json:"endpoint,omitempty"`
 	// The checkpoints associated with this TunedModel.
 	// This field is only populated for tuning jobs that enable intermediate
@@ -3984,11 +3987,12 @@ type CancelTuningJobConfig struct {
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }
 
+// A single example for tuning.
 type TuningExample struct {
+	// Required. The expected model output.
+	Output string `json:"output,omitempty"`
 	// Optional. Text model input.
 	TextInput string `json:"textInput,omitempty"`
-	// Optional. The expected model output.
-	Output string `json:"output,omitempty"`
 }
 
 // Supervised fine-tuning training dataset.
@@ -4494,9 +4498,9 @@ func (f *File) setVideoBytes(b []byte) bool {
 type ListFilesResponse struct {
 	// Optional. Used to retain the full HTTP response.
 	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
-	// A token to retrieve next page of results.
+	// A token that can be sent as a `page_token` into a subsequent `ListFiles` call.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-	// The list of files.
+	// The list of `File`s.
 	Files []*File `json:"files,omitempty"`
 }
 

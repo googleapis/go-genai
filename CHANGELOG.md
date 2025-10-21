@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.32.0](https://github.com/googleapis/go-genai/compare/v1.31.0...v1.32.0) (2025-10-21)
+
+
+### Features
+
+* Add enable_enhanced_civic_answers in GenerationConfig ([c876512](https://github.com/googleapis/go-genai/commit/c87651298d18a77e27f8daba2db0e19074408781))
+* support jailbreak in HarmCategory and BlockedReason ([65e1efc](https://github.com/googleapis/go-genai/commit/65e1efc38ca1e5f958be90eac83668b357187187))
+
+
+### Bug Fixes
+
+* change back SingleEmbedContentResponse.TokenCount to int64 due to mistake in [#557](https://github.com/googleapis/go-genai/issues/557) ([e05f15d](https://github.com/googleapis/go-genai/commit/e05f15d3df064f9ec0e79ab3b6b08fea540e7803))
+* do not append project and client for Vertex AI when using API key ([c27f13a](https://github.com/googleapis/go-genai/commit/c27f13a44e51f770bc363b6c8922f0a1cb29ae42)), closes [#564](https://github.com/googleapis/go-genai/issues/564)
+
 ## [1.31.0](https://github.com/googleapis/go-genai/compare/v1.30.0...v1.31.0) (2025-10-15)
 
 

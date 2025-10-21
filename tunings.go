@@ -211,12 +211,10 @@ func createTuningJobParametersPrivateToVertex(fromObject map[string]any, parentO
 
 	fromTrainingDataset := getValueByPath(fromObject, []string{"trainingDataset"})
 	if fromTrainingDataset != nil {
-		fromTrainingDataset, err = tuningDatasetToVertex(fromTrainingDataset.(map[string]any), toObject)
+		_, err = tuningDatasetToVertex(fromTrainingDataset.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
-
-		setValueByPath(toObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromTrainingDataset)
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})

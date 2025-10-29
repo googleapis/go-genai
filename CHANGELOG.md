@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.33.0](https://github.com/googleapis/go-genai/compare/v1.32.0...v1.33.0) (2025-10-29)
+
+
+### Features
+
+* Add safety_filter_level and person_generation for Imagen upscaling ([3d7b57a](https://github.com/googleapis/go-genai/commit/3d7b57a389322c52e2bd8901a6fae0dbdd2c3720))
+* Add support for preference optimization tuning in the SDK. ([a6db7fe](https://github.com/googleapis/go-genai/commit/a6db7fe8233501c8457ec7fb8d6b3a132bfb7944))
+* Pass file name to the backend when uploading with a file path ([6b5e4f4](https://github.com/googleapis/go-genai/commit/6b5e4f4939a8b13da27fab65731a3423191e2790))
+* support default global location when not using api key with vertexai backend ([44f01d6](https://github.com/googleapis/go-genai/commit/44f01d636bff7310bdcfcc5200118fe6ea4a5e2b))
+
 ## [1.32.0](https://github.com/googleapis/go-genai/compare/v1.31.0...v1.32.0) (2025-10-21)
 
 

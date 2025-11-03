@@ -26,6 +26,35 @@ func TestTuningsTuneUnit(t *testing.T) {
 		envVarProvider  func() map[string]string
 	}{
 		{
+			name:      "VertexAI_BaseModel_DPO",
+			baseModel: "gemini-2.5-flash",
+			trainingDataset: &TuningDataset{
+				GCSURI: "gs://test-bucket/train.jsonl",
+			},
+			config: &CreateTuningJobConfig{
+				TunedModelDisplayName: "Test Tuned Model",
+				Method:                TuningMethodPreferenceTuning,
+				AdapterSize:           AdapterSizeOne,
+			},
+			expectedPath: "/tuningJobs",
+			expectedBody: map[string]any{
+				"baseModel":             "gemini-2.5-flash",
+				"tunedModelDisplayName": "Test Tuned Model",
+				"preferenceOptimizationSpec": map[string]any{
+					"trainingDatasetUri": "gs://test-bucket/train.jsonl",
+					"hyperParameters": map[string]any{
+						"adapterSize": "ADAPTER_SIZE_ONE",
+					},
+				},
+			},
+			backend: BackendVertexAI,
+			envVarProvider: func() map[string]string {
+				return map[string]string{
+					"GOOGLE_API_KEY": "test-api-key",
+				}
+			},
+		},
+		{
 			name:      "VertexAI_BaseModel",
 			baseModel: "gemini-1.5-pro-001",
 			trainingDataset: &TuningDataset{

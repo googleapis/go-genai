@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.33.0](https://github.com/googleapis/go-genai/compare/v1.32.0...v1.33.0) (2025-10-29)
+
+
+### Features
+
+* Add safety_filter_level and person_generation for Imagen upscaling ([3d7b57a](https://github.com/googleapis/go-genai/commit/3d7b57a389322c52e2bd8901a6fae0dbdd2c3720))
+* Add support for preference optimization tuning in the SDK. ([a6db7fe](https://github.com/googleapis/go-genai/commit/a6db7fe8233501c8457ec7fb8d6b3a132bfb7944))
+* Pass file name to the backend when uploading with a file path ([6b5e4f4](https://github.com/googleapis/go-genai/commit/6b5e4f4939a8b13da27fab65731a3423191e2790))
+* support default global location when not using api key with vertexai backend ([44f01d6](https://github.com/googleapis/go-genai/commit/44f01d636bff7310bdcfcc5200118fe6ea4a5e2b))
+
+## [1.32.0](https://github.com/googleapis/go-genai/compare/v1.31.0...v1.32.0) (2025-10-21)
+
+
+### Features
+
+* Add enable_enhanced_civic_answers in GenerationConfig ([c876512](https://github.com/googleapis/go-genai/commit/c87651298d18a77e27f8daba2db0e19074408781))
+* support jailbreak in HarmCategory and BlockedReason ([65e1efc](https://github.com/googleapis/go-genai/commit/65e1efc38ca1e5f958be90eac83668b357187187))
+
+
+### Bug Fixes
+
+* change back SingleEmbedContentResponse.TokenCount to int64 due to mistake in [#557](https://github.com/googleapis/go-genai/issues/557) ([e05f15d](https://github.com/googleapis/go-genai/commit/e05f15d3df064f9ec0e79ab3b6b08fea540e7803))
+* do not append project and client for Vertex AI when using API key ([c27f13a](https://github.com/googleapis/go-genai/commit/c27f13a44e51f770bc363b6c8922f0a1cb29ae42)), closes [#564](https://github.com/googleapis/go-genai/issues/564)
+
 ## [1.31.0](https://github.com/googleapis/go-genai/compare/v1.30.0...v1.31.0) (2025-10-15)
 
 

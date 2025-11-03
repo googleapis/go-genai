@@ -104,6 +104,8 @@ type ClientConfig struct {
 
 	// Optional HTTP client to use. If nil, a default client will be created.
 	// For Vertex AI, this client must handle authentication appropriately.
+	// Otherwise, call [UseDefaultCredentials] convenience method to add default credentials to the
+	// client.
 	HTTPClient *http.Client
 
 	// Optional HTTP options to override.
@@ -240,20 +242,23 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		if cc.Credentials != nil && envAPIKey != "" {
 			log.Println("Warning: The user provided Google Cloud credentials will take precedence over the API key from the environment variable.")
 			cc.APIKey = ""
-		}
-		if configAPIKey != "" && (envProject != "" || envLocation != "") {
+		} else if configAPIKey != "" && (envProject != "" || envLocation != "") {
 			// Explicit API key takes precedence over implicit project/location.
 			log.Println("Warning: The user provided Vertex AI API key will take precedence over the project/location from the environment variables.")
 			cc.Project = ""
 			cc.Location = ""
-		} else if (configProject != "" && configLocation != "") && envAPIKey != "" {
+		} else if (configProject != "" || configLocation != "") && envAPIKey != "" {
 			// Explicit project/location takes precedence over implicit API key.
 			log.Println("Warning: The user provided project/location will take precedence over the API key from the environment variable.")
 			cc.APIKey = ""
-		} else if (envProject != "" && envLocation != "") && envAPIKey != "" {
+		} else if (envProject != "" || envLocation != "") && envAPIKey != "" {
 			// Implicit project/location takes precedence over implicit API key.
 			log.Println("Warning: The project/location from the environment variables will take precedence over the API key from the environment variable.")
 			cc.APIKey = ""
+		}
+
+		if cc.Location == "" && cc.APIKey == "" {
+			cc.Location = "global"
 		}
 
 		if (cc.Project == "" || cc.Location == "") && cc.APIKey == "" {
@@ -338,4 +343,32 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 // The returned ClientConfig is a copy of the ClientConfig used to create the client.
 func (c Client) ClientConfig() ClientConfig {
 	return c.clientConfig
+}
+
+// UseDefaultCredentials sets the credentials to use default credentials and
+// add authorization middleware to the HTTP client.
+//
+// If the ClientConfig already has credentials, this method will return an error.
+//
+// Use this method if your provided HTTPClient doesn't handles credentials.
+func (cc *ClientConfig) UseDefaultCredentials() error {
+	if cc.Credentials != nil {
+		return fmt.Errorf("Credentials are already set")
+	}
+	if cc.Credentials == nil {
+		cred, err := credentials.DetectDefault(&credentials.DetectOptions{
+			Scopes: []string{"https://www.googleapis.com/auth/cloud-platform"},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to find default credentials: %w", err)
+		}
+		cc.Credentials = cred
+	}
+	if cc.HTTPClient != nil {
+		err := httptransport.AddAuthorizationMiddleware(cc.HTTPClient, cc.Credentials)
+		if err != nil {
+			return fmt.Errorf("failed to create HTTP client: %w", err)
+		}
+	}
+	return nil
 }

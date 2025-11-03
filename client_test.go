@@ -58,13 +58,6 @@ func TestNewClient(t *testing.T) {
 			}
 		})
 
-		t.Run("Missing location", func(t *testing.T) {
-			_, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Project: "test-project", envVarProvider: func() map[string]string { return map[string]string{} }})
-			if err == nil {
-				t.Errorf("Expected error, got empty")
-			}
-		})
-
 		t.Run("Credentials is read from passed config", func(t *testing.T) {
 			creds := &auth.Credentials{}
 			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Credentials: creds, Project: "test-project", Location: "test-location"})
@@ -444,11 +437,191 @@ func TestNewClient(t *testing.T) {
 				t.Errorf("Expected base URL %q, got %q", baseURL, client.clientConfig.HTTPOptions.BaseURL)
 			}
 		})
+
+		t.Run("Default location to global when only project is provided", func(t *testing.T) {
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Project: "fake-project-id",
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_API_KEY": "env-api-key",
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected Backend %q, got %q", BackendVertexAI, client.clientConfig.Backend)
+			}
+			if client.clientConfig.Project != "fake-project-id" {
+				t.Errorf("Expected project %q, got %q", "fake-project-id", client.clientConfig.Project)
+			}
+			if client.clientConfig.Location != "global" {
+				t.Errorf("Expected location %q, got %q", "global", client.clientConfig.Location)
+			}
+		})
+
+		t.Run("Default location to global when credentials are provided with project but no location", func(t *testing.T) {
+			creds := &auth.Credentials{}
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Credentials: creds, Project: "fake-project-id",
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_API_KEY": "env-api-key",
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected Backend %q, got %q", BackendVertexAI, client.clientConfig.Backend)
+			}
+			if client.clientConfig.Project != "fake-project-id" {
+				t.Errorf("Expected project %q, got %q", "fake-project-id", client.clientConfig.Project)
+			}
+			if client.clientConfig.Location != "global" {
+				t.Errorf("Expected location %q, got %q", "global", client.clientConfig.Location)
+			}
+			if client.clientConfig.APIKey != "" {
+				t.Errorf("Expected API key to be empty, got %q", client.clientConfig.APIKey)
+			}
+		})
+
+		t.Run("Default location to global when explicit project takes precedence over env api key", func(t *testing.T) {
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Project: "explicit-project-id",
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_API_KEY": "env-api-key",
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected Backend %q, got %q", BackendVertexAI, client.clientConfig.Backend)
+			}
+			if client.clientConfig.Project != "explicit-project-id" {
+				t.Errorf("Expected project %q, got %q", "explicit-project-id", client.clientConfig.Project)
+			}
+			if client.clientConfig.Location != "global" {
+				t.Errorf("Expected location %q, got %q", "global", client.clientConfig.Location)
+			}
+			if client.clientConfig.APIKey != "" {
+				t.Errorf("Expected API key to be empty, got %q", client.clientConfig.APIKey)
+			}
+		})
+
+		t.Run("Default location to global when env project takes precedence over env api key", func(t *testing.T) {
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI,
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_API_KEY":       "env-api-key",
+						"GOOGLE_CLOUD_PROJECT": "env-project-id",
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected Backend %q, got %q", BackendVertexAI, client.clientConfig.Backend)
+			}
+			if client.clientConfig.Project != "env-project-id" {
+				t.Errorf("Expected project %q, got %q", "env-project-id", client.clientConfig.Project)
+			}
+			if client.clientConfig.Location != "global" {
+				t.Errorf("Expected location %q, got %q", "global", client.clientConfig.Location)
+			}
+			if client.clientConfig.APIKey != "" {
+				t.Errorf("Expected API key to be empty, got %q", client.clientConfig.APIKey)
+			}
+		})
+
+		t.Run("No default location to global when explicit location is set", func(t *testing.T) {
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Project: "fake-project-id", Location: "us-central1",
+				envVarProvider: func() map[string]string {
+					return map[string]string{}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected Backend %q, got %q", BackendVertexAI, client.clientConfig.Backend)
+			}
+			if client.clientConfig.Project != "fake-project-id" {
+				t.Errorf("Expected project %q, got %q", "fake-project-id", client.clientConfig.Project)
+			}
+			if client.clientConfig.Location != "us-central1" {
+				t.Errorf("Expected location %q, got %q", "us-central1", client.clientConfig.Location)
+			}
+		})
+
+		t.Run("No default location to global when env location is set", func(t *testing.T) {
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI,
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_CLOUD_PROJECT":  "fake-project-id",
+						"GOOGLE_CLOUD_LOCATION": "us-west1",
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected Backend %q, got %q", BackendVertexAI, client.clientConfig.Backend)
+			}
+			if client.clientConfig.Project != "fake-project-id" {
+				t.Errorf("Expected project %q, got %q", "fake-project-id", client.clientConfig.Project)
+			}
+			if client.clientConfig.Location != "us-west1" {
+				t.Errorf("Expected location %q, got %q", "us-west1", client.clientConfig.Location)
+			}
+		})
+
+		t.Run("No default location when using api key only mode", func(t *testing.T) {
+			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, APIKey: "vertexai-api-key",
+				envVarProvider: func() map[string]string {
+					return map[string]string{}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.Backend != BackendVertexAI {
+				t.Errorf("Expected Backend %q, got %q", BackendVertexAI, client.clientConfig.Backend)
+			}
+			if client.clientConfig.APIKey != "vertexai-api-key" {
+				t.Errorf("Expected API key %q, got %q", "vertexai-api-key", client.clientConfig.APIKey)
+			}
+			if client.clientConfig.Project != "" {
+				t.Errorf("Expected project to be empty, got %q", client.clientConfig.Project)
+			}
+			if client.clientConfig.Location != "" {
+				t.Errorf("Expected location to be empty, got %q", client.clientConfig.Location)
+			}
+		})
+
+		t.Run("Credentials empty when providing http client", func(t *testing.T) {
+			cc := &ClientConfig{Backend: BackendVertexAI, HTTPClient: &http.Client{}, Project: "test-project", Location: "test-location"}
+			// Because the above http.Client doesn't handle credentials, we call UseDefaultCredentials()
+			// so that the http client will have authorization headers in the requests.
+			err := cc.UseDefaultCredentials()
+			if err != nil {
+				t.Fatalf("Expected no error, got error %v", err)
+			}
+			_, err = NewClient(ctx, cc)
+			if err != nil {
+				t.Fatalf("Expected no error, got error %v", err)
+			}
+		})
 	})
 
 	t.Run("VertexAI without default credentials", func(t *testing.T) {
 		t.Run("Credentials empty when providing http client", func(t *testing.T) {
 			_, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, HTTPClient: &http.Client{}, Project: "test-project", Location: "test-location"})
+			// Verify client creation should not fail when no default credential file exists.
 			if err != nil {
 				t.Fatalf("Expected no error, got error %v", err)
 			}

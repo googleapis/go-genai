@@ -140,8 +140,8 @@ func (ac *apiClient) createAPIURL(suffix, method string, httpOptions *HTTPOption
 
 	var finalURL *url.URL
 	if ac.clientConfig.Backend == BackendVertexAI {
-		queryVertexBaseModel := ac.clientConfig.Backend == BackendVertexAI && method == http.MethodGet && strings.HasPrefix(path, "publishers/google/models")
-		if !strings.HasPrefix(path, "projects/") && !queryVertexBaseModel {
+		queryVertexBaseModel := method == http.MethodGet && strings.HasPrefix(path, "publishers/google/models")
+		if ac.clientConfig.APIKey == "" && (!strings.HasPrefix(path, "projects/") && !queryVertexBaseModel) {
 			path = fmt.Sprintf("projects/%s/locations/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, path)
 		}
 		finalURL = u.JoinPath(httpOptions.APIVersion, path)

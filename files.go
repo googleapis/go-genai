@@ -593,5 +593,8 @@ func (m Files) UploadFromPath(ctx context.Context, path string, config *UploadFi
 	}
 	copiedCfg.HTTPOptions.Headers.Add("X-Goog-Upload-Header-Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
 
+	fileName := filepath.Base(path)
+	copiedCfg.HTTPOptions.Headers.Add("X-Goog-Upload-File-Name", fileName)
+
 	return m.Upload(ctx, osf, &copiedCfg)
 }

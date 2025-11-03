@@ -35,6 +35,11 @@ import (
 //	genai.GenerateContentConfig{Temperature: genai.Ptr(0.5)}
 func Ptr[T any](t T) *T { return &t }
 
+//nolint:unused
+type converterFuncWithClientWithRoot func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+
+type converterFuncWithRoot func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+
 type converterFuncWithClient func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
 
 type converterFunc func(map[string]any, map[string]any) (map[string]any, error)
@@ -297,6 +302,36 @@ func formatMap(template string, variables map[string]any) (string, error) {
 }
 
 // applyConverterToSlice calls converter function (with API client) to each element of the slice.
+//
+//nolint:unused
+func applyConverterToSliceWithClientWithRoot(ac *apiClient, inputs []any, converter converterFuncWithClientWithRoot, rootObject map[string]any) ([]map[string]any, error) {
+	var outputs []map[string]any
+	for _, object := range inputs {
+		object, err := converter(ac, object.(map[string]any), nil, rootObject)
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, object)
+	}
+	return outputs, nil
+}
+
+// applyConverterToSlice calls converter function to each element of the slice.
+//
+//nolint:unused
+func applyConverterToSliceWithRoot(inputs []any, converter converterFuncWithRoot, rootObject map[string]any) ([]map[string]any, error) {
+	var outputs []map[string]any
+	for _, object := range inputs {
+		object, err := converter(object.(map[string]any), nil, rootObject)
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, object)
+	}
+	return outputs, nil
+}
+
+// applyConverterToSliceWithClient calls converter function (with API client) to each element of the slice.
 func applyConverterToSliceWithClient(ac *apiClient, inputs []any, converter converterFuncWithClient) ([]map[string]any, error) {
 	var outputs []map[string]any
 	for _, object := range inputs {

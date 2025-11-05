@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.34.0](https://github.com/googleapis/go-genai/compare/v1.33.0...v1.34.0) (2025-11-05)
+
+
+### Features
+
+* Add `UseDefaultCredentials` method to `ClientConfig`. ([d15baab](https://github.com/googleapis/go-genai/commit/d15baab4f79e01d396fa4e8f707cdcd19f6ce404))
+* add complete stats to BatchJob ([0df87d7](https://github.com/googleapis/go-genai/commit/0df87d71edaa743f42665e403dd834af81fa6d33))
+* Add FileSearch tool and associated FileSearchStore management APIs ([8ce95c8](https://github.com/googleapis/go-genai/commit/8ce95c8eb5fc5b49a74b604729cc967596184850))
+* Add FileSearch tool and associated FileSearchStore management APIs ([3e0a744](https://github.com/googleapis/go-genai/commit/3e0a74410171fc42b6d94e9ca18ca2c8a2b8d6c4))
+* Add image_size to ImageConfig (Early Access Program) ([027f29c](https://github.com/googleapis/go-genai/commit/027f29ce42fc22bf4861a10a5b5f35ad6ebb77e4))
+* Added phish filtering feature. ([eb849d1](https://github.com/googleapis/go-genai/commit/eb849d1e13be374f6751fe7374ab0a58a547781c))
+
+
+### Bug Fixes
+
+* prevent nil pointer dereference panic in newAPIError function ([251f7bf](https://github.com/googleapis/go-genai/commit/251f7bf00c59b4cbbf74ad35232dce998341df75))
+* prevent nil pointer dereference panic in newAPIError function ([#468](https://github.com/googleapis/go-genai/issues/468)) ([ba15429](https://github.com/googleapis/go-genai/commit/ba15429569bdb82ecb78618afa8be2f05ed6c4e2))
+
 ## [1.33.0](https://github.com/googleapis/go-genai/compare/v1.32.0...v1.33.0) (2025-10-29)
 
 

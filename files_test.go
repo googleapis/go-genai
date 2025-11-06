@@ -563,6 +563,8 @@ func TestFilesUpload(t *testing.T) {
 			wantErr:   true,
 			setupServer: func(s *MockUploadServer) {
 				s.uploadHandler = func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("X-Goog-Upload-Status", "active")
+					w.WriteHeader(http.StatusOK)
 					// Fail on the first actual upload chunk
 					http.Error(w, "Chunk Upload Failed", http.StatusInternalServerError)
 				}

@@ -21,6 +21,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+var (
+	dummyExtrasProvider = func(body map[string]any) map[string]any { return body }
+)
+
 func TestMergeHTTPOptions(t *testing.T) {
 	tests := []struct {
 		name               string
@@ -167,12 +171,66 @@ func TestMergeHTTPOptions(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "ExtrasRequestProvider in request only",
+			requestHTTPOptions: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+			},
+			want: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+				Headers:               http.Header{},
+			},
+		},
+		{
+			name: "ExtrasRequestProvider in client config only",
+			clientConfig: &ClientConfig{
+				HTTPOptions: HTTPOptions{
+					ExtrasRequestProvider: dummyExtrasProvider,
+				},
+			},
+			requestHTTPOptions: &HTTPOptions{},
+			want: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+				Headers:               http.Header{},
+			},
+		},
+		{
+			name: "ExtrasRequestProvider in both, request overrides",
+			clientConfig: &ClientConfig{
+				HTTPOptions: HTTPOptions{
+					ExtrasRequestProvider: func(body map[string]any) map[string]any { return nil }, // Different provider
+				},
+			},
+			requestHTTPOptions: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+			},
+			want: &HTTPOptions{
+				ExtrasRequestProvider: dummyExtrasProvider,
+				Headers:               http.Header{},
+			},
+		},
+		{
+			name: "ExtrasRequestProvider in neither",
+			clientConfig: &ClientConfig{
+				HTTPOptions: HTTPOptions{},
+			},
+			requestHTTPOptions: &HTTPOptions{},
+			want: &HTTPOptions{
+				ExtrasRequestProvider: nil,
+				Headers:               http.Header{},
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := mergeHTTPOptions(tt.clientConfig, tt.requestHTTPOptions)
-			if diff := cmp.Diff(tt.want, got); diff != "" {
+			// Compare ExtrasRequestProvider by checking if they are both nil or both non-nil
+			// as direct comparison of func pointers might not be reliable.
+			opt := cmp.Comparer(func(x, y ExtrasRequestProvider) bool {
+				return (x == nil && y == nil) || (x != nil && y != nil)
+			})
+			if diff := cmp.Diff(tt.want, got, opt); diff != "" {
 				t.Errorf("mergeHTTPOptions() mismatch (-want +got):\n%s", diff)
 			}
 		})
@@ -235,6 +293,13 @@ func TestSetValueByPath(t *testing.T) {
 			keys:  []string{"a", "b[]", "d"},
 			value: nil,
 			want:  map[string]any{"a": map[string]any{"b": []map[string]any{{"c": "v1"}, {"c": "v2"}}}},
+		},
+		{
+			name:  "Self_key",
+			data:  map[string]any{"a": map[string]any{"b": map[string]any{}}},
+			keys:  []string{"_self"},
+			value: map[string]any{"c": "v"},
+			want:  map[string]any{"a": map[string]any{"b": map[string]any{}}, "c": "v"},
 		},
 	}
 	for _, tt := range tests {
@@ -329,6 +394,200 @@ func TestGetValueByPath(t *testing.T) {
 				}
 			}
 
+		})
+	}
+}
+
+func TestGetValueByPathOrDefault(t *testing.T) {
+	tests := []struct {
+		name         string
+		data         any
+		keys         []string
+		defaultValue any
+		want         any
+	}{
+		{
+			name:         "Simple_Exists",
+			data:         map[string]any{"a": map[string]any{"b": "v"}},
+			keys:         []string{"a", "b"},
+			defaultValue: "default",
+			want:         "v",
+		},
+		{
+			name:         "Simple_Not_Exists",
+			data:         map[string]any{"a": map[string]any{"b": "v"}},
+			keys:         []string{"a", "c"},
+			defaultValue: "default",
+			want:         "default",
+		},
+		{
+			name:         "Array_Exists",
+			data:         map[string]any{"a": map[string]any{"b": []map[string]any{{"c": "v1"}, {"c": "v2"}}}},
+			keys:         []string{"a", "b[]", "c"},
+			defaultValue: "default",
+			want:         []any{"v1", "v2"},
+		},
+		{
+			name:         "Array_Not_Exists",
+			data:         map[string]any{"a": map[string]any{"b": []map[string]any{{"c": "v1"}, {"c": "v2"}}}},
+			keys:         []string{"a", "b[]", "d"},
+			defaultValue: "default",
+			want:         []any{"default", "default"},
+		},
+		{
+			name:         "Nil_Value_Returns_Default",
+			data:         map[string]any{"a": map[string]any{"b": nil}},
+			keys:         []string{"a", "b"},
+			defaultValue: "default",
+			want:         "default",
+		},
+		{
+			name:         "Self_Key",
+			data:         map[string]any{"a": "v"},
+			keys:         []string{"_self"},
+			defaultValue: "default",
+			want:         map[string]any{"a": "v"},
+		},
+		{
+			name:         "Empty_Keys",
+			data:         map[string]any{"a": "v"},
+			keys:         []string{},
+			defaultValue: "default",
+			want:         "default",
+		},
+		{
+			name:         "Integer_Default",
+			data:         map[string]any{"a": "v"},
+			keys:         []string{"b"},
+			defaultValue: 123,
+			want:         123,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getValueByPathOrDefault(tt.data, tt.keys, tt.defaultValue)
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf("getValueByPathOrDefault() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestMoveValueByPath(t *testing.T) {
+	tests := []struct {
+		name     string
+		data     map[string]any
+		paths    map[string]string
+		expected map[string]any
+	}{
+		{
+			name: "DocstringExample",
+			data: map[string]any{
+				"requests": []any{
+					map[string]any{"content": "v1"},
+					map[string]any{"content": "v2"},
+				},
+			},
+			paths: map[string]string{"requests[].*": "requests[].request.*"},
+			expected: map[string]any{
+				"requests": []any{
+					map[string]any{"request": map[string]any{"content": "v1"}},
+					map[string]any{"request": map[string]any{"content": "v2"}},
+				},
+			},
+		},
+		{
+			name: "ComplexNestedStructure",
+			data: map[string]any{
+				"requests": []any{
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "1",
+									},
+								},
+							},
+						},
+						"outputDimensionality": 64,
+					},
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "2",
+									},
+								},
+							},
+						},
+						"outputDimensionality": 64,
+					},
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "3",
+									},
+								},
+							},
+						},
+						"outputDimensionality": 64,
+					},
+				},
+			},
+			paths: map[string]string{"requests[].*": "requests[].request.*"},
+			expected: map[string]any{
+				"requests": []any{
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "1",
+									},
+								},
+							},
+							"outputDimensionality": 64,
+						},
+					},
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "2",
+									},
+								},
+							},
+							"outputDimensionality": 64,
+						},
+					},
+					map[string]any{
+						"request": map[string]any{
+							"content": map[string]any{
+								"parts": []any{
+									map[string]any{
+										"text": "3",
+									},
+								},
+							},
+							"outputDimensionality": 64,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			moveValueByPath(tt.data, tt.paths)
+			if diff := cmp.Diff(tt.expected, tt.data); diff != "" {
+				t.Errorf("moveValueByPath() mismatch (-want +got):\n%s", diff)
+			}
 		})
 	}
 }

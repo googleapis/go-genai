@@ -44,7 +44,7 @@ func run(ctx context.Context) {
 		config.OutputGCSURI = "gs://unified-genai-tests/tmp/genai/video/outputs"
 	}
 	// Call the GenerateVideo method.
-	operation, err := client.Models.GenerateVideos(ctx, *model, "A neon hologram of a cat driving at top speed", nil, &config)
+	operation, err := client.Models.GenerateVideos(ctx, *model, "A neon hologram of a cat driving at top speed", nil, nil, &config)
 	if err != nil {
 		log.Fatal(err)
 	}

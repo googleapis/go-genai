@@ -41,6 +41,9 @@ func chatStream(ctx context.Context) {
 
 	// Create a new Chat.
 	chat, err := client.Chats.Create(ctx, *model, config, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	part := genai.Part{Text: "What is 1 + 2?"}
 	p := make([]genai.Part, 1)

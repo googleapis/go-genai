@@ -24,13 +24,20 @@ import (
 	"iter"
 	"log"
 	"net/http"
+	"net/textproto"
 	"net/url"
+	"reflect"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const maxChunkSize = 8 * 1024 * 1024 // 8 MB chunk size
+const maxRetryCount = 3
+const initialRetryDelay = time.Second
+const delayMultiplier = 2
 
 type apiClient struct {
 	clientConfig *ClientConfig
@@ -38,10 +45,24 @@ type apiClient struct {
 
 // sendStreamRequest issues an server streaming API request and returns a map of the response contents.
 func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiClient, path string, method string, body map[string]any, httpOptions *HTTPOptions, output *responseStream[R]) error {
-	req, err := buildRequest(ctx, ac, path, body, method, httpOptions)
+	req, httpOptions, err := buildRequest(ctx, ac, path, body, method, httpOptions)
 	if err != nil {
 		return err
 	}
+
+	// Handle context timeout.
+	// The request's context deadline is set using [HTTPOptions.Timeout].
+	// [ClientConfig.HTTPClient.Timeout] does not affect the context deadline for the request.
+	// [ClientConfig.HTTPClient.Timeout] is used along with `x-server-timeout` header in order to
+	// get the end-to-end timeout value for logging.
+	requestContext := ctx
+	timeout := httpOptions.Timeout
+	var cancel context.CancelFunc
+	if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
+		requestContext, cancel = context.WithTimeout(ctx, *timeout)
+		defer cancel()
+	}
+	req = req.WithContext(requestContext)
 
 	resp, err := doRequest(ac, req)
 	if err != nil {
@@ -54,30 +75,45 @@ func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiC
 
 // sendRequest issues an API request and returns a map of the response contents.
 func sendRequest(ctx context.Context, ac *apiClient, path string, method string, body map[string]any, httpOptions *HTTPOptions) (map[string]any, error) {
-	req, err := buildRequest(ctx, ac, path, body, method, httpOptions)
+
+	req, httpOptions, err := buildRequest(ctx, ac, path, body, method, httpOptions)
 	if err != nil {
 		return nil, err
 	}
+
+	requestContext := ctx
+	timeout := httpOptions.Timeout
+	var cancel context.CancelFunc
+	if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
+		requestContext, cancel = context.WithTimeout(ctx, *timeout)
+		defer cancel()
+	}
+	req = req.WithContext(requestContext)
 
 	resp, err := doRequest(ac, req)
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 
 	return deserializeUnaryResponse(resp)
 }
 
 func downloadFile(ctx context.Context, ac *apiClient, path string, httpOptions *HTTPOptions) ([]byte, error) {
-	req, err := buildRequest(ctx, ac, path, nil, http.MethodGet, httpOptions)
+	// The client and request timeout are not used for downloadFile.
+	// TODO(b/427540996): implement timeout.
+	req, _, err := buildRequest(ctx, ac, path, nil, http.MethodGet, httpOptions)
 	if err != nil {
 		return nil, err
 	}
+	req = req.WithContext(ctx)
 
 	resp, err := doRequest(ac, req)
 	if err != nil {
 		return nil, err
 	}
+
 	return io.ReadAll(resp.Body)
 }
 
@@ -95,63 +131,213 @@ func mapToStruct[R any](input map[string]any, output *R) error {
 }
 
 func (ac *apiClient) createAPIURL(suffix, method string, httpOptions *HTTPOptions) (*url.URL, error) {
-	if ac.clientConfig.Backend == BackendVertexAI {
-		queryVertexBaseModel := ac.clientConfig.Backend == BackendVertexAI && method == http.MethodGet && strings.HasPrefix(suffix, "publishers/google/models")
-		if !strings.HasPrefix(suffix, "projects/") && !queryVertexBaseModel {
-			suffix = fmt.Sprintf("projects/%s/locations/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, suffix)
-		}
-		u, err := url.Parse(fmt.Sprintf("%s/%s/%s", httpOptions.BaseURL, httpOptions.APIVersion, suffix))
-		if err != nil {
-			return nil, fmt.Errorf("createAPIURL: error parsing Vertex AI URL: %w", err)
-		}
-		return u, nil
-	} else {
-		if !strings.Contains(suffix, fmt.Sprintf("/%s/", httpOptions.APIVersion)) {
-			suffix = fmt.Sprintf("%s/%s", httpOptions.APIVersion, suffix)
-		}
-		u, err := url.Parse(fmt.Sprintf("%s/%s", httpOptions.BaseURL, suffix))
-		if err != nil {
-			return nil, fmt.Errorf("createAPIURL: error parsing ML Dev URL: %w", err)
-		}
-		return u, nil
+	path, query, _ := strings.Cut(suffix, "?")
+
+	u, err := url.Parse(httpOptions.BaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("createAPIURL: error parsing base URL: %w", err)
 	}
+
+	var finalURL *url.URL
+	if ac.clientConfig.Backend == BackendVertexAI {
+		queryVertexBaseModel := method == http.MethodGet && strings.HasPrefix(path, "publishers/google/models")
+		if ac.clientConfig.APIKey == "" && (!strings.HasPrefix(path, "projects/") && !queryVertexBaseModel) {
+			path = fmt.Sprintf("projects/%s/locations/%s/%s", ac.clientConfig.Project, ac.clientConfig.Location, path)
+		}
+		finalURL = u.JoinPath(httpOptions.APIVersion, path)
+	} else {
+		if !strings.Contains(path, fmt.Sprintf("/%s/", httpOptions.APIVersion)) {
+			path = fmt.Sprintf("%s/%s", httpOptions.APIVersion, path)
+		}
+		finalURL = u.JoinPath(path)
+	}
+
+	finalURL.RawQuery = query
+	return finalURL, nil
 }
 
-func buildRequest(ctx context.Context, ac *apiClient, path string, body map[string]any, method string, httpOptions *HTTPOptions) (*http.Request, error) {
-	url, err := ac.createAPIURL(path, method, httpOptions)
+// patchHTTPOptions merges two HttpOptions objects, creating a new one.
+// Fields from patchOptions will overwrite fields from options.
+func patchHTTPOptions(options, patchOptions HTTPOptions) (*HTTPOptions, error) {
+	// Start with a shallow copy of the base options.
+	copyOption := HTTPOptions{Headers: http.Header{}}
+	err := deepCopy(options, &copyOption)
 	if err != nil {
 		return nil, err
 	}
+
+	// Deep copy the Headers map to avoid modifying the original options' map.
+	// The Python code effectively does this by creating a new dictionary.
+	mergedHeaders := http.Header{}
+	for k, v := range options.Headers {
+		mergedHeaders[textproto.CanonicalMIMEHeaderKey(k)] = v
+	}
+	for k, v := range patchOptions.Headers {
+		mergedHeaders[textproto.CanonicalMIMEHeaderKey(k)] = v
+	}
+	copyOption.Headers = mergedHeaders
+
+	// BaseURL and APIVersion is value type because explicitly setting
+	// request HTTPOption to empty string won't override the client HTTPOption.
+	if patchOptions.BaseURL != "" {
+		copyOption.BaseURL = patchOptions.BaseURL
+	}
+	if patchOptions.APIVersion != "" {
+		copyOption.APIVersion = patchOptions.APIVersion
+	}
+	if patchOptions.ExtrasRequestProvider != nil {
+		copyOption.ExtrasRequestProvider = patchOptions.ExtrasRequestProvider
+	}
+	if patchOptions.ExtraBody != nil {
+		copyOption.ExtraBody = patchOptions.ExtraBody
+	}
+	// Request timeout config overrides client timeout config.
+	// So we need a pointer type so that we know the request timeout
+	// is explicitly set or not.
+	// Especially when request timeout is explicitly set to Ptr[int32](0),
+	// then it means no timeout regardless client timeout is non-zero.
+	if patchOptions.Timeout != nil {
+		copyOption.Timeout = patchOptions.Timeout
+	}
+	appendSDKHeaders(copyOption.Headers)
+
+	return &copyOption, nil
+}
+
+// appendLibraryVersionHeaders appends telemetry headers to the headers map.
+// It modifies the map in place.
+func appendSDKHeaders(headers http.Header) {
+	if headers == nil {
+		return
+	}
+
+	libraryLabel := fmt.Sprintf("google-genai-sdk/%s", version)
+	languageLabel := fmt.Sprintf("gl-go/%s", runtime.Version())
+	versionHeaderValue := fmt.Sprintf("%s %s", libraryLabel, languageLabel)
+
+	if !slices.Contains(headers.Values("user-agent"), versionHeaderValue) {
+		headers.Add("user-agent", versionHeaderValue)
+	}
+
+	if !slices.Contains(headers.Values("x-goog-api-client"), versionHeaderValue) {
+		headers.Add("x-goog-api-client", versionHeaderValue)
+	}
+}
+
+func buildRequest(ctx context.Context, ac *apiClient, path string, body map[string]any, method string, httpOptions *HTTPOptions) (*http.Request, *HTTPOptions, error) {
+	patchedHTTPOptions, err := patchHTTPOptions(ac.clientConfig.HTTPOptions, *httpOptions)
+	if err != nil {
+		return nil, nil, err
+	}
+	url, err := ac.createAPIURL(path, method, patchedHTTPOptions)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if patchedHTTPOptions.ExtraBody != nil {
+		recursiveMapMerge(body, patchedHTTPOptions.ExtraBody)
+	}
+
+	if patchedHTTPOptions.ExtrasRequestProvider != nil {
+		body = httpOptions.ExtrasRequestProvider(body)
+	}
+
 	b := new(bytes.Buffer)
 	if len(body) > 0 {
 		if err := json.NewEncoder(b).Encode(body); err != nil {
-			return nil, fmt.Errorf("buildRequest: error encoding body %#v: %w", body, err)
+			return nil, nil, fmt.Errorf("buildRequest: error encoding body %#v: %w", body, err)
 		}
 	}
 
 	// Create a new HTTP request
-	req, err := http.NewRequestWithContext(ctx, method, url.String(), b)
+	req, err := http.NewRequest(method, url.String(), b)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// Set headers
-	doMergeHeaders(httpOptions.Headers, &req.Header)
-	doMergeHeaders(sdkHeader(ac), &req.Header)
-	return req, nil
+	req.Header = patchedHTTPOptions.Headers
+	timeoutSeconds := inferTimeout(ctx, ac, patchedHTTPOptions.Timeout).Seconds()
+	if timeoutSeconds > 0 {
+		req.Header.Set("x-server-timeout", strconv.FormatInt(int64(timeoutSeconds), 10))
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if ac.clientConfig.APIKey != "" {
+		req.Header.Set("x-goog-api-key", ac.clientConfig.APIKey)
+	}
+
+	return req, patchedHTTPOptions, nil
 }
 
-func sdkHeader(ac *apiClient) http.Header {
-	header := make(http.Header)
-	header.Set("Content-Type", "application/json")
-	if ac.clientConfig.APIKey != "" {
-		header.Set("x-goog-api-key", ac.clientConfig.APIKey)
+// recursiveMapMerge recursively merges key-value pairs from a source map (`src`)
+// into a destination map (`dest`), modifying `dest` in-place.
+//
+// If a key exists in both maps and both corresponding values are maps
+// of type `map[string]any`, it merges them recursively. Otherwise, the value
+// from `src` overwrites the value in `dest`.
+//
+// The function logs a warning if a key's value in `dest` is overwritten by a
+// value of a different type from `src`.
+func recursiveMapMerge(dest, src map[string]any) {
+	if dest == nil || src == nil {
+		return
 	}
-	libraryLabel := fmt.Sprintf("google-genai-sdk/%s", version)
-	languageLabel := fmt.Sprintf("gl-go/%s", runtime.Version())
-	versionHeaderValue := fmt.Sprintf("%s %s", libraryLabel, languageLabel)
-	header.Set("user-agent", versionHeaderValue)
-	header.Set("x-goog-api-client", versionHeaderValue)
-	return header
+	for key, value := range src {
+		targetVal, keyExists := dest[key]
+		destMap, isDestMap := targetVal.(map[string]any)
+		srcMap, isSrcMap := value.(map[string]any)
+
+		if keyExists && isDestMap && isSrcMap {
+			recursiveMapMerge(destMap, srcMap)
+		} else if keyExists && targetVal != nil && value != nil &&
+			reflect.TypeOf(targetVal) != reflect.TypeOf(value) {
+			log.Printf("Warning: Type mismatch for key '%s'. Existing type: %T, new type: %T. Overwriting.", key, targetVal, value)
+			dest[key] = value
+		} else {
+			dest[key] = value
+		}
+	}
+}
+
+// TODO(b/428730853): HTTP Client timeout should be considered.
+func isTimeoutBeforeDeadline(ctx context.Context, timeout time.Duration) bool {
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		return true
+	}
+	return timeout < time.Until(deadline)
+}
+
+func inferTimeout(ctx context.Context, ac *apiClient, requestTimeout *time.Duration) time.Duration {
+	// ac.clientConfig.HTTPClient is not nil because it's initialized in the NewClient function.
+	httpClientTimeout := ac.clientConfig.HTTPClient.Timeout
+	contextTimeout := 0 * time.Second
+	effectiveTimeout := 0 * time.Second
+
+	if deadline, ok := ctx.Deadline(); ok {
+		contextTimeout = time.Until(deadline)
+	}
+
+	// If context timeout or httpClient timeout is less than request timeout,
+	// Then the smaller one takes precedence.
+	if requestTimeout != nil {
+		effectiveTimeout = *requestTimeout
+	}
+	if httpClientTimeout != 0 {
+		if effectiveTimeout == 0 {
+			effectiveTimeout = httpClientTimeout
+		} else {
+			effectiveTimeout = min(effectiveTimeout, httpClientTimeout)
+		}
+	}
+	if contextTimeout != 0 {
+		if effectiveTimeout == 0 {
+			effectiveTimeout = contextTimeout
+		} else {
+			effectiveTimeout = min(effectiveTimeout, contextTimeout)
+		}
+	}
+	return effectiveTimeout
 }
 
 func doRequest(ac *apiClient, req *http.Request) (*http.Response, error) {
@@ -180,13 +366,18 @@ func deserializeUnaryResponse(resp *http.Response) (map[string]any, error) {
 			return nil, fmt.Errorf("deserializeUnaryResponse: error unmarshalling response: %w\n%s", err, respBody)
 		}
 	}
-	output["httpHeaders"] = resp.Header
+
+	httpResponse := map[string]any{
+		"headers": resp.Header,
+	}
+	output["sdkHttpResponse"] = httpResponse
 	return output, nil
 }
 
 type responseStream[R any] struct {
 	r  *bufio.Scanner
 	rc io.ReadCloser
+	h  http.Header
 }
 
 func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(responseMap map[string]any) (*R, error)) iter.Seq2[*R, error] {
@@ -225,13 +416,39 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 					}
 				}
 
-				// Step 3: yield the response.
+				// Step 3: Add the sdkHttpResponse to the response.
+				v := reflect.ValueOf(resp).Elem()
+				if v.Kind() == reflect.Struct {
+					field := v.FieldByName("SDKHTTPResponse")
+					if field.IsValid() && field.CanSet() {
+						if field.IsNil() {
+							field.Set(reflect.ValueOf(&HTTPResponse{}))
+						}
+						field.Interface().(*HTTPResponse).Headers = rs.h
+					}
+				}
+
+				// Step 4: yield the response.
 				if !yield(resp, nil) {
 					return
 				}
 			default:
-				// Stream chunk not started with "data" is treated as an error.
-				if !yield(nil, fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))) {
+				var err error
+				if len(line) > 0 {
+					var respWithError = new(responseWithError)
+					// Stream chunk that doesn't matches error format.
+					if marshalErr := json.Unmarshal(line, respWithError); marshalErr != nil {
+						err = fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))
+					}
+					// Stream chunk that matches error format.
+					if respWithError.ErrorInfo != nil {
+						err = *respWithError.ErrorInfo
+					}
+				}
+				if err == nil {
+					err = fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))
+				}
+				if !yield(nil, err) {
 					return
 				}
 			}
@@ -273,7 +490,14 @@ func newAPIError(resp *http.Response) error {
 			// Handle plain text error message. File upload backend doesn't return json error message.
 			return APIError{Code: resp.StatusCode, Status: resp.Status, Message: string(body)}
 		}
-		return *respWithError.ErrorInfo
+
+		// Check if we successfully parsed an error response
+		if respWithError.ErrorInfo != nil {
+			return *respWithError.ErrorInfo
+		}
+
+		// Valid JSON but no error field - treat as generic error with body content
+		return APIError{Code: resp.StatusCode, Status: resp.Status, Message: string(body)}
 	}
 	return APIError{Code: resp.StatusCode, Status: resp.Status}
 }
@@ -292,6 +516,7 @@ func httpStatusOk(resp *http.Response) bool {
 
 func deserializeStreamResponse[T responseStream[R], R any](resp *http.Response, output *responseStream[R]) error {
 	if !httpStatusOk(resp) {
+		defer resp.Body.Close()
 		return newAPIError(resp)
 	}
 	output.r = bufio.NewScanner(resp.Body)
@@ -303,6 +528,7 @@ func deserializeStreamResponse[T responseStream[R], R any](resp *http.Response, 
 
 	output.r.Split(scan)
 	output.rc = resp.Body
+	output.h = resp.Header
 	return nil
 }
 
@@ -338,7 +564,7 @@ func scan(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	return 0, nil, nil
 }
 
-func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL string, httpOptions *HTTPOptions) (*File, error) {
+func (ac *apiClient) upload(ctx context.Context, r io.Reader, uploadURL string, httpOptions *HTTPOptions) (map[string]any, error) {
 	var offset int64 = 0
 	var resp *http.Response
 	var respBody map[string]any
@@ -355,21 +581,43 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 		} else if err != nil {
 			return nil, fmt.Errorf("Failed to read bytes from file at offset %d: %w. Bytes actually read: %d", offset, err, bytesRead)
 		}
+		for attempt := 0; attempt < maxRetryCount; attempt++ {
+			patchedHTTPOptions, err := patchHTTPOptions(ac.clientConfig.HTTPOptions, *httpOptions)
+			if err != nil {
+				return nil, err
+			}
 
-		req, err := http.NewRequestWithContext(ctx, http.MethodPost, uploadURL, bytes.NewReader(buffer[:bytesRead]))
-		if err != nil {
-			return nil, fmt.Errorf("Failed to create upload request for chunk at offset %d: %w", offset, err)
-		}
-		doMergeHeaders(httpOptions.Headers, &req.Header)
-		doMergeHeaders(sdkHeader(ac), &req.Header)
+			// TODO(b/427540996): Support timeout.
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, uploadURL, bytes.NewReader(buffer[:bytesRead]))
+			if err != nil {
+				return nil, fmt.Errorf("Failed to create upload request for chunk at offset %d: %w", offset, err)
+			}
 
-		req.Header.Set("X-Goog-Upload-Command", uploadCommand)
-		req.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))
-		req.Header.Set("Content-Length", strconv.FormatInt(int64(bytesRead), 10))
+			req.Header = patchedHTTPOptions.Headers
+			req.Header.Set("Content-Type", "application/json")
+			if ac.clientConfig.APIKey != "" {
+				req.Header.Set("x-goog-api-key", ac.clientConfig.APIKey)
+			}
+			// TODO(b/427540996): Add timeout logging.
 
-		resp, err = doRequest(ac, req)
-		if err != nil {
-			return nil, fmt.Errorf("upload request failed for chunk at offset %d: %w", offset, err)
+			req.Header.Set("X-Goog-Upload-Command", uploadCommand)
+			req.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))
+			req.Header.Set("Content-Length", strconv.FormatInt(int64(bytesRead), 10))
+			resp, err = doRequest(ac, req)
+			if err != nil {
+				return nil, fmt.Errorf("upload request failed for chunk at offset %d: %w", offset, err)
+			}
+			if resp.Header.Get("X-Goog-Upload-Status") != "" {
+				break
+			}
+			resp.Body.Close()
+
+			select {
+			case <-ctx.Done():
+				return nil, fmt.Errorf("upload aborted while waiting to retry (attempt %d, offset %d): %w", attempt+1, offset, ctx.Err())
+			case <-time.After(initialRetryDelay * time.Duration(delayMultiplier^attempt)):
+				// Sleep completed, continue to the next attempt.
+			}
 		}
 		defer resp.Body.Close()
 
@@ -400,8 +648,37 @@ func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL stri
 		return nil, fmt.Errorf("Failed to upload file: Upload status is not finalized")
 	}
 
+	return respBody, nil
+}
+
+func (ac *apiClient) uploadFile(ctx context.Context, r io.Reader, uploadURL string, httpOptions *HTTPOptions) (*File, error) {
+	respBody, err := ac.upload(ctx, r, uploadURL, httpOptions)
+	if err != nil {
+		return nil, err // Propagate any errors from the upload process
+	}
+	if respBody == nil {
+		return nil, fmt.Errorf("upload completed but response body was empty")
+	}
+
 	var response = new(File)
-	err := mapToStruct(respBody["file"].(map[string]any), &response)
+	err = mapToStruct(respBody["file"].(map[string]any), &response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (ac *apiClient) uploadToFileSearchStore(ctx context.Context, r io.Reader, uploadURL string, httpOptions *HTTPOptions) (*UploadToFileSearchStoreOperation, error) {
+	respBody, err := ac.upload(ctx, r, uploadURL, httpOptions)
+	if err != nil {
+		return nil, err // Propagate any errors from the upload process
+	}
+	if respBody == nil {
+		return nil, fmt.Errorf("upload completed but response body was empty")
+	}
+
+	var response = new(UploadToFileSearchStoreOperation)
+	err = mapToStruct(respBody, &response)
 	if err != nil {
 		return nil, err
 	}

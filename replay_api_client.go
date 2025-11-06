@@ -104,6 +104,10 @@ func (rac *replayAPIClient) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 
 	rac.assertRequest(req, interaction.Request)
 	rac.currentInteractionIndex++
+
+	// Set Content-Type header
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
 	var bodySegments []string
 	for i := 0; i < len(interaction.Response.BodySegments); i++ {
 		responseBodySegment, err := json.Marshal(interaction.Response.BodySegments[i])
@@ -149,9 +153,11 @@ func readFileForReplayTest[T any](path string, output *T, omitempty bool) error 
 }
 
 // In testing server, host and scheme is empty.
-func redactReplayURL(url string) string {
+func processReplayURL(url string) string {
 	url = strings.ReplaceAll(url, "{MLDEV_URL_PREFIX}/", "")
 	url = strings.ReplaceAll(url, "{VERTEX_URL_PREFIX}/", "")
+	url = strings.ReplaceAll(url, "True", "true")
+	url = strings.ReplaceAll(url, "False", "false")
 	return url
 }
 
@@ -183,6 +189,56 @@ func redactRequestBody(body map[string]any) map[string]any {
 	return body
 }
 
+func redactVersionNumbers(versionString string) string {
+	re := regexp.MustCompile(`(v|go)?\d+\.\d+(\.\d+)?`)
+	res := re.ReplaceAllString(versionString, "{VERSION_NUMBER}")
+
+	placeholder := "{VERSION_NUMBER}"
+	firstIndex := strings.Index(res, placeholder)
+	if firstIndex == -1 {
+		return res
+	}
+
+	searchStart := firstIndex + len(placeholder)
+	if searchStart >= len(res) {
+		return res
+	}
+
+	secondIndex := strings.Index(res[searchStart:], placeholder)
+	if secondIndex != -1 {
+		realSecondIndex := searchStart + secondIndex
+		endOfPlaceholder := realSecondIndex + len(placeholder)
+		return res[:endOfPlaceholder]
+	}
+
+	return res
+}
+
+func redactLanguageLabel(languageLabel string) string {
+	re := regexp.MustCompile(`gl-go/`)
+	return re.ReplaceAllString(languageLabel, "{LANGUAGE_LABEL}/")
+}
+
+func redactRequestHeaders(headers map[string]string) map[string]string {
+	redactedHeaders := make(map[string]string)
+	for headerName, headerValue := range headers {
+		if headerName == "x-goog-api-key" {
+			redactedHeaders[headerName] = "{REDACTED}"
+		} else if headerName == "user-agent" {
+			redactedHeaders[headerName] = redactLanguageLabel(redactVersionNumbers(headerValue))
+		} else if headerName == "x-goog-api-client" {
+			redactedHeaders[headerName] = redactLanguageLabel(redactVersionNumbers(headerValue))
+		} else if headerName == "x-goog-user-project" {
+			continue
+		} else if headerName == "authorization" {
+			continue
+		} else {
+			redactedHeaders[headerName] = headerValue
+		}
+	}
+	return redactedHeaders
+}
+
 func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayRequest *replayRequest) {
 	rac.t.Helper()
 	sdkRequestBody, err := io.ReadAll(sdkRequest.Body)
@@ -199,20 +255,32 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 	bodySegment = convertKeysToCamelCase(bodySegment, "").(map[string]any)
 	omitEmptyValues(bodySegment)
 
-	headers := make(map[string]string)
+	sdkHeaders := make(map[string]string)
 	for k, v := range sdkRequest.Header {
-		headers[k] = strings.Join(v, ",")
+		lowerK := strings.ToLower(k)
+		if lowerK == "accept-encoding" || lowerK == "content-length" {
+			continue
+		}
+		sdkHeaders[lowerK] = strings.Join(v, ",")
 	}
-	// TODO(b/390425822): support headers validation.
+	redactedSDKHeaders := redactRequestHeaders(sdkHeaders)
+
+	replayHeaders := make(map[string]string)
+	for k, v := range replayRequest.Headers {
+		replayHeaders[strings.ToLower(k)] = v
+	}
+
 	got := map[string]any{
 		"method":       strings.ToLower(sdkRequest.Method),
 		"url":          redactSDKURL(sdkRequest.URL.String()),
+		"headers":      redactedSDKHeaders,
 		"bodySegments": []map[string]any{bodySegment},
 	}
 
 	want := map[string]any{
 		"method":       replayRequest.Method,
-		"url":          redactReplayURL(replayRequest.URL),
+		"url":          processReplayURL(replayRequest.URL),
+		"headers":      replayHeaders,
 		"bodySegments": replayRequest.BodySegments,
 	}
 
@@ -225,6 +293,25 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 	}
 }
 
+func isConsideredEmpty(v any) bool {
+	if v == nil {
+		return true
+	}
+	val := reflect.ValueOf(v)
+	if val.Kind() == reflect.String && val.String() == "0001-01-01T00:00:00Z" {
+		return true
+	}
+	if val.IsZero() {
+		return true
+	}
+	switch val.Kind() {
+	case reflect.Map, reflect.Slice:
+		return val.Len() == 0
+	}
+
+	return false
+}
+
 // omitEmptyValues recursively traverses the given value and if it is a `map[string]any` or
 // `[]any`, it omits the empty values.
 func omitEmptyValues(v any) {
@@ -233,12 +320,15 @@ func omitEmptyValues(v any) {
 	}
 	switch m := v.(type) {
 	case map[string]any:
-		for k, v := range m {
-			// If the value is empty, delete the key from the map.
-			if reflect.ValueOf(v).IsZero() || v == "0001-01-01T00:00:00Z" {
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+		for _, k := range keys {
+			val := m[k]
+			omitEmptyValues(val)
+			if isConsideredEmpty(val) {
 				delete(m, k)
-			} else {
-				omitEmptyValues(v)
 			}
 		}
 	case []any:
@@ -260,6 +350,10 @@ func convertKeysToCamelCase(v any, parentKey string) any {
 	case map[string]any:
 		newMap := make(map[string]any)
 		for key, value := range m {
+			if parentKey == "args" {
+				newMap[key] = value
+				continue
+			}
 			camelCaseKey := toCamelCase(key)
 			if parentKey == "response" && key == "body_segments" {
 				newMap[camelCaseKey] = value
@@ -306,6 +400,52 @@ var stringComparator = cmp.Comparer(func(x, y string) bool {
 	}
 	return x == y
 })
+
+func sanitizeHeadersForComparison(item map[string]any) {
+	sdkHTTPResponse, ok := item["sdkHttpResponse"].(map[string]any)
+	if !ok {
+		return
+	}
+
+	headers, ok := sdkHTTPResponse["headers"].(map[string]any)
+	if !ok {
+		return
+	}
+
+	// TODO(b/441125206): Support reading response headers for replay tests.
+	ignoreHeaders := map[string]bool{
+		"content-encoding":             true,
+		"server":                       true,
+		"server-timing":                true,
+		"transfer-encoding":            true,
+		"vary":                         true,
+		"x-xss-protection":             true,
+		"x-frame-options":              true,
+		"x-content-type-options":       true,
+		"x-vertex-ai-llm-request-type": true,
+		"date":                         true,
+	}
+
+	processedHeaders := make(map[string][]string)
+	for k, v := range headers {
+		lowerK := strings.ToLower(k)
+		if !ignoreHeaders[lowerK] {
+			switch val := v.(type) {
+			case string:
+				processedHeaders[lowerK] = []string{val}
+			case []string:
+				processedHeaders[lowerK] = val
+			case []any:
+				strSlice := make([]string, len(val))
+				for i, item := range val {
+					strSlice[i] = item.(string)
+				}
+				processedHeaders[lowerK] = strSlice
+			}
+		}
+	}
+	sdkHTTPResponse["headers"] = processedHeaders
+}
 
 var floatComparator = cmp.Comparer(func(x, y float64) bool {
 	return math.Abs(x-y) < 1e-6

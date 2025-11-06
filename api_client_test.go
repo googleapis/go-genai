@@ -1,10 +1,12 @@
 package genai
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -21,21 +23,24 @@ import (
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/civil"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-// TODO(b/384580303): Add streaming request tests.
 func TestSendRequest(t *testing.T) {
 	ctx := context.Background()
 	// Setup test cases
 	tests := []struct {
-		desc         string
-		path         string
-		method       string
-		requestBody  map[string]any
-		responseCode int
-		responseBody string
-		want         map[string]any
-		wantErr      error
+		desc           string
+		path           string
+		method         string
+		requestBody    map[string]any
+		clientTimeout  *time.Duration
+		requestTimeout *time.Duration
+		serverLatency  time.Duration
+		responseCode   int
+		responseBody   string
+		want           map[string]any
+		wantErr        error
 	}{
 		{
 			desc:         "successful post request",
@@ -99,7 +104,75 @@ func TestSendRequest(t *testing.T) {
 			method:       http.MethodPut,
 			responseCode: http.StatusOK,
 			responseBody: `invalid json`,
-			wantErr:      fmt.Errorf("newAPIError: unmarshal response to error failed"),
+			wantErr:      fmt.Errorf("deserializeUnaryResponse: error unmarshalling response: invalid character"),
+		},
+		{
+			desc:          "client timeout",
+			path:          "foo",
+			method:        http.MethodPost,
+			clientTimeout: Ptr(600 * time.Millisecond),
+			requestBody:   map[string]any{"key": "value"},
+			responseCode:  http.StatusOK,
+			responseBody:  `{"response": "ok"}`,
+			serverLatency: 700 * time.Millisecond,
+			wantErr:       fmt.Errorf("context deadline exceeded"),
+		},
+		{
+			desc:           "request timeout",
+			path:           "foo",
+			method:         http.MethodPost,
+			requestTimeout: Ptr(500 * time.Millisecond),
+			requestBody:    map[string]any{"key": "value"},
+			responseCode:   http.StatusOK,
+			responseBody:   `{"response": "ok"}`,
+			serverLatency:  700 * time.Millisecond,
+			wantErr:        fmt.Errorf("context deadline exceeded"),
+		},
+		{
+			desc:           "client timeout with request timeout",
+			path:           "foo",
+			method:         http.MethodPost,
+			clientTimeout:  Ptr(600 * time.Millisecond),
+			requestTimeout: Ptr(500 * time.Millisecond),
+			requestBody:    map[string]any{"key": "value"},
+			responseCode:   http.StatusOK,
+			responseBody:   `{"response": "ok"}`,
+			serverLatency:  550 * time.Millisecond,
+			wantErr:        fmt.Errorf("context deadline exceeded"),
+		},
+		{
+			desc:           "With 0 client timeout and request timeout",
+			method:         "POST",
+			path:           "test",
+			requestBody:    map[string]any{"key": "value"},
+			responseBody:   `{"response": "ok"}`,
+			responseCode:   http.StatusOK,
+			clientTimeout:  Ptr(0 * time.Millisecond),
+			requestTimeout: Ptr(100 * time.Millisecond),
+			serverLatency:  150 * time.Millisecond,
+			wantErr:        fmt.Errorf("context deadline exceeded"),
+		},
+		{
+			desc:           "With client timeout and 0 request timeout",
+			method:         "POST",
+			path:           "test",
+			requestBody:    map[string]any{"key": "value"},
+			responseBody:   `{"response": "ok"}`,
+			responseCode:   http.StatusOK,
+			clientTimeout:  Ptr(200 * time.Millisecond),
+			requestTimeout: Ptr(0 * time.Millisecond),
+			serverLatency:  250 * time.Millisecond,
+		},
+		{
+			desc:           "With 0 client timeout and 0 request timeout",
+			method:         "POST",
+			path:           "test",
+			requestBody:    map[string]any{"key": "value"},
+			responseBody:   `{"response": "ok"}`,
+			responseCode:   http.StatusOK,
+			clientTimeout:  Ptr(0 * time.Millisecond),
+			requestTimeout: Ptr(0 * time.Millisecond),
+			serverLatency:  150 * time.Millisecond,
 		},
 	}
 
@@ -107,6 +180,9 @@ func TestSendRequest(t *testing.T) {
 		t.Run(tt.desc, func(t *testing.T) {
 			// Create a test server
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tt.serverLatency > 0 {
+					time.Sleep(tt.serverLatency)
+				}
 				w.WriteHeader(tt.responseCode)
 				fmt.Fprintln(w, tt.responseBody)
 			}))
@@ -117,12 +193,13 @@ func TestSendRequest(t *testing.T) {
 				clientConfig: &ClientConfig{
 					HTTPOptions: HTTPOptions{
 						BaseURL: ts.URL,
+						Timeout: tt.clientTimeout,
 					},
 					HTTPClient: ts.Client(),
 				},
 			}
 
-			got, err := sendRequest(ctx, ac, tt.path, tt.method, tt.requestBody, &HTTPOptions{BaseURL: ts.URL})
+			got, err := sendRequest(ctx, ac, tt.path, tt.method, tt.requestBody, &HTTPOptions{BaseURL: ts.URL, Timeout: tt.requestTimeout})
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("sendRequest() error = %v, wantErr %v", err, tt.wantErr)
@@ -135,17 +212,11 @@ func TestSendRequest(t *testing.T) {
 					if !ok {
 						t.Errorf("want Error, got %T(%s)", err, err.Error())
 					}
-				} else if tt.path == "" { // build request error
+				} else { // build request error
 					if !strings.Contains(err.Error(), tt.wantErr.Error()) {
-						t.Errorf("unexpected error, want error that contains 'createAPIURL: error parsing', got: %v", err)
-					}
-
-				} else { // deserialize error
-					if !strings.Contains(err.Error(), "deserializeUnaryResponse: error unmarshalling response") {
-						t.Errorf("unexpected error, want error that contains 'deserializeUnaryResponse: error unmarshalling response', got: %v", err)
+						t.Errorf("unexpected error, want: %v, got: %v", tt.wantErr, err)
 					}
 				}
-
 			}
 
 			if tt.wantErr != nil && !cmp.Equal(got, tt.want) {
@@ -166,6 +237,9 @@ func TestSendStreamRequest(t *testing.T) {
 		mockStatusCode   int
 		converterErr     error
 		maxIteration     *int
+		clientTimeout    *time.Duration
+		requestTimeout   *time.Duration
+		serverLatency    time.Duration
 		wantResponse     []map[string]any
 		wantErr          bool
 		wantErrorMessage string
@@ -245,13 +319,12 @@ func TestSendStreamRequest(t *testing.T) {
 			wantErrorMessage: "error unmarshalling data data:invalid. error: invalid character 'i' looking for beginning of value",
 		},
 		{
-			name:           "Stream with Invalid Seperator",
-			method:         "POST",
-			path:           "test",
-			body:           map[string]any{"key": "value"},
-			mockResponse:   "data:{\"key1\":\"value1\"}\t\tdata:{\"key2\":\"value2\"}",
-			mockStatusCode: http.StatusOK,
-			// converterErr:     fmt.Errorf("converter error"),
+			name:             "Stream with Invalid Seperator",
+			method:           "POST",
+			path:             "test",
+			body:             map[string]any{"key": "value"},
+			mockResponse:     "data:{\"key1\":\"value1\"}\t\tdata:{\"key2\":\"value2\"}",
+			mockStatusCode:   http.StatusOK,
 			wantResponse:     nil,
 			wantErr:          true,
 			wantErrorMessage: "iterateResponseStream: error unmarshalling data data:{\"key1\":\"value1\"}\t\tdata:{\"key2\":\"value2\"}. error: invalid character 'd' after top-level value",
@@ -354,6 +427,16 @@ func TestSendStreamRequest(t *testing.T) {
 			wantErrorMessage: "Error 500, Message: invalid json, Status: 500 Internal Server Error, Details: []",
 		},
 		{
+			name:             "Error Response with status ok but error stream chunk",
+			method:           "POST",
+			path:             "test",
+			body:             map[string]any{"key": "value"},
+			mockResponse:     `{"error": {"code": 500, "message": "internal server error", "status": "INTERNAL_SERVER_ERROR"}}`,
+			mockStatusCode:   http.StatusOK,
+			wantErr:          true,
+			wantErrorMessage: "Error 500, Message: internal server error, Status: INTERNAL_SERVER_ERROR, Details: []",
+		},
+		{
 			name:           "Request Error",
 			method:         "POST",
 			path:           "test",
@@ -364,13 +447,114 @@ func TestSendStreamRequest(t *testing.T) {
 				BaseURL: "invalid-url",
 			},
 			wantErr:          true,
-			wantErrorMessage: "doRequest: error sending request: Post \"invalid-url//test\": unsupported protocol scheme",
+			wantErrorMessage: "doRequest: error sending request: Post \"invalid-url/test\": unsupported protocol scheme",
+		},
+		{
+			name:           "With client timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			clientTimeout:    Ptr(100 * time.Millisecond),
+			serverLatency:    150 * time.Millisecond,
+			wantErr:          true,
+			wantErrorMessage: "context deadline exceeded",
+		},
+		{
+			name:           "With request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			requestTimeout:   Ptr(100 * time.Millisecond),
+			serverLatency:    150 * time.Millisecond,
+			wantErr:          true,
+			wantErrorMessage: "context deadline exceeded",
+		},
+		{
+			name:           "With client timeout and request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			clientTimeout:    Ptr(200 * time.Millisecond),
+			requestTimeout:   Ptr(100 * time.Millisecond),
+			serverLatency:    150 * time.Millisecond,
+			wantErr:          true,
+			wantErrorMessage: "context deadline exceeded",
+		},
+		{
+			name:           "With 0 client timeout and request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			clientTimeout:    Ptr(0 * time.Millisecond),
+			requestTimeout:   Ptr(100 * time.Millisecond),
+			serverLatency:    150 * time.Millisecond,
+			wantErr:          true,
+			wantErrorMessage: "context deadline exceeded",
+		},
+		{
+			name:           "With client timeout and 0 request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			clientTimeout:  Ptr(200 * time.Millisecond),
+			requestTimeout: Ptr(0 * time.Millisecond),
+			serverLatency:  250 * time.Millisecond,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "With 0 client timeout and 0 request timeout",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			clientTimeout:  Ptr(0 * time.Millisecond),
+			requestTimeout: Ptr(0 * time.Millisecond),
+			serverLatency:  150 * time.Millisecond,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tt.serverLatency > 0 {
+					time.Sleep(tt.serverLatency)
+				}
 				if r.Method != tt.method {
 					t.Errorf("Expected method %s, got %s", tt.method, r.Method)
 				}
@@ -410,16 +594,18 @@ func TestSendStreamRequest(t *testing.T) {
 						"User-Agent":     []string{"test-user-agent"},
 						"X-Goog-Api-Key": []string{"test-api-key"},
 					},
+					Timeout: tt.clientTimeout,
 				},
 				HTTPClient: ts.Client(),
 			}
+
 			if tt.httpOptions != nil {
 				clientConfig.HTTPOptions = *tt.httpOptions
 			}
 
 			ac := &apiClient{clientConfig: clientConfig}
 			var output responseStream[map[string]any]
-			err := sendStreamRequest(context.Background(), ac, tt.path, tt.method, tt.body, &clientConfig.HTTPOptions, &output)
+			err := sendStreamRequest(context.Background(), ac, tt.path, tt.method, tt.body, &HTTPOptions{Timeout: tt.requestTimeout, BaseURL: clientConfig.HTTPOptions.BaseURL}, &output)
 
 			if err != nil && tt.wantErr {
 				if tt.wantErrorMessage != "" && !strings.Contains(err.Error(), tt.wantErrorMessage) {
@@ -535,22 +721,26 @@ func TestMapToStruct(t *testing.T) {
 }
 
 func TestBuildRequest(t *testing.T) {
+	timeout := 10 * time.Second
 	tests := []struct {
-		name          string
-		clientConfig  *ClientConfig
-		path          string
-		body          map[string]any
-		method        string
-		httpOptions   *HTTPOptions
-		want          *http.Request
-		wantErr       bool
-		expectedError string
+		name            string
+		clientConfig    *ClientConfig
+		path            string
+		body            map[string]any
+		method          string
+		httpOptions     *HTTPOptions
+		contextTimeout  time.Duration
+		want            *http.Request
+		wantErr         bool
+		expectedError   string
+		expectedTimeout *time.Duration
 	}{
 		{
 			name: "MLDev API with API Key",
 			clientConfig: &ClientConfig{
-				APIKey:  "test-api-key",
-				Backend: BackendGeminiAPI,
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
 			},
 			path:   "models/test-model:generateContent",
 			body:   map[string]any{"key": "value"},
@@ -586,6 +776,7 @@ func TestBuildRequest(t *testing.T) {
 				Project:     "test-project",
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
 				Credentials: &auth.Credentials{},
 			},
 			path:   "models/test-model:generateContent",
@@ -621,6 +812,7 @@ func TestBuildRequest(t *testing.T) {
 				Project:     "test-project",
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
 				Credentials: &auth.Credentials{},
 			},
 			path:   "projects/test-project/locations/test-location/models/test-model:generateContent",
@@ -656,6 +848,7 @@ func TestBuildRequest(t *testing.T) {
 				Project:     "test-project",
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
 				Credentials: &auth.Credentials{},
 			},
 			path:   "publishers/google/models/model-name",
@@ -682,10 +875,43 @@ func TestBuildRequest(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "Vertex AI with API key",
+			clientConfig: &ClientConfig{
+				APIKey:      "test-api-key",
+				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
+				Credentials: &auth.Credentials{},
+			},
+			path:   "publishers/google/models/model-name",
+			body:   map[string]any{},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://aiplatform.googleapis.com",
+				APIVersion: "v1beta1",
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "aiplatform.googleapis.com",
+					Path:   "/v1beta1/publishers/google/models/model-name",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+				},
+				Body: io.NopCloser(strings.NewReader(``)),
+			},
+			wantErr: false,
+		},
+		{
 			name: "MLDev with empty body",
 			clientConfig: &ClientConfig{
-				APIKey:  "test-api-key",
-				Backend: BackendGeminiAPI,
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
 			},
 			path:   "models/test-model:generateContent",
 			body:   map[string]any{},
@@ -717,6 +943,7 @@ func TestBuildRequest(t *testing.T) {
 				Project:     "test-project",
 				Location:    "test-location",
 				Backend:     BackendVertexAI,
+				HTTPClient:  &http.Client{},
 				Credentials: &auth.Credentials{},
 			},
 			path:   "models/test-model:generateContent",
@@ -745,8 +972,9 @@ func TestBuildRequest(t *testing.T) {
 		{
 			name: "Invalid URL",
 			clientConfig: &ClientConfig{
-				APIKey:  "test-api-key",
-				Backend: BackendGeminiAPI,
+				APIKey:     "test-api-key",
+				HTTPClient: &http.Client{},
+				Backend:    BackendGeminiAPI,
 			},
 			path:   ":invalid",
 			body:   map[string]any{},
@@ -756,13 +984,14 @@ func TestBuildRequest(t *testing.T) {
 				APIVersion: "v1beta",
 			},
 			wantErr:       true,
-			expectedError: "createAPIURL: error parsing ML Dev URL",
+			expectedError: "createAPIURL: error parsing base URL: parse \":invalid\": missing protocol scheme",
 		},
 		{
 			name: "Invalid json",
 			clientConfig: &ClientConfig{
-				APIKey:  "test-api-key",
-				Backend: BackendGeminiAPI,
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
 			},
 			path:   "models/test-model:generateContent",
 			body:   map[string]any{"key": make(chan int)},
@@ -774,13 +1003,169 @@ func TestBuildRequest(t *testing.T) {
 			wantErr:       true,
 			expectedError: "buildRequest: error encoding body",
 		},
+		{
+			name: "With ExtrasRequestProvider",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"original_key": "original_value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				ExtrasRequestProvider: func(body map[string]any) map[string]any {
+					body["extra_key"] = "extra_value"
+					return body
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"extra_key\":\"extra_value\",\"original_key\":\"original_value\"}\n")),
+			},
+			wantErr: false,
+		},
+		{
+			name: "With timeout",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"key": "value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				Headers: http.Header{
+					"X-Test-Header": []string{"test-value"},
+				},
+				Timeout: &timeout,
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"X-Test-Header":     []string{"test-value"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Server-Timeout":  []string{"10"},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"key\":\"value\"}\n")),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Header merging",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+				HTTPOptions: HTTPOptions{
+					Headers: http.Header{
+						"X-Client-Header": []string{"client-value"},
+						"X-Common-Header": []string{"client-common"},
+					},
+				},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"key": "value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				Headers: http.Header{
+					"X-Request-Header": []string{"request-value"},
+					"X-Common-Header":  []string{"request-common"},
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"X-Client-Header":   []string{"client-value"},
+					"X-Common-Header":   []string{"request-common"},
+					"X-Request-Header":  []string{"request-value"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"key\":\"value\"}\n")),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Custom User-Agent",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"key": "value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				Headers: http.Header{
+					"User-Agent": []string{"my-custom-agent/1.0"},
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"User-Agent":        []string{"my-custom-agent/1.0", fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"key\":\"value\"}\n")),
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ac := &apiClient{clientConfig: tt.clientConfig}
+			ctx := context.Background()
+			var cancel context.CancelFunc
+			if tt.contextTimeout != 0 {
+				ctx, cancel = context.WithTimeout(ctx, tt.contextTimeout)
+				defer cancel()
+			}
 
-			req, err := buildRequest(context.Background(), ac, tt.path, tt.body, tt.method, tt.httpOptions)
+			req, _, err := buildRequest(ctx, ac, tt.path, tt.body, tt.method, tt.httpOptions)
 
 			if tt.wantErr {
 				if err == nil {
@@ -815,47 +1200,131 @@ func TestBuildRequest(t *testing.T) {
 			if diff := cmp.Diff(string(wantBodyBytes), string(gotBodyBytes)); diff != "" {
 				t.Errorf("buildRequest() body mismatch (-want +got):\n%s", diff)
 			}
-
-			if !reflect.DeepEqual(req.Context(), tt.want.Context()) {
-				t.Errorf("buildRequest() Context mismatch got %+v, want %+v", req.Context(), tt.want.Context())
-			}
 		})
 	}
 }
 
-func Test_sdkHeader(t *testing.T) {
-	type args struct {
-		ac *apiClient
-	}
+func TestPatchHTTPOptions(t *testing.T) {
+	timeout1 := 10 * time.Second
+	timeout2 := 20 * time.Second
+	dummyExtrasProvider1 := func(body map[string]any) map[string]any { body["p1"] = 1; return body }
+	dummyExtrasProvider2 := func(body map[string]any) map[string]any { body["p2"] = 2; return body }
+
 	tests := []struct {
-		name string
-		args args
-		want http.Header
+		name         string
+		options      HTTPOptions
+		patchOptions HTTPOptions
+		want         *HTTPOptions
 	}{
 		{
-			name: "with_api_key",
-			args: args{&apiClient{clientConfig: &ClientConfig{APIKey: "test_api_key"}}},
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"X-Goog-Api-Key":    []string{"test_api_key"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+			name: "patch empty",
+			options: HTTPOptions{
+				BaseURL:    "base",
+				APIVersion: "v1",
+				Headers:    http.Header{"H1": []string{"v1"}},
+				Timeout:    &timeout1,
+			},
+			patchOptions: HTTPOptions{},
+			want: &HTTPOptions{
+				BaseURL:    "base",
+				APIVersion: "v1",
+				Headers:    http.Header{"H1": []string{"v1"}, "User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
+				Timeout:    &timeout1,
 			},
 		},
 		{
-			name: "without_api_key",
-			args: args{&apiClient{clientConfig: &ClientConfig{}}},
-			want: http.Header{
-				"Content-Type":      []string{"application/json"},
-				"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
-				"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+			name: "patch all fields",
+			options: HTTPOptions{
+				BaseURL:               "base",
+				APIVersion:            "v1",
+				Headers:               http.Header{"H1": []string{"v1"}, "H2": []string{"v2"}},
+				Timeout:               &timeout1,
+				ExtrasRequestProvider: dummyExtrasProvider1,
+			},
+			patchOptions: HTTPOptions{
+				BaseURL:               "patched",
+				APIVersion:            "v2",
+				Headers:               http.Header{"H2": []string{"v2-patched"}, "H3": []string{"v3"}},
+				Timeout:               &timeout2,
+				ExtrasRequestProvider: dummyExtrasProvider2,
+			},
+			want: &HTTPOptions{
+				BaseURL:               "patched",
+				APIVersion:            "v2",
+				Headers:               http.Header{"H1": []string{"v1"}, "H2": []string{"v2-patched"}, "H3": []string{"v3"}, "User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
+				Timeout:               &timeout2,
+				ExtrasRequestProvider: dummyExtrasProvider2,
+			},
+		},
+		{
+			name:    "empty options",
+			options: HTTPOptions{},
+			patchOptions: HTTPOptions{
+				BaseURL:    "patched",
+				APIVersion: "v2",
+				Headers:    http.Header{"H1": []string{"v1"}},
+				Timeout:    &timeout2,
+			},
+			want: &HTTPOptions{
+				BaseURL:    "patched",
+				APIVersion: "v2",
+				Headers:    http.Header{"H1": []string{"v1"}, "User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
+				Timeout:    &timeout2,
+			},
+		},
+		{
+			name: "patch with nil timeout",
+			options: HTTPOptions{
+				Timeout: &timeout1,
+			},
+			patchOptions: HTTPOptions{
+				Timeout: nil,
+			},
+			want: &HTTPOptions{
+				Timeout: &timeout1,
+				Headers: http.Header{"User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
+			},
+		},
+		{
+			name: "patch with zero timeout",
+			options: HTTPOptions{
+				Timeout: &timeout1,
+			},
+			patchOptions: HTTPOptions{
+				Timeout: Ptr(0 * time.Second),
+			},
+			want: &HTTPOptions{
+				Timeout: Ptr(0 * time.Second),
+				Headers: http.Header{"User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if diff := cmp.Diff(sdkHeader(tt.args.ac), tt.want); diff != "" {
-				t.Errorf("sdkHeader() mismatch (-want +got):\n%s", diff)
+			got, err := patchHTTPOptions(tt.options, tt.patchOptions)
+			if err != nil {
+				t.Errorf("patchHTTPOptions() returned an unexpected error: %v", err)
+			}
+
+			// Can't compare functions directly.
+			opt := cmpopts.IgnoreFields(HTTPOptions{}, "ExtrasRequestProvider")
+			if diff := cmp.Diff(tt.want, got, opt); diff != "" {
+				t.Errorf("patchHTTPOptions() mismatch (-want +got):\n%s", diff)
+			}
+
+			if tt.want.ExtrasRequestProvider != nil {
+				if got.ExtrasRequestProvider == nil {
+					t.Error("ExtrasRequestProvider: got nil, want non-nil")
+				}
+				// check if they are the same function
+				gotResult := got.ExtrasRequestProvider(make(map[string]any))
+				wantResult := tt.want.ExtrasRequestProvider(make(map[string]any))
+				if diff := cmp.Diff(wantResult, gotResult); diff != "" {
+					t.Errorf("ExtrasRequestProvider function produced different results (-want +got):\n%s", diff)
+				}
+			} else if got.ExtrasRequestProvider != nil {
+				t.Error("ExtrasRequestProvider: got non-nil, want nil")
 			}
 		})
 	}
@@ -903,10 +1372,11 @@ func createTestFile(t *testing.T, size int64) (string, func()) {
 }
 
 // mockUploadServer simulates the resumable upload endpoint.
-func mockUploadServer(t *testing.T, expectedSize int64) (*httptest.Server, *sync.Map) {
+func mockUploadServer(t *testing.T, expectedSize int64, headers []http.Header) (*httptest.Server, *sync.Map) {
 	t.Helper()
 	var totalReceived int64
 	var mu sync.Mutex
+	currentIndex := 0
 	// Use sync.Map to store received data per upload URL (though in this test we only use one)
 	receivedData := &sync.Map{}
 
@@ -915,11 +1385,9 @@ func mockUploadServer(t *testing.T, expectedSize int64) (*httptest.Server, *sync
 			http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
 			return
 		}
-
 		uploadCommand := r.Header.Get("X-Goog-Upload-Command")
 		uploadOffsetStr := r.Header.Get("X-Goog-Upload-Offset")
 		contentLengthStr := r.Header.Get("Content-Length")
-
 		uploadOffset, err := strconv.ParseInt(uploadOffsetStr, 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid X-Goog-Upload-Offset", http.StatusBadRequest)
@@ -953,23 +1421,26 @@ func mockUploadServer(t *testing.T, expectedSize int64) (*httptest.Server, *sync
 		}
 
 		// Store received data chunk (optional, but useful for verification)
-		receivedData.Store(uploadOffset, bodyBytes)
-
 		mu.Lock()
-		totalReceived += contentLength
+		for key, value := range headers[currentIndex] {
+			w.Header().Set(key, value[0])
+		}
 		currentTotal := totalReceived
+		isEmptyUploadStatus := headers[currentIndex].Get("X-Goog-Upload-Status") == ""
+		if !isEmptyUploadStatus {
+			totalReceived += contentLength
+			currentTotal = totalReceived
+		}
+		currentIndex++
 		mu.Unlock()
-
 		isFinal := strings.Contains(uploadCommand, "finalize")
 
-		if isFinal {
+		if isFinal && !isEmptyUploadStatus {
 			if currentTotal != expectedSize {
 				t.Errorf("Final size mismatch: expected %d, received %d", expectedSize, currentTotal)
 				http.Error(w, "Final size mismatch", http.StatusBadRequest)
 				return
 			}
-			w.Header().Set("X-Goog-Upload-Status", "final")
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			finalFile := map[string]any{
 				"file": map[string]any{
@@ -984,7 +1455,6 @@ func mockUploadServer(t *testing.T, expectedSize int64) (*httptest.Server, *sync
 				return
 			}
 		} else {
-			w.Header().Set("X-Goog-Upload-Status", "active")
 			w.WriteHeader(http.StatusOK)
 		}
 	}))
@@ -996,12 +1466,46 @@ func TestUploadFile(t *testing.T) {
 	ctx := context.Background()
 
 	testSizes := []struct {
-		name string
-		size int64 // Size in bytes
+		name    string
+		size    int64 // Size in bytes
+		headers []http.Header
 	}{
-		{"1MB", 1 * 1024 * 1024},
-		{"8MB", 8 * 1024 * 1024}, // Exactly maxChunkSize
-		{"9MB", 9 * 1024 * 1024}, // Requires multiple chunks
+		{"1MB", 1 * 1024 * 1024, []http.Header{
+			{
+				"Content-Type":         []string{"application/json"},
+				"X-Goog-Upload-Status": []string{"final"},
+			},
+		}},
+		{"8MB", 8 * 1024 * 1024, []http.Header{
+			{
+				"X-Goog-Upload-Status": []string{"active"},
+			},
+			{
+				"Content-Type":         []string{"application/json"},
+				"X-Goog-Upload-Status": []string{"final"},
+			},
+		}}, // Exactly maxChunkSize
+		{"9MB", 9 * 1024 * 1024, []http.Header{
+			{
+				"X-Goog-Upload-Status": []string{"active"},
+			},
+			{
+				"Content-Type":         []string{"application/json"},
+				"X-Goog-Upload-Status": []string{"final"},
+			},
+		}}, // Requires multiple chunks
+		{"9MB-missing-header", 9 * 1024 * 1024, []http.Header{
+			{
+				"X-Goog-Upload-Status": []string{"active"},
+			},
+			{
+				"X-Goog-Upload-Status": []string{""},
+			},
+			{
+				"Content-Type":         []string{"application/json"},
+				"X-Goog-Upload-Status": []string{"final"},
+			},
+		}}, // Requires multiple chunks
 	}
 
 	for _, ts := range testSizes {
@@ -1009,7 +1513,7 @@ func TestUploadFile(t *testing.T) {
 			filePath, cleanup := createTestFile(t, ts.size)
 			defer cleanup()
 
-			server, _ := mockUploadServer(t, ts.size)
+			server, _ := mockUploadServer(t, ts.size, ts.headers)
 			defer server.Close()
 
 			ac := &apiClient{
@@ -1059,6 +1563,220 @@ func TestUploadFile(t *testing.T) {
 				t.Errorf("uploadedFile.MIMEType mismatch: want 'text/plain', got '%s'", uploadedFile.MIMEType)
 			}
 
+		})
+	}
+}
+
+func TestInferTimeout(t *testing.T) {
+	tests := []struct {
+		name              string
+		requestTimeout    *time.Duration
+		httpClientTimeout time.Duration
+		contextTimeout    time.Duration // 0 means no deadline
+		want              time.Duration
+		tolerance         time.Duration // for context timeout
+	}{
+		{
+			name:              "no timeouts",
+			requestTimeout:    nil,
+			httpClientTimeout: 0,
+			contextTimeout:    0,
+			want:              0,
+		},
+		{
+			name:              "only request timeout",
+			requestTimeout:    Ptr(10 * time.Second),
+			httpClientTimeout: 0,
+			contextTimeout:    0,
+			want:              10 * time.Second,
+		},
+		{
+			name:              "only http client timeout",
+			requestTimeout:    nil,
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    0,
+			want:              20 * time.Second,
+		},
+		{
+			name:              "only context timeout",
+			requestTimeout:    nil,
+			httpClientTimeout: 0,
+			contextTimeout:    30 * time.Second,
+			want:              30 * time.Second,
+			tolerance:         100 * time.Millisecond,
+		},
+		{
+			name:              "request timeout is smallest",
+			requestTimeout:    Ptr(10 * time.Second),
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    30 * time.Second,
+			want:              10 * time.Second,
+		},
+		{
+			name:              "http client timeout is smallest",
+			requestTimeout:    Ptr(20 * time.Second),
+			httpClientTimeout: 10 * time.Second,
+			contextTimeout:    30 * time.Second,
+			want:              10 * time.Second,
+		},
+		{
+			name:              "context timeout is smallest",
+			requestTimeout:    Ptr(30 * time.Second),
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    10 * time.Second,
+			want:              10 * time.Second,
+			tolerance:         100 * time.Millisecond,
+		},
+		{
+			name:              "request timeout is zero",
+			requestTimeout:    Ptr(0 * time.Second),
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    30 * time.Second,
+			want:              20 * time.Second,
+		},
+		{
+			name:              "request timeout is zero, no other timeouts",
+			requestTimeout:    Ptr(0 * time.Second),
+			httpClientTimeout: 0,
+			contextTimeout:    0,
+			want:              0,
+		},
+		{
+			name:              "request timeout is zero, only context timeout",
+			requestTimeout:    Ptr(0 * time.Second),
+			httpClientTimeout: 0,
+			contextTimeout:    30 * time.Second,
+			want:              30 * time.Second,
+			tolerance:         100 * time.Millisecond,
+		},
+		{
+			name:              "request timeout is zero, only http client timeout",
+			requestTimeout:    Ptr(0 * time.Second),
+			httpClientTimeout: 20 * time.Second,
+			contextTimeout:    0,
+			want:              20 * time.Second,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ac := &apiClient{
+				clientConfig: &ClientConfig{
+					HTTPClient: &http.Client{
+						Timeout: tt.httpClientTimeout,
+					},
+				},
+			}
+
+			ctx := context.Background()
+			if tt.contextTimeout > 0 {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, tt.contextTimeout)
+				defer cancel()
+			}
+
+			got := inferTimeout(ctx, ac, tt.requestTimeout)
+
+			if tt.tolerance > 0 {
+				if got > tt.want || got < tt.want-tt.tolerance {
+					t.Errorf("inferTimeout() got = %v, want around %v (with tolerance %v)", got, tt.want, tt.tolerance)
+				}
+			} else {
+				if got != tt.want {
+					t.Errorf("inferTimeout() got = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func TestRecursiveMapMerge(t *testing.T) {
+	tests := []struct {
+		name        string
+		dest        map[string]any
+		src         map[string]any
+		want        map[string]any
+		wantWarning string
+	}{
+		{
+			name: "simple merge with new keys",
+			dest: map[string]any{"a": 1},
+			src:  map[string]any{"b": 2},
+			want: map[string]any{"a": 1, "b": 2},
+		},
+		{
+			name: "overwrite existing value",
+			dest: map[string]any{"a": 1},
+			src:  map[string]any{"a": 2},
+			want: map[string]any{"a": 2},
+		},
+		{
+			name: "recursive merge of nested maps",
+			dest: map[string]any{"nested": map[string]any{"x": 10, "z": 30}},
+			src:  map[string]any{"nested": map[string]any{"y": 20, "x": 100}},
+			want: map[string]any{"nested": map[string]any{"x": 100, "y": 20, "z": 30}},
+		},
+		{
+			name:        "type mismatch overwrite",
+			dest:        map[string]any{"key": "string value"},
+			src:         map[string]any{"key": 123},
+			want:        map[string]any{"key": 123},
+			wantWarning: "Warning: Type mismatch for key 'key'. Existing type: string, new type: int. Overwriting.",
+		},
+		{
+			name:        "overwrite non-map with map",
+			dest:        map[string]any{"key": "a string"},
+			src:         map[string]any{"key": map[string]any{"nested": true}},
+			want:        map[string]any{"key": map[string]any{"nested": true}},
+			wantWarning: "Warning: Type mismatch for key 'key'. Existing type: string, new type: map[string]interface {}. Overwriting.",
+		},
+		{
+			name:        "overwrite map with non-map",
+			dest:        map[string]any{"key": map[string]any{"nested": true}},
+			src:         map[string]any{"key": "a string"},
+			want:        map[string]any{"key": "a string"},
+			wantWarning: "Warning: Type mismatch for key 'key'. Existing type: map[string]interface {}, new type: string. Overwriting.",
+		},
+		{
+			name: "dest is nil",
+			dest: nil,
+			src:  map[string]any{"a": 1},
+			want: nil,
+		},
+		{
+			name: "src is nil",
+			dest: map[string]any{"a": 1},
+			src:  nil,
+			want: map[string]any{"a": 1},
+		},
+		{
+			name: "overwrite with nil value",
+			dest: map[string]any{"a": 1},
+			src:  map[string]any{"a": nil},
+			want: map[string]any{"a": nil},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var logBuf bytes.Buffer
+			if tt.wantWarning != "" {
+				// Redirect log output
+				originalOutput := log.Writer()
+				log.SetOutput(&logBuf)
+				defer log.SetOutput(originalOutput)
+			}
+
+			recursiveMapMerge(tt.dest, tt.src)
+			if diff := cmp.Diff(tt.want, tt.dest); diff != "" {
+				t.Errorf("recursiveMapMerge() mismatch (-want +got):\n%s", diff)
+			}
+
+			if tt.wantWarning != "" {
+				if !strings.Contains(logBuf.String(), tt.wantWarning) {
+					t.Errorf("recursiveMapMerge() log output = %q, want to contain %q", logBuf.String(), tt.wantWarning)
+				}
+			}
 		})
 	}
 }

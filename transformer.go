@@ -15,10 +15,10 @@
 package genai
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -57,6 +57,9 @@ func tModel(ac *apiClient, origin any) (string, error) {
 	case string:
 		if model == "" {
 			return "", fmt.Errorf("tModel: model is empty")
+		}
+		if strings.Contains(model, "?") || strings.Contains(model, "&") || strings.Contains(model, "..") {
+			return "", fmt.Errorf("tModel: invalid model parameter")
 		}
 		if ac.clientConfig.Backend == BackendVertexAI {
 			if strings.HasPrefix(model, "projects/") || strings.HasPrefix(model, "models/") || strings.HasPrefix(model, "publishers/") {
@@ -102,77 +105,44 @@ func tCachesModel(ac *apiClient, origin any) (string, error) {
 	return tModelFullName(ac, origin)
 }
 
-func tContent(_ *apiClient, content any) (any, error) {
+func tContent(content any) (any, error) {
 	return content, nil
 }
 
-func tContents(_ *apiClient, contents any) (any, error) {
+func tContents(contents any) (any, error) {
 	return contents, nil
 }
 
-func tTool(_ *apiClient, tool any) (any, error) {
+func tTool(tool any) (any, error) {
 	return tool, nil
 }
 
-func tTools(_ *apiClient, tools any) (any, error) {
+func tTools(tools any) (any, error) {
 	return tools, nil
 }
 
-func processSchema(apiClient *apiClient, schema map[string]any) error {
-	if apiClient.clientConfig.Backend == BackendGeminiAPI {
-		if _, ok := schema["default"]; ok {
-			return errors.New("default value is not supported in the response schema for the Gemini API")
-		}
-	}
-
-	if anyOf, ok := schema["anyOf"].([]any); ok {
-		for _, subSchema := range anyOf {
-			if subSchema, ok := subSchema.(map[string]any); ok {
-				if err := processSchema(apiClient, subSchema); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	if items, ok := schema["items"]; ok {
-		if items, ok := items.(map[string]any); ok {
-			if err := processSchema(apiClient, items); err != nil {
-				return err
-			}
-		}
-	}
-
-	if properties, ok := schema["properties"]; ok {
-		if properties, ok := properties.(map[string]any); ok {
-			for _, subSchema := range properties {
-				if subSchema, ok := subSchema.(map[string]any); ok {
-					if err := processSchema(apiClient, subSchema); err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	return nil
+func tSchema(origin any) (any, error) {
+	return origin, nil
 }
 
-func tSchema(apiClient *apiClient, origin any) (any, error) {
-	if schema, ok := origin.(map[string]any); ok {
-		err := processSchema(apiClient, schema)
-		if err != nil {
-			return nil, err
-		}
-		return schema, nil
-	}
-	return nil, fmt.Errorf("input is not a map[string]any")
-}
-
-func tSpeechConfig(_ *apiClient, speechConfig any) (any, error) {
+func tSpeechConfig(speechConfig any) (any, error) {
 	return speechConfig, nil
 }
 
-func tBytes(_ *apiClient, fromImageBytes any) (any, error) {
+func tLiveSpeechConfig(speechConfig any) (any, error) {
+	switch config := speechConfig.(type) {
+	case map[string]any:
+		if _, ok := config["multiSpeakerVoiceConfig"]; ok {
+			return nil, fmt.Errorf("multiSpeakerVoiceConfig is not supported in the live API")
+		}
+		return config, nil
+	case nil:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unsupported speechConfig type: %T", speechConfig)
+	}
+}
+func tBytes(fromImageBytes any) (any, error) {
 	// TODO(b/389133914): Remove dummy bytes converter.
 	return fromImageBytes, nil
 }
@@ -218,7 +188,7 @@ func tModelsURL(ac *apiClient, baseModels any) (string, error) {
 	}
 }
 
-func tExtractModels(ac *apiClient, response any) (any, error) {
+func tExtractModels(response any) (any, error) {
 	switch response := response.(type) {
 	case map[string]any:
 		if models, ok := response["models"]; ok {
@@ -236,7 +206,7 @@ func tExtractModels(ac *apiClient, response any) (any, error) {
 	}
 }
 
-func tFileName(ac *apiClient, name any) (string, error) {
+func tFileName(name any) (string, error) {
 	switch name := name.(type) {
 	case string:
 		{
@@ -259,5 +229,123 @@ func tFileName(ac *apiClient, name any) (string, error) {
 		}
 	default:
 		return "", fmt.Errorf("tFileName: name is not a string")
+	}
+}
+
+func tBlobs(blobs any) (any, error) {
+	switch blobs := blobs.(type) {
+	case []any:
+		// The only use case of this tBlobs function is for LiveSendRealtimeInputParameters.Media field.
+		// The Media field is a Blob type, not a list of Blob. So this branch will never be executed.
+		// If tBlobs function is used for other purposes in the future, uncomment the following line to
+		// enable this branch.
+		// applyConverterToSlice(ac, blobs, tBlob)
+		return nil, fmt.Errorf("unimplemented")
+	default:
+		blob, err := tBlob(blobs)
+		if err != nil {
+			return nil, err
+		}
+		return []any{blob}, nil
+	}
+}
+
+func tBlob(blob any) (any, error) {
+	return blob, nil
+}
+
+func tImageBlob(blob any) (any, error) {
+	switch blob := blob.(type) {
+	case map[string]any:
+		if strings.HasPrefix(blob["mimeType"].(string), "image/") {
+			return blob, nil
+		}
+		return nil, fmt.Errorf("Unsupported mime type: %s", blob["mimeType"])
+	default:
+		return nil, fmt.Errorf("tImageBlob: blob is not a map")
+	}
+}
+
+func tAudioBlob(blob any) (any, error) {
+	switch blob := blob.(type) {
+	case map[string]any:
+		if strings.HasPrefix(blob["mimeType"].(string), "audio/") {
+			return blob, nil
+		}
+		return nil, fmt.Errorf("Unsupported mime type: %s", blob["mimeType"])
+	default:
+		return nil, fmt.Errorf("tAudioBlob: blob is not a map")
+	}
+}
+
+func tBatchJobSource(src any) (any, error) {
+	return src, nil
+}
+
+func tBatchJobDestination(dest any) (any, error) {
+	return dest, nil
+}
+
+func tRecvBatchJobDestination(dest any) (any, error) {
+	return dest, nil
+}
+
+func tBatchJobName(ac *apiClient, name any) (any, error) {
+	var (
+		mldevBatchPattern  = regexp.MustCompile("batches/[^/]+$")
+		vertexBatchPattern = regexp.MustCompile("^projects/[^/]+/locations/[^/]+/batchPredictionJobs/[^/]+$")
+	)
+	// Convert any to string.
+	nameStr := name.(string)
+	if ac.clientConfig.Backend == BackendVertexAI {
+		if vertexBatchPattern.MatchString(nameStr) {
+			parts := strings.Split(nameStr, "/")
+			return parts[len(parts)-1], nil
+		}
+		if _, err := strconv.Atoi(nameStr); err == nil {
+			return nameStr, nil
+		}
+		return nil, fmt.Errorf("Invalid batch job name: %s. Expected format like 'projects/id/locations/id/batchPredictionJobs/id' or 'id'", nameStr)
+	}
+	if mldevBatchPattern.MatchString(nameStr) {
+		parts := strings.Split(nameStr, "/")
+		return parts[len(parts)-1], nil
+	}
+	return nil, fmt.Errorf("Invalid batch job name: %s. Expected format like 'batches/id'", nameStr)
+}
+
+func tJobState(state any) (any, error) {
+	switch state {
+	case "BATCH_STATE_UNSPECIFIED":
+		return "JOB_STATE_UNSPECIFIED", nil
+	case "BATCH_STATE_PENDING":
+		return "JOB_STATE_PENDING", nil
+	case "BATCH_STATE_RUNNING":
+		return "JOB_STATE_RUNNING", nil
+	case "BATCH_STATE_SUCCEEDED":
+		return "JOB_STATE_SUCCEEDED", nil
+	case "BATCH_STATE_FAILED":
+		return "JOB_STATE_FAILED", nil
+	case "BATCH_STATE_CANCELLED":
+		return "JOB_STATE_CANCELLED", nil
+	case "BATCH_STATE_EXPIRED":
+		return "JOB_STATE_EXPIRED", nil
+	default:
+		return state, nil
+	}
+}
+
+func tTuningJobStatus(state any) (any, error) {
+	switch state {
+	case "STATE_UNSPECIFIED":
+		return "JOB_STATE_UNSPECIFIED", nil
+	case "CREATING":
+		return "JOB_STATE_RUNNING", nil
+	case "ACTIVE":
+		return "JOB_STATE_SUCCEEDED", nil
+	case "FAILED":
+		return "JOB_STATE_FAILED", nil
+	default:
+		return state, nil
 	}
 }

@@ -156,8 +156,16 @@ func TestSchemaTransformer(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
-			wantErr: true,
+			want: map[string]any{
+				"type": "OBJECT",
+				"properties": map[string]any{
+					"name": map[string]any{
+						"type":    "STRING",
+						"default": "test",
+					},
+				},
+			},
+			wantErr: false,
 		},
 		{
 			name:    "VertexAI_Schema_With_Default",
@@ -238,10 +246,7 @@ func TestSchemaTransformer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ac := &apiClient{clientConfig: &ClientConfig{
-				Backend: tt.backend,
-			}}
-			got, err := tSchema(ac, tt.input)
+			got, err := tSchema(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("tSchema() error = %v, wantErr %v", err, tt.wantErr)
 				return

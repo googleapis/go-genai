@@ -92,12 +92,41 @@ func TestLiveConnect(t *testing.T) {
 			wantRequestBody: `{"setup":{"generationConfig":{"temperature":0.5},"model":"models/test-model","systemInstruction":{"parts":[{"text":"test instruction"}]},"tools":[{"googleSearch":{}}]}}`,
 		},
 		{
+			desc:   "Fail if multispeaker config.",
+			client: mldevClient,
+			config: &LiveConnectConfig{
+				SpeechConfig: &SpeechConfig{
+					MultiSpeakerVoiceConfig: &MultiSpeakerVoiceConfig{
+						SpeakerVoiceConfigs: []*SpeakerVoiceConfig{
+							{
+								Speaker: "Alice",
+								VoiceConfig: &VoiceConfig{
+									PrebuiltVoiceConfig: &PrebuiltVoiceConfig{VoiceName: "kore"},
+								},
+							},
+							{
+								Speaker: "Bob",
+								VoiceConfig: &VoiceConfig{
+									PrebuiltVoiceConfig: &PrebuiltVoiceConfig{VoiceName: "puck"},
+								},
+							},
+						},
+					},
+				},
+				Temperature:       Ptr[float32](0.5),
+				SystemInstruction: &Content{Parts: []*Part{{Text: "test instruction"}}},
+				Tools:             []*Tool{{GoogleSearch: &GoogleSearch{}}},
+			},
+			wantErr:        true,
+			wantErrMessage: "multiSpeakerVoiceConfig is not supported",
+		},
+		{
 			desc:            "successful connection with http options mldev",
 			client:          mldevClient,
 			clientHTTPOpts:  &HTTPOptions{Headers: map[string][]string{"test-header": {"test-value"}}, APIVersion: "test-api-version"},
 			wantRequestBody: `{"setup":{"model":"models/test-model"}}`,
-			wantHeaders:     map[string]string{"test-header": "test-value"},
-			wantPath:        "/ws/google.ai.generativelanguage.test-api-version.GenerativeService.BidiGenerateContent?key=test-api-key",
+			wantHeaders:     map[string]string{"test-header": "test-value", "x-goog-api-key": "test-api-key"},
+			wantPath:        "/ws/google.ai.generativelanguage.test-api-version.GenerativeService.BidiGenerateContent",
 			wantErr:         false,
 		},
 		{
@@ -305,6 +334,7 @@ func TestLiveConnect(t *testing.T) {
 		sendReceiveTests := []struct {
 			desc                  string
 			client                *Client
+			realtimeInput         LiveRealtimeInput
 			wantRequestBodySlice  []string
 			fakeResponseBodySlice []string
 			wantErr               bool
@@ -312,21 +342,45 @@ func TestLiveConnect(t *testing.T) {
 			{
 				desc:                  "send realtimeInput to Google AI",
 				client:                mldevClient,
+				realtimeInput:         LiveRealtimeInput{Media: &Blob{Data: []byte("test data"), MIMEType: "image/png"}},
 				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"realtimeInput":{"mediaChunks":[{"data":"dGVzdCBkYXRh","mimeType":"image/png"}]}}`},
 				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
 			},
 			{
 				desc:                  "send realtimeInput to Vertex AI",
 				client:                vertexClient,
+				realtimeInput:         LiveRealtimeInput{Media: &Blob{Data: []byte("test data"), MIMEType: "image/png"}},
 				wantRequestBodySlice:  []string{`{"setup":{"model":"projects/test-project/locations/test-location/publishers/google/models/test-model"}}`, `{"realtimeInput":{"mediaChunks":[{"data":"dGVzdCBkYXRh","mimeType":"image/png"}]}}`},
 				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
 			},
 			{
 				desc:                  "received error in response",
 				client:                mldevClient,
+				realtimeInput:         LiveRealtimeInput{Media: &Blob{Data: []byte("test data"), MIMEType: "image/png"}},
 				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"realtimeInput":{"mediaChunks":[{"data":"dGVzdCBkYXRh","mimeType":"image/png"}]}}`},
 				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"error":{"code":400,"message":"test error message","status":"INVALID_ARGUMENT"}}`},
 				wantErr:               true,
+			},
+			{
+				desc:                  "send audio realtimeInput to Google AI",
+				client:                mldevClient,
+				realtimeInput:         LiveRealtimeInput{Audio: &Blob{Data: []byte("test data"), MIMEType: "audio/pcm"}},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"realtimeInput":{"audio":{"data":"dGVzdCBkYXRh","mimeType":"audio/pcm"}}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:                  "send video realtimeInput to Google AI",
+				client:                mldevClient,
+				realtimeInput:         LiveRealtimeInput{Video: &Blob{Data: []byte("test data"), MIMEType: "image/jpeg"}},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"realtimeInput":{"video":{"data":"dGVzdCBkYXRh","mimeType":"image/jpeg"}}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:                  "send text realtimeInput to Google AI",
+				client:                mldevClient,
+				realtimeInput:         LiveRealtimeInput{Text: "test data"},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"realtimeInput":{"text":"test data"}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
 			},
 		}
 
@@ -345,7 +399,7 @@ func TestLiveConnect(t *testing.T) {
 				defer session.Close()
 
 				// Test sending the message
-				err = session.SendRealtimeInput(LiveRealtimeInput{&Blob{Data: []byte("test data"), MIMEType: "image/png"}})
+				err = session.SendRealtimeInput(tt.realtimeInput)
 				if err != nil {
 					t.Errorf("Send failed : %v", err)
 				}

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"iter"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -34,9 +35,16 @@ import (
 //	genai.GenerateContentConfig{Temperature: genai.Ptr(0.5)}
 func Ptr[T any](t T) *T { return &t }
 
-type converterFunc func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+//nolint:unused
+type converterFuncWithClientWithRoot func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
 
-type transformerFunc[T any] func(*apiClient, T) (T, error)
+type converterFuncWithRoot func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+
+type converterFuncWithClient func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+
+type converterFunc func(map[string]any, map[string]any) (map[string]any, error)
+
+type transformerFunc[T any] func(T) (T, error)
 
 // setValueByPath handles setting values within nested maps, including handling array-like structures.
 //
@@ -100,7 +108,59 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 		}
 	}
 
-	data[keys[len(keys)-1]] = value
+	finalKey := keys[len(keys)-1]
+	existingValue, exists := data[finalKey]
+
+	if exists {
+		// 1. Check if the new value is "empty" (nil, zero value, or empty collection)
+		isNewValueEmpty := false
+		if value == nil {
+			isNewValueEmpty = true
+		} else {
+			valReflect := reflect.ValueOf(value)
+			if valReflect.Kind() == reflect.Invalid { // Handles nil interface{}
+				isNewValueEmpty = true
+			} else if valReflect.IsZero() { // Covers zero values for primitives, nil for pointers/interfaces
+				isNewValueEmpty = true
+			} else if (valReflect.Kind() == reflect.Map || valReflect.Kind() == reflect.Slice) && valReflect.Len() == 0 {
+				isNewValueEmpty = true
+			}
+		}
+
+		if isNewValueEmpty {
+			// If new value is empty, do not overwrite existing non-empty value.
+			// This is triggered when handling tuning datasets.
+			return
+		}
+		if reflect.DeepEqual(value, existingValue) {
+			// Don't fail when overwriting value with same value
+			return
+		}
+		if existingMap, ok1 := existingValue.(map[string]any); ok1 {
+			if newMap, ok2 := value.(map[string]any); ok2 {
+				// Instead of overwriting dictionary with another dictionary, merge them.
+				// This is important for handling training and validation datasets in tuning.
+				for k, v := range newMap {
+					existingMap[k] = v
+				}
+				data[finalKey] = existingMap // Assign the updated map back
+			}
+		} else {
+			log.Println("Error. Cannot set value for an existing key. Key: ", finalKey, "; Existing value: ", existingValue, "; New value: ", value)
+		}
+	} else {
+		if finalKey == "_self" && reflect.TypeOf(value).Kind() == reflect.Map {
+			// Iterate through the `value` map and copy its contents to `data`.
+			if valMap, ok := value.(map[string]any); ok {
+				for k, v := range valMap {
+					data[k] = v
+				}
+			}
+		} else {
+			// If existing_data is None (or key doesn't exist), set the value directly.
+			data[finalKey] = value
+		}
+	}
 }
 
 // getValueByPath retrieves a value from a nested map or slice or struct based on a path of keys.
@@ -121,6 +181,7 @@ func getValueByPath(data any, keys []string) any {
 	var current any = data
 	for i, key := range keys {
 		if strings.HasSuffix(key, "[]") {
+
 			keyName := key[:len(key)-2]
 			switch v := current.(type) {
 			case map[string]any:
@@ -157,6 +218,62 @@ func getValueByPath(data any, keys []string) any {
 	return current
 }
 
+// getValueByPathOrDefault retrieves a value from a nested map or slice or struct based on a path of
+// keys, or returns a default value.
+func getValueByPathOrDefault(data any, keys []string, defaultValue any) any {
+	if len(keys) == 1 && keys[0] == "_self" {
+		return data
+	}
+	if len(keys) == 0 {
+		return defaultValue
+	}
+	var current any = data
+	for i, key := range keys {
+		if strings.HasSuffix(key, "[]") {
+
+			keyName := key[:len(key)-2]
+			switch v := current.(type) {
+			case map[string]any:
+				if sliceData, ok := v[keyName]; ok {
+					var result []any
+					switch concreteSliceData := sliceData.(type) {
+					case []map[string]any:
+						for _, d := range concreteSliceData {
+							result = append(result, getValueByPathOrDefault(d, keys[i+1:], defaultValue))
+						}
+					case []any:
+						for _, d := range concreteSliceData {
+							result = append(result, getValueByPathOrDefault(d, keys[i+1:], defaultValue))
+						}
+					default:
+						return defaultValue
+					}
+					return result
+				} else {
+					return defaultValue
+				}
+			default:
+				return defaultValue
+			}
+		} else {
+			switch v := current.(type) {
+			case map[string]any:
+				var ok bool
+				current, ok = v[key]
+				if !ok {
+					return defaultValue
+				}
+			default:
+				return defaultValue
+			}
+		}
+	}
+	if current == nil {
+		return defaultValue
+	}
+	return current
+}
+
 func formatMap(template string, variables map[string]any) (string, error) {
 	var buffer bytes.Buffer
 	for i := 0; i < len(template); i++ {
@@ -184,8 +301,38 @@ func formatMap(template string, variables map[string]any) (string, error) {
 	return buffer.String(), nil
 }
 
+// applyConverterToSlice calls converter function (with API client) to each element of the slice.
+//
+//nolint:unused
+func applyConverterToSliceWithClientWithRoot(ac *apiClient, inputs []any, converter converterFuncWithClientWithRoot, rootObject map[string]any) ([]map[string]any, error) {
+	var outputs []map[string]any
+	for _, object := range inputs {
+		object, err := converter(ac, object.(map[string]any), nil, rootObject)
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, object)
+	}
+	return outputs, nil
+}
+
 // applyConverterToSlice calls converter function to each element of the slice.
-func applyConverterToSlice(ac *apiClient, inputs []any, converter converterFunc) ([]map[string]any, error) {
+//
+//nolint:unused
+func applyConverterToSliceWithRoot(inputs []any, converter converterFuncWithRoot, rootObject map[string]any) ([]map[string]any, error) {
+	var outputs []map[string]any
+	for _, object := range inputs {
+		object, err := converter(object.(map[string]any), nil, rootObject)
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, object)
+	}
+	return outputs, nil
+}
+
+// applyConverterToSliceWithClient calls converter function (with API client) to each element of the slice.
+func applyConverterToSliceWithClient(ac *apiClient, inputs []any, converter converterFuncWithClient) ([]map[string]any, error) {
 	var outputs []map[string]any
 	for _, object := range inputs {
 		object, err := converter(ac, object.(map[string]any), nil)
@@ -197,11 +344,24 @@ func applyConverterToSlice(ac *apiClient, inputs []any, converter converterFunc)
 	return outputs, nil
 }
 
+// applyConverterToSlice calls converter function to each element of the slice.
+func applyConverterToSlice(inputs []any, converter converterFunc) ([]map[string]any, error) {
+	var outputs []map[string]any
+	for _, object := range inputs {
+		object, err := converter(object.(map[string]any), nil)
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, object)
+	}
+	return outputs, nil
+}
+
 // applyItemTransformerToSlice calls item transformer function to each element of the slice.
-func applyItemTransformerToSlice[T any](ac *apiClient, inputs []T, itemTransformer transformerFunc[T]) ([]T, error) {
+func applyItemTransformerToSlice[T any](inputs []T, itemTransformer transformerFunc[T]) ([]T, error) {
 	var outputs []T
 	for _, input := range inputs {
-		object, err := itemTransformer(ac, input)
+		object, err := itemTransformer(input)
 		if err != nil {
 			return nil, err
 		}
@@ -217,6 +377,16 @@ func deepMarshal(input any, output *map[string]any) error {
 		return fmt.Errorf("deepMarshal: unable to unmarshal input: %w", err)
 	}
 	return nil
+}
+
+func deepCopy[T any](original T, copied *T) error {
+	bytes, err := json.Marshal(original)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(bytes, copied)
+	return err
 }
 
 // createURLQuery creates a URL query string from a map of key-value pairs.
@@ -266,18 +436,21 @@ func mergeHTTPOptions(clientConfig *ClientConfig, configHTTPOptions *HTTPOptions
 		clientHTTPOptions = &(clientConfig.HTTPOptions)
 	}
 
+	// TODO(b/422842863): Implement a more flexible HTTPOptions merger.
 	result := HTTPOptions{}
 	if clientHTTPOptions == nil && configHTTPOptions == nil {
 		return nil
 	} else if clientHTTPOptions == nil {
 		result = HTTPOptions{
-			BaseURL:    configHTTPOptions.BaseURL,
-			APIVersion: configHTTPOptions.APIVersion,
+			BaseURL:               configHTTPOptions.BaseURL,
+			APIVersion:            configHTTPOptions.APIVersion,
+			ExtrasRequestProvider: configHTTPOptions.ExtrasRequestProvider,
 		}
 	} else {
 		result = HTTPOptions{
-			BaseURL:    clientHTTPOptions.BaseURL,
-			APIVersion: clientHTTPOptions.APIVersion,
+			BaseURL:               clientHTTPOptions.BaseURL,
+			APIVersion:            clientHTTPOptions.APIVersion,
+			ExtrasRequestProvider: clientHTTPOptions.ExtrasRequestProvider,
 		}
 	}
 
@@ -287,6 +460,9 @@ func mergeHTTPOptions(clientConfig *ClientConfig, configHTTPOptions *HTTPOptions
 		}
 		if configHTTPOptions.APIVersion != "" {
 			result.APIVersion = configHTTPOptions.APIVersion
+		}
+		if configHTTPOptions.ExtrasRequestProvider != nil {
+			result.ExtrasRequestProvider = configHTTPOptions.ExtrasRequestProvider
 		}
 	}
 	result.Headers = mergeHeaders(clientHTTPOptions, configHTTPOptions)
@@ -313,6 +489,111 @@ func doMergeHeaders(input http.Header, output *http.Header) {
 	for k, v := range input {
 		for _, vv := range v {
 			output.Add(k, vv)
+		}
+	}
+}
+
+// moveValueByPath moves values from source paths to destination paths.
+//
+// Examples:
+//
+//	moveValueByPath(
+//	  map[string]any{"requests": []any{map[string]any{"content": "v1"}, map[string]any{"content": "v2"}}},
+//	  map[string]string{"requests[].*": "requests[].request.*"}
+//	)
+//	  -> {"requests": [{"request": {"content": "v1"}}, {"request": {"content": "v2"}}]}
+func moveValueByPath(data any, paths map[string]string) {
+	for sourcePath, destPath := range paths {
+		sourceKeys := strings.Split(sourcePath, ".")
+		destKeys := strings.Split(destPath, ".")
+
+		// Determine keys to exclude from wildcard to avoid cyclic references
+		excludeKeys := make(map[string]bool)
+		wildcardIdx := -1
+		for i, key := range sourceKeys {
+			if key == "*" {
+				wildcardIdx = i
+				break
+			}
+		}
+
+		if wildcardIdx != -1 && len(destKeys) > wildcardIdx {
+			// Extract the intermediate key between source and dest paths
+			// Example: source=["requests[]", "*"], dest=["requests[]", "request", "*"]
+			// We want to exclude "request"
+			for i := wildcardIdx; i < len(destKeys); i++ {
+				key := destKeys[i]
+				if key != "*" && !strings.HasSuffix(key, "[]") && !strings.HasSuffix(key, "[0]") {
+					excludeKeys[key] = true
+				}
+			}
+		}
+
+		moveValueRecursive(data, sourceKeys, destKeys, 0, excludeKeys)
+	}
+}
+
+// moveValueRecursive recursively moves values from source path to destination path.
+func moveValueRecursive(data any, sourceKeys []string, destKeys []string, keyIdx int, excludeKeys map[string]bool) {
+	if keyIdx >= len(sourceKeys) {
+		return
+	}
+
+	key := sourceKeys[keyIdx]
+
+	if strings.HasSuffix(key, "[]") {
+		keyName := key[:len(key)-2]
+		if dataMap, ok := data.(map[string]any); ok {
+			if sliceData, exists := dataMap[keyName]; exists {
+				switch slice := sliceData.(type) {
+				case []any:
+					for _, item := range slice {
+						moveValueRecursive(item, sourceKeys, destKeys, keyIdx+1, excludeKeys)
+					}
+				case []map[string]any:
+					for _, item := range slice {
+						moveValueRecursive(item, sourceKeys, destKeys, keyIdx+1, excludeKeys)
+					}
+				}
+			}
+		}
+	} else if key == "*" {
+		// Handle wildcard - move all fields
+		if dataMap, ok := data.(map[string]any); ok {
+			keysToMove := []string{}
+			for k := range dataMap {
+				if !strings.HasPrefix(k, "_") && !excludeKeys[k] {
+					keysToMove = append(keysToMove, k)
+				}
+			}
+			valuesToMove := make(map[string]any)
+			for _, k := range keysToMove {
+				valuesToMove[k] = dataMap[k]
+			}
+
+			// Set values at destination
+			for k, v := range valuesToMove {
+				newDestKeys := []string{}
+				for _, dk := range destKeys[keyIdx:] {
+					if dk == "*" {
+						newDestKeys = append(newDestKeys, k)
+					} else {
+						newDestKeys = append(newDestKeys, dk)
+					}
+				}
+				setValueByPath(dataMap, newDestKeys, v)
+			}
+
+			for _, k := range keysToMove {
+				delete(dataMap, k)
+			}
+		}
+	} else {
+		// Navigate to next level
+		if dataMap, ok := data.(map[string]any); ok {
+			if nextData, exists := dataMap[key]; exists {
+				moveValueRecursive(nextData, sourceKeys, destKeys, keyIdx+1, excludeKeys)
+			}
 		}
 	}
 }

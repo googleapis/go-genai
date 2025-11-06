@@ -2792,6 +2792,31 @@ func modelFromMldev(fromObject map[string]any, parentObject map[string]any) (toO
 		setValueByPath(toObject, []string{"supportedActions"}, fromSupportedActions)
 	}
 
+	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	if fromTemperature != nil {
+		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
+	}
+
+	fromMaxTemperature := getValueByPath(fromObject, []string{"maxTemperature"})
+	if fromMaxTemperature != nil {
+		setValueByPath(toObject, []string{"maxTemperature"}, fromMaxTemperature)
+	}
+
+	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	if fromTopP != nil {
+		setValueByPath(toObject, []string{"topP"}, fromTopP)
+	}
+
+	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	if fromTopK != nil {
+		setValueByPath(toObject, []string{"topK"}, fromTopK)
+	}
+
+	fromThinking := getValueByPath(fromObject, []string{"thinking"})
+	if fromThinking != nil {
+		setValueByPath(toObject, []string{"thinking"}, fromThinking)
+	}
+
 	return toObject, nil
 }
 

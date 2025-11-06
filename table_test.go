@@ -89,6 +89,10 @@ func sanitizeGotSDKResponses(t *testing.T, responses []map[string]any) {
 			delete(response, "Items")
 			delete(response, "Name")
 		}
+		if sdkResponse, ok := response["SDKHTTPResponse"].(map[string]any); ok {
+			response["sdkHttpResponse"] = sdkResponse
+			delete(response, "SDKHTTPResponse")
+		}
 
 	}
 }
@@ -103,6 +107,15 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 		parameterName := snakeToCamel(testTableFile.ParameterNames[i-1])
 		parameterValue, ok := testTableItem.Parameters[parameterName]
 		if ok {
+			// converts string contents to []*Content, required for some streaming tests.
+			if parameterName == "contents" {
+				if s, ok := parameterValue.(string); ok {
+					part := map[string]any{"text": s}
+					parameterValue = []any{
+						map[string]any{"parts": []any{part}, "role": "user"},
+					}
+				}
+			}
 			paramType := method.Type().In(i)
 			if paramType == nil {
 				_, methodName := moduleAndMethodName(t, testTableFile)
@@ -164,42 +177,58 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 
 func moduleAndMethodName(t *testing.T, testTableFile *testTableFile) (string, string) {
 	t.Helper()
-	// Gets module name and method name.
+	// Gets module path and method name.
 	segments := strings.Split(testTableFile.TestMethod, ".")
-	if len(segments) != 2 {
-		t.Error("Invalid test method: " + testTableFile.TestMethod)
+	if len(segments) < 2 {
+		t.Errorf("Invalid test method: %s", testTableFile.TestMethod)
 	}
-	moduleName := segments[0]
-	methodName := segments[1]
-	return moduleName, methodName
+	modulePath := strings.Join(segments[:len(segments)-1], ".")
+	methodName := segments[len(segments)-1]
+	return modulePath, methodName
 }
 
 func extractMethod(t *testing.T, testTableFile *testTableFile, client *Client) reflect.Value {
 	t.Helper()
-	// Gets module name and method name.
-	segments := strings.Split(testTableFile.TestMethod, ".")
-	if len(segments) != 2 {
-		t.Error("Invalid test method: " + testTableFile.TestMethod)
-	}
-	moduleName, methodName := moduleAndMethodName(t, testTableFile)
+	// Gets module path and method name.
+	modulePath, methodName := moduleAndMethodName(t, testTableFile)
 
-	// Finds the module and method.
-	module := reflect.ValueOf(*client).FieldByName(snakeToPascal(moduleName))
-	if !module.IsValid() {
-		t.Skipf("Skipping module: %s.%s, not supported in Go", moduleName, methodName)
+	// TODO(b/428772983): Remove this once the tests are updated.
+	if methodName == "tune" && client.clientConfig.Backend != BackendVertexAI {
+		methodName = "tuneMldev"
+	}
+
+	// Finds the module by traversing the path.
+	module := reflect.ValueOf(*client)
+	for _, segment := range strings.Split(modulePath, ".") {
+		// Dereference pointer to get the module struct.
+		if module.Kind() == reflect.Ptr {
+			module = module.Elem()
+		}
+		pascalSegment := snakeToPascal(segment)
+		nextModule := module.FieldByName(pascalSegment)
+		if !nextModule.IsValid() {
+			t.Skipf("Skipping module: %s.%s, not supported in Go", modulePath, methodName)
+		}
+		module = nextModule
 	}
 	method := module.MethodByName(snakeToPascal(methodName))
 	if !method.IsValid() {
-		t.Skipf("Skipping method: %s.%s, not supported in Go", moduleName, methodName)
+		t.Skipf("Skipping method: %s.%s, not supported in Go", modulePath, methodName)
 	}
 	return method
 }
 
 func extractWantException(testTableItem *testTableItem, backend Backend) string {
+	exception := testTableItem.ExceptionIfMLDev
 	if backend == BackendVertexAI {
-		return testTableItem.ExceptionIfVertex
+		exception = testTableItem.ExceptionIfVertex
 	}
-	return testTableItem.ExceptionIfMLDev
+	parts := strings.SplitN(exception, " ", 2)
+	if len(parts) > 1 && strings.Contains(parts[0], "_") {
+		parts[0] = snakeToCamel(parts[0])
+		return strings.Join(parts, " ")
+	}
+	return exception
 }
 
 func createReplayAPIClient(t *testing.T, testTableDirectory string, testTableItem *testTableItem, backendName string) *replayAPIClient {
@@ -224,10 +253,14 @@ func TestTable(t *testing.T) {
 	// breakages if the behavior of the ReplayAPIClient changes, e.g. takes the replay directory
 	// from a different source, as the tests must read the replay files from the same source.
 	replayPath := newReplayAPIClient(t).ReplaysDirectory
+	walkPath := replayPath
+	if testsSubDir := os.Getenv("GOOGLE_GENAI_TESTS_SUBDIR"); testsSubDir != "" {
+		walkPath = path.Join(replayPath, "tests", testsSubDir)
+	}
 
 	for _, backend := range backends {
 		t.Run(backend.name, func(t *testing.T) {
-			err := filepath.Walk(replayPath, func(testFilePath string, info os.FileInfo, err error) error {
+			err := filepath.Walk(walkPath, func(testFilePath string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
@@ -255,6 +288,16 @@ func TestTable(t *testing.T) {
 							if testTableItem.SkipInAPIMode != "" {
 								t.Skipf("Skipping because %s", testTableItem.SkipInAPIMode)
 							}
+
+							if !strings.Contains(testTableFile.TestMethod, ".") {
+								if *mode == apiMode {
+									t.Skipf("Custom test method %s not supported in Go yet", testTableFile.TestMethod)
+								} else { // replay mode
+									t.Skipf("Custom test method %s not supported in replay mode in Go", testTableFile.TestMethod)
+								}
+								return
+							}
+
 							config := ClientConfig{Backend: backend.Backend}
 							replayClient := createReplayAPIClient(t, testTableDirectory, testTableItem, backend.name)
 							if *mode == replayMode {
@@ -292,7 +335,7 @@ func TestTable(t *testing.T) {
 								return
 							}
 							wantException := extractWantException(testTableItem, backend.Backend)
-							if wantException != "" {
+							if wantException != "" && len(response) > 1 {
 								if response[1].IsNil() {
 									t.Fatalf("Calling method expected to fail but it didn't, err: %v", wantException)
 								}
@@ -305,6 +348,11 @@ func TestTable(t *testing.T) {
 									t.Errorf("Exceptions had diff (-got +want):\n%v", diff)
 								}
 							} else {
+								// If the response is nil, it means the call was successful but the response is
+								// empty. For example, batches.cancel() returns an empty response.
+								if len(response) == 1 {
+									return
+								}
 								// Assert there was no error when the call is successful.
 								if !response[1].IsNil() {
 									t.Fatalf("Calling method failed unexpectedly, err: %v", response[1].Interface().(error).Error())
@@ -329,12 +377,46 @@ func TestTable(t *testing.T) {
 										}
 									}
 								}
+
+								// Format SDKHTTPResponse headers for comparison
+								for _, item := range got {
+									sanitizeHeadersForComparison(item)
+								}
+								for _, item := range want {
+									sanitizeHeadersForComparison(item)
+								}
+
+								// only verifies the content-length header if exists in replay, ignores otherwise
+								for i := range got {
+									if len(want) <= i {
+										continue
+									}
+
+									gotSDKHResponse, gotOK := got[i]["sdkHttpResponse"].(map[string]any)
+									wantSDKHResponse, wantOK := want[i]["sdkHttpResponse"].(map[string]any)
+									if !gotOK || !wantOK {
+										continue
+									}
+
+									gotHeaders, gotOK := gotSDKHResponse["headers"].(map[string][]string)
+									wantHeaders, wantOK := wantSDKHResponse["headers"].(map[string][]string)
+									if !gotOK || !wantOK {
+										continue
+									}
+
+									if _, existsInWant := wantHeaders["content-length"]; !existsInWant {
+										delete(gotHeaders, "content-length")
+									}
+								}
+
 								for _, v := range want {
 									_ = convertFloat64ToString(v)
 								}
 								for _, v := range got {
 									_ = convertFloat64ToString(v)
 								}
+								omitEmptyValues(want)
+								omitEmptyValues(got)
 								opts := cmp.Options{stringComparator, floatComparator}
 								if diff := cmp.Diff(got, want, opts); diff != "" {
 									t.Errorf("Responses had diff (-got +want):\n%v\n %v\n\n %v", diff, got, want)

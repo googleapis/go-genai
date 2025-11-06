@@ -26,26 +26,28 @@ var ErrPageDone = errors.New("no more pages")
 // Page represents a page of results from a paginated API call.
 // It contains a slice of items and information about the next page.
 type Page[T any] struct {
-	Name          string // The name of the resource.
-	Items         []*T   // The items in the current page.
-	NextPageToken string // The token to use to retrieve the next page of results.
+	Name            string        // The name of the resource.
+	Items           []*T          // The items in the current page.
+	NextPageToken   string        // The token to use to retrieve the next page of results.
+	SDKHTTPResponse *HTTPResponse // The SDKHTTPResponse from the API call.
 
-	config   map[string]any                                                         // The configuration used for the API call.
-	listFunc func(ctx context.Context, config map[string]any) ([]*T, string, error) // The function used to retrieve the next page.
+	config   map[string]any                                                                        // The configuration used for the API call.
+	listFunc func(ctx context.Context, config map[string]any) ([]*T, string, *HTTPResponse, error) // The function used to retrieve the next page.
 }
 
-func newPage[T any](ctx context.Context, name string, config map[string]any, listFunc func(ctx context.Context, config map[string]any) ([]*T, string, error)) (Page[T], error) {
+func newPage[T any](ctx context.Context, name string, config map[string]any, listFunc func(ctx context.Context, config map[string]any) ([]*T, string, *HTTPResponse, error)) (Page[T], error) {
 	p := Page[T]{
 		Name:     name,
 		config:   config,
 		listFunc: listFunc,
 	}
-	items, nextPageToken, err := listFunc(ctx, config)
+	items, nextPageToken, sdkHTTPResponse, err := listFunc(ctx, config)
 	if err != nil {
 		return p, err
 	}
 	p.Items = items
 	p.NextPageToken = nextPageToken
+	p.SDKHTTPResponse = sdkHTTPResponse
 	return p, nil
 }
 

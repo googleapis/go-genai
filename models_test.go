@@ -149,6 +149,61 @@ func TestModelsGenerateContentAudio(t *testing.T) {
 	}
 }
 
+func TestModelsGenerateContentMultiSpeakerVoiceConfigAudio(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			config := &GenerateContentConfig{
+				ResponseModalities: []string{"AUDIO"},
+				SpeechConfig: &SpeechConfig{
+					MultiSpeakerVoiceConfig: &MultiSpeakerVoiceConfig{
+						SpeakerVoiceConfigs: []*SpeakerVoiceConfig{
+							{
+								Speaker: "Alice",
+								VoiceConfig: &VoiceConfig{
+									PrebuiltVoiceConfig: &PrebuiltVoiceConfig{
+										VoiceName: "Aoede",
+									},
+								},
+							},
+							{
+								Speaker: "Bob",
+								VoiceConfig: &VoiceConfig{
+									PrebuiltVoiceConfig: &PrebuiltVoiceConfig{
+										VoiceName: "Kore",
+									},
+								},
+							},
+						},
+					},
+					LanguageCode: "en-US",
+				},
+			}
+			result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", Text("say something nice to me"), config)
+			if err != nil {
+				t.Errorf("GenerateContent failed unexpectedly: %v", err)
+			}
+			if result == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if len(result.Candidates) == 0 {
+				t.Errorf("expected at least one candidate, got none")
+			}
+		})
+	}
+}
+
 func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
 	if *mode != apiMode {
 		t.Skip("Skip. This test is only in the API mode")
@@ -181,6 +236,239 @@ func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
 			}
 			if operation.Response.GeneratedVideos[0].Video.URI == "" && operation.Response.GeneratedVideos[0].Video.VideoBytes == nil {
 				t.Fatalf("expected generated video to have either URI or video bytes")
+			}
+		})
+	}
+}
+
+func TestModelsGenerateVideosFromSource(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			video := &Video{
+				URI:      "gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+				MIMEType: "video/mp4",
+			}
+			outputGCSURI := "gs://genai-sdk-tests/outputs/videos"
+			if backend.Backend != BackendVertexAI {
+				// Not supported in MLDev.
+				video = nil
+				outputGCSURI = ""
+			}
+			generateVideosSource := &GenerateVideosSource{
+				Prompt: "Driving across a bridge.",
+				Video:  video,
+			}
+			config := &GenerateVideosConfig{
+				NumberOfVideos: 1,
+				OutputGCSURI:   outputGCSURI,
+			}
+			operation, err := client.Models.GenerateVideosFromSource(ctx, "veo-2.0-generate-001", generateVideosSource, config)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation, err = client.Operations.GetVideosOperation(ctx, operation, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation == nil || operation.Response == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if operation.Response.GeneratedVideos[0].Video.URI == "" && operation.Response.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have either URI or video bytes")
+			}
+		})
+	}
+}
+
+func TestModelsGenerateVideosExtensionFromSource(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			// Gemini only test
+			if isDisabledTest(t) || backend.Backend == BackendVertexAI {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Generate first video
+			operation1, err := client.Models.GenerateVideosFromSource(
+				ctx,
+				"veo-3-exp",
+				&GenerateVideosSource{
+					Prompt: "Rain",
+				},
+				&GenerateVideosConfig{
+					NumberOfVideos: 1,
+				},
+			)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation1.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation1, err = client.Operations.GetVideosOperation(ctx, operation1, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation1 == nil || operation1.Response == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			for _, v := range operation1.Response.GeneratedVideos {
+				data, err := client.Files.Download(ctx, NewDownloadURIFromGeneratedVideo(v), nil)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				fmt.Printf("Video file %s downloaded. Data size: %d. \n", v.Video.URI, len(data))
+			}
+			if operation1.Response.GeneratedVideos[0].Video.URI == "" || operation1.Response.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have both URI and video bytes after downloading")
+			}
+
+			// Extend the first video
+			operation2, err := client.Models.GenerateVideosFromSource(
+				ctx,
+				"veo-3-exp",
+				&GenerateVideosSource{
+					Prompt: "Sun",
+					Video:  operation1.Response.GeneratedVideos[0].Video,
+				},
+				&GenerateVideosConfig{
+					NumberOfVideos: 1,
+				},
+			)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation2.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation2, err = client.Operations.GetVideosOperation(ctx, operation2, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation2 == nil || operation2.Response == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if operation2.Response.GeneratedVideos[0].Video.URI == "" && operation2.Response.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have either URI or video bytes")
+			}
+		})
+	}
+}
+
+func TestModelsGenerateVideosEditOutpaint(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) || backend.Backend != BackendVertexAI {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			video := &Video{
+				URI:      "gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+				MIMEType: "video/mp4",
+			}
+			outputGCSURI := "gs://genai-sdk-tests/outputs/videos"
+			generateVideosSource := &GenerateVideosSource{
+				Prompt: "A mountain landscape",
+				Video:  video,
+			}
+			config := &GenerateVideosConfig{
+				NumberOfVideos: 1,
+				OutputGCSURI:   outputGCSURI,
+				AspectRatio:    "16:9",
+				Mask: &VideoGenerationMask{
+					Image: &Image{
+						GCSURI:   "gs://genai-sdk-tests/inputs/videos/video_outpaint_mask.png",
+						MIMEType: "image/png",
+					},
+					MaskMode: VideoGenerationMaskModeOutpaint,
+				},
+			}
+			operation, err := client.Models.GenerateVideosFromSource(ctx, "veo-2.0-generate-exp", generateVideosSource, config)
+			if err != nil {
+				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
+			}
+			for !operation.Done {
+				fmt.Println("Waiting for operation to complete...")
+				time.Sleep(20 * time.Second)
+				operation, err = client.Operations.GetVideosOperation(ctx, operation, nil)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if operation == nil || operation.Response == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if operation.Response.GeneratedVideos[0].Video.URI == "" && operation.Response.GeneratedVideos[0].Video.VideoBytes == nil {
+				t.Fatalf("expected generated video to have either URI or video bytes")
+			}
+		})
+	}
+}
+
+func TestModelsGenerateContentImage(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			config := &GenerateContentConfig{
+				ResponseModalities: []string{"IMAGE", "TEXT"},
+			}
+			result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash-preview-image-generation",
+				Text("Generate an image of the Eiffel tower with fireworks in the background."), config)
+			if err != nil {
+				t.Errorf("GenerateContent failed unexpectedly: %v", err)
+			}
+			if result == nil {
+				t.Fatalf("expected at least one response, got none")
+			}
+			if len(result.Candidates) == 0 {
+				t.Errorf("expected at least one candidate, got none")
 			}
 		})
 	}
@@ -287,6 +575,84 @@ func TestModelsAll(t *testing.T) {
 
 			if diff := cmp.Diff(tt.expectedModels, gotModels); diff != "" {
 				t.Errorf("Models.All() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestModelsAllEmptyResponse(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name            string
+		serverResponses []func(w http.ResponseWriter)
+	}{
+		{
+			name: "Empty_JSON_Payload",
+			serverResponses: []func(w http.ResponseWriter){
+				func(w http.ResponseWriter) {
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusOK)
+					_, err := w.Write([]byte(`{}`))
+					if err != nil {
+						t.Errorf("Failed to write response: %v", err)
+					}
+				},
+			},
+		},
+		{
+			name: "JSON_Payload_With_Unknown_Fields",
+			serverResponses: []func(w http.ResponseWriter){
+				func(w http.ResponseWriter) {
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusOK)
+					_, err := w.Write([]byte(`{"unknownField": "value", "models": []}`))
+					if err != nil {
+						t.Errorf("Failed to write response: %v", err)
+					}
+				},
+			},
+		},
+		{
+			name: "Entirely_Empty_Response_Body",
+			serverResponses: []func(w http.ResponseWriter){
+				func(w http.ResponseWriter) {
+					w.WriteHeader(http.StatusOK)
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			responseIndex := 0
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				tt.serverResponses[responseIndex](w)
+				responseIndex++
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(ctx, &ClientConfig{HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_API_KEY": "test-api-key",
+					}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Failed to create client: %v", err)
+			}
+
+			gotModels := []*Model{}
+			for model, err := range client.Models.All(ctx) {
+				if err != nil {
+					t.Errorf("Models.All() iteration error = %v", err)
+					return
+				}
+				gotModels = append(gotModels, model)
+			}
+
+			if len(gotModels) != 0 {
+				t.Errorf("Models.All() expected empty list, got: %v", gotModels)
 			}
 		})
 	}

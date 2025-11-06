@@ -23,7 +23,92 @@ import (
 	"testing"
 
 	"cloud.google.com/go/auth"
+	"github.com/google/go-cmp/cmp"
 )
+
+func TestValidateContent(t *testing.T) {
+	tests := []struct {
+		name    string
+		content *Content
+		want    bool
+	}{
+		{"NilContent", nil, false},
+		{"EmptyParts", &Content{Parts: []*Part{}}, false},
+		{"NilPart", &Content{Parts: []*Part{nil}}, false},
+		{"EmptyTextPart", &Content{Parts: []*Part{&Part{Text: ""}}}, false},
+		{"ValidTextPart", &Content{Parts: []*Part{&Part{Text: "hello"}}}, true},
+		{"ValidFunctionCall", &Content{Parts: []*Part{&Part{FunctionCall: &FunctionCall{Name: "test"}}}}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := validateContent(tt.content); got != tt.want {
+				t.Errorf("validateContent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidateResponse(t *testing.T) {
+	tests := []struct {
+		name     string
+		response *GenerateContentResponse
+		want     bool
+	}{
+		{"NilResponse", nil, false},
+		{"EmptyCandidates", &GenerateContentResponse{Candidates: []*Candidate{}}, false},
+		{"NilContentInCandidate", &GenerateContentResponse{Candidates: []*Candidate{{Content: nil}}}, false},
+		{"InvalidContent", &GenerateContentResponse{Candidates: []*Candidate{{Content: &Content{Parts: []*Part{{Text: ""}}}}}}, false},
+		{"ValidContent", &GenerateContentResponse{Candidates: []*Candidate{{Content: &Content{Parts: []*Part{{Text: "hello"}}}}}}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := validateResponse(tt.response); got != tt.want {
+				t.Errorf("validateResponse() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExtractCuratedHistory(t *testing.T) {
+	validUser1 := &Content{Role: RoleUser, Parts: []*Part{{Text: "User 1"}}}
+	validModel1 := &Content{Role: RoleModel, Parts: []*Part{{Text: "Model 1"}}}
+	validUser2 := &Content{Role: RoleUser, Parts: []*Part{{Text: "User 2"}}}
+	invalidModel := &Content{Role: RoleModel, Parts: []*Part{{Text: ""}}}
+	validModel2 := &Content{Role: RoleModel, Parts: []*Part{{Text: "Model 2"}}}
+
+	tests := []struct {
+		name    string
+		input   []*Content
+		want    []*Content
+		wantErr bool
+	}{
+		{"EmptyHistory", []*Content{}, []*Content{}, false},
+		{"AllValid", []*Content{validUser1, validModel1, validUser2, validModel2}, []*Content{validUser1, validModel1, validUser2, validModel2}, false},
+		{"InvalidModelResponse", []*Content{validUser1, invalidModel}, []*Content{}, false},
+		{"InvalidTrappedBetweenValids", []*Content{validUser1, validModel1, validUser2, invalidModel}, []*Content{validUser1, validModel1}, false},
+		{"ValidAfterInvalid", []*Content{validUser1, invalidModel, validUser2, validModel2}, []*Content{validUser2, validModel2}, false},
+		{"StartsWithInvalidModel", []*Content{invalidModel, validUser1, validModel1}, []*Content{validUser1, validModel1}, false},
+		{"ConsecutiveUser", []*Content{validUser1, validUser2, validModel1}, []*Content{validUser1, validUser2, validModel1}, false},
+		{"ConsecutiveModel", []*Content{validUser1, validModel1, validModel2}, []*Content{validUser1, validModel1, validModel2}, false},
+		{"EndsWithUser", []*Content{validUser1, validModel1, validUser2}, []*Content{validUser1, validModel1, validUser2}, false},
+		{"InvalidRole", []*Content{{Role: "invalid", Parts: []*Part{{Text: "test"}}}}, nil, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := extractCuratedHistory(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("extractCuratedHistory() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("extractCuratedHistory() mismatch (-want +got):\n %s", diff)
+			}
+		})
+	}
+}
 
 func TestChatsUnitTest(t *testing.T) {
 	ctx := context.Background()
@@ -84,6 +169,11 @@ func TestChatsUnitTest(t *testing.T) {
 		}
 		if result.Text() == "" {
 			t.Errorf("Response text should not be empty")
+		}
+
+		// Test iterator break logic.
+		for range chat.SendMessageStream(ctx, part) {
+			break
 		}
 	})
 
@@ -255,20 +345,147 @@ func TestChatsHistory(t *testing.T) {
 			}
 
 			// Check comprehensive history.
-			history = chat.History(false)
-			if len(history) != 4 {
-				t.Errorf("Expected 4 history entries, got %d", len(history))
+			compHistory := chat.History(false)
+			if len(compHistory) != 4 {
+				t.Errorf("Expected 4 comprehensive history entries, got %d", len(compHistory))
 			}
-			if len(history[3].Parts) != 1 || history[3].Parts[0].Text == "" {
-				t.Errorf("Expected single text part in latest model response")
+			if len(compHistory[3].Parts) != 1 || compHistory[3].Parts[0].Text == "" {
+				t.Errorf("Expected single text part in latest model response in comprehensive history")
 			}
 
-			// Curated history is not supported
-			history = chat.History(true)
-			if history != nil {
-				log.Fatal("Curated history should return nil since it is not supported yet")
+			// Check curated history.
+			curatedHistory := chat.History(true)
+			if len(curatedHistory) != 4 {
+				t.Errorf("Expected 4 curated history entries, got %d", len(curatedHistory))
+			}
+			if diff := cmp.Diff(compHistory, curatedHistory); diff != "" {
+				t.Errorf("Curated history mismatch from comprehensive (-want +got): \n%s", diff)
 			}
 		})
+	}
+}
+
+func TestChatsHistoryWithInvalidTurns(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+	client, err := NewClient(ctx, &ClientConfig{Backend: backends[0].Backend})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	validInput := &Content{Role: RoleUser, Parts: []*Part{{Text: "Hello"}}}
+	validOutput := &Content{Role: RoleModel, Parts: []*Part{{Text: "Hi there!"}}}
+	invalidInput := &Content{Role: RoleUser, Parts: []*Part{{Text: "This will be invalid"}}}
+	invalidOutput := &Content{Role: RoleModel, Parts: []*Part{}} // Invalid due to empty parts
+
+	initialHistory := []*Content{validInput, validOutput, invalidInput, invalidOutput}
+	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, initialHistory)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	compHistory := chat.History(false)
+	if len(compHistory) != 4 {
+		t.Errorf("Expected 4 comprehensive history entries, got %d", len(compHistory))
+	}
+
+	curatedHistory := chat.History(true)
+	expectedCurated := []*Content{validInput, validOutput}
+	if diff := cmp.Diff(expectedCurated, curatedHistory); diff != "" {
+		t.Errorf("Curated history mismatch (-want +got): \n%s", diff)
+	}
+}
+
+func TestChatsSendInvalidResponse(t *testing.T) {
+	ctx := context.Background()
+	// Create a test server
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, `{
+			"candidates": [
+				{
+					"content": {
+						"role": "model",
+						"parts": []
+					},
+					"finishReason": "STOP"
+				}
+			]
+		}`)
+	}))
+	defer ts.Close()
+
+	cc := &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		HTTPClient:  ts.Client(),
+		Credentials: &auth.Credentials{},
+	}
+	ac := &apiClient{clientConfig: cc}
+	client := &Client{clientConfig: *cc, Chats: &Chats{apiClient: ac}}
+
+	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = chat.SendMessage(ctx, Part{Text: "Test"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	compHistory := chat.History(false)
+	if len(compHistory) != 2 {
+		t.Errorf("Expected 2 comprehensive history entries, got %d", len(compHistory))
+	}
+
+	curatedHistory := chat.History(true)
+	if len(curatedHistory) != 0 {
+		t.Errorf("Expected 0 curated history entries, got %d", len(curatedHistory))
+	}
+}
+
+func TestChatsStreamInvalidResponse(t *testing.T) {
+	ctx := context.Background()
+	// Create a test server
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, `data:{
+			"candidates": [
+				{
+					"content": { "role": "model", "parts": [{"text": ""}] },
+					"finishReason": "STOP"
+				}
+			]
+		}`)
+	}))
+	defer ts.Close()
+
+	cc := &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		HTTPClient:  ts.Client(),
+		Credentials: &auth.Credentials{},
+	}
+	ac := &apiClient{clientConfig: cc}
+	client := &Client{clientConfig: *cc, Chats: &Chats{apiClient: ac}}
+
+	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for range chat.SendMessageStream(ctx, Part{Text: "Test"}) {
+	}
+
+	compHistory := chat.History(false)
+	if len(compHistory) != 2 {
+		t.Errorf("Expected 2 comprehensive history entries, got %d, %v", len(compHistory), compHistory)
+	}
+
+	curatedHistory := chat.History(true)
+	if len(curatedHistory) != 0 {
+		t.Errorf("Expected 0 curated history entries, got %d", len(curatedHistory))
 	}
 }
 

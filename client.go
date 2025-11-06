@@ -17,6 +17,7 @@ package genai
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -41,6 +42,12 @@ type Client struct {
 	Files *Files
 	// Operations provides access to long-running operations.
 	Operations *Operations
+	// FileSearchStores provides access to the File Search Stores service.
+	FileSearchStores *FileSearchStores
+	// Batches provides access to the Batch service.
+	Batches *Batches
+	// Tunings provides access to the Tunings service.
+	Tunings *Tunings
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -73,18 +80,23 @@ func (t Backend) String() string {
 
 // ClientConfig is the configuration for the GenAI client.
 type ClientConfig struct {
-	// API Key for GenAI. Required for BackendGeminiAPI. Can also be set via the GOOGLE_API_KEY environment variable.
+	// Optional. API Key for GenAI. Required for BackendGeminiAPI.
+	// Can also be set via the GOOGLE_API_KEY or GEMINI_API_KEY environment variable.
+	// Get a Gemini API key: https://ai.google.dev/gemini-api/docs/api-key
 	APIKey string
 
-	// Backend for GenAI. See Backend constants. Defaults to BackendGeminiAPI unless explicitly set to BackendVertexAI,
+	// Optional. Backend for GenAI. See Backend constants. Defaults to BackendGeminiAPI unless explicitly set to BackendVertexAI,
 	// or the environment variable GOOGLE_GENAI_USE_VERTEXAI is set to "1" or "true".
 	Backend Backend
 
-	// GCP Project ID for Vertex AI. Required for BackendVertexAI. Can also be set via the GOOGLE_CLOUD_PROJECT environment variable.
+	// Optional. GCP Project ID for Vertex AI. Required for BackendVertexAI.
+	// Can also be set via the GOOGLE_CLOUD_PROJECT environment variable.
+	// Find your Project ID: https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects
 	Project string
 
-	// GCP Location/Region for Vertex AI. Required for BackendVertexAI. See https://cloud.google.com/vertex-ai/docs/general/locations.
+	// Optional. GCP Location/Region for Vertex AI. Required for BackendVertexAI.
 	// Can also be set via the GOOGLE_CLOUD_LOCATION or GOOGLE_CLOUD_REGION environment variable.
+	// Generative AI locations: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations.
 	Location string
 
 	// Optional. Google credentials.  If not specified, [Application Default Credentials] will be used.
@@ -94,6 +106,8 @@ type ClientConfig struct {
 
 	// Optional HTTP client to use. If nil, a default client will be created.
 	// For Vertex AI, this client must handle authentication appropriately.
+	// Otherwise, call [UseDefaultCredentials] convenience method to add default credentials to the
+	// client.
 	HTTPClient *http.Client
 
 	// Optional HTTP options to override.
@@ -110,6 +124,9 @@ func defaultEnvVarProvider() map[string]string {
 	if v, ok := os.LookupEnv("GOOGLE_API_KEY"); ok {
 		vars["GOOGLE_API_KEY"] = v
 	}
+	if v, ok := os.LookupEnv("GEMINI_API_KEY"); ok {
+		vars["GEMINI_API_KEY"] = v
+	}
 	if v, ok := os.LookupEnv("GOOGLE_CLOUD_PROJECT"); ok {
 		vars["GOOGLE_CLOUD_PROJECT"] = v
 	}
@@ -119,7 +136,25 @@ func defaultEnvVarProvider() map[string]string {
 	if v, ok := os.LookupEnv("GOOGLE_CLOUD_REGION"); ok {
 		vars["GOOGLE_CLOUD_REGION"] = v
 	}
+	if v, ok := os.LookupEnv("GOOGLE_GEMINI_BASE_URL"); ok {
+		vars["GOOGLE_GEMINI_BASE_URL"] = v
+	}
+	if v, ok := os.LookupEnv("GOOGLE_VERTEX_BASE_URL"); ok {
+		vars["GOOGLE_VERTEX_BASE_URL"] = v
+	}
 	return vars
+}
+
+func getAPIKeyFromEnv(envVars map[string]string) string {
+	googleAPIKey := envVars["GOOGLE_API_KEY"]
+	geminiAPIKey := envVars["GEMINI_API_KEY"]
+	if googleAPIKey != "" && geminiAPIKey != "" {
+		log.Printf("Warning: Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.")
+	}
+	if googleAPIKey != "" {
+		return googleAPIKey
+	}
+	return geminiAPIKey
 }
 
 // NewClient creates a new GenAI client.
@@ -131,7 +166,10 @@ func defaultEnvVarProvider() map[string]string {
 //
 //   - Environment Variables for BackendGeminiAPI:
 //
-//   - GOOGLE_API_KEY: Required. Specifies the API key for the Gemini API.
+//   - GEMINI_API_KEY: Specifies the API key for the Gemini API.
+//
+//   - GOOGLE_API_KEY: Can also be used to specify the API key for the Gemini API.
+//     If both GOOGLE_API_KEY and GEMINI_API_KEY are set, GOOGLE_API_KEY will be used.
 //
 //   - Environment Variables for BackendVertexAI:
 //
@@ -156,10 +194,13 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 	envVars := cc.envVarProvider()
 
 	if cc.Project != "" && cc.APIKey != "" {
-		return nil, fmt.Errorf("project and API key are mutually exclusive in the client initializer. ClientConfig: %v", cc)
+		return nil, fmt.Errorf("project and API key are mutually exclusive in the client initializer. ClientConfig: %#v", cc)
 	}
 	if cc.Location != "" && cc.APIKey != "" {
-		return nil, fmt.Errorf("location and API key are mutually exclusive in the client initializer. ClientConfig: %v", cc)
+		return nil, fmt.Errorf("location and API key are mutually exclusive in the client initializer. ClientConfig: %#v", cc)
+	}
+	if cc.Credentials != nil && cc.APIKey != "" {
+		return nil, fmt.Errorf("credentials and API key are mutually exclusive in the client initializer. ClientConfig: %#v", cc)
 	}
 
 	if cc.Backend == BackendUnspecified {
@@ -175,35 +216,64 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		}
 	}
 
-	// Only set the API key for MLDev API.
-	if cc.APIKey == "" && cc.Backend == BackendGeminiAPI {
-		cc.APIKey = envVars["GOOGLE_API_KEY"]
+	// Retrieve implicitly set values from the environment.
+	envAPIKey := getAPIKeyFromEnv(envVars)
+	envProject := envVars["GOOGLE_CLOUD_PROJECT"]
+	envLocation := ""
+	if location, ok := envVars["GOOGLE_CLOUD_LOCATION"]; ok {
+		envLocation = location
+	} else if location, ok := envVars["GOOGLE_CLOUD_REGION"]; ok {
+		envLocation = location
+	}
+	configAPIKey := cc.APIKey
+	configProject := cc.Project
+	configLocation := cc.Location
+	if cc.APIKey == "" {
+		cc.APIKey = envAPIKey
 	}
 	if cc.Project == "" {
-		cc.Project = envVars["GOOGLE_CLOUD_PROJECT"]
+		cc.Project = envProject
 	}
 	if cc.Location == "" {
-		if location, ok := envVars["GOOGLE_CLOUD_LOCATION"]; ok {
-			cc.Location = location
-		} else if location, ok := envVars["GOOGLE_CLOUD_REGION"]; ok {
-			cc.Location = location
-		}
+		cc.Location = envLocation
 	}
 
 	if cc.Backend == BackendVertexAI {
-		if cc.Project == "" {
-			return nil, fmt.Errorf("project is required for Vertex AI backend. ClientConfig: %v", cc)
+		// Handle when to use Vertex AI in express mode (api key).
+		// Explicit initializer arguments are already validated above.
+		if cc.Credentials != nil && envAPIKey != "" {
+			log.Println("Warning: The user provided Google Cloud credentials will take precedence over the API key from the environment variable.")
+			cc.APIKey = ""
+		} else if configAPIKey != "" && (envProject != "" || envLocation != "") {
+			// Explicit API key takes precedence over implicit project/location.
+			log.Println("Warning: The user provided Vertex AI API key will take precedence over the project/location from the environment variables.")
+			cc.Project = ""
+			cc.Location = ""
+		} else if (configProject != "" || configLocation != "") && envAPIKey != "" {
+			// Explicit project/location takes precedence over implicit API key.
+			log.Println("Warning: The user provided project/location will take precedence over the API key from the environment variable.")
+			cc.APIKey = ""
+		} else if (envProject != "" || envLocation != "") && envAPIKey != "" {
+			// Implicit project/location takes precedence over implicit API key.
+			log.Println("Warning: The project/location from the environment variables will take precedence over the API key from the environment variable.")
+			cc.APIKey = ""
 		}
-		if cc.Location == "" {
-			return nil, fmt.Errorf("location is required for Vertex AI backend. ClientConfig: %v", cc)
+
+		if cc.Location == "" && cc.APIKey == "" {
+			cc.Location = "global"
+		}
+
+		if (cc.Project == "" || cc.Location == "") && cc.APIKey == "" {
+			return nil, fmt.Errorf("project/location or API key must be set when using Vertex AI backend. ClientConfig: %#v", cc)
 		}
 	} else {
+		// Mldev API
 		if cc.APIKey == "" {
-			return nil, fmt.Errorf("api key is required for Google AI backend. ClientConfig: %v.\nYou can get the API key from https://ai.google.dev/gemini-api/docs/api-key", cc)
+			return nil, fmt.Errorf("api key is required for Google AI backend. ClientConfig: %#v.\nYou can get the API key from https://ai.google.dev/gemini-api/docs/api-key", cc)
 		}
 	}
 
-	if cc.Backend == BackendVertexAI && cc.Credentials == nil {
+	if cc.Backend == BackendVertexAI && cc.Credentials == nil && cc.APIKey == "" && cc.HTTPClient == nil {
 		cred, err := credentials.DetectDefault(&credentials.DetectOptions{
 			Scopes: []string{"https://www.googleapis.com/auth/cloud-platform"},
 		})
@@ -213,8 +283,12 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		cc.Credentials = cred
 	}
 
+	baseURL := getBaseURL(cc.Backend, &cc.HTTPOptions, envVars)
+	if baseURL != "" {
+		cc.HTTPOptions.BaseURL = baseURL
+	}
 	if cc.HTTPOptions.BaseURL == "" && cc.Backend == BackendVertexAI {
-		if cc.Location == "global" {
+		if cc.Location == "global" || cc.APIKey != "" {
 			cc.HTTPOptions.BaseURL = "https://aiplatform.googleapis.com/"
 		} else {
 			cc.HTTPOptions.BaseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", cc.Location)
@@ -230,7 +304,8 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 	}
 
 	if cc.HTTPClient == nil {
-		if cc.Backend == BackendVertexAI {
+		// x-goog-api-key header is set for Express mode in api_client.go
+		if cc.Backend == BackendVertexAI && cc.APIKey == "" {
 			quotaProjectID, err := cc.Credentials.QuotaProjectID(ctx)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get quota project ID: %w", err)
@@ -252,13 +327,16 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 
 	ac := &apiClient{clientConfig: cc}
 	c := &Client{
-		clientConfig: *cc,
-		Models:       &Models{apiClient: ac},
-		Live:         &Live{apiClient: ac},
-		Caches:       &Caches{apiClient: ac},
-		Chats:        &Chats{apiClient: ac},
-		Operations:   &Operations{apiClient: ac},
-		Files:        &Files{apiClient: ac},
+		clientConfig:     *cc,
+		Models:           &Models{apiClient: ac},
+		Live:             &Live{apiClient: ac},
+		Caches:           &Caches{apiClient: ac},
+		Chats:            &Chats{apiClient: ac},
+		Operations:       &Operations{apiClient: ac},
+		FileSearchStores: &FileSearchStores{apiClient: ac, Documents: &Documents{apiClient: ac}},
+		Files:            &Files{apiClient: ac},
+		Batches:          &Batches{apiClient: ac},
+		Tunings:          &Tunings{apiClient: ac},
 	}
 	return c, nil
 }
@@ -268,4 +346,32 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 // The returned ClientConfig is a copy of the ClientConfig used to create the client.
 func (c Client) ClientConfig() ClientConfig {
 	return c.clientConfig
+}
+
+// UseDefaultCredentials sets the credentials to use default credentials and
+// add authorization middleware to the HTTP client.
+//
+// If the ClientConfig already has credentials, this method will return an error.
+//
+// Use this method if your provided HTTPClient doesn't handles credentials.
+func (cc *ClientConfig) UseDefaultCredentials() error {
+	if cc.Credentials != nil {
+		return fmt.Errorf("Credentials are already set")
+	}
+	if cc.Credentials == nil {
+		cred, err := credentials.DetectDefault(&credentials.DetectOptions{
+			Scopes: []string{"https://www.googleapis.com/auth/cloud-platform"},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to find default credentials: %w", err)
+		}
+		cc.Credentials = cred
+	}
+	if cc.HTTPClient != nil {
+		err := httptransport.AddAuthorizationMiddleware(cc.HTTPClient, cc.Credentials)
+		if err != nil {
+			return fmt.Errorf("failed to create HTTP client: %w", err)
+		}
+	}
+	return nil
 }

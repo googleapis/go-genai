@@ -32,7 +32,6 @@ var (
 	disabledTestsByMode = map[string][]string{
 		apiMode: []string{
 			"TestModelsGenerateContentAudio/",
-			"TestModelsGenerateVideosText2VideoPoll/",
 		},
 		replayMode: []string{
 			// TODO(b/372730941): httpOptions related tests are not covered in replay mode.
@@ -55,6 +54,11 @@ var (
 			"models/compute_tokens/test_compute_tokens_vertex_custom_url",
 			"models/count_tokens/test_count_tokens_vertex_custom_url",
 			"models/compute_tokens/test_compute_tokens_mldev_custom_url",
+
+			// TODO(b/424824119): generateVideos tests disabled due to backwards compatibility
+			"/models/generate_videos",
+			// filter=display_name%3A%22genai_%2A%22&pageSize=5 are reordered and mismatched
+			"batches/list/test_list_batch_jobs_with_config",
 		},
 		unitMode: []string{
 			// We don't run table tests in unit mode.

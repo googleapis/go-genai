@@ -18,9 +18,9 @@ package genai
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"iter"
-	"log"
 )
 
 // Chats provides util functions for creating a new chat session.
@@ -40,63 +40,152 @@ type Chat struct {
 	apiClient *apiClient
 	model     string
 	config    *GenerateContentConfig
-	// History of the chat.
+	// Comprehensive history is the full history of the chat, including turns of the invalid contents from the model and their associated inputs.
 	comprehensiveHistory []*Content
+	// Curated history is the set of valid turns that will be used in the subsequent send requests.
+	curatedHistory []*Content
+}
+
+func validateContent(content *Content) bool {
+	if content == nil || len(content.Parts) == 0 {
+		return false
+	}
+
+	for _, part := range content.Parts {
+		if part == nil {
+			return false
+		}
+		if part.Text != "" {
+			continue
+		}
+		if part.InlineData == nil &&
+			part.FileData == nil &&
+			part.FunctionCall == nil &&
+			part.FunctionResponse == nil &&
+			part.ExecutableCode == nil &&
+			part.CodeExecutionResult == nil {
+			return false
+		}
+	}
+	return true
+}
+
+func validateResponse(response *GenerateContentResponse) bool {
+	if response == nil || len(response.Candidates) == 0 {
+		return false
+	}
+	if response.Candidates[0].Content == nil {
+		return false
+	}
+	return validateContent(response.Candidates[0].Content)
+}
+
+func extractCuratedHistory(comprehensiveHistory []*Content) ([]*Content, error) {
+	if len(comprehensiveHistory) == 0 {
+		return []*Content{}, nil
+	}
+
+	curatedHistory := []*Content{}
+	length := len(comprehensiveHistory)
+	i := 0
+	for i < length {
+		currentContent := comprehensiveHistory[i]
+		if currentContent.Role != RoleUser && currentContent.Role != RoleModel {
+			return nil, fmt.Errorf("Role must be user or model, but got %s", currentContent.Role)
+		}
+
+		if currentContent.Role == RoleUser {
+			curatedHistory = append(curatedHistory, currentContent)
+			i++
+		} else {
+			var modelOutputs []*Content
+			isValid := true
+			for i < length && comprehensiveHistory[i].Role == RoleModel {
+				modelOutput := comprehensiveHistory[i]
+				modelOutputs = append(modelOutputs, modelOutput)
+				if isValid && !validateContent(modelOutput) {
+					isValid = false
+				}
+				i++
+			}
+
+			if isValid {
+				curatedHistory = append(curatedHistory, modelOutputs...)
+			} else {
+				// Remove the corresponding user input
+				if len(curatedHistory) > 0 && curatedHistory[len(curatedHistory)-1].Role == RoleUser {
+					curatedHistory = curatedHistory[:len(curatedHistory)-1]
+				}
+			}
+		}
+	}
+	return curatedHistory, nil
 }
 
 // Create initializes a new chat session.
 func (c *Chats) Create(ctx context.Context, model string, config *GenerateContentConfig, history []*Content) (*Chat, error) {
+	compHistory := history
+	if compHistory == nil {
+		compHistory = []*Content{}
+	}
+	curatedHistory, err := extractCuratedHistory(compHistory)
+	if err != nil {
+		return nil, err
+	}
 	chat := &Chat{
 		apiClient:            c.apiClient,
 		model:                model,
 		config:               config,
-		comprehensiveHistory: history,
+		comprehensiveHistory: compHistory,
+		curatedHistory:       curatedHistory,
 	}
 	chat.Models.apiClient = c.apiClient
 	return chat, nil
 }
 
-func (c *Chat) recordHistory(ctx context.Context, inputContent *Content, outputContents []*Content) {
+func (c *Chat) recordHistory(ctx context.Context, inputContent *Content, outputContents []*Content, isValid bool) {
 	c.comprehensiveHistory = append(c.comprehensiveHistory, inputContent)
-
-	for _, outputContent := range outputContents {
-		c.comprehensiveHistory = append(c.comprehensiveHistory, copySanitizedModelContent(outputContent))
+	if len(outputContents) == 0 {
+		c.comprehensiveHistory = append(c.comprehensiveHistory, &Content{Role: RoleModel, Parts: []*Part{}})
+	} else {
+		c.comprehensiveHistory = append(c.comprehensiveHistory, outputContents...)
 	}
-}
 
-// copySanitizedModelContent creates a (shallow) copy of modelContent with role set to
-// model and empty text parts removed.
-func copySanitizedModelContent(modelContent *Content) *Content {
-	newContent := &Content{Role: RoleModel}
-	for _, part := range modelContent.Parts {
-		text := (*part).Text
-		if len(string(text)) > 0 {
-			newContent.Parts = append(newContent.Parts, part)
+	if isValid {
+		c.curatedHistory = append(c.curatedHistory, inputContent)
+		if len(outputContents) == 0 {
+			c.curatedHistory = append(c.curatedHistory, &Content{Role: RoleModel, Parts: []*Part{}})
+		} else {
+			c.curatedHistory = append(c.curatedHistory, outputContents...)
 		}
 	}
-	return newContent
 }
 
-// History returns the chat history. Curated (valid only) history is not supported yet.
+// History returns the chat history. Returns the curated history if
+// curated is true, otherwise returns the comprehensive history.
 func (c *Chat) History(curated bool) []*Content {
 	if curated {
-		log.Println("curated history is not supported yet")
-		return nil
+		return c.curatedHistory
 	}
 	return c.comprehensiveHistory
 }
 
-// SendMessage sends the conversation history with the additional user's message and returns the model's response.
+// SendMessage is a wrapper around Send.
 func (c *Chat) SendMessage(ctx context.Context, parts ...Part) (*GenerateContentResponse, error) {
 	// Transform Parts to single Content
 	p := make([]*Part, len(parts))
 	for i, part := range parts {
 		p[i] = &part
 	}
-	inputContent := &Content{Parts: p, Role: RoleUser}
+	return c.Send(ctx, p...)
+}
+
+// Send function sends the conversation history with the additional user's message and returns the model's response.
+func (c *Chat) Send(ctx context.Context, parts ...*Part) (*GenerateContentResponse, error) {
+	inputContent := &Content{Parts: parts, Role: RoleUser}
 
 	// Combine history with input content to send to model
-	contents := append(c.comprehensiveHistory, inputContent)
+	contents := append(c.curatedHistory, inputContent)
 
 	// Generate Content
 	modelOutput, err := c.GenerateContent(ctx, c.model, contents, c.config)
@@ -109,22 +198,27 @@ func (c *Chat) SendMessage(ctx context.Context, parts ...Part) (*GenerateContent
 	if len(modelOutput.Candidates) > 0 && modelOutput.Candidates[0].Content != nil {
 		outputContents = append(outputContents, modelOutput.Candidates[0].Content)
 	}
-	c.recordHistory(ctx, inputContent, outputContents)
+	c.recordHistory(ctx, inputContent, outputContents, validateResponse(modelOutput))
 
 	return modelOutput, err
 }
 
-// SendMessageStream sends the conversation history with the additional user's message and returns the model's response.
+// SendMessageStream is a wrapper around SendStream.
 func (c *Chat) SendMessageStream(ctx context.Context, parts ...Part) iter.Seq2[*GenerateContentResponse, error] {
 	// Transform Parts to single Content
 	p := make([]*Part, len(parts))
 	for i, part := range parts {
 		p[i] = &part
 	}
-	inputContent := &Content{Parts: p, Role: "user"}
+	return c.SendStream(ctx, p...)
+}
+
+// SendStream function sends the conversation history with the additional user's message and returns the model's response.
+func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*GenerateContentResponse, error] {
+	inputContent := &Content{Parts: parts, Role: RoleUser}
 
 	// Combine history with input content to send to model
-	contents := append(c.comprehensiveHistory, inputContent)
+	contents := append(c.curatedHistory, inputContent)
 
 	// Generate Content
 	response := c.GenerateContentStream(ctx, c.model, contents, c.config)
@@ -132,6 +226,8 @@ func (c *Chat) SendMessageStream(ctx context.Context, parts ...Part) iter.Seq2[*
 	// Return a new iterator that will yield the responses and record history with merged response.
 	return func(yield func(*GenerateContentResponse, error) bool) {
 		var outputContents []*Content
+		isValid := true
+		finishReason := FinishReasonUnspecified
 		for chunk, err := range response {
 			if err == io.EOF {
 				break
@@ -140,12 +236,23 @@ func (c *Chat) SendMessageStream(ctx context.Context, parts ...Part) iter.Seq2[*
 				yield(nil, err)
 				return
 			}
-			if len(chunk.Candidates) > 0 && chunk.Candidates[0].Content != nil {
-				outputContents = append(outputContents, chunk.Candidates[0].Content)
+			if !validateResponse(chunk) {
+				isValid = false
 			}
-			yield(chunk, nil)
+			if len(chunk.Candidates) > 0 {
+				if chunk.Candidates[0].Content != nil {
+					outputContents = append(outputContents, chunk.Candidates[0].Content)
+				}
+				if chunk.Candidates[0].FinishReason != FinishReasonUnspecified {
+					finishReason = chunk.Candidates[0].FinishReason
+				}
+			}
+			if !yield(chunk, nil) {
+				return
+			}
 		}
 		// Record history. By default, use the first candidate for history.
-		c.recordHistory(ctx, inputContent, outputContents)
+		finalIsValid := isValid && finishReason != FinishReasonUnspecified
+		c.recordHistory(ctx, inputContent, outputContents, finalIsValid)
 	}
 }

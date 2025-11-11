@@ -464,14 +464,14 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 
 // APIError contains an error response from the server.
 type APIError struct {
-	// Code is the HTTP response status code.
-	Code int `json:"code,omitempty"`
 	// Message is the server response message.
 	Message string `json:"message,omitempty"`
 	// Status is the server response status.
 	Status string `json:"status,omitempty"`
 	// Details field provides more context to an error.
 	Details []map[string]any `json:"details,omitempty"`
+	// Code is the HTTP response status code.
+	Code int `json:"code,omitempty"`
 }
 
 type responseWithError struct {

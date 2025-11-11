@@ -560,6 +560,16 @@ const (
 	FunctionCallingConfigModeValidated FunctionCallingConfigMode = "VALIDATED"
 )
 
+// Enum representing the Vertex embedding API to use.
+type EmbeddingAPIType string
+
+const (
+	// predict API endpoint (default)
+	EmbeddingAPITypePredict EmbeddingAPIType = "PREDICT"
+	// embedContent API Endpoint
+	EmbeddingAPITypeEmbedContent EmbeddingAPIType = "EMBED_CONTENT"
+)
+
 // Enum that controls the safety filter level for objectionable content.
 type SafetyFilterLevel string
 
@@ -2188,9 +2198,9 @@ func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationC
 	var err error
 	switch backend {
 	case BackendGeminiAPI:
-		outputMap, err = generateContentConfigToMldev(&ac, paramsMap, parentMap)
+		outputMap, err = generateContentConfigToMldev(&ac, paramsMap, parentMap, paramsMap)
 	case BackendVertexAI:
-		outputMap, err = generateContentConfigToVertex(&ac, paramsMap, parentMap)
+		outputMap, err = generateContentConfigToVertex(&ac, paramsMap, parentMap, paramsMap)
 	default:
 		return nil, fmt.Errorf("Unsupported backend: %v", backend)
 	}

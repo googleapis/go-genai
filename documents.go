@@ -24,7 +24,7 @@ import (
 	"reflect"
 )
 
-func deleteDocumentConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func deleteDocumentConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromForce := getValueByPath(fromObject, []string{"force"})
@@ -35,7 +35,7 @@ func deleteDocumentConfigToMldev(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
-func deleteDocumentParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func deleteDocumentParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromName := getValueByPath(fromObject, []string{"name"})
@@ -45,7 +45,7 @@ func deleteDocumentParametersToMldev(fromObject map[string]any, parentObject map
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		_, err = deleteDocumentConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = deleteDocumentConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +54,7 @@ func deleteDocumentParametersToMldev(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
-func getDocumentParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func getDocumentParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromName := getValueByPath(fromObject, []string{"name"})
@@ -65,7 +65,7 @@ func getDocumentParametersToMldev(fromObject map[string]any, parentObject map[st
 	return toObject, nil
 }
 
-func listDocumentsConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func listDocumentsConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
@@ -81,7 +81,7 @@ func listDocumentsConfigToMldev(fromObject map[string]any, parentObject map[stri
 	return toObject, nil
 }
 
-func listDocumentsParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func listDocumentsParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromParent := getValueByPath(fromObject, []string{"parent"})
@@ -91,7 +91,7 @@ func listDocumentsParametersToMldev(fromObject map[string]any, parentObject map[
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		_, err = listDocumentsConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = listDocumentsConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -100,7 +100,7 @@ func listDocumentsParametersToMldev(fromObject map[string]any, parentObject map[
 	return toObject, nil
 }
 
-func listDocumentsResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func listDocumentsResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
@@ -142,7 +142,7 @@ func (m Documents) Get(ctx context.Context, name string, config *GetDocumentConf
 	}
 	var response = new(Document)
 	var responseMap map[string]any
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method Get is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -152,7 +152,7 @@ func (m Documents) Get(ctx context.Context, name string, config *GetDocumentConf
 
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ func (m Documents) Delete(ctx context.Context, name string, config *DeleteDocume
 	if httpOptions.Headers == nil {
 		httpOptions.Headers = http.Header{}
 	}
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return fmt.Errorf("method Delete is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -225,7 +225,7 @@ func (m Documents) Delete(ctx context.Context, name string, config *DeleteDocume
 
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return err
 	}
@@ -276,8 +276,8 @@ func (m Documents) list(ctx context.Context, parent string, config *ListDocument
 	}
 	var response = new(ListDocumentsResponse)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method List is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -287,7 +287,7 @@ func (m Documents) list(ctx context.Context, parent string, config *ListDocument
 		fromConverter = listDocumentsResponseFromMldev
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +318,7 @@ func (m Documents) list(ctx context.Context, parent string, config *ListDocument
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err

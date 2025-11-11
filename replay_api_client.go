@@ -414,16 +414,28 @@ func sanitizeHeadersForComparison(item map[string]any) {
 
 	// TODO(b/441125206): Support reading response headers for replay tests.
 	ignoreHeaders := map[string]bool{
-		"content-encoding":             true,
-		"server":                       true,
-		"server-timing":                true,
-		"transfer-encoding":            true,
-		"vary":                         true,
-		"x-xss-protection":             true,
-		"x-frame-options":              true,
-		"x-content-type-options":       true,
-		"x-vertex-ai-llm-request-type": true,
-		"date":                         true,
+		"access-control-allow-origin": true,
+		"content-encoding":            true,
+		"date":                        true,
+		"internal-input-tokens":       true,
+		"internal-output-tokens":      true,
+		"server":                      true,
+		"server-timing":               true,
+		"transfer-encoding":           true,
+		"vary":                        true,
+		"x-compute-characters":        true,
+		"x-compute-time":              true,
+		"x-compute-tokens":            true,
+		"x-compute-type":              true,
+		"x-content-type-options":      true,
+		"x-frame-options":             true,
+		"x-inference-time":            true,
+		"x-queue-time":                true,
+		"x-tokenization-time":         true,
+		"x-total-time":                true,
+		"x-vertex-ai-internal-prediction-backend": true,
+		"x-vertex-ai-llm-request-type":            true,
+		"x-xss-protection":                        true,
 	}
 
 	processedHeaders := make(map[string][]string)

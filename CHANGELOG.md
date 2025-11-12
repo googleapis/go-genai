@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.35.0](https://github.com/googleapis/go-genai/compare/v1.34.0...v1.35.0) (2025-11-12)
+
+
+### Features
+
+* Add `ToGenerationConfig` method to `GenerateContentConfig`. fixes [#506](https://github.com/googleapis/go-genai/issues/506) ([bd53df4](https://github.com/googleapis/go-genai/commit/bd53df47bb10e8d52dbf5cc200b9c33222947eb5))
+
+
+### Bug Fixes
+
+* Add missing fields to the model types ([9e1b329](https://github.com/googleapis/go-genai/commit/9e1b3290976f0bf0e640c49a50a8f864c93e7da4))
+* Fix base_steps parameter for recontext_image ([4f90d03](https://github.com/googleapis/go-genai/commit/4f90d03d5790fae86f3ea18601f7ce98aba99568))
+* Fix models.list() filter parameter ([f5859fd](https://github.com/googleapis/go-genai/commit/f5859fd6b36a6b5c9a6deb28434591ee58b60230))
+
 ## [1.34.0](https://github.com/googleapis/go-genai/compare/v1.33.0...v1.34.0) (2025-11-05)
 
 

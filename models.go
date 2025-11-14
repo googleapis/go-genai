@@ -136,6 +136,11 @@ func computeTokensParametersToVertex(ac *apiClient, fromObject map[string]any, p
 			return nil, err
 		}
 
+		fromContents, err = applyConverterToSlice(fromContents.([]any), contentToVertex)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"contents"}, fromContents)
 	}
 
@@ -216,6 +221,27 @@ func contentToMldev(fromObject map[string]any, parentObject map[string]any) (toO
 	return toObject, nil
 }
 
+func contentToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromParts := getValueByPath(fromObject, []string{"parts"})
+	if fromParts != nil {
+		fromParts, err = applyConverterToSlice(fromParts.([]any), partToVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"parts"}, fromParts)
+	}
+
+	fromRole := getValueByPath(fromObject, []string{"role"})
+	if fromRole != nil {
+		setValueByPath(toObject, []string{"role"}, fromRole)
+	}
+
+	return toObject, nil
+}
+
 func controlReferenceConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -256,6 +282,11 @@ func countTokensConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -341,6 +372,11 @@ func countTokensParametersToVertex(ac *apiClient, fromObject map[string]any, par
 	fromContents := getValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
 		fromContents, err = tContents(fromContents)
+		if err != nil {
+			return nil, err
+		}
+
+		fromContents, err = applyConverterToSlice(fromContents.([]any), contentToVertex)
 		if err != nil {
 			return nil, err
 		}
@@ -852,6 +888,88 @@ func functionDeclarationToVertex(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
+func functionResponseFileDataToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromFileUri := getValueByPath(fromObject, []string{"fileUri"})
+	if fromFileUri != nil {
+		setValueByPath(toObject, []string{"fileUri"}, fromFileUri)
+	}
+
+	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	if fromMimeType != nil {
+		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+	}
+
+	if getValueByPath(fromObject, []string{"displayName"}) != nil {
+		return nil, fmt.Errorf("displayName parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func functionResponsePartToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromInlineData := getValueByPath(fromObject, []string{"inlineData"})
+	if fromInlineData != nil {
+		setValueByPath(toObject, []string{"inlineData"}, fromInlineData)
+	}
+
+	fromFileData := getValueByPath(fromObject, []string{"fileData"})
+	if fromFileData != nil {
+		fromFileData, err = functionResponseFileDataToMldev(fromFileData.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	return toObject, nil
+}
+
+func functionResponseToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromWillContinue := getValueByPath(fromObject, []string{"willContinue"})
+	if fromWillContinue != nil {
+		setValueByPath(toObject, []string{"willContinue"}, fromWillContinue)
+	}
+
+	fromScheduling := getValueByPath(fromObject, []string{"scheduling"})
+	if fromScheduling != nil {
+		setValueByPath(toObject, []string{"scheduling"}, fromScheduling)
+	}
+
+	fromParts := getValueByPath(fromObject, []string{"parts"})
+	if fromParts != nil {
+		fromParts, err = applyConverterToSlice(fromParts.([]any), functionResponsePartToMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"parts"}, fromParts)
+	}
+
+	fromId := getValueByPath(fromObject, []string{"id"})
+	if fromId != nil {
+		setValueByPath(toObject, []string{"id"}, fromId)
+	}
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	fromResponse := getValueByPath(fromObject, []string{"response"})
+	if fromResponse != nil {
+		setValueByPath(toObject, []string{"response"}, fromResponse)
+	}
+
+	return toObject, nil
+}
+
 func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1033,6 +1151,11 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 
 	fromImageConfig := getValueByPath(fromObject, []string{"imageConfig"})
 	if fromImageConfig != nil {
+		fromImageConfig, err = imageConfigToMldev(fromImageConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
 	}
 
@@ -1045,6 +1168,11 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -1199,11 +1327,6 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 			return nil, err
 		}
 
-		fromSpeechConfig, err = speechConfigToVertex(fromSpeechConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
@@ -1219,6 +1342,11 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 
 	fromImageConfig := getValueByPath(fromObject, []string{"imageConfig"})
 	if fromImageConfig != nil {
+		fromImageConfig, err = imageConfigToVertex(fromImageConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
 	}
 
@@ -1282,6 +1410,11 @@ func generateContentParametersToVertex(ac *apiClient, fromObject map[string]any,
 	fromContents := getValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
 		fromContents, err = tContents(fromContents)
+		if err != nil {
+			return nil, err
+		}
+
+		fromContents, err = applyConverterToSlice(fromContents.([]any), contentToVertex)
 		if err != nil {
 			return nil, err
 		}
@@ -2375,11 +2508,6 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 
 	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = speechConfigToVertex(fromSpeechConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
@@ -2447,33 +2575,69 @@ func getModelParametersToVertex(ac *apiClient, fromObject map[string]any, parent
 	return toObject, nil
 }
 
-func googleMapsToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"authConfig"}) != nil {
-		return nil, fmt.Errorf("authConfig parameter is not supported in Gemini API")
-	}
-
-	fromEnableWidget := getValueByPath(fromObject, []string{"enableWidget"})
-	if fromEnableWidget != nil {
-		setValueByPath(toObject, []string{"enableWidget"}, fromEnableWidget)
-	}
-
-	return toObject, nil
-}
-
 func googleSearchToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"excludeDomains"}) != nil {
-		return nil, fmt.Errorf("excludeDomains parameter is not supported in Gemini API")
-	}
-
 	if getValueByPath(fromObject, []string{"blockingConfidence"}) != nil {
 		return nil, fmt.Errorf("blockingConfidence parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"excludeDomains"}) != nil {
+		return nil, fmt.Errorf("excludeDomains parameter is not supported in Gemini API")
 	}
 
 	fromTimeRangeFilter := getValueByPath(fromObject, []string{"timeRangeFilter"})
 	if fromTimeRangeFilter != nil {
 		setValueByPath(toObject, []string{"timeRangeFilter"}, fromTimeRangeFilter)
+	}
+
+	return toObject, nil
+}
+
+func imageConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(toObject, []string{"aspectRatio"}, fromAspectRatio)
+	}
+
+	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
+	if fromImageSize != nil {
+		setValueByPath(toObject, []string{"imageSize"}, fromImageSize)
+	}
+
+	if getValueByPath(fromObject, []string{"imageOutputOptions"}) != nil {
+		return nil, fmt.Errorf("imageOutputOptions parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"personGeneration"}) != nil {
+		return nil, fmt.Errorf("personGeneration parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func imageConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(toObject, []string{"aspectRatio"}, fromAspectRatio)
+	}
+
+	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
+	if fromImageSize != nil {
+		setValueByPath(toObject, []string{"imageSize"}, fromImageSize)
+	}
+
+	fromImageOutputOptions := getValueByPath(fromObject, []string{"imageOutputOptions"})
+	if fromImageOutputOptions != nil {
+		setValueByPath(toObject, []string{"imageOutputOptions"}, fromImageOutputOptions)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(toObject, []string{"personGeneration"}, fromPersonGeneration)
 	}
 
 	return toObject, nil
@@ -2911,6 +3075,11 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 
 	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})
 	if fromFunctionResponse != nil {
+		fromFunctionResponse, err = functionResponseToMldev(fromFunctionResponse.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"functionResponse"}, fromFunctionResponse)
 	}
 
@@ -2942,6 +3111,71 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 	fromVideoMetadata := getValueByPath(fromObject, []string{"videoMetadata"})
 	if fromVideoMetadata != nil {
 		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
+	}
+
+	fromPartMetadata := getValueByPath(fromObject, []string{"partMetadata"})
+	if fromPartMetadata != nil {
+		setValueByPath(toObject, []string{"partMetadata"}, fromPartMetadata)
+	}
+
+	return toObject, nil
+}
+
+func partToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
+	if fromFunctionCall != nil {
+		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
+	}
+
+	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
+	if fromCodeExecutionResult != nil {
+		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
+	}
+
+	fromExecutableCode := getValueByPath(fromObject, []string{"executableCode"})
+	if fromExecutableCode != nil {
+		setValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
+	}
+
+	fromFileData := getValueByPath(fromObject, []string{"fileData"})
+	if fromFileData != nil {
+		setValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})
+	if fromFunctionResponse != nil {
+		setValueByPath(toObject, []string{"functionResponse"}, fromFunctionResponse)
+	}
+
+	fromInlineData := getValueByPath(fromObject, []string{"inlineData"})
+	if fromInlineData != nil {
+		setValueByPath(toObject, []string{"inlineData"}, fromInlineData)
+	}
+
+	fromText := getValueByPath(fromObject, []string{"text"})
+	if fromText != nil {
+		setValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	fromThought := getValueByPath(fromObject, []string{"thought"})
+	if fromThought != nil {
+		setValueByPath(toObject, []string{"thought"}, fromThought)
+	}
+
+	fromThoughtSignature := getValueByPath(fromObject, []string{"thoughtSignature"})
+	if fromThoughtSignature != nil {
+		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
+	}
+
+	fromVideoMetadata := getValueByPath(fromObject, []string{"videoMetadata"})
+	if fromVideoMetadata != nil {
+		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
+	}
+
+	if getValueByPath(fromObject, []string{"partMetadata"}) != nil {
+		return nil, fmt.Errorf("partMetadata parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
@@ -3352,26 +3586,6 @@ func segmentImageSourceToVertex(fromObject map[string]any, parentObject map[stri
 	return toObject, nil
 }
 
-func speechConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
-	if fromLanguageCode != nil {
-		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
-	}
-
-	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
-	if fromVoiceConfig != nil {
-		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
-	}
-
-	if getValueByPath(fromObject, []string{"multiSpeakerVoiceConfig"}) != nil {
-		return nil, fmt.Errorf("multiSpeakerVoiceConfig parameter is not supported in Vertex AI")
-	}
-
-	return toObject, nil
-}
-
 func toolToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3410,11 +3624,6 @@ func toolToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 
 	fromGoogleMaps := getValueByPath(fromObject, []string{"googleMaps"})
 	if fromGoogleMaps != nil {
-		fromGoogleMaps, err = googleMapsToMldev(fromGoogleMaps.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"googleMaps"}, fromGoogleMaps)
 	}
 

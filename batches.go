@@ -367,6 +367,21 @@ func cancelBatchJobParametersToVertex(ac *apiClient, fromObject map[string]any, 
 	return toObject, nil
 }
 
+func contentEmbeddingToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromValues := getValueByPath(fromObject, []string{"values"})
+	if fromValues != nil {
+		setValueByPath(toObject, []string{"values"}, fromValues)
+	}
+
+	if getValueByPath(fromObject, []string{"statistics"}) != nil {
+		return nil, fmt.Errorf("statistics parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
 func createBatchJobConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -615,6 +630,27 @@ func deleteResourceJobFromVertex(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
+func embedContentBatchOutputToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromInlinedResponses := getValueByPath(fromObject, []string{"inlinedResponses"})
+	if fromInlinedResponses != nil {
+		fromInlinedResponses, err = inlinedEmbedContentResponsesToMldev(fromInlinedResponses.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"inlinedResponses"}, fromInlinedResponses)
+	}
+
+	fromResponsesFile := getValueByPath(fromObject, []string{"responsesFile"})
+	if fromResponsesFile != nil {
+		setValueByPath(toObject, []string{"responsesFile"}, fromResponsesFile)
+	}
+
+	return toObject, nil
+}
+
 func embedContentBatchToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -637,6 +673,110 @@ func embedContentBatchToMldev(ac *apiClient, fromObject map[string]any, parentOb
 
 		setValueByPath(toObject, []string{"_self"}, fromConfig)
 		moveValueByPath(toObject, map[string]string{"requests[].*": "requests[].request.*"})
+	}
+
+	fromBatchStats := getValueByPath(fromObject, []string{"batchStats"})
+	if fromBatchStats != nil {
+		setValueByPath(toObject, []string{"batchStats"}, fromBatchStats)
+	}
+
+	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
+	if fromCreateTime != nil {
+		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
+	}
+
+	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
+	if fromDisplayName != nil {
+		setValueByPath(toObject, []string{"displayName"}, fromDisplayName)
+	}
+
+	fromEndTime := getValueByPath(fromObject, []string{"endTime"})
+	if fromEndTime != nil {
+		setValueByPath(toObject, []string{"endTime"}, fromEndTime)
+	}
+
+	fromInputConfig := getValueByPath(fromObject, []string{"inputConfig"})
+	if fromInputConfig != nil {
+		fromInputConfig, err = inputEmbedContentConfigToMldev(fromInputConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"inputConfig"}, fromInputConfig)
+	}
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		setValueByPath(toObject, []string{"model"}, fromModel)
+	}
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	fromOutput := getValueByPath(fromObject, []string{"output"})
+	if fromOutput != nil {
+		fromOutput, err = embedContentBatchOutputToMldev(fromOutput.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"output"}, fromOutput)
+	}
+
+	fromPriority := getValueByPath(fromObject, []string{"priority"})
+	if fromPriority != nil {
+		setValueByPath(toObject, []string{"priority"}, fromPriority)
+	}
+
+	fromState := getValueByPath(fromObject, []string{"state"})
+	if fromState != nil {
+		setValueByPath(toObject, []string{"state"}, fromState)
+	}
+
+	fromUpdateTime := getValueByPath(fromObject, []string{"updateTime"})
+	if fromUpdateTime != nil {
+		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
+	}
+
+	return toObject, nil
+}
+
+func embedContentRequestToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"autoTruncate"}) != nil {
+		return nil, fmt.Errorf("autoTruncate parameter is not supported in Gemini API")
+	}
+
+	fromContent := getValueByPath(fromObject, []string{"content"})
+	if fromContent != nil {
+		fromContent, err = contentToMldev(fromContent.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"content"}, fromContent)
+	}
+
+	fromOutputDimensionality := getValueByPath(fromObject, []string{"outputDimensionality"})
+	if fromOutputDimensionality != nil {
+		setValueByPath(toObject, []string{"outputDimensionality"}, fromOutputDimensionality)
+	}
+
+	fromTaskType := getValueByPath(fromObject, []string{"taskType"})
+	if fromTaskType != nil {
+		setValueByPath(toObject, []string{"taskType"}, fromTaskType)
+	}
+
+	fromTitle := getValueByPath(fromObject, []string{"title"})
+	if fromTitle != nil {
+		setValueByPath(toObject, []string{"title"}, fromTitle)
+	}
+
+	fromModel := getValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		setValueByPath(toObject, []string{"model"}, fromModel)
 	}
 
 	return toObject, nil
@@ -690,6 +830,85 @@ func getBatchJobParametersToVertex(ac *apiClient, fromObject map[string]any, par
 		}
 
 		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+	}
+
+	return toObject, nil
+}
+
+func inlinedEmbedContentRequestToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	if fromMetadata != nil {
+		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+
+	fromRequest := getValueByPath(fromObject, []string{"request"})
+	if fromRequest != nil {
+		fromRequest, err = embedContentRequestToMldev(fromRequest.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"request"}, fromRequest)
+	}
+
+	return toObject, nil
+}
+
+func inlinedEmbedContentRequestsToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromRequests := getValueByPath(fromObject, []string{"requests"})
+	if fromRequests != nil {
+		fromRequests, err = applyConverterToSlice(fromRequests.([]any), inlinedEmbedContentRequestToMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"requests"}, fromRequests)
+	}
+
+	return toObject, nil
+}
+
+func inlinedEmbedContentResponseToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromResponse := getValueByPath(fromObject, []string{"response"})
+	if fromResponse != nil {
+		fromResponse, err = singleEmbedContentResponseToMldev(fromResponse.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"response"}, fromResponse)
+	}
+
+	fromError := getValueByPath(fromObject, []string{"error"})
+	if fromError != nil {
+		setValueByPath(toObject, []string{"error"}, fromError)
+	}
+
+	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	if fromMetadata != nil {
+		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+
+	return toObject, nil
+}
+
+func inlinedEmbedContentResponsesToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromInlinedResponses := getValueByPath(fromObject, []string{"inlinedResponses"})
+	if fromInlinedResponses != nil {
+		fromInlinedResponses, err = applyConverterToSlice(fromInlinedResponses.([]any), inlinedEmbedContentResponseToMldev)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"inlinedResponses"}, fromInlinedResponses)
 	}
 
 	return toObject, nil
@@ -757,6 +976,27 @@ func inlinedResponseFromMldev(fromObject map[string]any, parentObject map[string
 	fromError := getValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
 		setValueByPath(toObject, []string{"error"}, fromError)
+	}
+
+	return toObject, nil
+}
+
+func inputEmbedContentConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromFileName := getValueByPath(fromObject, []string{"fileName"})
+	if fromFileName != nil {
+		setValueByPath(toObject, []string{"fileName"}, fromFileName)
+	}
+
+	fromRequests := getValueByPath(fromObject, []string{"requests"})
+	if fromRequests != nil {
+		fromRequests, err = inlinedEmbedContentRequestsToMldev(fromRequests.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"requests"}, fromRequests)
 	}
 
 	return toObject, nil
@@ -878,6 +1118,27 @@ func listBatchJobsResponseFromVertex(fromObject map[string]any, parentObject map
 		}
 
 		setValueByPath(toObject, []string{"batchJobs"}, fromBatchJobs)
+	}
+
+	return toObject, nil
+}
+
+func singleEmbedContentResponseToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromEmbedding := getValueByPath(fromObject, []string{"embedding"})
+	if fromEmbedding != nil {
+		fromEmbedding, err = contentEmbeddingToMldev(fromEmbedding.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"embedding"}, fromEmbedding)
+	}
+
+	fromTokenCount := getValueByPath(fromObject, []string{"tokenCount"})
+	if fromTokenCount != nil {
+		setValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
 	}
 
 	return toObject, nil

@@ -41,6 +41,27 @@ func liveClientContentToMldev(fromObject map[string]any, parentObject map[string
 	return toObject, nil
 }
 
+func liveClientContentToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromTurns := getValueByPath(fromObject, []string{"turns"})
+	if fromTurns != nil {
+		fromTurns, err = applyConverterToSlice(fromTurns.([]any), contentToVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"turns"}, fromTurns)
+	}
+
+	fromTurnComplete := getValueByPath(fromObject, []string{"turnComplete"})
+	if fromTurnComplete != nil {
+		setValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
+	}
+
+	return toObject, nil
+}
+
 func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -97,6 +118,11 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromClientContent := getValueByPath(fromObject, []string{"clientContent"})
 	if fromClientContent != nil {
+		fromClientContent, err = liveClientContentToVertex(fromClientContent.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"clientContent"}, fromClientContent)
 	}
 
@@ -272,6 +298,11 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -508,16 +539,16 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 			return nil, err
 		}
 
-		fromSpeechConfig, err = speechConfigToVertex(fromSpeechConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"setup", "generationConfig", "speechConfig"}, fromSpeechConfig)
 	}
 
 	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
+		fromThinkingConfig, err = thinkingConfigToVertex(fromThinkingConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(parentObject, []string{"setup", "generationConfig", "thinkingConfig"}, fromThinkingConfig)
 	}
 
@@ -529,6 +560,11 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}

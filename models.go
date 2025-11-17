@@ -813,6 +813,55 @@ func fileDataToMldev(fromObject map[string]any, parentObject map[string]any) (to
 	return toObject, nil
 }
 
+func functionCallToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromId := getValueByPath(fromObject, []string{"id"})
+	if fromId != nil {
+		setValueByPath(toObject, []string{"id"}, fromId)
+	}
+
+	fromArgs := getValueByPath(fromObject, []string{"args"})
+	if fromArgs != nil {
+		setValueByPath(toObject, []string{"args"}, fromArgs)
+	}
+
+	fromName := getValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		setValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	if getValueByPath(fromObject, []string{"partialArgs"}) != nil {
+		return nil, fmt.Errorf("partialArgs parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"willContinue"}) != nil {
+		return nil, fmt.Errorf("willContinue parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func functionCallingConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromMode := getValueByPath(fromObject, []string{"mode"})
+	if fromMode != nil {
+		setValueByPath(toObject, []string{"mode"}, fromMode)
+	}
+
+	fromAllowedFunctionNames := getValueByPath(fromObject, []string{"allowedFunctionNames"})
+	if fromAllowedFunctionNames != nil {
+		setValueByPath(toObject, []string{"allowedFunctionNames"}, fromAllowedFunctionNames)
+	}
+
+	if getValueByPath(fromObject, []string{"streamFunctionCallArguments"}) != nil {
+		return nil, fmt.Errorf("streamFunctionCallArguments parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
 func functionDeclarationToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 	if getValueByPath(fromObject, []string{"behavior"}) != nil {
@@ -985,6 +1034,11 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 
 	fromToolConfig := getValueByPath(fromObject, []string{"toolConfig"})
 	if fromToolConfig != nil {
+		fromToolConfig, err = toolConfigToMldev(fromToolConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
@@ -2944,11 +2998,6 @@ func modelFromVertex(fromObject map[string]any, parentObject map[string]any) (to
 func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
-	if fromFunctionCall != nil {
-		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
-	}
-
 	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
 		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
@@ -2967,6 +3016,16 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 		}
 
 		setValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
+	if fromFunctionCall != nil {
+		fromFunctionCall, err = functionCallToMldev(fromFunctionCall.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
 	}
 
 	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})
@@ -3427,6 +3486,27 @@ func speechConfigToVertex(fromObject map[string]any, parentObject map[string]any
 
 	if getValueByPath(fromObject, []string{"multiSpeakerVoiceConfig"}) != nil {
 		return nil, fmt.Errorf("multiSpeakerVoiceConfig parameter is not supported in Vertex AI")
+	}
+
+	return toObject, nil
+}
+
+func toolConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromFunctionCallingConfig := getValueByPath(fromObject, []string{"functionCallingConfig"})
+	if fromFunctionCallingConfig != nil {
+		fromFunctionCallingConfig, err = functionCallingConfigToMldev(fromFunctionCallingConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
+	}
+
+	fromRetrievalConfig := getValueByPath(fromObject, []string{"retrievalConfig"})
+	if fromRetrievalConfig != nil {
+		setValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
 	}
 
 	return toObject, nil

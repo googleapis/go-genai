@@ -1878,6 +1878,12 @@ type ImageConfig struct {
 	// values are `1K`, `2K`, `4K`. If not specified, the model will use default
 	// value `1K`.
 	ImageSize string `json:"imageSize,omitempty"`
+	// Optional. MIME type of the generated image. This field is not
+	// supported in Gemini API.
+	OutputMIMEType string `json:"outputMimeType,omitempty"`
+	// Optional. Compression quality of the generated image (for
+	// ``image/jpeg`` only). This field is not supported in Gemini API.
+	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
 }
 
 // When automated routing is specified, the routing will be determined by the pretrained

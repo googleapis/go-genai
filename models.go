@@ -1033,6 +1033,11 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 
 	fromImageConfig := getValueByPath(fromObject, []string{"imageConfig"})
 	if fromImageConfig != nil {
+		fromImageConfig, err = imageConfigToMldev(fromImageConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
 	}
 
@@ -1219,6 +1224,11 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 
 	fromImageConfig := getValueByPath(fromObject, []string{"imageConfig"})
 	if fromImageConfig != nil {
+		fromImageConfig, err = imageConfigToVertex(fromImageConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
 	}
 
@@ -2474,6 +2484,56 @@ func googleSearchToMldev(fromObject map[string]any, parentObject map[string]any)
 	fromTimeRangeFilter := getValueByPath(fromObject, []string{"timeRangeFilter"})
 	if fromTimeRangeFilter != nil {
 		setValueByPath(toObject, []string{"timeRangeFilter"}, fromTimeRangeFilter)
+	}
+
+	return toObject, nil
+}
+
+func imageConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(toObject, []string{"aspectRatio"}, fromAspectRatio)
+	}
+
+	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
+	if fromImageSize != nil {
+		setValueByPath(toObject, []string{"imageSize"}, fromImageSize)
+	}
+
+	if getValueByPath(fromObject, []string{"outputMimeType"}) != nil {
+		return nil, fmt.Errorf("outputMimeType parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"outputCompressionQuality"}) != nil {
+		return nil, fmt.Errorf("outputCompressionQuality parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
+func imageConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	if fromAspectRatio != nil {
+		setValueByPath(toObject, []string{"aspectRatio"}, fromAspectRatio)
+	}
+
+	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
+	if fromImageSize != nil {
+		setValueByPath(toObject, []string{"imageSize"}, fromImageSize)
+	}
+
+	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	if fromOutputMimeType != nil {
+		setValueByPath(toObject, []string{"imageOutputOptions", "mimeType"}, fromOutputMimeType)
+	}
+
+	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	if fromOutputCompressionQuality != nil {
+		setValueByPath(toObject, []string{"imageOutputOptions", "compressionQuality"}, fromOutputCompressionQuality)
 	}
 
 	return toObject, nil

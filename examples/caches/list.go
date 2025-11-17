@@ -26,7 +26,7 @@ import (
 	"google.golang.org/genai"
 )
 
-var model = flag.String("model", "gemini-1.5-pro-002", "the model name, e.g. gemini-1.5-pro-002")
+var model = flag.String("model", "gemini-2.5-flash", "the model name, e.g. gemini-2.5-flash")
 
 func print(r any) {
 	// Marshal the result to JSON.

@@ -84,6 +84,11 @@ func createCachedContentConfigToMldev(fromObject map[string]any, parentObject ma
 
 	fromToolConfig := getValueByPath(fromObject, []string{"toolConfig"})
 	if fromToolConfig != nil {
+		fromToolConfig, err = toolConfigToMldev(fromToolConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 

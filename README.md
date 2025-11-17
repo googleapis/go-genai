@@ -1,14 +1,6 @@
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/googleapis/go-genai)
 [![Go Reference](https://pkg.go.dev/badge/google.golang.org/genai.svg)](https://pkg.go.dev/google.golang.org/genai)
 
-## ✨ NEW ✨
-
-### Google Gemini Multimodal Live support
-
-Introducing support for the Gemini Multimodal Live feature. Here's an example
-Multimodal Live server showing realtime conversation and video streaming:
-[code](./examples/live/live_streaming_server.go)
-
 # Google Gen AI Go SDK
 
 The Google Gen AI Go SDK provides an interface for developers to integrate
@@ -32,7 +24,7 @@ parts := []*genai.Part{
   {Text: "What's this image about?"},
   {InlineData: &genai.Blob{Data: imageBytes, MIMEType: "image/jpeg"}},
 }
-result, err := client.Models.GenerateContent(ctx, "gemini-2.0-flash", []*genai.Content{{Parts: parts}}, nil)
+result, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", []*genai.Content{{Parts: parts}}, nil)
 ```
 
 ## Installation and usage

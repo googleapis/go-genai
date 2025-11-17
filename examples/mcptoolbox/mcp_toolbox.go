@@ -82,7 +82,7 @@ func main() {
 	}
 
 	// Set up the generative model with the available tool.
-	modelName := "gemini-2.0-flash"
+	modelName := "gemini-2.5-flash"
 
 	query := "Find hotels in Basel with Basel in it's name and share the names with me"
 

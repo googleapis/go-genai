@@ -26,7 +26,7 @@ import (
 	"google.golang.org/genai"
 )
 
-var model = flag.String("model", "gemini-2.0-flash", "the model name, e.g. gemini-2.0-flash")
+var model = flag.String("model", "gemini-2.5-flash", "the model name, e.g. gemini-2.5-flash")
 
 func run(ctx context.Context) {
 	var parameterSchema = map[string]any{
@@ -94,7 +94,7 @@ func run(ctx context.Context) {
 	// 			"avgLogprobs": -0.00023821829485573938
 	// 		}
 	// 	],
-	// 	"modelVersion": "gemini-2.0-flash",
+	// 	"modelVersion": "gemini-2.5-flash",
 	// 	"usageMetadata": {
 	// 		"candidatesTokenCount": 7,
 	// 		"candidatesTokensDetails": [

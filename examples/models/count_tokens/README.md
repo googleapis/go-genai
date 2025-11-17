@@ -25,5 +25,5 @@ $ cd `go list -f '{{.Dir}}' google.golang.org/genai/examples/models/count_tokens
 $ go run text_tokens.go
 
 // You can also specify --model arg
-// go run text_tokens.go --model=gemini-2.0-flash
+// go run text_tokens.go --model=gemini-2.5-flash
 ```

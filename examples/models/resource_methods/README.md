@@ -25,5 +25,5 @@ $ cd `go list -f '{{.Dir}}' google.golang.org/genai/examples/models/resource_met
 $ go run list.go
 
 // You can also specify --model arg
-// go run list.go --model=gemini-2.0-flash
+// go run list.go --model=gemini-2.5-flash
 ```

@@ -870,6 +870,9 @@ type FunctionResponseFileData struct {
 	FileURI string `json:"fileUri,omitempty"`
 	// Required. The IANA standard MIME type of the source data.
 	MIMEType string `json:"mimeType,omitempty"`
+	// Optional. Display name of the file.
+	// Used to provide a label or filename to distinguish files.
+	DisplayName string `json:"displayName,omitempty"`
 }
 
 // A datatype containing media that is part of a `FunctionResponse` message.

@@ -25,5 +25,5 @@ $ cd `go list -f '{{.Dir}}' google.golang.org/genai/examples/models/generate_con
 $ go run text.go
 
 // You can also specify --model arg
-// go run text.go --model=gemini-2.0-flash
+// go run text.go --model=gemini-2.5-flash
 ```

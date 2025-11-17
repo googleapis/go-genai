@@ -25,7 +25,7 @@ import (
 	"google.golang.org/genai"
 )
 
-var model = flag.String("model", "gemini-2.0-flash", "the model name, e.g. gemini-2.0-flash")
+var model = flag.String("model", "gemini-2.5-flash", "the model name, e.g. gemini-2.5-flash")
 
 // mergeContents merges a slice of Content into a single Content by combining all parts.
 func mergeContents(contents []*genai.Content) *genai.Content {

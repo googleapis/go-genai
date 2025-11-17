@@ -156,7 +156,7 @@ func TestChatsUnitTest(t *testing.T) {
 
 		// Create a new Chat.
 		var config *GenerateContentConfig = &GenerateContentConfig{Temperature: Ptr[float32](0.5)}
-		chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", config, nil)
+		chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", config, nil)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -196,7 +196,7 @@ func TestChatsText(t *testing.T) {
 			}
 			// Create a new Chat.
 			var config *GenerateContentConfig = &GenerateContentConfig{Temperature: Ptr[float32](0.5)}
-			chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", config, nil)
+			chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", config, nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -231,7 +231,7 @@ func TestChatsParts(t *testing.T) {
 			}
 			// Create a new Chat.
 			var config *GenerateContentConfig = &GenerateContentConfig{Temperature: Ptr[float32](0.5)}
-			chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", config, nil)
+			chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", config, nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -269,7 +269,7 @@ func TestChats2Messages(t *testing.T) {
 			}
 			// Create a new Chat.
 			var config *GenerateContentConfig = &GenerateContentConfig{Temperature: Ptr[float32](0.5)}
-			chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", config, nil)
+			chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", config, nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -329,7 +329,7 @@ func TestChatsHistory(t *testing.T) {
 					},
 				},
 			}
-			chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", config, history)
+			chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", config, history)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -381,7 +381,7 @@ func TestChatsHistoryWithInvalidTurns(t *testing.T) {
 	invalidOutput := &Content{Role: RoleModel, Parts: []*Part{}} // Invalid due to empty parts
 
 	initialHistory := []*Content{validInput, validOutput, invalidInput, invalidOutput}
-	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, initialHistory)
+	chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", nil, initialHistory)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -425,7 +425,7 @@ func TestChatsSendInvalidResponse(t *testing.T) {
 	ac := &apiClient{clientConfig: cc}
 	client := &Client{clientConfig: *cc, Chats: &Chats{apiClient: ac}}
 
-	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
+	chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -470,7 +470,7 @@ func TestChatsStreamInvalidResponse(t *testing.T) {
 	ac := &apiClient{clientConfig: cc}
 	client := &Client{clientConfig: *cc, Chats: &Chats{apiClient: ac}}
 
-	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
+	chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -506,7 +506,7 @@ func TestChatsStream(t *testing.T) {
 			}
 			// Create a new Chat.
 			var config *GenerateContentConfig = &GenerateContentConfig{Temperature: Ptr[float32](0.5)}
-			chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", config, nil)
+			chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", config, nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -619,7 +619,7 @@ data:{
 
 		// Create a new Chat.
 		var config *GenerateContentConfig = &GenerateContentConfig{Temperature: Ptr[float32](0.5)}
-		chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", config, nil)
+		chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", config, nil)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -707,7 +707,7 @@ data:{
 
 		// Create a new Chat.
 		var config *GenerateContentConfig = &GenerateContentConfig{Temperature: Ptr[float32](0.5)}
-		chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", config, nil)
+		chat, err := client.Chats.Create(ctx, "gemini-2.5-flash", config, nil)
 		if err != nil {
 			log.Fatal(err)
 		}

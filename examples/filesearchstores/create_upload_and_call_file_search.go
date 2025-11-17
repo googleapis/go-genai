@@ -29,7 +29,7 @@ import (
 	"google.golang.org/genai"
 )
 
-var model = flag.String("model", "gemini-2.5-flash", "the model name, e.g. gemini-2.0-flash")
+var model = flag.String("model", "gemini-2.5-flash", "the model name, e.g. gemini-2.5-flash")
 
 // Returns the location of the root directory of this repository.
 func moduleRootDir() string {

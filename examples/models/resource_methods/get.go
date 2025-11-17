@@ -37,7 +37,7 @@ func run(ctx context.Context) {
 		fmt.Println("Calling GeminiAPI Backend...")
 	}
 	fmt.Println("Get model example.")
-	model, err := client.Models.Get(ctx, "gemini-1.5-pro", &config)
+	model, err := client.Models.Get(ctx, "gemini-2.5-pro", &config)
 	if err != nil {
 		log.Fatal(err)
 	}

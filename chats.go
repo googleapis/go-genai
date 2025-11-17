@@ -33,7 +33,7 @@ type Chats struct {
 // Chat represents a single chat session (multi-turn conversation) with the model.
 //
 //		client, _ := genai.NewClient(ctx, &genai.ClientConfig{})
-//		chat, _ := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
+//		chat, _ := client.Chats.Create(ctx, "gemini-2.5-flash", nil, nil)
 //	  result, err = chat.SendMessage(ctx, genai.Part{Text: "What is 1 + 2?"})
 type Chat struct {
 	Models

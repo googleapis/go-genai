@@ -1141,7 +1141,7 @@ type Content struct {
 	Parts []*Part `json:"parts,omitempty"`
 	// Optional. The producer of the content. Must be either 'user' or 'model'. Useful to
 	// set for multi-turn conversations, otherwise can be left blank or unset.
-	Role string `json:"role,omitempty"`
+	Role Role `json:"role,omitempty"`
 }
 
 type Role string

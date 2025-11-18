@@ -149,6 +149,374 @@ func TestModelsGenerateContentAudio(t *testing.T) {
 	}
 }
 
+func TestModelsGenerateContentStreamingFunctionCallJsonParamsWithoutHistory(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+
+	var parameterSchema = map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"brightness": map[string]any{
+				"type":        "number",
+				"description": "Light level from 0 to 100. Zero is off and 100 is full brightness.",
+			},
+			"colorTemperature": map[string]any{
+				"type":        "string",
+				"description": "Color temperature of the light fixture which can be `daylight`, `cool` or `warm`.",
+			},
+		},
+		"required": []string{"brightness", "colorTemperature"},
+	}
+
+	var tools = []*Tool{
+		{
+			FunctionDeclarations: []*FunctionDeclaration{
+				{
+					Name:                 "controlLight",
+					Description:          "Set the brightness and color temperature of a room light.",
+					ParametersJsonSchema: parameterSchema,
+				},
+			},
+		},
+	}
+	var streamingArgument = true
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if client.ClientConfig().Backend == BackendVertexAI {
+				t.Logf("Calling VertexAI Backend...")
+			} else {
+				t.Skip("Skip. GeminiAPI Backend does not support streaming function call.")
+			}
+			config := &GenerateContentConfig{
+				Tools: tools,
+				ToolConfig: &ToolConfig{
+					FunctionCallingConfig: &FunctionCallingConfig{
+						Mode:                        FunctionCallingConfigModeAny,
+						StreamFunctionCallArguments: &streamingArgument,
+					},
+				},
+			}
+			for result, err := range client.Models.GenerateContentStream(
+				ctx,
+				"gemini-2.5-pro",
+				Text("Control the light to 50% brightness and warm white color."),
+				config,
+			) {
+				if err != nil {
+					t.Errorf("GenerateContentStream failed unexpectedly: %v", err)
+				}
+				if result == nil {
+					t.Fatalf("expected at least one response, got none")
+				} else if result.Candidates != nil && len(result.Candidates) == 0 {
+					t.Errorf("expected at least one candidate, got none")
+				} else if result.Candidates != nil && result.Candidates[0].Content != nil && len(result.Candidates[0].Content.Parts) == 0 {
+					t.Errorf("expected at least one part, got none")
+				}
+			}
+		})
+	}
+}
+
+func TestModelsGenerateContentStreamingFunctionCallGeminiParamsWithoutHistory(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+
+	var parameterSchema = &Schema{
+		Type: TypeObject,
+		Properties: map[string]*Schema{
+			"brightness": {
+				Type:        TypeNumber,
+				Description: "Light level from 0 to 100. Zero is off and 100 is full brightness.",
+			},
+			"colorTemperature": {
+				Type:        TypeString,
+				Description: "Color temperature of the light fixture which can be `daylight`, `cool` or `warm`.",
+			},
+		},
+		Required: []string{"brightness", "colorTemperature"},
+	}
+
+	var tools = []*Tool{
+		{
+			FunctionDeclarations: []*FunctionDeclaration{
+				{
+					Name:        "controlLight",
+					Description: "Set the brightness and color temperature of a room light.",
+					Parameters:  parameterSchema,
+				},
+			},
+		},
+	}
+	var streamingArgument = true
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if client.ClientConfig().Backend == BackendVertexAI {
+				t.Logf("Calling VertexAI Backend...")
+			} else {
+				fmt.Println("Skip. GeminiAPI Backend does not support streaming function call.")
+				return
+			}
+			config := &GenerateContentConfig{
+				Tools: tools,
+				ToolConfig: &ToolConfig{
+					FunctionCallingConfig: &FunctionCallingConfig{
+						Mode:                        FunctionCallingConfigModeAny,
+						StreamFunctionCallArguments: &streamingArgument,
+					},
+				},
+			}
+			for result, err := range client.Models.GenerateContentStream(
+				ctx,
+				"gemini-2.5-pro",
+				Text("Control the light to 50% brightness and warm white color."),
+				config,
+			) {
+				if err != nil {
+					t.Errorf("GenerateContentStream failed unexpectedly: %v", err)
+				}
+				if result == nil {
+					t.Fatalf("expected at least one response, got none")
+				} else if result.Candidates != nil && len(result.Candidates) == 0 {
+					t.Errorf("expected at least one candidate, got none")
+				} else if result.Candidates != nil && result.Candidates[0].Content != nil && len(result.Candidates[0].Content.Parts) == 0 {
+					t.Errorf("expected at least one part, got none")
+				}
+			}
+		})
+	}
+}
+
+func TestModelsGenerateContentStreamingFunctionCallJsonParamsWithHistory(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+
+	var parameterSchema = map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"brightness": map[string]any{
+				"type":        "number",
+				"description": "Light level from 0 to 100. Zero is off and 100 is full brightness.",
+			},
+			"colorTemperature": map[string]any{
+				"type":        "string",
+				"description": "Color temperature of the light fixture which can be `daylight`, `cool` or `warm`.",
+			},
+		},
+		"required": []string{"brightness", "colorTemperature"},
+	}
+
+	var tools = []*Tool{
+		{
+			FunctionDeclarations: []*FunctionDeclaration{
+				{
+					Name:                 "controlLight",
+					Description:          "Set the brightness and color temperature of a room light.",
+					ParametersJsonSchema: parameterSchema,
+				},
+			},
+		},
+	}
+
+	var willContinueFalse = false
+	priorContent := []*Content{
+		{
+			Parts: []*Part{
+				{Text: "Control the light in the living room to 50% brightness and warm white color."},
+			},
+			Role: "user",
+		},
+		{
+			Parts: []*Part{
+				{
+					FunctionCall: &FunctionCall{
+						Name: "controlLight",
+						PartialArgs: []*PartialArg{
+							{
+								JsonPath:    "$.colorTemperature",
+								StringValue: "warm",
+							},
+						},
+						WillContinue: &willContinueFalse,
+					},
+				},
+			},
+			Role: "model",
+		},
+	}
+	var streamingArgument = true
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if client.ClientConfig().Backend == BackendVertexAI {
+				t.Logf("Calling VertexAI Backend...")
+			} else {
+				t.Skip("Skip. GeminiAPI Backend does not support streaming function call.")
+			}
+			config := &GenerateContentConfig{
+				Tools: tools,
+				ToolConfig: &ToolConfig{
+					FunctionCallingConfig: &FunctionCallingConfig{
+						Mode:                        FunctionCallingConfigModeAny,
+						StreamFunctionCallArguments: &streamingArgument,
+					},
+				},
+			}
+			for result, err := range client.Models.GenerateContentStream(
+				ctx,
+				"gemini-2.5-pro",
+				priorContent,
+				config,
+			) {
+				if err != nil {
+					t.Errorf("GenerateContentStream failed unexpectedly: %v", err)
+				}
+				if result == nil {
+					t.Fatalf("expected at least one response, got none")
+				} else if result.Candidates != nil && len(result.Candidates) == 0 {
+					t.Errorf("expected at least one candidate, got none")
+				} else if result.Candidates != nil && result.Candidates[0].Content != nil && len(result.Candidates[0].Content.Parts) == 0 {
+					t.Errorf("expected at least one part, got none")
+				}
+			}
+		})
+	}
+}
+
+func TestModelsGenerateContentStreamingFunctionCallGeminiParamsWithHistory(t *testing.T) {
+	if *mode != apiMode {
+		t.Skip("Skip. This test is only in the API mode")
+	}
+	ctx := context.Background()
+
+	var parameterSchema = &Schema{
+		Type: TypeObject,
+		Properties: map[string]*Schema{
+			"brightness": {
+				Type:        TypeNumber,
+				Description: "Light level from 0 to 100. Zero is off and 100 is full brightness.",
+			},
+			"colorTemperature": {
+				Type:        TypeString,
+				Description: "Color temperature of the light fixture which can be `daylight`, `cool` or `warm`.",
+			},
+		},
+		Required: []string{"brightness", "colorTemperature"},
+	}
+
+	var tools = []*Tool{
+		{
+			FunctionDeclarations: []*FunctionDeclaration{
+				{
+					Name:        "controlLight",
+					Description: "Set the brightness and color temperature of a room light.",
+					Parameters:  parameterSchema,
+				},
+			},
+		},
+	}
+
+	var willContinueFalse = false
+	priorContent := []*Content{
+		{
+			Parts: []*Part{
+				{Text: "Control the light in the living room to 50% brightness and warm white color."},
+			},
+			Role: "user",
+		},
+		{
+			Parts: []*Part{
+				{
+					FunctionCall: &FunctionCall{
+						Name: "controlLight",
+						PartialArgs: []*PartialArg{
+							{
+								JsonPath:    "$.colorTemperature",
+								StringValue: "warm",
+							},
+						},
+						WillContinue: &willContinueFalse,
+					},
+				},
+			},
+			Role: "model",
+		},
+	}
+	var streamingArgument = true
+	for _, backend := range backends {
+		t.Run(backend.name, func(t *testing.T) {
+			t.Parallel()
+			if isDisabledTest(t) {
+				t.Skip("Skip: disabled test")
+			}
+			client, err := NewClient(ctx, &ClientConfig{Backend: backend.Backend})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if client.ClientConfig().Backend == BackendVertexAI {
+				t.Logf("Calling VertexAI Backend...")
+			} else {
+				t.Skip("Skip. GeminiAPI Backend does not support this test.")
+				return
+			}
+			config := &GenerateContentConfig{
+				Tools: tools,
+				ToolConfig: &ToolConfig{
+					FunctionCallingConfig: &FunctionCallingConfig{
+						Mode:                        FunctionCallingConfigModeAny,
+						StreamFunctionCallArguments: &streamingArgument,
+					},
+				},
+			}
+			for result, err := range client.Models.GenerateContentStream(
+				ctx,
+				"gemini-2.5-pro",
+				priorContent,
+				config,
+			) {
+				if err != nil {
+					t.Errorf("GenerateContentStream failed unexpectedly: %v", err)
+				}
+				if result == nil {
+					t.Fatalf("expected at least one response, got none")
+				} else if result.Candidates != nil && len(result.Candidates) == 0 {
+					t.Errorf("expected at least one candidate, got none")
+				} else if result.Candidates != nil && result.Candidates[0].Content != nil && len(result.Candidates[0].Content.Parts) == 0 {
+					t.Errorf("expected at least one part, got none")
+				}
+			}
+		})
+	}
+}
+
 func TestModelsGenerateContentMultiSpeakerVoiceConfigAudio(t *testing.T) {
 	if *mode != apiMode {
 		t.Skip("Skip. This test is only in the API mode")

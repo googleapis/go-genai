@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.36.0](https://github.com/googleapis/go-genai/compare/v1.35.0...v1.36.0) (2025-11-17)
+
+
+### Features
+
+* add display name to FunctionResponseBlob ([66bd0fb](https://github.com/googleapis/go-genai/commit/66bd0fbf3504ac9f8b01d173a14110af0fabe41d))
+* add display name to FunctionResponseFileData ([f470cff](https://github.com/googleapis/go-genai/commit/f470cff5a212cbc0fbda00177b2bfb69c56eb6b1))
+* Add generate_content_config.thinking_level ([93b2586](https://github.com/googleapis/go-genai/commit/93b2586dfb392b5f51f36cbbc9d2ac96458c2959))
+* Add image output options to ImageConfig for Vertex ([c4b28c3](https://github.com/googleapis/go-genai/commit/c4b28c34141198d96941cad4837edce76bbe764c))
+* Add part.media_resolution ([93b2586](https://github.com/googleapis/go-genai/commit/93b2586dfb392b5f51f36cbbc9d2ac96458c2959))
+* support Function call argument streaming for all languages ([dd5ec01](https://github.com/googleapis/go-genai/commit/dd5ec01f2186ad777be914f0b33a9e87a2e947d4))
+
 ## [1.35.0](https://github.com/googleapis/go-genai/compare/v1.34.0...v1.35.0) (2025-11-12)
 
 

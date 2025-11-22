@@ -362,10 +362,10 @@ func (m Documents) List(ctx context.Context, parent string, config *ListDocument
 // All retrieves all documents resources.
 //
 // This method handles pagination internally, making multiple API calls as needed
-// to fetch all entries. It returns an iterator that yields each document
+// to fetch all entries. It returns an iterator that yields each "documents"
 // entry one by one. You do not need to manage pagination
 // tokens or make multiple calls to retrieve all data.
-func (m Documents) All(parent string, ctx context.Context) iter.Seq2[*Document, error] {
+func (m Documents) All(ctx context.Context, parent string) iter.Seq2[*Document, error] {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*Document, string, *HTTPResponse, error) {
 		var c ListDocumentsConfig
 		if err := mapToStruct(config, &c); err != nil {

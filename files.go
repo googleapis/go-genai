@@ -451,7 +451,7 @@ func (m Files) List(ctx context.Context, config *ListFilesConfig) (Page[File], e
 // All retrieves all files resources.
 //
 // This method handles pagination internally, making multiple API calls as needed
-// to fetch all entries. It returns an iterator that yields each file
+// to fetch all entries. It returns an iterator that yields each "files"
 // entry one by one. You do not need to manage pagination
 // tokens or make multiple calls to retrieve all data.
 func (m Files) All(ctx context.Context) iter.Seq2[*File, error] {

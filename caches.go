@@ -851,7 +851,7 @@ func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*Li
 	return response, nil
 }
 
-// List retrieves a paginated list of cached content resources.
+// List retrieves a paginated list of cached_contents resources.
 func (m Caches) List(ctx context.Context, config *ListCachedContentsConfig) (Page[CachedContent], error) {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*CachedContent, string, *HTTPResponse, error) {
 		var c ListCachedContentsConfig
@@ -869,11 +869,11 @@ func (m Caches) List(ctx context.Context, config *ListCachedContentsConfig) (Pag
 	return newPage(ctx, "cachedContents", c, listFunc)
 }
 
-// All retrieves all cached content resources.
+// All retrieves all cached_contents resources.
 //
 // This method handles pagination internally, making multiple API calls as needed
-// to fetch all entries. It returns an iterator that yields each cached
-// content entry one by one. You do not need to manage pagination
+// to fetch all entries. It returns an iterator that yields each "cachedContents"
+// entry one by one. You do not need to manage pagination
 // tokens or make multiple calls to retrieve all data.
 func (m Caches) All(ctx context.Context) iter.Seq2[*CachedContent, error] {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*CachedContent, string, *HTTPResponse, error) {

@@ -1113,6 +1113,49 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 	return response, nil
 }
 
+// List retrieves a paginated list of tuning_jobs resources.
+func (m Tunings) List(ctx context.Context, config *ListTuningJobsConfig) (Page[TuningJob], error) {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*TuningJob, string, *HTTPResponse, error) {
+		var c ListTuningJobsConfig
+		if err := mapToStruct(config, &c); err != nil {
+			return nil, "", nil, err
+		}
+		resp, err := m.list(ctx, &c)
+		if err != nil {
+			return nil, "", nil, err
+		}
+		return resp.TuningJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
+	}
+	c := make(map[string]any)
+	deepMarshal(config, &c)
+	return newPage(ctx, "tuningJobs", c, listFunc)
+}
+
+// All retrieves all tuning_jobs resources.
+//
+// This method handles pagination internally, making multiple API calls as needed
+// to fetch all entries. It returns an iterator that yields each "tuningJobs"
+// entry one by one. You do not need to manage pagination
+// tokens or make multiple calls to retrieve all data.
+func (m Tunings) All(ctx context.Context) iter.Seq2[*TuningJob, error] {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*TuningJob, string, *HTTPResponse, error) {
+		var c ListTuningJobsConfig
+		if err := mapToStruct(config, &c); err != nil {
+			return nil, "", nil, err
+		}
+		resp, err := m.list(ctx, &c)
+		if err != nil {
+			return nil, "", nil, err
+		}
+		return resp.TuningJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
+	}
+	p, err := newPage(ctx, "tuningJobs", map[string]any{}, listFunc)
+	if err != nil {
+		return yieldErrorAndEndIterator[TuningJob](err)
+	}
+	return p.all(ctx)
+}
+
 var experimentalWarningTuningsCreateOperation sync.Once
 
 // Tune creates a tuning job resource.
@@ -1163,47 +1206,4 @@ func (t Tunings) Tune(ctx context.Context, baseModel string, trainingDataset *Tu
 // Get retrieves a tuning job resource.
 func (t Tunings) Get(ctx context.Context, name string, config *GetTuningJobConfig) (*TuningJob, error) {
 	return t.get(ctx, name, config)
-}
-
-// List retrieves a paginated list of tuning job resources.
-func (t Tunings) List(ctx context.Context, config *ListTuningJobsConfig) (Page[TuningJob], error) {
-	listFunc := func(ctx context.Context, config map[string]any) ([]*TuningJob, string, *HTTPResponse, error) {
-		var c ListTuningJobsConfig
-		if err := mapToStruct(config, &c); err != nil {
-			return nil, "", nil, err
-		}
-		resp, err := t.list(ctx, &c)
-		if err != nil {
-			return nil, "", nil, err
-		}
-		return resp.TuningJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
-	}
-	c := make(map[string]any)
-	deepMarshal(config, &c)
-	return newPage(ctx, "tuningJobs", c, listFunc)
-}
-
-// All retrieves all tuning job resources.
-//
-// This method handles pagination internally, making multiple API calls as needed
-// to fetch all entries. It returns an iterator that yields each tuning job
-// entry one by one. You do not need to manage pagination
-// tokens or make multiple calls to retrieve all data.
-func (t Tunings) All(ctx context.Context) iter.Seq2[*TuningJob, error] {
-	listFunc := func(ctx context.Context, config map[string]any) ([]*TuningJob, string, *HTTPResponse, error) {
-		var c ListTuningJobsConfig
-		if err := mapToStruct(config, &c); err != nil {
-			return nil, "", nil, err
-		}
-		resp, err := t.list(ctx, &c)
-		if err != nil {
-			return nil, "", nil, err
-		}
-		return resp.TuningJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
-	}
-	p, err := newPage(ctx, "tuningJobs", map[string]any{}, listFunc)
-	if err != nil {
-		return yieldErrorAndEndIterator[TuningJob](err)
-	}
-	return p.all(ctx)
 }

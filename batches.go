@@ -1337,6 +1337,49 @@ func (m Batches) Delete(ctx context.Context, name string, config *DeleteBatchJob
 	return response, nil
 }
 
+// List retrieves a paginated list of batch_jobs resources.
+func (m Batches) List(ctx context.Context, config *ListBatchJobsConfig) (Page[BatchJob], error) {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*BatchJob, string, *HTTPResponse, error) {
+		var c ListBatchJobsConfig
+		if err := mapToStruct(config, &c); err != nil {
+			return nil, "", nil, err
+		}
+		resp, err := m.list(ctx, &c)
+		if err != nil {
+			return nil, "", nil, err
+		}
+		return resp.BatchJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
+	}
+	c := make(map[string]any)
+	deepMarshal(config, &c)
+	return newPage(ctx, "batchJobs", c, listFunc)
+}
+
+// All retrieves all batch_jobs resources.
+//
+// This method handles pagination internally, making multiple API calls as needed
+// to fetch all entries. It returns an iterator that yields each "batchJobs"
+// entry one by one. You do not need to manage pagination
+// tokens or make multiple calls to retrieve all data.
+func (m Batches) All(ctx context.Context) iter.Seq2[*BatchJob, error] {
+	listFunc := func(ctx context.Context, config map[string]any) ([]*BatchJob, string, *HTTPResponse, error) {
+		var c ListBatchJobsConfig
+		if err := mapToStruct(config, &c); err != nil {
+			return nil, "", nil, err
+		}
+		resp, err := m.list(ctx, &c)
+		if err != nil {
+			return nil, "", nil, err
+		}
+		return resp.BatchJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
+	}
+	p, err := newPage(ctx, "batchJobs", map[string]any{}, listFunc)
+	if err != nil {
+		return yieldErrorAndEndIterator[BatchJob](err)
+	}
+	return p.all(ctx)
+}
+
 // Create a batch job.
 func (b Batches) Create(ctx context.Context, model string, src *BatchJobSource, config *CreateBatchJobConfig) (*BatchJob, error) {
 	if b.apiClient.clientConfig.Backend == BackendVertexAI {
@@ -1361,49 +1404,6 @@ func (b Batches) Create(ctx context.Context, model string, src *BatchJobSource, 
 		}
 	}
 	return b.create(ctx, &model, src, config)
-}
-
-// List retrieves a paginated list of batch jobs.
-func (b Batches) List(ctx context.Context, config *ListBatchJobsConfig) (Page[BatchJob], error) {
-	listFunc := func(ctx context.Context, config map[string]any) ([]*BatchJob, string, *HTTPResponse, error) {
-		var c ListBatchJobsConfig
-		if err := mapToStruct(config, &c); err != nil {
-			return nil, "", nil, err
-		}
-		resp, err := b.list(ctx, &c)
-		if err != nil {
-			return nil, "", nil, err
-		}
-		return resp.BatchJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
-	}
-	c := make(map[string]any)
-	deepMarshal(config, &c)
-	return newPage(ctx, "batchJobs", c, listFunc)
-}
-
-// All retrieves all batch job resources.
-//
-// This method handles pagination internally, making multiple API calls as needed
-// to fetch all entries. It returns an iterator that yields each cached
-// content entry one by one. You do not need to manage pagination
-// tokens or make multiple calls to retrieve all data.
-func (b Batches) All(ctx context.Context) iter.Seq2[*BatchJob, error] {
-	listFunc := func(ctx context.Context, config map[string]any) ([]*BatchJob, string, *HTTPResponse, error) {
-		var c ListBatchJobsConfig
-		if err := mapToStruct(config, &c); err != nil {
-			return nil, "", nil, err
-		}
-		resp, err := b.list(ctx, &c)
-		if err != nil {
-			return nil, "", nil, err
-		}
-		return resp.BatchJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
-	}
-	p, err := newPage(ctx, "BatchJobs", map[string]any{}, listFunc)
-	if err != nil {
-		return yieldErrorAndEndIterator[BatchJob](err)
-	}
-	return p.all(ctx)
 }
 
 var experimentalWarningBatchesCreateEmbeddings sync.Once

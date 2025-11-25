@@ -749,7 +749,7 @@ func (m FileSearchStores) ImportFile(ctx context.Context, fileSearchStoreName st
 	return response, nil
 }
 
-// List retrieves a paginated list of file search stores resources.
+// List retrieves a paginated list of file_search_stores resources.
 func (m FileSearchStores) List(ctx context.Context, config *ListFileSearchStoresConfig) (Page[FileSearchStore], error) {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*FileSearchStore, string, *HTTPResponse, error) {
 		var c ListFileSearchStoresConfig
@@ -767,10 +767,10 @@ func (m FileSearchStores) List(ctx context.Context, config *ListFileSearchStores
 	return newPage(ctx, "fileSearchStores", c, listFunc)
 }
 
-// All retrieves all FileSearchStore stores resources.
+// All retrieves all file_search_stores resources.
 //
 // This method handles pagination internally, making multiple API calls as needed
-// to fetch all entries. It returns an iterator that yields each file search store
+// to fetch all entries. It returns an iterator that yields each "fileSearchStores"
 // entry one by one. You do not need to manage pagination
 // tokens or make multiple calls to retrieve all data.
 func (m FileSearchStores) All(ctx context.Context) iter.Seq2[*FileSearchStore, error] {

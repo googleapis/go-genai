@@ -24,6 +24,41 @@ import (
 	"reflect"
 )
 
+func authConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromApiKey := getValueByPath(fromObject, []string{"apiKey"})
+	if fromApiKey != nil {
+		setValueByPath(toObject, []string{"apiKey"}, fromApiKey)
+	}
+
+	if getValueByPath(fromObject, []string{"apiKeyConfig"}) != nil {
+		return nil, fmt.Errorf("apiKeyConfig parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"authType"}) != nil {
+		return nil, fmt.Errorf("authType parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"googleServiceAccountConfig"}) != nil {
+		return nil, fmt.Errorf("googleServiceAccountConfig parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"httpBasicAuthConfig"}) != nil {
+		return nil, fmt.Errorf("httpBasicAuthConfig parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"oauthConfig"}) != nil {
+		return nil, fmt.Errorf("oauthConfig parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"oidcConfig"}) != nil {
+		return nil, fmt.Errorf("oidcConfig parameter is not supported in Gemini API")
+	}
+
+	return toObject, nil
+}
+
 func blobToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -72,14 +107,14 @@ func candidateFromMldev(fromObject map[string]any, parentObject map[string]any) 
 		setValueByPath(toObject, []string{"finishReason"}, fromFinishReason)
 	}
 
-	fromAvgLogprobs := getValueByPath(fromObject, []string{"avgLogprobs"})
-	if fromAvgLogprobs != nil {
-		setValueByPath(toObject, []string{"avgLogprobs"}, fromAvgLogprobs)
-	}
-
 	fromGroundingMetadata := getValueByPath(fromObject, []string{"groundingMetadata"})
 	if fromGroundingMetadata != nil {
 		setValueByPath(toObject, []string{"groundingMetadata"}, fromGroundingMetadata)
+	}
+
+	fromAvgLogprobs := getValueByPath(fromObject, []string{"avgLogprobs"})
+	if fromAvgLogprobs != nil {
+		setValueByPath(toObject, []string{"avgLogprobs"}, fromAvgLogprobs)
 	}
 
 	fromIndex := getValueByPath(fromObject, []string{"index"})
@@ -132,6 +167,11 @@ func computeTokensParametersToVertex(ac *apiClient, fromObject map[string]any, p
 	fromContents := getValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
 		fromContents, err = tContents(fromContents)
+		if err != nil {
+			return nil, err
+		}
+
+		fromContents, err = applyConverterToSlice(fromContents.([]any), contentToVertex)
 		if err != nil {
 			return nil, err
 		}
@@ -216,6 +256,27 @@ func contentToMldev(fromObject map[string]any, parentObject map[string]any) (toO
 	return toObject, nil
 }
 
+func contentToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromParts := getValueByPath(fromObject, []string{"parts"})
+	if fromParts != nil {
+		fromParts, err = applyConverterToSlice(fromParts.([]any), partToVertex)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"parts"}, fromParts)
+	}
+
+	fromRole := getValueByPath(fromObject, []string{"role"})
+	if fromRole != nil {
+		setValueByPath(toObject, []string{"role"}, fromRole)
+	}
+
+	return toObject, nil
+}
+
 func controlReferenceConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -256,6 +317,11 @@ func countTokensConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -341,6 +407,11 @@ func countTokensParametersToVertex(ac *apiClient, fromObject map[string]any, par
 	fromContents := getValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
 		fromContents, err = tContents(fromContents)
+		if err != nil {
+			return nil, err
+		}
+
+		fromContents, err = applyConverterToSlice(fromContents.([]any), contentToVertex)
 		if err != nil {
 			return nil, err
 		}
@@ -813,55 +884,6 @@ func fileDataToMldev(fromObject map[string]any, parentObject map[string]any) (to
 	return toObject, nil
 }
 
-func functionCallToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromId := getValueByPath(fromObject, []string{"id"})
-	if fromId != nil {
-		setValueByPath(toObject, []string{"id"}, fromId)
-	}
-
-	fromArgs := getValueByPath(fromObject, []string{"args"})
-	if fromArgs != nil {
-		setValueByPath(toObject, []string{"args"}, fromArgs)
-	}
-
-	fromName := getValueByPath(fromObject, []string{"name"})
-	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
-	}
-
-	if getValueByPath(fromObject, []string{"partialArgs"}) != nil {
-		return nil, fmt.Errorf("partialArgs parameter is not supported in Gemini API")
-	}
-
-	if getValueByPath(fromObject, []string{"willContinue"}) != nil {
-		return nil, fmt.Errorf("willContinue parameter is not supported in Gemini API")
-	}
-
-	return toObject, nil
-}
-
-func functionCallingConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromMode := getValueByPath(fromObject, []string{"mode"})
-	if fromMode != nil {
-		setValueByPath(toObject, []string{"mode"}, fromMode)
-	}
-
-	fromAllowedFunctionNames := getValueByPath(fromObject, []string{"allowedFunctionNames"})
-	if fromAllowedFunctionNames != nil {
-		setValueByPath(toObject, []string{"allowedFunctionNames"}, fromAllowedFunctionNames)
-	}
-
-	if getValueByPath(fromObject, []string{"streamFunctionCallArguments"}) != nil {
-		return nil, fmt.Errorf("streamFunctionCallArguments parameter is not supported in Gemini API")
-	}
-
-	return toObject, nil
-}
-
 func functionDeclarationToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 	if getValueByPath(fromObject, []string{"behavior"}) != nil {
@@ -1034,11 +1056,6 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 
 	fromToolConfig := getValueByPath(fromObject, []string{"toolConfig"})
 	if fromToolConfig != nil {
-		fromToolConfig, err = toolConfigToMldev(fromToolConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
@@ -1104,6 +1121,11 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}
@@ -1258,11 +1280,6 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 			return nil, err
 		}
 
-		fromSpeechConfig, err = speechConfigToVertex(fromSpeechConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
@@ -1273,6 +1290,11 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 
 	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
+		fromThinkingConfig, err = thinkingConfigToVertex(fromThinkingConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
 	}
 
@@ -1346,6 +1368,11 @@ func generateContentParametersToVertex(ac *apiClient, fromObject map[string]any,
 	fromContents := getValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
 		fromContents, err = tContents(fromContents)
+		if err != nil {
+			return nil, err
+		}
+
+		fromContents, err = applyConverterToSlice(fromContents.([]any), contentToVertex)
 		if err != nil {
 			return nil, err
 		}
@@ -2439,11 +2466,6 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 
 	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = speechConfigToVertex(fromSpeechConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
@@ -2459,6 +2481,11 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 
 	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
+		fromThinkingConfig, err = thinkingConfigToVertex(fromThinkingConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
 	}
 
@@ -2513,8 +2540,15 @@ func getModelParametersToVertex(ac *apiClient, fromObject map[string]any, parent
 
 func googleMapsToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"authConfig"}) != nil {
-		return nil, fmt.Errorf("authConfig parameter is not supported in Gemini API")
+
+	fromAuthConfig := getValueByPath(fromObject, []string{"authConfig"})
+	if fromAuthConfig != nil {
+		fromAuthConfig, err = authConfigToMldev(fromAuthConfig.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"authConfig"}, fromAuthConfig)
 	}
 
 	fromEnableWidget := getValueByPath(fromObject, []string{"enableWidget"})
@@ -2527,12 +2561,12 @@ func googleMapsToMldev(fromObject map[string]any, parentObject map[string]any) (
 
 func googleSearchToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"excludeDomains"}) != nil {
-		return nil, fmt.Errorf("excludeDomains parameter is not supported in Gemini API")
-	}
-
 	if getValueByPath(fromObject, []string{"blockingConfidence"}) != nil {
 		return nil, fmt.Errorf("blockingConfidence parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"excludeDomains"}) != nil {
+		return nil, fmt.Errorf("excludeDomains parameter is not supported in Gemini API")
 	}
 
 	fromTimeRangeFilter := getValueByPath(fromObject, []string{"timeRangeFilter"})
@@ -2564,6 +2598,14 @@ func imageConfigToMldev(fromObject map[string]any, parentObject map[string]any) 
 		return nil, fmt.Errorf("outputCompressionQuality parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"imageOutputOptions"}) != nil {
+		return nil, fmt.Errorf("imageOutputOptions parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"personGeneration"}) != nil {
+		return nil, fmt.Errorf("personGeneration parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -2588,6 +2630,16 @@ func imageConfigToVertex(fromObject map[string]any, parentObject map[string]any)
 	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
 	if fromOutputCompressionQuality != nil {
 		setValueByPath(toObject, []string{"imageOutputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+	}
+
+	fromImageOutputOptions := getValueByPath(fromObject, []string{"imageOutputOptions"})
+	if fromImageOutputOptions != nil {
+		setValueByPath(toObject, []string{"imageOutputOptions"}, fromImageOutputOptions)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(toObject, []string{"personGeneration"}, fromPersonGeneration)
 	}
 
 	return toObject, nil
@@ -3025,11 +3077,6 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 
 	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
 	if fromFunctionCall != nil {
-		fromFunctionCall, err = functionCallToMldev(fromFunctionCall.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
 	}
 
@@ -3066,6 +3113,76 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 	fromVideoMetadata := getValueByPath(fromObject, []string{"videoMetadata"})
 	if fromVideoMetadata != nil {
 		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
+	}
+
+	fromPartMetadata := getValueByPath(fromObject, []string{"partMetadata"})
+	if fromPartMetadata != nil {
+		setValueByPath(toObject, []string{"partMetadata"}, fromPartMetadata)
+	}
+
+	return toObject, nil
+}
+
+func partToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+	}
+
+	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
+	if fromCodeExecutionResult != nil {
+		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
+	}
+
+	fromExecutableCode := getValueByPath(fromObject, []string{"executableCode"})
+	if fromExecutableCode != nil {
+		setValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
+	}
+
+	fromFileData := getValueByPath(fromObject, []string{"fileData"})
+	if fromFileData != nil {
+		setValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
+	if fromFunctionCall != nil {
+		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
+	}
+
+	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})
+	if fromFunctionResponse != nil {
+		setValueByPath(toObject, []string{"functionResponse"}, fromFunctionResponse)
+	}
+
+	fromInlineData := getValueByPath(fromObject, []string{"inlineData"})
+	if fromInlineData != nil {
+		setValueByPath(toObject, []string{"inlineData"}, fromInlineData)
+	}
+
+	fromText := getValueByPath(fromObject, []string{"text"})
+	if fromText != nil {
+		setValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	fromThought := getValueByPath(fromObject, []string{"thought"})
+	if fromThought != nil {
+		setValueByPath(toObject, []string{"thought"}, fromThought)
+	}
+
+	fromThoughtSignature := getValueByPath(fromObject, []string{"thoughtSignature"})
+	if fromThoughtSignature != nil {
+		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
+	}
+
+	fromVideoMetadata := getValueByPath(fromObject, []string{"videoMetadata"})
+	if fromVideoMetadata != nil {
+		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
+	}
+
+	if getValueByPath(fromObject, []string{"partMetadata"}) != nil {
+		return nil, fmt.Errorf("partMetadata parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
@@ -3476,42 +3593,21 @@ func segmentImageSourceToVertex(fromObject map[string]any, parentObject map[stri
 	return toObject, nil
 }
 
-func speechConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func thinkingConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
-	if fromLanguageCode != nil {
-		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
+	fromIncludeThoughts := getValueByPath(fromObject, []string{"includeThoughts"})
+	if fromIncludeThoughts != nil {
+		setValueByPath(toObject, []string{"includeThoughts"}, fromIncludeThoughts)
 	}
 
-	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
-	if fromVoiceConfig != nil {
-		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
+	fromThinkingBudget := getValueByPath(fromObject, []string{"thinkingBudget"})
+	if fromThinkingBudget != nil {
+		setValueByPath(toObject, []string{"thinkingBudget"}, fromThinkingBudget)
 	}
 
-	if getValueByPath(fromObject, []string{"multiSpeakerVoiceConfig"}) != nil {
-		return nil, fmt.Errorf("multiSpeakerVoiceConfig parameter is not supported in Vertex AI")
-	}
-
-	return toObject, nil
-}
-
-func toolConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromFunctionCallingConfig := getValueByPath(fromObject, []string{"functionCallingConfig"})
-	if fromFunctionCallingConfig != nil {
-		fromFunctionCallingConfig, err = functionCallingConfigToMldev(fromFunctionCallingConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
-	}
-
-	fromRetrievalConfig := getValueByPath(fromObject, []string{"retrievalConfig"})
-	if fromRetrievalConfig != nil {
-		setValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
+	if getValueByPath(fromObject, []string{"thinkingLevel"}) != nil {
+		return nil, fmt.Errorf("thinkingLevel parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
@@ -3544,15 +3640,6 @@ func toolToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 		setValueByPath(toObject, []string{"fileSearch"}, fromFileSearch)
 	}
 
-	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
-	if fromCodeExecution != nil {
-		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
-	}
-
-	if getValueByPath(fromObject, []string{"enterpriseWebSearch"}) != nil {
-		return nil, fmt.Errorf("enterpriseWebSearch parameter is not supported in Gemini API")
-	}
-
 	fromGoogleMaps := getValueByPath(fromObject, []string{"googleMaps"})
 	if fromGoogleMaps != nil {
 		fromGoogleMaps, err = googleMapsToMldev(fromGoogleMaps.(map[string]any), toObject)
@@ -3561,6 +3648,15 @@ func toolToMldev(fromObject map[string]any, parentObject map[string]any) (toObje
 		}
 
 		setValueByPath(toObject, []string{"googleMaps"}, fromGoogleMaps)
+	}
+
+	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
+	if fromCodeExecution != nil {
+		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
+	}
+
+	if getValueByPath(fromObject, []string{"enterpriseWebSearch"}) != nil {
+		return nil, fmt.Errorf("enterpriseWebSearch parameter is not supported in Gemini API")
 	}
 
 	fromGoogleSearch := getValueByPath(fromObject, []string{"googleSearch"})
@@ -3613,6 +3709,10 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any) (toObj
 		return nil, fmt.Errorf("fileSearch parameter is not supported in Vertex AI")
 	}
 
+	if getValueByPath(fromObject, []string{"googleMaps"}) != nil {
+		return nil, fmt.Errorf("googleMaps parameter is not supported in Vertex AI")
+	}
+
 	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
 	if fromCodeExecution != nil {
 		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
@@ -3621,11 +3721,6 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any) (toObj
 	fromEnterpriseWebSearch := getValueByPath(fromObject, []string{"enterpriseWebSearch"})
 	if fromEnterpriseWebSearch != nil {
 		setValueByPath(toObject, []string{"enterpriseWebSearch"}, fromEnterpriseWebSearch)
-	}
-
-	fromGoogleMaps := getValueByPath(fromObject, []string{"googleMaps"})
-	if fromGoogleMaps != nil {
-		setValueByPath(toObject, []string{"googleMaps"}, fromGoogleMaps)
 	}
 
 	fromGoogleSearch := getValueByPath(fromObject, []string{"googleSearch"})

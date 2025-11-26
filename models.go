@@ -904,6 +904,126 @@ func functionDeclarationToVertex(fromObject map[string]any, parentObject map[str
 
 func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+	if getValueByPath(fromObject, []string{"modelSelectionConfig"}) != nil {
+		return nil, fmt.Errorf("modelSelectionConfig parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"audioTimestamp"}) != nil {
+		return nil, fmt.Errorf("audioTimestamp parameter is not supported in Gemini API")
+	}
+
+	fromCandidateCount := getValueByPath(fromObject, []string{"candidateCount"})
+	if fromCandidateCount != nil {
+		setValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
+	}
+
+	if getValueByPath(fromObject, []string{"enableAffectiveDialog"}) != nil {
+		return nil, fmt.Errorf("enableAffectiveDialog parameter is not supported in Gemini API")
+	}
+
+	fromFrequencyPenalty := getValueByPath(fromObject, []string{"frequencyPenalty"})
+	if fromFrequencyPenalty != nil {
+		setValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
+	}
+
+	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
+	if fromLogprobs != nil {
+		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
+	}
+
+	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
+	if fromMaxOutputTokens != nil {
+		setValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
+	}
+
+	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+	}
+
+	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
+	if fromPresencePenalty != nil {
+		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+	}
+
+	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	if fromResponseJsonSchema != nil {
+		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+	}
+
+	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
+	if fromResponseLogprobs != nil {
+		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
+	}
+
+	fromResponseMimeType := getValueByPath(fromObject, []string{"responseMimeType"})
+	if fromResponseMimeType != nil {
+		setValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
+	}
+
+	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
+	if fromResponseModalities != nil {
+		setValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
+	}
+
+	fromResponseSchema := getValueByPath(fromObject, []string{"responseSchema"})
+	if fromResponseSchema != nil {
+		fromResponseSchema, err = tSchema(fromResponseSchema)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
+	}
+
+	if getValueByPath(fromObject, []string{"routingConfig"}) != nil {
+		return nil, fmt.Errorf("routingConfig parameter is not supported in Gemini API")
+	}
+
+	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	if fromSeed != nil {
+		setValueByPath(toObject, []string{"seed"}, fromSeed)
+	}
+
+	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
+	if fromSpeechConfig != nil {
+		fromSpeechConfig, err = tSpeechConfig(fromSpeechConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
+	}
+
+	fromStopSequences := getValueByPath(fromObject, []string{"stopSequences"})
+	if fromStopSequences != nil {
+		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
+	}
+
+	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	if fromTemperature != nil {
+		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
+	}
+
+	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
+	if fromThinkingConfig != nil {
+		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
+	}
+
+	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	if fromTopK != nil {
+		setValueByPath(toObject, []string{"topK"}, fromTopK)
+	}
+
+	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	if fromTopP != nil {
+		setValueByPath(toObject, []string{"topP"}, fromTopP)
+	}
+
+	fromEnableEnhancedCivicAnswers := getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"})
+	if fromEnableEnhancedCivicAnswers != nil {
+		setValueByPath(toObject, []string{"enableEnhancedCivicAnswers"}, fromEnableEnhancedCivicAnswers)
+	}
 
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
@@ -918,89 +1038,6 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		}
 
 		setValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
-	}
-
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
-	if fromTemperature != nil {
-		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
-	}
-
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
-	if fromTopP != nil {
-		setValueByPath(toObject, []string{"topP"}, fromTopP)
-	}
-
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
-	if fromTopK != nil {
-		setValueByPath(toObject, []string{"topK"}, fromTopK)
-	}
-
-	fromCandidateCount := getValueByPath(fromObject, []string{"candidateCount"})
-	if fromCandidateCount != nil {
-		setValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
-	}
-
-	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
-	if fromMaxOutputTokens != nil {
-		setValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
-	}
-
-	fromStopSequences := getValueByPath(fromObject, []string{"stopSequences"})
-	if fromStopSequences != nil {
-		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
-	}
-
-	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
-	if fromResponseLogprobs != nil {
-		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
-	}
-
-	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
-	if fromLogprobs != nil {
-		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
-	}
-
-	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
-	if fromPresencePenalty != nil {
-		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
-	}
-
-	fromFrequencyPenalty := getValueByPath(fromObject, []string{"frequencyPenalty"})
-	if fromFrequencyPenalty != nil {
-		setValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
-	}
-
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
-	if fromSeed != nil {
-		setValueByPath(toObject, []string{"seed"}, fromSeed)
-	}
-
-	fromResponseMimeType := getValueByPath(fromObject, []string{"responseMimeType"})
-	if fromResponseMimeType != nil {
-		setValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
-	}
-
-	fromResponseSchema := getValueByPath(fromObject, []string{"responseSchema"})
-	if fromResponseSchema != nil {
-		fromResponseSchema, err = tSchema(fromResponseSchema)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
-	}
-
-	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
-	if fromResponseJsonSchema != nil {
-		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
-	}
-
-	if getValueByPath(fromObject, []string{"routingConfig"}) != nil {
-		return nil, fmt.Errorf("routingConfig parameter is not supported in Gemini API")
-	}
-
-	if getValueByPath(fromObject, []string{"modelSelectionConfig"}) != nil {
-		return nil, fmt.Errorf("modelSelectionConfig parameter is not supported in Gemini API")
 	}
 
 	fromSafetySettings := getValueByPath(fromObject, []string{"safetySettings"})
@@ -1057,35 +1094,6 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(parentObject, []string{"cachedContent"}, fromCachedContent)
 	}
 
-	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
-	if fromResponseModalities != nil {
-		setValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
-	}
-
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
-	if fromMediaResolution != nil {
-		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
-	}
-
-	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
-	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = tSpeechConfig(fromSpeechConfig)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
-	}
-
-	if getValueByPath(fromObject, []string{"audioTimestamp"}) != nil {
-		return nil, fmt.Errorf("audioTimestamp parameter is not supported in Gemini API")
-	}
-
-	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
-	if fromThinkingConfig != nil {
-		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
-	}
-
 	fromImageConfig := getValueByPath(fromObject, []string{"imageConfig"})
 	if fromImageConfig != nil {
 		fromImageConfig, err = imageConfigToMldev(fromImageConfig.(map[string]any), toObject)
@@ -1096,40 +1104,20 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
 	}
 
-	fromEnableEnhancedCivicAnswers := getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"})
-	if fromEnableEnhancedCivicAnswers != nil {
-		setValueByPath(toObject, []string{"enableEnhancedCivicAnswers"}, fromEnableEnhancedCivicAnswers)
-	}
-
 	return toObject, nil
 }
 
 func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
-	if fromSystemInstruction != nil {
-		fromSystemInstruction, err = tContent(fromSystemInstruction)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
+	fromModelSelectionConfig := getValueByPath(fromObject, []string{"modelSelectionConfig"})
+	if fromModelSelectionConfig != nil {
+		setValueByPath(toObject, []string{"modelConfig"}, fromModelSelectionConfig)
 	}
 
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
-	if fromTemperature != nil {
-		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
-	}
-
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
-	if fromTopP != nil {
-		setValueByPath(toObject, []string{"topP"}, fromTopP)
-	}
-
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
-	if fromTopK != nil {
-		setValueByPath(toObject, []string{"topK"}, fromTopK)
+	fromAudioTimestamp := getValueByPath(fromObject, []string{"audioTimestamp"})
+	if fromAudioTimestamp != nil {
+		setValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
 	}
 
 	fromCandidateCount := getValueByPath(fromObject, []string{"candidateCount"})
@@ -1137,29 +1125,9 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		setValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
 	}
 
-	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
-	if fromMaxOutputTokens != nil {
-		setValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
-	}
-
-	fromStopSequences := getValueByPath(fromObject, []string{"stopSequences"})
-	if fromStopSequences != nil {
-		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
-	}
-
-	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
-	if fromResponseLogprobs != nil {
-		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
-	}
-
-	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
-	if fromLogprobs != nil {
-		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
-	}
-
-	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
-	if fromPresencePenalty != nil {
-		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+	fromEnableAffectiveDialog := getValueByPath(fromObject, []string{"enableAffectiveDialog"})
+	if fromEnableAffectiveDialog != nil {
+		setValueByPath(toObject, []string{"enableAffectiveDialog"}, fromEnableAffectiveDialog)
 	}
 
 	fromFrequencyPenalty := getValueByPath(fromObject, []string{"frequencyPenalty"})
@@ -1167,14 +1135,44 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		setValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
-	if fromSeed != nil {
-		setValueByPath(toObject, []string{"seed"}, fromSeed)
+	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
+	if fromLogprobs != nil {
+		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
+	}
+
+	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
+	if fromMaxOutputTokens != nil {
+		setValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
+	}
+
+	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+	}
+
+	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
+	if fromPresencePenalty != nil {
+		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+	}
+
+	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	if fromResponseJsonSchema != nil {
+		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+	}
+
+	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
+	if fromResponseLogprobs != nil {
+		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
 	}
 
 	fromResponseMimeType := getValueByPath(fromObject, []string{"responseMimeType"})
 	if fromResponseMimeType != nil {
 		setValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
+	}
+
+	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
+	if fromResponseModalities != nil {
+		setValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
 	}
 
 	fromResponseSchema := getValueByPath(fromObject, []string{"responseSchema"})
@@ -1187,19 +1185,63 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
 	}
 
-	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
-	if fromResponseJsonSchema != nil {
-		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
-	}
-
 	fromRoutingConfig := getValueByPath(fromObject, []string{"routingConfig"})
 	if fromRoutingConfig != nil {
 		setValueByPath(toObject, []string{"routingConfig"}, fromRoutingConfig)
 	}
 
-	fromModelSelectionConfig := getValueByPath(fromObject, []string{"modelSelectionConfig"})
-	if fromModelSelectionConfig != nil {
-		setValueByPath(toObject, []string{"modelConfig"}, fromModelSelectionConfig)
+	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	if fromSeed != nil {
+		setValueByPath(toObject, []string{"seed"}, fromSeed)
+	}
+
+	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
+	if fromSpeechConfig != nil {
+		fromSpeechConfig, err = tSpeechConfig(fromSpeechConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
+	}
+
+	fromStopSequences := getValueByPath(fromObject, []string{"stopSequences"})
+	if fromStopSequences != nil {
+		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
+	}
+
+	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	if fromTemperature != nil {
+		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
+	}
+
+	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
+	if fromThinkingConfig != nil {
+		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
+	}
+
+	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	if fromTopK != nil {
+		setValueByPath(toObject, []string{"topK"}, fromTopK)
+	}
+
+	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	if fromTopP != nil {
+		setValueByPath(toObject, []string{"topP"}, fromTopP)
+	}
+
+	if getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
+		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
+	}
+
+	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
+	if fromSystemInstruction != nil {
+		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
 	}
 
 	fromSafetySettings := getValueByPath(fromObject, []string{"safetySettings"})
@@ -1247,36 +1289,6 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		setValueByPath(parentObject, []string{"cachedContent"}, fromCachedContent)
 	}
 
-	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
-	if fromResponseModalities != nil {
-		setValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
-	}
-
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
-	if fromMediaResolution != nil {
-		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
-	}
-
-	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
-	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = tSpeechConfig(fromSpeechConfig)
-		if err != nil {
-			return nil, err
-		}
-
-		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
-	}
-
-	fromAudioTimestamp := getValueByPath(fromObject, []string{"audioTimestamp"})
-	if fromAudioTimestamp != nil {
-		setValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
-	}
-
-	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
-	if fromThinkingConfig != nil {
-		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
-	}
-
 	fromImageConfig := getValueByPath(fromObject, []string{"imageConfig"})
 	if fromImageConfig != nil {
 		fromImageConfig, err = imageConfigToVertex(fromImageConfig.(map[string]any), toObject)
@@ -1285,10 +1297,6 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		}
 
 		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
-	}
-
-	if getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
-		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
@@ -2367,11 +2375,6 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 		setValueByPath(toObject, []string{"modelConfig"}, fromModelSelectionConfig)
 	}
 
-	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
-	if fromResponseJsonSchema != nil {
-		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
-	}
-
 	fromAudioTimestamp := getValueByPath(fromObject, []string{"audioTimestamp"})
 	if fromAudioTimestamp != nil {
 		setValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
@@ -2410,6 +2413,11 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
 	if fromPresencePenalty != nil {
 		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+	}
+
+	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	if fromResponseJsonSchema != nil {
+		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
 	}
 
 	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})

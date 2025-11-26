@@ -68,28 +68,6 @@ const (
 	FunctionResponseSchedulingInterrupt FunctionResponseScheduling = "INTERRUPT"
 )
 
-// The type of the data.
-type Type string
-
-const (
-	// Not specified, should not be used.
-	TypeUnspecified Type = "TYPE_UNSPECIFIED"
-	// OpenAPI string type
-	TypeString Type = "STRING"
-	// OpenAPI number type
-	TypeNumber Type = "NUMBER"
-	// OpenAPI integer type
-	TypeInteger Type = "INTEGER"
-	// OpenAPI boolean type
-	TypeBoolean Type = "BOOLEAN"
-	// OpenAPI array type
-	TypeArray Type = "ARRAY"
-	// OpenAPI object type
-	TypeObject Type = "OBJECT"
-	// NULL type
-	TypeNULL Type = "NULL"
-)
-
 // The API spec that the external API implements. This enum is not supported in Gemini
 // API.
 type APISpec string
@@ -176,6 +154,28 @@ const (
 	BehaviorNonBlocking Behavior = "NON_BLOCKING"
 )
 
+// The type of the data.
+type Type string
+
+const (
+	// Not specified, should not be used.
+	TypeUnspecified Type = "TYPE_UNSPECIFIED"
+	// OpenAPI string type
+	TypeString Type = "STRING"
+	// OpenAPI number type
+	TypeNumber Type = "NUMBER"
+	// OpenAPI integer type
+	TypeInteger Type = "INTEGER"
+	// OpenAPI boolean type
+	TypeBoolean Type = "BOOLEAN"
+	// OpenAPI array type
+	TypeArray Type = "ARRAY"
+	// OpenAPI object type
+	TypeObject Type = "OBJECT"
+	// NULL type
+	TypeNULL Type = "NULL"
+)
+
 // The mode of the predictor to be used in dynamic retrieval.
 type DynamicRetrievalConfigMode string
 
@@ -207,6 +207,34 @@ const (
 	// to any one of "allowed_function_names", else the predicted function calls will be
 	// any one of the provided "function_declarations".
 	FunctionCallingConfigModeValidated FunctionCallingConfigMode = "VALIDATED"
+)
+
+// If specified, the media resolution specified will be used.
+type MediaResolution string
+
+const (
+	// Media resolution has not been set.
+	MediaResolutionUnspecified MediaResolution = "MEDIA_RESOLUTION_UNSPECIFIED"
+	// Media resolution set to low (64 tokens).
+	MediaResolutionLow MediaResolution = "MEDIA_RESOLUTION_LOW"
+	// Media resolution set to medium (256 tokens).
+	MediaResolutionMedium MediaResolution = "MEDIA_RESOLUTION_MEDIUM"
+	// Media resolution set to high (zoomed reframing with 256 tokens).
+	MediaResolutionHigh MediaResolution = "MEDIA_RESOLUTION_HIGH"
+)
+
+// Server content modalities.
+type Modality string
+
+const (
+	// The modality is unspecified.
+	ModalityUnspecified Modality = "MODALITY_UNSPECIFIED"
+	// Indicates the model should return text
+	ModalityText Modality = "TEXT"
+	// Indicates the model should return images.
+	ModalityImage Modality = "IMAGE"
+	// Indicates the model should return audio.
+	ModalityAudio Modality = "AUDIO"
 )
 
 // The number of thoughts tokens that the model should generate.
@@ -419,34 +447,6 @@ const (
 	TrafficTypeProvisionedThroughput TrafficType = "PROVISIONED_THROUGHPUT"
 )
 
-// Server content modalities.
-type Modality string
-
-const (
-	// The modality is unspecified.
-	ModalityUnspecified Modality = "MODALITY_UNSPECIFIED"
-	// Indicates the model should return text
-	ModalityText Modality = "TEXT"
-	// Indicates the model should return images.
-	ModalityImage Modality = "IMAGE"
-	// Indicates the model should return audio.
-	ModalityAudio Modality = "AUDIO"
-)
-
-// The media resolution to use.
-type MediaResolution string
-
-const (
-	// Media resolution has not been set
-	MediaResolutionUnspecified MediaResolution = "MEDIA_RESOLUTION_UNSPECIFIED"
-	// Media resolution set to low (64 tokens).
-	MediaResolutionLow MediaResolution = "MEDIA_RESOLUTION_LOW"
-	// Media resolution set to medium (256 tokens).
-	MediaResolutionMedium MediaResolution = "MEDIA_RESOLUTION_MEDIUM"
-	// Media resolution set to high (zoomed reframing with 256 tokens).
-	MediaResolutionHigh MediaResolution = "MEDIA_RESOLUTION_HIGH"
-)
-
 // Tuning mode. This enum is not supported in Gemini API.
 type TuningMode string
 
@@ -539,16 +539,6 @@ const (
 	PartMediaResolutionLevelMediaResolutionHigh PartMediaResolutionLevel = "MEDIA_RESOLUTION_HIGH"
 	// Media resolution set to ultra high.
 	PartMediaResolutionLevelMediaResolutionUltraHigh PartMediaResolutionLevel = "MEDIA_RESOLUTION_ULTRA_HIGH"
-)
-
-// Options for feature selection preference.
-type FeatureSelectionPreference string
-
-const (
-	FeatureSelectionPreferenceUnspecified       FeatureSelectionPreference = "FEATURE_SELECTION_PREFERENCE_UNSPECIFIED"
-	FeatureSelectionPreferencePrioritizeQuality FeatureSelectionPreference = "PRIORITIZE_QUALITY"
-	FeatureSelectionPreferenceBalanced          FeatureSelectionPreference = "BALANCED"
-	FeatureSelectionPreferencePrioritizeCost    FeatureSelectionPreference = "PRIORITIZE_COST"
 )
 
 // The environment being operated.
@@ -841,6 +831,16 @@ const (
 	// The users turn includes all realtime input since the last turn, including inactivity
 	// (e.g. silence on the audio stream).
 	TurnCoverageTurnIncludesAllInput TurnCoverage = "TURN_INCLUDES_ALL_INPUT"
+)
+
+// Options for feature selection preference.
+type FeatureSelectionPreference string
+
+const (
+	FeatureSelectionPreferenceUnspecified       FeatureSelectionPreference = "FEATURE_SELECTION_PREFERENCE_UNSPECIFIED"
+	FeatureSelectionPreferencePrioritizeQuality FeatureSelectionPreference = "PRIORITIZE_QUALITY"
+	FeatureSelectionPreferenceBalanced          FeatureSelectionPreference = "BALANCED"
+	FeatureSelectionPreferencePrioritizeCost    FeatureSelectionPreference = "PRIORITIZE_COST"
 )
 
 // Media resolution for the input media.
@@ -1364,70 +1364,6 @@ type GenerationConfigThinkingConfig struct {
 	ThinkingConfig
 }
 
-// Schema is used to define the format of input/output data.
-// Represents a select subset of an [OpenAPI 3.0 schema
-// object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
-// be added in the future as needed.
-// You can find more details and examples at https://spec.openapis.org/oas/v3.0.3.html#schema-object
-type Schema struct {
-	// Optional. The value should be validated against any (one or more) of the subschemas
-	// in the list.
-	AnyOf []*Schema `json:"anyOf,omitempty"`
-	// Optional. Default value of the data.
-	Default any `json:"default,omitempty"`
-	// Optional. The description of the data.
-	Description string `json:"description,omitempty"`
-	// Optional. Possible values of the element of primitive type with enum format. Examples:
-	// 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH",
-	// "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum,
-	// enum:["101", "201", "301"]}
-	Enum []string `json:"enum,omitempty"`
-	// Optional. Example of the object. Will only populated when the object is the root.
-	Example any `json:"example,omitempty"`
-	// Optional. The format of the data. Supported formats: for NUMBER type: "float", "double"
-	// for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc
-	Format string `json:"format,omitempty"`
-	// Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.
-	Items *Schema `json:"items,omitempty"`
-	// Optional. Maximum number of the elements for Type.ARRAY.
-	MaxItems *int64 `json:"maxItems,omitempty"`
-	// Optional. Maximum length of the Type.STRING
-	MaxLength *int64 `json:"maxLength,omitempty"`
-	// Optional. Maximum number of the properties for Type.OBJECT.
-	MaxProperties *int64 `json:"maxProperties,omitempty"`
-	// Optional. Maximum value of the Type.INTEGER and Type.NUMBER
-	Maximum *float64 `json:"maximum,omitempty"`
-	// Optional. Minimum number of the elements for Type.ARRAY.
-	MinItems *int64 `json:"minItems,omitempty"`
-	// Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING
-	MinLength *int64 `json:"minLength,omitempty"`
-	// Optional. Minimum number of the properties for Type.OBJECT.
-	MinProperties *int64 `json:"minProperties,omitempty"`
-	// Optional. Minimum value of the Type.INTEGER and Type.NUMBER.
-	Minimum *float64 `json:"minimum,omitempty"`
-	// Optional. Indicates if the value may be null.
-	Nullable *bool `json:"nullable,omitempty"`
-	// Optional. Pattern of the Type.STRING to restrict a string to a regular expression.
-	Pattern string `json:"pattern,omitempty"`
-	// Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.
-	Properties map[string]*Schema `json:"properties,omitempty"`
-	// Optional. The order of the properties. Not a standard field in open API spec. Only
-	// used to support the order of the properties.
-	PropertyOrdering []string `json:"propertyOrdering,omitempty"`
-	// Optional. Required properties of Type.OBJECT.
-	Required []string `json:"required,omitempty"`
-	// Optional. The title of the Schema.
-	Title string `json:"title,omitempty"`
-	// Optional. The type of the data.
-	Type Type `json:"type,omitempty"`
-}
-
-// Config for model selection.
-type ModelSelectionConfig struct {
-	// Optional. Options for feature selection preference.
-	FeatureSelectionPreference FeatureSelectionPreference `json:"featureSelectionPreference,omitempty"`
-}
-
 // Tool to support computer use.
 type ComputerUse struct {
 	// Optional. Required. The environment being operated.
@@ -1730,6 +1666,64 @@ type EnterpriseWebSearch struct {
 	BlockingConfidence PhishBlockThreshold `json:"blockingConfidence,omitempty"`
 }
 
+// Schema is used to define the format of input/output data.
+// Represents a select subset of an [OpenAPI 3.0 schema
+// object](https://spec.openapis.org/oas/v3.0.3#schema-object). More fields may
+// be added in the future as needed.
+// You can find more details and examples at https://spec.openapis.org/oas/v3.0.3.html#schema-object
+type Schema struct {
+	// Optional. The value should be validated against any (one or more) of the subschemas
+	// in the list.
+	AnyOf []*Schema `json:"anyOf,omitempty"`
+	// Optional. Default value of the data.
+	Default any `json:"default,omitempty"`
+	// Optional. The description of the data.
+	Description string `json:"description,omitempty"`
+	// Optional. Possible values of the element of primitive type with enum format. Examples:
+	// 1. We can define direction as : {type:STRING, format:enum, enum:["EAST", NORTH",
+	// "SOUTH", "WEST"]} 2. We can define apartment number as : {type:INTEGER, format:enum,
+	// enum:["101", "201", "301"]}
+	Enum []string `json:"enum,omitempty"`
+	// Optional. Example of the object. Will only populated when the object is the root.
+	Example any `json:"example,omitempty"`
+	// Optional. The format of the data. Supported formats: for NUMBER type: "float", "double"
+	// for INTEGER type: "int32", "int64" for STRING type: "email", "byte", etc
+	Format string `json:"format,omitempty"`
+	// Optional. SCHEMA FIELDS FOR TYPE ARRAY Schema of the elements of Type.ARRAY.
+	Items *Schema `json:"items,omitempty"`
+	// Optional. Maximum number of the elements for Type.ARRAY.
+	MaxItems *int64 `json:"maxItems,omitempty"`
+	// Optional. Maximum length of the Type.STRING
+	MaxLength *int64 `json:"maxLength,omitempty"`
+	// Optional. Maximum number of the properties for Type.OBJECT.
+	MaxProperties *int64 `json:"maxProperties,omitempty"`
+	// Optional. Maximum value of the Type.INTEGER and Type.NUMBER
+	Maximum *float64 `json:"maximum,omitempty"`
+	// Optional. Minimum number of the elements for Type.ARRAY.
+	MinItems *int64 `json:"minItems,omitempty"`
+	// Optional. SCHEMA FIELDS FOR TYPE STRING Minimum length of the Type.STRING
+	MinLength *int64 `json:"minLength,omitempty"`
+	// Optional. Minimum number of the properties for Type.OBJECT.
+	MinProperties *int64 `json:"minProperties,omitempty"`
+	// Optional. Minimum value of the Type.INTEGER and Type.NUMBER.
+	Minimum *float64 `json:"minimum,omitempty"`
+	// Optional. Indicates if the value may be null.
+	Nullable *bool `json:"nullable,omitempty"`
+	// Optional. Pattern of the Type.STRING to restrict a string to a regular expression.
+	Pattern string `json:"pattern,omitempty"`
+	// Optional. SCHEMA FIELDS FOR TYPE OBJECT Properties of Type.OBJECT.
+	Properties map[string]*Schema `json:"properties,omitempty"`
+	// Optional. The order of the properties. Not a standard field in open API spec. Only
+	// used to support the order of the properties.
+	PropertyOrdering []string `json:"propertyOrdering,omitempty"`
+	// Optional. Required properties of Type.OBJECT.
+	Required []string `json:"required,omitempty"`
+	// Optional. The title of the Schema.
+	Title string `json:"title,omitempty"`
+	// Optional. The type of the data.
+	Type Type `json:"type,omitempty"`
+}
+
 // Structured representation of a function declaration as defined by the [OpenAPI 3.0
 // specification](https://spec.openapis.org/oas/v3.0.3). Included in this declaration
 // are the function name, description, parameters and response type. This FunctionDeclaration
@@ -1952,6 +1946,56 @@ type ToolConfig struct {
 	FunctionCallingConfig *FunctionCallingConfig `json:"functionCallingConfig,omitempty"`
 }
 
+// The image generation configuration to be used in GenerateContentConfig.
+type ImageConfig struct {
+	// Optional. Aspect ratio of the generated images. Supported values are
+	// "1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", and "21:9".
+	AspectRatio string `json:"aspectRatio,omitempty"`
+	// Optional. Specifies the size of generated images. Supported
+	// values are `1K`, `2K`, `4K`. If not specified, the model will use default
+	// value `1K`.
+	ImageSize string `json:"imageSize,omitempty"`
+	// Optional. Controls the generation of people. Supported values are:
+	// ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE.
+	PersonGeneration string `json:"personGeneration,omitempty"`
+	// Optional. MIME type of the generated image. This field is not
+	// supported in Gemini API.
+	OutputMIMEType string `json:"outputMimeType,omitempty"`
+	// Optional. Compression quality of the generated image (for
+	// ``image/jpeg`` only). This field is not supported in Gemini API.
+	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
+}
+
+// Config for model selection.
+type ModelSelectionConfig struct {
+	// Optional. Options for feature selection preference.
+	FeatureSelectionPreference FeatureSelectionPreference `json:"featureSelectionPreference,omitempty"`
+}
+
+// When automated routing is specified, the routing will be determined by the pretrained
+// routing model and customer provided model routing preference. This data type is not
+// supported in Gemini API.
+type GenerationConfigRoutingConfigAutoRoutingMode struct {
+	// The model routing preference.
+	ModelRoutingPreference string `json:"modelRoutingPreference,omitempty"`
+}
+
+// When manual routing is set, the specified model will be used directly. This data
+// type is not supported in Gemini API.
+type GenerationConfigRoutingConfigManualRoutingMode struct {
+	// The model name to use. Only the public LLM models are accepted. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#supported-models).
+	ModelName string `json:"modelName,omitempty"`
+}
+
+// The configuration for routing the request to a specific model. This data type is
+// not supported in Gemini API.
+type GenerationConfigRoutingConfig struct {
+	// Automated routing.
+	AutoMode *GenerationConfigRoutingConfigAutoRoutingMode `json:"autoMode,omitempty"`
+	// Manual routing.
+	ManualMode *GenerationConfigRoutingConfigManualRoutingMode `json:"manualMode,omitempty"`
+}
+
 // ReplicatedVoiceConfig is used to configure replicated voice.
 type ReplicatedVoiceConfig struct {
 	// Optional. The MIME type of the replicated voice.
@@ -2010,50 +2054,6 @@ type ThinkingConfig struct {
 	ThinkingLevel ThinkingLevel `json:"thinkingLevel,omitempty"`
 }
 
-// The image generation configuration to be used in GenerateContentConfig.
-type ImageConfig struct {
-	// Optional. Aspect ratio of the generated images. Supported values are
-	// "1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", and "21:9".
-	AspectRatio string `json:"aspectRatio,omitempty"`
-	// Optional. Specifies the size of generated images. Supported
-	// values are `1K`, `2K`, `4K`. If not specified, the model will use default
-	// value `1K`.
-	ImageSize string `json:"imageSize,omitempty"`
-	// Optional. Controls the generation of people. Supported values are:
-	// ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE.
-	PersonGeneration string `json:"personGeneration,omitempty"`
-	// Optional. MIME type of the generated image. This field is not
-	// supported in Gemini API.
-	OutputMIMEType string `json:"outputMimeType,omitempty"`
-	// Optional. Compression quality of the generated image (for
-	// ``image/jpeg`` only). This field is not supported in Gemini API.
-	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
-}
-
-// When automated routing is specified, the routing will be determined by the pretrained
-// routing model and customer provided model routing preference. This data type is not
-// supported in Gemini API.
-type GenerationConfigRoutingConfigAutoRoutingMode struct {
-	// The model routing preference.
-	ModelRoutingPreference string `json:"modelRoutingPreference,omitempty"`
-}
-
-// When manual routing is set, the specified model will be used directly. This data
-// type is not supported in Gemini API.
-type GenerationConfigRoutingConfigManualRoutingMode struct {
-	// The model name to use. Only the public LLM models are accepted. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#supported-models).
-	ModelName string `json:"modelName,omitempty"`
-}
-
-// The configuration for routing the request to a specific model. This data type is
-// not supported in Gemini API.
-type GenerationConfigRoutingConfig struct {
-	// Automated routing.
-	AutoMode *GenerationConfigRoutingConfigAutoRoutingMode `json:"autoMode,omitempty"`
-	// Manual routing.
-	ManualMode *GenerationConfigRoutingConfigManualRoutingMode `json:"manualMode,omitempty"`
-}
-
 // Safety settings.
 type SafetySetting struct {
 	// Required. Harm category.
@@ -2070,91 +2070,82 @@ type SafetySetting struct {
 // For more information, see `Content generation parameters
 // <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
 type GenerateContentConfig struct {
+	// Optional. Config for model selection.
+	ModelSelectionConfig *ModelSelectionConfig `json:"modelSelectionConfig,omitempty"`
+	// Optional. If enabled, audio timestamp will be included in the request to the model.
+	// This field is not supported in Gemini API.
+	AudioTimestamp bool `json:"audioTimestamp,omitempty"`
+	// Optional. Number of candidates to generate. If empty, the system will choose a default
+	// value (currently 1).
+	CandidateCount int32 `json:"candidateCount,omitempty"`
+	// Optional. If enabled, the model will detect emotions and adapt its responses accordingly.
+	// This field is not supported in Gemini API.
+	EnableAffectiveDialog *bool `json:"enableAffectiveDialog,omitempty"`
+	// Optional. Frequency penalties.
+	FrequencyPenalty *float32 `json:"frequencyPenalty,omitempty"`
+	// Optional. Logit probabilities.
+	Logprobs *int32 `json:"logprobs,omitempty"`
+	// Optional. The maximum number of output tokens to generate per message. If empty,
+	// API will use a default value. The default value varies by model.
+	MaxOutputTokens int32 `json:"maxOutputTokens,omitempty"`
+	// Optional. If specified, the media resolution specified will be used.
+	MediaResolution MediaResolution `json:"mediaResolution,omitempty"`
+	// Optional. Positive penalties.
+	PresencePenalty *float32 `json:"presencePenalty,omitempty"`
+	// Optional. Output schema of the generated response. This is an alternative to `response_schema`
+	// that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must
+	// be omitted, but `response_mime_type` is required. While the full JSON Schema may
+	// be sent, not all features are supported. Specifically, only the following properties
+	// are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title`
+	// - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems`
+	// - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as
+	// `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering`
+	// property may also be set. Cyclic references are unrolled to a limited degree and,
+	// as such, may only be used within non-required properties. (Nullable properties are
+	// not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for
+	// than those starting as a `$`, may be set.
+	ResponseJsonSchema any `json:"responseJsonSchema,omitempty"`
+	// Optional. If true, export the logprobs results in response.
+	ResponseLogprobs bool `json:"responseLogprobs,omitempty"`
+	// Optional. Output response mimetype of the generated candidate text. Supported mimetype:
+	// - `text/plain`: (default) Text output. - `application/json`: JSON response in the
+	// candidates. The model needs to be prompted to output the appropriate response type,
+	// otherwise the behavior is undefined. This is a preview feature.
+	ResponseMIMEType string `json:"responseMimeType,omitempty"`
+	// Optional. The modalities of the response.
+	ResponseModalities []string `json:"responseModalities,omitempty"`
+	// Optional. The `Schema` object allows the definition of input and output data types.
+	// These types can be objects, but also primitives and arrays. Represents a select subset
+	// of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If
+	// set, a compatible response_mime_type must also be set. Compatible mimetypes: `application/json`:
+	// Schema for JSON response.
+	ResponseSchema *Schema `json:"responseSchema,omitempty"`
+	// Optional. Routing configuration. This field is not supported in Gemini API.
+	RoutingConfig *GenerationConfigRoutingConfig `json:"routingConfig,omitempty"`
+	// Optional. Seed.
+	Seed *int32 `json:"seed,omitempty"`
+	// Optional. The speech generation config.
+	SpeechConfig *SpeechConfig `json:"speechConfig,omitempty"`
+	// Optional. Stop sequences.
+	StopSequences []string `json:"stopSequences,omitempty"`
+	// Optional. Controls the randomness of predictions.
+	Temperature *float32 `json:"temperature,omitempty"`
+	// Optional. Config for thinking features. An error will be returned if this field is
+	// set for models that don't support thinking.
+	ThinkingConfig *ThinkingConfig `json:"thinkingConfig,omitempty"`
+	// Optional. If specified, top-k sampling will be used.
+	TopK *float32 `json:"topK,omitempty"`
+	// Optional. If specified, nucleus sampling will be used.
+	TopP *float32 `json:"topP,omitempty"`
+	// Optional. Enables enhanced civic answers. It may not be available for all models.
+	// This field is not supported in Vertex AI.
+	EnableEnhancedCivicAnswers *bool `json:"enableEnhancedCivicAnswers,omitempty"`
 	// Optional. Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Optional. Instructions for the model to steer it toward better performance.
 	// For example, "Answer as concisely as possible" or "Don't use technical
 	// terms in your response".
 	SystemInstruction *Content `json:"systemInstruction,omitempty"`
-	// Optional. Value that controls the degree of randomness in token selection.
-	// Lower temperatures are good for prompts that require a less open-ended or
-	// creative response, while higher temperatures can lead to more diverse or
-	// creative results.
-	Temperature *float32 `json:"temperature,omitempty"`
-	// Optional. Tokens are selected from the most to least probable until the sum
-	// of their probabilities equals this value. Use a lower value for less
-	// random responses and a higher value for more random responses.
-	TopP *float32 `json:"topP,omitempty"`
-	// Optional. For each token selection step, the ``top_k`` tokens with the
-	// highest probabilities are sampled. Then tokens are further filtered based
-	// on ``top_p`` with the final token selected using temperature sampling. Use
-	// a lower number for less random responses and a higher number for more
-	// random responses.
-	TopK *float32 `json:"topK,omitempty"`
-	// Optional. Number of response variations to return.
-	// If empty, the system will choose a default value (currently 1).
-	CandidateCount int32 `json:"candidateCount,omitempty"`
-	// Optional. Maximum number of tokens that can be generated in the response.
-	// If empty, API will use a default value. The default value varies by model.
-	MaxOutputTokens int32 `json:"maxOutputTokens,omitempty"`
-	// Optional. List of strings that tells the model to stop generating text if one
-	// of the strings is encountered in the response.
-	StopSequences []string `json:"stopSequences,omitempty"`
-	// Optional. Whether to return the log probabilities of the tokens that were
-	// chosen by the model at each step.
-	ResponseLogprobs bool `json:"responseLogprobs,omitempty"`
-	// Optional. Number of top candidate tokens to return the log probabilities for
-	// at each generation step.
-	Logprobs *int32 `json:"logprobs,omitempty"`
-	// Optional. Positive values penalize tokens that already appear in the
-	// generated text, increasing the probability of generating more diverse
-	// content.
-	PresencePenalty *float32 `json:"presencePenalty,omitempty"`
-	// Optional. Positive values penalize tokens that repeatedly appear in the
-	// generated text, increasing the probability of generating more diverse
-	// content.
-	FrequencyPenalty *float32 `json:"frequencyPenalty,omitempty"`
-	// Optional. When ``seed`` is fixed to a specific number, the model makes a best
-	// effort to provide the same response for repeated requests. By default, a
-	// random number is used.
-	Seed *int32 `json:"seed,omitempty"`
-	// Optional. Output response mimetype of the generated candidate text.
-	// Supported mimetype:
-	//   - `text/plain`: (default) Text output.
-	//   - `application/json`: JSON response in the candidates.
-	// The model needs to be prompted to output the appropriate response type,
-	// otherwise the behavior is undefined.
-	// This is a preview feature.
-	ResponseMIMEType string `json:"responseMimeType,omitempty"`
-	// Optional. The `Schema` object allows the definition of input and output data types.
-	// These types can be objects, but also primitives and arrays.
-	// Represents a select subset of an [OpenAPI 3.0 schema
-	// object](https://spec.openapis.org/oas/v3.0.3#schema).
-	// If set, a compatible response_mime_type must also be set.
-	// Compatible mimetypes: `application/json`: Schema for JSON response.
-	// If `response_schema` doesn't process your schema correctly, try using
-	// `response_json_schema` instead.
-	ResponseSchema *Schema `json:"responseSchema,omitempty"`
-	// Optional. Output schema of the generated response.
-	// This is an alternative to `response_schema` that accepts [JSON
-	// Schema](https://json-schema.org/). If set, `response_schema` must be
-	// omitted, but `response_mime_type` is required. While the full JSON Schema
-	// may be sent, not all features are supported. Specifically, only the
-	// following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor`
-	//   - `type` - `format` - `title` - `description` - `enum` (for strings and
-	// numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` -
-	// `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) -
-	// `properties` - `additionalProperties` - `required` The non-standard
-	// `propertyOrdering` property may also be set. Cyclic references are
-	// unrolled to a limited degree and, as such, may only be used within
-	// non-required properties. (Nullable properties are not sufficient.) If
-	// `$ref` is set on a sub-schema, no other properties, except for than those
-	// starting as a `$`, may be set.
-	ResponseJsonSchema any `json:"responseJsonSchema,omitempty"`
-	// Optional. Configuration for model router requests.
-	RoutingConfig *GenerationConfigRoutingConfig `json:"routingConfig,omitempty"`
-	// Optional. Configuration for model selection.
-	ModelSelectionConfig *ModelSelectionConfig `json:"modelSelectionConfig,omitempty"`
 	// Optional. Safety settings in the request to block unsafe content in the
 	// response.
 	SafetySettings []*SafetySetting `json:"safetySettings,omitempty"`
@@ -2168,23 +2159,8 @@ type GenerateContentConfig struct {
 	// Optional. Resource name of a context cache that can be used in subsequent
 	// requests.
 	CachedContent string `json:"cachedContent,omitempty"`
-	// Optional. The requested modalities of the response. Represents the set of
-	// modalities that the model can return.
-	ResponseModalities []string `json:"responseModalities,omitempty"`
-	// Optional. If specified, the media resolution specified will be used.
-	MediaResolution MediaResolution `json:"mediaResolution,omitempty"`
-	// Optional. The speech generation configuration.
-	SpeechConfig *SpeechConfig `json:"speechConfig,omitempty"`
-	// Optional. If enabled, audio timestamp will be included in the request to the
-	// model.
-	AudioTimestamp bool `json:"audioTimestamp,omitempty"`
-	// Optional. The thinking features configuration.
-	ThinkingConfig *ThinkingConfig `json:"thinkingConfig,omitempty"`
 	// Optional. The image generation configuration.
 	ImageConfig *ImageConfig `json:"imageConfig,omitempty"`
-	// Optional. Enables enhanced civic answers. It may not be available for all
-	// models. This field is not supported in Vertex AI.
-	EnableEnhancedCivicAnswers *bool `json:"enableEnhancedCivicAnswers,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {
@@ -3502,9 +3478,6 @@ type DeleteModelResponse struct {
 type GenerationConfig struct {
 	// Optional. Config for model selection.
 	ModelSelectionConfig *ModelSelectionConfig `json:"modelSelectionConfig,omitempty"`
-	// Optional. Output schema of the generated response. This is an alternative to
-	// `response_schema` that accepts [JSON Schema](https://json-schema.org/).
-	ResponseJsonSchema any `json:"responseJsonSchema,omitempty"`
 	// Optional. If enabled, audio timestamp will be included in the request to the model.
 	// This field is not supported in Gemini API.
 	AudioTimestamp bool `json:"audioTimestamp,omitempty"`
@@ -3525,6 +3498,19 @@ type GenerationConfig struct {
 	MediaResolution MediaResolution `json:"mediaResolution,omitempty"`
 	// Optional. Positive penalties.
 	PresencePenalty *float32 `json:"presencePenalty,omitempty"`
+	// Optional. Output schema of the generated response. This is an alternative to `response_schema`
+	// that accepts [JSON Schema](https://json-schema.org/). If set, `response_schema` must
+	// be omitted, but `response_mime_type` is required. While the full JSON Schema may
+	// be sent, not all features are supported. Specifically, only the following properties
+	// are supported: - `$id` - `$defs` - `$ref` - `$anchor` - `type` - `format` - `title`
+	// - `description` - `enum` (for strings and numbers) - `items` - `prefixItems` - `minItems`
+	// - `maxItems` - `minimum` - `maximum` - `anyOf` - `oneOf` (interpreted the same as
+	// `anyOf`) - `properties` - `additionalProperties` - `required` The non-standard `propertyOrdering`
+	// property may also be set. Cyclic references are unrolled to a limited degree and,
+	// as such, may only be used within non-required properties. (Nullable properties are
+	// not sufficient.) If `$ref` is set on a sub-schema, no other properties, except for
+	// than those starting as a `$`, may be set.
+	ResponseJsonSchema any `json:"responseJsonSchema,omitempty"`
 	// Optional. If true, export the logprobs results in response.
 	ResponseLogprobs bool `json:"responseLogprobs,omitempty"`
 	// Optional. Output response mimetype of the generated candidate text. Supported mimetype:

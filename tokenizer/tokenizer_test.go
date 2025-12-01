@@ -84,6 +84,12 @@ func TestCreateLocalTokenizer(t *testing.T) {
 		t.Error(err)
 	}
 
+	// Create a tokenizer with gemini-3-pro-preview
+	_, err = NewLocalTokenizer("gemini-3-pro-preview")
+	if err != nil {
+		t.Error(err)
+	}
+
 	// Create a tokenizer with an unsupported model
 	_, err = NewLocalTokenizer("gemini-0.92")
 	if err == nil {

@@ -48,6 +48,28 @@ func cancelTuningJobParametersToVertex(fromObject map[string]any, parentObject m
 	return toObject, nil
 }
 
+func cancelTuningJobResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
+	return toObject, nil
+}
+
+func cancelTuningJobResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+	}
+
+	return toObject, nil
+}
+
 func createTuningJobConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -911,7 +933,7 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 }
 
 // Cancel cancels a tuning job resource.
-func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJobConfig) error {
+func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJobConfig) (*CancelTuningJobResponse, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"name": name, "config": config}
@@ -926,18 +948,21 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 	if httpOptions.Headers == nil {
 		httpOptions.Headers = http.Header{}
 	}
+	var response = new(CancelTuningJobResponse)
+	var responseMap map[string]any
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = cancelTuningJobParametersToVertex
-
+		fromConverter = cancelTuningJobResponseFromVertex
 	} else {
 		toConverter = cancelTuningJobParametersToMldev
-
+		fromConverter = cancelTuningJobResponseFromMldev
 	}
 
 	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var path string
 	var urlParams map[string]any
@@ -951,22 +976,32 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 		path, err = formatMap("{name}:cancel", urlParams)
 	}
 	if err != nil {
-		return fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
 		query, err := createURLQuery(body["_query"].(map[string]any))
 		if err != nil {
-			return err
+			return nil, err
 		}
 		path += "?" + query
 		delete(body, "_query")
 	}
-	_, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil, nil)
+	}
+	if err != nil {
+		return nil, err
+	}
+	err = mapToStruct(responseMap, response)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return response, nil
 }
 
 func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *PreTunedModel, trainingDataset *TuningDataset, config *CreateTuningJobConfig) (*TuningJob, error) {

@@ -4329,6 +4329,12 @@ type CancelTuningJobConfig struct {
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }
 
+// Empty response for tunings.cancel method.
+type CancelTuningJobResponse struct {
+	// Optional. Used to retain the full HTTP response.
+	SDKHTTPResponse *HTTPResponse `json:"sdkHttpResponse,omitempty"`
+}
+
 // A single example for tuning. This data type is not supported in Vertex AI.
 type TuningExample struct {
 	// Required. The expected model output.

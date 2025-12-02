@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.37.0](https://github.com/googleapis/go-genai/compare/v1.36.0...v1.37.0) (2025-12-02)
+
+
+### Features
+
+* Add empty response for tunings.cancel() ([ace417d](https://github.com/googleapis/go-genai/commit/ace417dc92ed4a84979160cc8eacf2e0ed72f98e))
+
 ## [1.36.0](https://github.com/googleapis/go-genai/compare/v1.35.0...v1.36.0) (2025-11-17)
 
 

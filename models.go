@@ -3479,14 +3479,14 @@ func segmentImageSourceToVertex(fromObject map[string]any, parentObject map[stri
 func speechConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
-	if fromLanguageCode != nil {
-		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
-	}
-
 	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
 	if fromVoiceConfig != nil {
 		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
+	}
+
+	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
+	if fromLanguageCode != nil {
+		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
 	}
 
 	if getValueByPath(fromObject, []string{"multiSpeakerVoiceConfig"}) != nil {

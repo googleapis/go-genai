@@ -38,10 +38,10 @@ import (
 // ReplayAPIClient is a client that reads responses from a replay session file.
 type replayAPIClient struct {
 	ReplayFile              *replayFile
-	ReplaysDirectory        string
-	currentInteractionIndex int
 	t                       *testing.T
 	server                  *httptest.Server
+	ReplaysDirectory        string
+	currentInteractionIndex int
 }
 
 // NewReplayAPIClient creates a new ReplayAPIClient from a replay session file.

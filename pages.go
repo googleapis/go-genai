@@ -26,13 +26,13 @@ var ErrPageDone = errors.New("no more pages")
 // Page represents a page of results from a paginated API call.
 // It contains a slice of items and information about the next page.
 type Page[T any] struct {
-	Name            string        // The name of the resource.
-	Items           []*T          // The items in the current page.
-	NextPageToken   string        // The token to use to retrieve the next page of results.
 	SDKHTTPResponse *HTTPResponse // The SDKHTTPResponse from the API call.
 
-	config   map[string]any                                                                        // The configuration used for the API call.
-	listFunc func(ctx context.Context, config map[string]any) ([]*T, string, *HTTPResponse, error) // The function used to retrieve the next page.
+	config        map[string]any                                                                        // The configuration used for the API call.
+	listFunc      func(ctx context.Context, config map[string]any) ([]*T, string, *HTTPResponse, error) // The function used to retrieve the next page.
+	Name          string                                                                                // The name of the resource.
+	NextPageToken string                                                                                // The token to use to retrieve the next page of results.
+	Items         []*T                                                                                  // The items in the current page.
 }
 
 func newPage[T any](ctx context.Context, name string, config map[string]any, listFunc func(ctx context.Context, config map[string]any) ([]*T, string, *HTTPResponse, error)) (Page[T], error) {

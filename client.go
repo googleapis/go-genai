@@ -29,7 +29,6 @@ import (
 
 // Client is the GenAI client. It provides access to the various GenAI services.
 type Client struct {
-	clientConfig ClientConfig
 	// Models provides access to the Models service.
 	Models *Models
 	// Live provides access to the Live service.
@@ -47,7 +46,8 @@ type Client struct {
 	// Batches provides access to the Batch service.
 	Batches *Batches
 	// Tunings provides access to the Tunings service.
-	Tunings *Tunings
+	Tunings      *Tunings
+	clientConfig ClientConfig
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -80,24 +80,9 @@ func (t Backend) String() string {
 
 // ClientConfig is the configuration for the GenAI client.
 type ClientConfig struct {
-	// Optional. API Key for GenAI. Required for BackendGeminiAPI.
-	// Can also be set via the GOOGLE_API_KEY or GEMINI_API_KEY environment variable.
-	// Get a Gemini API key: https://ai.google.dev/gemini-api/docs/api-key
-	APIKey string
 
-	// Optional. Backend for GenAI. See Backend constants. Defaults to BackendGeminiAPI unless explicitly set to BackendVertexAI,
-	// or the environment variable GOOGLE_GENAI_USE_VERTEXAI is set to "1" or "true".
-	Backend Backend
-
-	// Optional. GCP Project ID for Vertex AI. Required for BackendVertexAI.
-	// Can also be set via the GOOGLE_CLOUD_PROJECT environment variable.
-	// Find your Project ID: https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects
-	Project string
-
-	// Optional. GCP Location/Region for Vertex AI. Required for BackendVertexAI.
-	// Can also be set via the GOOGLE_CLOUD_LOCATION or GOOGLE_CLOUD_REGION environment variable.
-	// Generative AI locations: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations.
-	Location string
+	// Optional HTTP options to override.
+	HTTPOptions HTTPOptions
 
 	// Optional. Google credentials.  If not specified, [Application Default Credentials] will be used.
 	//
@@ -110,10 +95,25 @@ type ClientConfig struct {
 	// client.
 	HTTPClient *http.Client
 
-	// Optional HTTP options to override.
-	HTTPOptions HTTPOptions
-
 	envVarProvider func() map[string]string
+	// Optional. API Key for GenAI. Required for BackendGeminiAPI.
+	// Can also be set via the GOOGLE_API_KEY or GEMINI_API_KEY environment variable.
+	// Get a Gemini API key: https://ai.google.dev/gemini-api/docs/api-key
+	APIKey string
+
+	// Optional. GCP Project ID for Vertex AI. Required for BackendVertexAI.
+	// Can also be set via the GOOGLE_CLOUD_PROJECT environment variable.
+	// Find your Project ID: https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects
+	Project string
+
+	// Optional. GCP Location/Region for Vertex AI. Required for BackendVertexAI.
+	// Can also be set via the GOOGLE_CLOUD_LOCATION or GOOGLE_CLOUD_REGION environment variable.
+	// Generative AI locations: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations.
+	Location string
+
+	// Optional. Backend for GenAI. See Backend constants. Defaults to BackendGeminiAPI unless explicitly set to BackendVertexAI,
+	// or the environment variable GOOGLE_GENAI_USE_VERTEXAI is set to "1" or "true".
+	Backend Backend
 }
 
 func defaultEnvVarProvider() map[string]string {

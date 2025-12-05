@@ -26,7 +26,7 @@ import (
 	"google.golang.org/genai"
 )
 
-var model = flag.String("model", "gemini-2.5-pro", "the model name, e.g. gemini-2.0-flash")
+var model = flag.String("model", "gemini-3-pro-preview", "the model name, e.g. gemini-2.0-flash")
 
 func run(ctx context.Context) {
 	var parameterSchema = map[string]any{
@@ -83,15 +83,26 @@ func run(ctx context.Context) {
 		log.Fatal(err)
 	}
 
-	var messages []string = []string{
-		"Control the light to 50% brightness and warm white color.",
-		"Control the light to 40% brightness and cool white color.",
+	var messages []*genai.Part = []*genai.Part{
+		{
+			Text: "Control the light to 50% brightness and warm white color.",
+		},
+		{
+			FunctionResponse: &genai.FunctionResponse{
+				Name: "controlLight",
+				Response: map[string]any{
+					"brightness":       float64(50),
+					"colorTemperature": "warm",
+				},
+			},
+		},
+		{
+			Text: "Thanks!",
+		},
 	}
 
 	for _, message := range messages {
-		fmt.Println("**********Message********************")
-
-		for result, err := range chat.SendMessageStream(ctx, genai.Part{Text: message}) {
+		for result, err := range chat.SendMessageStream(ctx, *message) {
 			if err != nil {
 				log.Fatal(err)
 			}

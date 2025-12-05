@@ -26,7 +26,7 @@ import (
 	"google.golang.org/genai"
 )
 
-var model = flag.String("model", "gemini-2.5-pro", "the model name, e.g. gemini-2.0-flash")
+var model = flag.String("model", "gemini-3-pro-preview", "the model name, e.g. gemini-2.0-flash")
 
 func run(ctx context.Context) {
 	var parameterSchema = map[string]any{
@@ -78,37 +78,10 @@ func run(ctx context.Context) {
 		Tools:       tools,
 	}
 
-	var willContinueFalse = false
-	priorContent := []*genai.Content{
-		{
-			Parts: []*genai.Part{
-				{Text: "Control the light in the living room to 50% brightness and warm white color."},
-			},
-			Role: "user",
-		},
-		{
-			Parts: []*genai.Part{
-				{
-					FunctionCall: &genai.FunctionCall{
-						Name: "controlLight",
-						PartialArgs: []*genai.PartialArg{
-							{
-								JsonPath:    "$.colorTemperature",
-								StringValue: "warm",
-							},
-						},
-						WillContinue: &willContinueFalse,
-					},
-				},
-			},
-			Role: "model",
-		},
-	}
-
 	for result, err := range client.Models.GenerateContentStream(
 		ctx,
 		*model,
-		priorContent,
+		genai.Text("Control the light in the living room to 50% brightness and warm white color."),
 		config,
 	) {
 		if err != nil {

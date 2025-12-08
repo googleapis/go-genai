@@ -5,8 +5,7 @@
 
 ### Features
 
-* Update data types from discovery doc. ([2c04645](https://github.com/googleapis/go-genai/commit/2c046453716ca9c10d445da5c0923b5b170773f2))
-* Update data types from discovery doc. ([8fd585d](https://github.com/googleapis/go-genai/commit/8fd585dcac11cd6744d8973a11d7b0a36b636db9))
+* Support ReplicatedVoiceConfig ([fd19393](https://github.com/googleapis/go-genai/commit/fd1939328de25eda7452630c06ef57f2bcc0d5f9))
 
 ## [1.37.0](https://github.com/googleapis/go-genai/compare/v1.36.0...v1.37.0) (2025-12-02)
 

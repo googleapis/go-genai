@@ -1830,6 +1830,11 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		return nil, fmt.Errorf("compressionQuality parameter is not supported in Gemini API")
 	}
 
+	fromVideoMode := getValueByPath(fromObject, []string{"videoMode"})
+	if fromVideoMode != nil {
+		setValueByPath(parentObject, []string{"parameters", "videoMode"}, fromVideoMode)
+	}
+
 	return toObject, nil
 }
 
@@ -1929,6 +1934,11 @@ func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[st
 	fromCompressionQuality := getValueByPath(fromObject, []string{"compressionQuality"})
 	if fromCompressionQuality != nil {
 		setValueByPath(parentObject, []string{"parameters", "compressionQuality"}, fromCompressionQuality)
+	}
+
+	fromVideoMode := getValueByPath(fromObject, []string{"videoMode"})
+	if fromVideoMode != nil {
+		setValueByPath(parentObject, []string{"parameters", "videoMode"}, fromVideoMode)
 	}
 
 	return toObject, nil

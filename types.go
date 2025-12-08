@@ -3721,6 +3721,9 @@ type GenerateVideosConfig struct {
 	Mask *VideoGenerationMask `json:"mask,omitempty"`
 	// Optional. Compression quality of the generated videos.
 	CompressionQuality VideoCompressionQuality `json:"compressionQuality,omitempty"`
+	// Optional. Output video mode. Only allowed for reference to video
+	// generation. Supported values are: precise (default), expressive.
+	VideoMode string `json:"videoMode,omitempty"`
 }
 
 // A generated video.

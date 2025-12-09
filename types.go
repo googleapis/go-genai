@@ -777,6 +777,18 @@ const (
 	MediaModalityDocument MediaModality = "DOCUMENT"
 )
 
+// The type of the VAD signal.
+type VADSignalType string
+
+const (
+	// The default is VAD_SIGNAL_TYPE_UNSPECIFIED.
+	VADSignalTypeUnspecified VADSignalType = "VAD_SIGNAL_TYPE_UNSPECIFIED"
+	// Start of sentence signal.
+	VADSignalTypeSos VADSignalType = "VAD_SIGNAL_TYPE_SOS"
+	// End of sentence signal.
+	VADSignalTypeEos VADSignalType = "VAD_SIGNAL_TYPE_EOS"
+)
+
 // Start of speech sensitivity.
 type StartSensitivity string
 
@@ -6000,6 +6012,11 @@ type LiveServerSessionResumptionUpdate struct {
 	LastConsumedClientMessageIndex int64 `json:"lastConsumedClientMessageIndex,omitempty,string"`
 }
 
+type VoiceActivityDetectionSignal struct {
+	// Optional. The type of the VAD signal.
+	VADSignalType VADSignalType `json:"vadSignalType,omitempty"`
+}
+
 // Response message for API call.
 type LiveServerMessage struct {
 	// Optional. Sent in response to a `LiveClientSetup` message from the client.
@@ -6018,6 +6035,8 @@ type LiveServerMessage struct {
 	GoAway *LiveServerGoAway `json:"goAway,omitempty"`
 	// Optional. Update of the session resumption state.
 	SessionResumptionUpdate *LiveServerSessionResumptionUpdate `json:"sessionResumptionUpdate,omitempty"`
+	// Optional. Voice activity detection signal.
+	VoiceActivityDetectionSignal *VoiceActivityDetectionSignal `json:"voiceActivityDetectionSignal,omitempty"`
 }
 
 // Configures automatic detection of activity.
@@ -6134,6 +6153,10 @@ type LiveClientSetup struct {
 	// proactively to
 	// the input and to ignore irrelevant input.
 	Proactivity *ProactivityConfig `json:"proactivity,omitempty"`
+	// Optional. Configures the explicit VAD signal. If enabled, the client will send
+	// vad_signal to indicate the start and end of speech. This allows the server
+	// to process the audio more efficiently.
+	ExplicitVADSignal bool `json:"explicitVadSignal,omitempty"`
 }
 
 // Incremental update of the current conversation delivered from the client.
@@ -6298,6 +6321,10 @@ type LiveConnectConfig struct {
 	// proactively to
 	// the input and to ignore irrelevant input.
 	Proactivity *ProactivityConfig `json:"proactivity,omitempty"`
+	// Optional. Configures the explicit VAD signal. If enabled, the client will send
+	// vad_signal to indicate the start and end of speech. This allows the server
+	// to process the audio more efficiently.
+	ExplicitVADSignal *bool `json:"explicitVadSignal,omitempty"`
 }
 
 // Parameters for sending client content to the live API.

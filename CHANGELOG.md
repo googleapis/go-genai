@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.39.0](https://github.com/googleapis/go-genai/compare/v1.38.0...v1.39.0) (2025-12-10)
+
+
+### Features
+
+* Add enableEnhancedCivicAnswers feature in GenerateContentConfig ([dd25df7](https://github.com/googleapis/go-genai/commit/dd25df730c6060e39ab3ba9d7749d8fc75d6c8b7))
+* Add IMAGE_RECITATION and IMAGE_OTHER enum values to FinishReason ([33aa4f2](https://github.com/googleapis/go-genai/commit/33aa4f28afcea135e8f8947341ff334afc85fe70))
+* Add voice activity detection signal. ([326059c](https://github.com/googleapis/go-genai/commit/326059c108bdc628bf35d75837b1bb23b1b1fa99))
+
 ## [1.38.0](https://github.com/googleapis/go-genai/compare/v1.37.0...v1.38.0) (2025-12-08)
 
 

@@ -283,6 +283,10 @@ const (
 	FinishReasonImageProhibitedContent FinishReason = "IMAGE_PROHIBITED_CONTENT"
 	// The model was expected to generate an image, but none was generated.
 	FinishReasonNoImage FinishReason = "NO_IMAGE"
+	// Image generation stopped because the generated image may be a recitation from a source.
+	FinishReasonImageRecitation FinishReason = "IMAGE_RECITATION"
+	// Image generation stopped for a reason not otherwise specified.
+	FinishReasonImageOther FinishReason = "IMAGE_OTHER"
 )
 
 // Harm probability levels in the content.

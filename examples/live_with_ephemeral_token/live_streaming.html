@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <style>
+        .vertical-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .align-right {
+            align-items: flex-end;
+        }
+
+        .audio-history {
+            background-color: aliceblue;
+            padding: 16px;
+        }
+
+        table {
+            table-layout: fixed;
+            width: 100%;
+        }
+    </style>
+
+    <script>
+
+        var audioDebug;
+        (function () {
+
+            var outputDiv;
+            var inputDiv;
+            var ws;
+            var isRecording = false;
+            var audioChunksReceived = [];
+            var audioChunksSent = [];
+            var chatHistory;
+            var processor; // Audio processor.
+            var inputTimer; // Timer for input button.
+            var shareScreenTimer; // Timer for Share Screen button.
+
+            var videoTimer = null; // Timer for Play Video button.
+            var video;
+            var videoCanvas = document.createElement('canvas');
+            var videoCtx = videoCanvas.getContext('2d');
+            var sampleRate = 24000;
+
+            const audio = new Audio();
+            var audioQueue = [];
+            var isAudioPlaying = false;
+
+
+            function print(message) {
+                var d = document.createElement('div');
+                d.textContent = message;
+                outputDiv.appendChild(d);
+                outputDiv.scroll(0, outputDiv.scrollHeight);
+            }
+
+            function printChatText(message, name) {
+                const container = document.createElement('div');
+                container.classList.add('vertical-container');
+                if (name === 'Me') {
+                    container.classList.add('align-right');
+                }
+
+                var dName = document.createElement('div');
+                dName.textContent = name;
+                container.append(dName);
+
+                var dMessage = document.createElement('div');
+                dMessage.textContent = message;
+                container.append(dMessage);
+
+                chatHistory.appendChild(container);
+                chatHistory.scroll(0, chatHistory.scrollHeight);
+            }
+
+            function encodeAudio(audioChunks, sampleRate, bitDepth, numChannels) {
+                var audioData = mergeUint8Array(audioChunks);
+
+                const dataSize = audioData.length;
+                const fileSize = dataSize + 36;
+                const blockAlign = numChannels * bitDepth / 8;
+                const byteRate = sampleRate * blockAlign;
+
+                const buffer = new ArrayBuffer(44);
+                const view = new DataView(buffer);
+
+                function writeString(offset, string) {
+                    for (let i = 0; i < string.length; i++) {
+                        view.setUint8(offset + i, string.charCodeAt(i));
+                    }
+                }
+
+                writeString(0, 'RIFF');
+                view.setUint32(4, fileSize, true);
+                writeString(8, 'WAVE');
+                writeString(12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true);
+                view.setUint16(22, numChannels, true);
+                view.setUint32(24, sampleRate, true);
+                view.setUint32(28, byteRate, true);
+                view.setUint16(32, blockAlign, true);
+                view.setUint16(34, bitDepth, true);
+                writeString(36, 'data');
+                view.setUint32(40, dataSize, true);
+
+                let mergedData = mergeUint8Array([new Uint8Array(buffer), audioData]);
+
+                return new Blob([mergedData.buffer], { type: 'audio/wav' });
+            }
+
+            function printChatAudio(audioBlob, message) {
+                var d = document.createElement('div');
+                d.classList.add('vertical-container');
+                if (message === 'Me') {
+                    d.classList.add('align-right');
+                }
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                // Optionally, download the audio file.
+                const link = document.createElement('a');
+                link.href = audioUrl;
+                link.download = 'recording.wav';
+                link.innerText = message;
+                d.appendChild(link);
+
+                // Create an audio element to play the recording
+                const audio = document.createElement('audio');
+                audio.src = audioUrl;
+                audio.controls = true;
+                d.appendChild(audio);
+
+                chatHistory.appendChild(d);
+                chatHistory.scroll(0, chatHistory.scrollHeight);
+            }
+
+            function createContent(msg) {
+                data = { 'clientContent': { 'turnComplete': true, 'turns': [{ 'parts': [{ 'text': msg }] }] } };
+                return JSON.stringify(data);
+            }
+
+            function createImageContent(msg) {
+                data = { 'media': { 'data': msg,  'mimeType': 'image/jpeg'  } };
+                return JSON.stringify(data);
+            }
+
+            function createAudioContent(msg) {
+                data = { 'media': { 'data': msg,  'mimeType': 'audio/pcm'  } };
+                return JSON.stringify(data);
+            }
+
+            function mergeUint8Array(arrays) {
+                const totalSize = arrays.reduce((acc, e) => acc + e.length, 0);
+                const merged = new Uint8Array(totalSize);
+
+                arrays.forEach((array, i, arrays) => {
+                    const offset = arrays.slice(0, i).reduce((acc, e) => acc + e.length, 0);
+                    merged.set(array, offset);
+                });
+
+                return merged;
+            }
+
+            function b64ToUint8Array(b64Data, contentType = '', sliceSize = 512) {
+                const byteCharacters = atob(b64Data);
+                const byteArrays = [];
+
+                for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                    const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+                    const byteNumbers = new Array(slice.length);
+                    for (let i = 0; i < slice.length; i++) {
+                        byteNumbers[i] = slice.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    byteArrays.push(byteArray);
+                }
+
+                var res = mergeUint8Array(byteArrays);
+                return res;
+            }
+
+            window.addEventListener('load', function (evt) {
+                outputDiv = document.getElementById('output');
+                chatHistory = document.getElementById('chat-history');
+                video = document.getElementById('video')
+                function openWs() {
+                    if (ws) {
+                        return false;
+                    }
+                    ws = new WebSocket('{{.}}');
+                    ws.onopen = function (evt) {
+                        print('OPEN');
+                    }
+                    ws.onclose = function (evt) {
+                        print('CLOSE');
+                        ws = null;
+                    }
+                    ws.onmessage = function (evt) {
+                        data = JSON.parse(evt.data);
+                        if (!data.serverContent) return;
+                        if (data.serverContent.turnComplete) {
+                            if (audioChunksSent.length > 0) {
+                                console.log(audioChunksSent.length);
+                                printChatAudio(encodeAudio(audioChunksSent, sampleRate, 16, 1), 'Me');
+                                audioChunksSent = [];
+                            }
+                            printChatAudio(encodeAudio(audioChunksReceived, sampleRate, 16, 1), 'Gemini 2.0')
+                            audioChunksReceived = []
+                            return;
+                        }
+                        if (!data.serverContent.modelTurn || !data.serverContent.modelTurn.parts || !data.serverContent.modelTurn.parts[0]) return;
+                        if (data.serverContent.modelTurn.parts[0].inlineData) {
+                            inlineData = data.serverContent.modelTurn.parts[0].inlineData;
+                            print('RECEIVED: ' + typeof (inlineData) + inlineData.mimeType + inlineData.data)
+                            if (inlineData.mimeType.startsWith('audio/pcm')) {
+                                const audioData = b64ToUint8Array(inlineData.data);
+                                audioQueue.push(audioData);
+                                audioChunksReceived.push(audioData);
+                                playNextChunk();
+                            }
+                            return;
+                        }
+                    }
+                    ws.onerror = function (evt) {
+                        print('ERROR: ' + evt.data);
+                    }
+                    return false;
+                };
+                openWs();
+
+                document.getElementById('close').onclick = function (evt) {
+                    if (!ws) {
+                        return false;
+                    }
+                    ws.close();
+                    return false;
+                };
+
+                document.getElementById('record').onclick = function (evt) {
+                    if (isRecording) {
+                        recordStop();
+                    } else {
+                        recordStart();
+                    }
+                }
+
+                document.getElementById('shareScreen').onclick = function () {
+                    if (shareScreenTimer == null) {
+                        startScreenSharing();
+                        recordStart();
+                    }
+                }
+
+                document.getElementById('playVideo').onclick = function () {
+                    if (videoTimer != null) {
+                        playVideoStop();
+                    } else {
+                        playVideoStart();
+                    }
+                }
+
+            });
+
+            function recordStop() {
+                if (processor) {
+                    processor.disconnect(); // Disconnect processor
+                }
+                isRecording = false;
+                document.getElementById('record').textContent = 'Start Recording';
+            }
+
+            function recordStart() {
+                recordAudio();
+                isRecording = true;
+                document.getElementById('record').textContent = 'Stop Recording';
+            }
+
+            function recordAudio() {
+                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                    const audioContext = new AudioContext({ sampleRate: sampleRate }); // Explicitly set sample rate.
+                    const source = audioContext.createMediaStreamSource(stream);
+                    processor = audioContext.createScriptProcessor(1024, 1, 1); // bufferSize, numInputChannels, numOutputChannels
+
+                    processor.onaudioprocess = (e) => {
+                        const inputData = e.inputBuffer.getChannelData(0); // Raw PCM data
+                        const pcmData16 = convertFloat32ToInt16(inputData);
+
+                        // Process or send pcmData16 via WebSocket
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            audioChunksSent.push(new Uint8Array(pcmData16.buffer))
+                            const base64Data = arrayBufferToBase64(pcmData16.buffer);
+                            ws.send(createAudioContent(base64Data));
+                        }
+                    };
+
+                    source.connect(processor);
+                    processor.connect(audioContext.destination); // Connect to output to hear audio during recording
+                });
+            }
+
+
+            function arrayBufferToBase64(buffer) {
+                let binary = '';
+                const bytes = new Uint8Array(buffer);
+                const len = bytes.byteLength;
+                for (let i = 0; i < len; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                return btoa(binary);
+            }
+
+            function convertFloat32ToInt16(float32Array) {
+                const int16Array = new Int16Array(float32Array.length);
+                for (let i = 0; i < float32Array.length; i++) {
+                    int16Array[i] = Math.max(-32768, Math.min(32767, float32Array[i] * 32768)); // Scale and clamp
+                }
+                return int16Array;
+            }
+
+            function playNextChunk() {
+                if (!isAudioPlaying && audioQueue.length > 0) {
+                    isAudioPlaying = true;
+                    const encodedAudio = encodeAudio(audioQueue, 24000, 16, 1);
+                    audioQueue = [];
+                    audio.src = URL.createObjectURL(encodedAudio);
+                    audio.onended = function () {
+                        isAudioPlaying = false;
+                        playNextChunk();
+                    }
+                    audio.play();
+                }
+            }
+
+            function playVideoStart() {
+                if (videoTimer != null) {
+                    playVideoStop();
+                }
+                video.play();
+                videoTimer = setInterval(sendVideo, 1000);
+            }
+
+            function playVideoStop() {
+                video.pause();
+                clearInterval(videoTimer);
+                videoTimer = null;
+            }
+
+            function sendVideo() {
+                if (video.paused || video.ended) {
+                    playVideoStop();
+                    return;
+                }
+
+                videoCanvas.width = video.videoWidth;
+                videoCanvas.height = video.videoHeight;
+                videoCtx.drawImage(video, 0, 0);
+                var encodedImage = videoCanvas.toDataURL('image/jpeg').split(';base64,')[1];
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(createImageContent(encodedImage));
+                }
+            }
+
+            async function startScreenSharing() {
+                try {
+                    const stream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { frameRate: 1000 }, // Capture 1 frame per second
+                        audio: false             // Audio is recorded by recordStart() function.
+                    });
+
+                    const video = document.createElement('video');
+                    video.srcObject = stream; // From getDisplayMedia()
+                    video.play();
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    shareScreenTimer = setInterval(() => {
+                        console.log('share screen')
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        const frameData = canvas.toDataURL('image/jpeg').split(';base64,')[1];
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(createImageContent(frameData));
+                        }
+
+                    }, 1000);
+
+                    stream.getVideoTracks()[0].onended = () => {
+                        console.log('Screen sharing stopped');
+                        clearInterval(shareScreenTimer);
+                        if (processor) {
+                            processor.disconnect();
+                        }
+                    };
+
+                } catch (err) {
+                    console.error('Error getting screen stream:', err);
+                }
+            }
+
+
+
+        })()
+
+    </script>
+</head>
+
+<body>
+    <table>
+        <tr>
+            <td valign='top' width='20%'>
+                <p>Click to close the websocket connection.
+                </p>
+                <button id='close'>Close Connection</button>
+                <br />
+                <hr />
+
+                <h3>Audio in; Audio out</h3>
+                <p>To try this demo, please reload the page first to reset environment.</p>
+                <button id='record'>Start Audio Conversation</button>
+                <br/><br/><br/><br/><br/>
+
+                <button id='playVideo'>Play Video in audio conversation.</button><br />
+                <video src='/proxyVideo' id='video' style='width:600px'></video>
+                <br />
+                <hr />
+
+                <h3>Audio and video in; Audio out</h3>
+                <p>To try this demo, please reload the page first to reset environment.</p>
+                <button id='shareScreen'>Share Screen</button>
+                <br />
+
+            </td>
+            <td valign='top' width='30%'>
+                <div id='output' style='max-height: 40vh;overflow-y: scroll;'></div>
+            </td>
+            <td valign='top' width='50%'>
+                <div id='chat-history' style='max-height: 40vh;overflow-y: scroll;' class='audio-history'></div>
+
+            </td>
+
+        </tr>
+    </table>
+
+</body>
+
+</html>

@@ -45,6 +45,13 @@ func TestLiveConnect(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	mldevClientWithToken, err := NewClient(ctx, &ClientConfig{
+		Backend: BackendGeminiAPI,
+		APIKey:  "auth_tokens/1234567890",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	mockToken := &auth.Token{
 		Value: "fake_access_token",
 	}
@@ -130,6 +137,23 @@ func TestLiveConnect(t *testing.T) {
 			wantErr:         false,
 		},
 		{
+			desc:            "successful connection with http options mldev with ephemeral token",
+			client:          mldevClientWithToken,
+			clientHTTPOpts:  &HTTPOptions{APIVersion: "v1alpha"},
+			wantRequestBody: `{"setup":{"model":"models/test-model"}}`,
+			wantHeaders:     map[string]string{"Authorization": "Token auth_tokens/1234567890"},
+			wantPath:        "/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained",
+			wantErr:         false,
+		},
+		{
+			desc:            "failed connection with http options mldev with ephemeral token",
+			client:          mldevClientWithToken,
+			clientHTTPOpts:  &HTTPOptions{APIVersion: "v1beta"},
+			wantRequestBody: `{"setup":{"model":"models/test-model"}}`,
+			wantErr:         true,
+			wantErrMessage:  "Warning: Ephemeral token support is only supported in v1alpha API version. Please use clientConfig: ClientConfig{HTTPOptions: HTTPOptions{APIVersion: \"v1alpha\"}}",
+		},
+		{
 			desc:            "failed connection with http options mldev",
 			client:          mldevClient,
 			clientHTTPOpts:  &HTTPOptions{BaseURL: "http://not-the-testing-server-url/path", APIVersion: "v1apha"},
@@ -202,6 +226,12 @@ func TestLiveConnect(t *testing.T) {
 				if tt.config != nil && tt.clientHTTPOpts != nil {
 					if tt.wantHeaders != nil {
 						if diff := cmp.Diff(r.Header.Get("test-header"), tt.wantHeaders["test-header"]); diff != "" {
+							t.Errorf("Request header mismatch (-want +got):\n%s", diff)
+						}
+						if diff := cmp.Diff(r.Header.Get("x-goog-api-key"), tt.wantHeaders["x-goog-api-key"]); diff != "" {
+							t.Errorf("Request header mismatch (-want +got):\n%s", diff)
+						}
+						if diff := cmp.Diff(r.Header.Get("Authorization"), tt.wantHeaders["Authorization"]); diff != "" {
 							t.Errorf("Request header mismatch (-want +got):\n%s", diff)
 						}
 					}

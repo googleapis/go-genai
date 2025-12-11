@@ -1095,6 +1095,11 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
 	}
 
+	fromEnableEnhancedCivicAnswers := getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"})
+	if fromEnableEnhancedCivicAnswers != nil {
+		setValueByPath(toObject, []string{"enableEnhancedCivicAnswers"}, fromEnableEnhancedCivicAnswers)
+	}
+
 	return toObject, nil
 }
 
@@ -1284,6 +1289,10 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 		}
 
 		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
+	}
+
+	if getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
+		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
@@ -3479,14 +3488,14 @@ func segmentImageSourceToVertex(fromObject map[string]any, parentObject map[stri
 func speechConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
-	if fromLanguageCode != nil {
-		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
-	}
-
 	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
 	if fromVoiceConfig != nil {
 		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
+	}
+
+	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
+	if fromLanguageCode != nil {
+		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
 	}
 
 	if getValueByPath(fromObject, []string{"multiSpeakerVoiceConfig"}) != nil {

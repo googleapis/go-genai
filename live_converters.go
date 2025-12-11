@@ -248,6 +248,10 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 		setValueByPath(toObject, []string{"proactivity"}, fromProactivity)
 	}
 
+	if getValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
+		return nil, fmt.Errorf("explicitVadSignal parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -327,6 +331,11 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
 		setValueByPath(toObject, []string{"proactivity"}, fromProactivity)
+	}
+
+	fromExplicitVadSignal := getValueByPath(fromObject, []string{"explicitVadSignal"})
+	if fromExplicitVadSignal != nil {
+		setValueByPath(toObject, []string{"explicitVadSignal"}, fromExplicitVadSignal)
 	}
 
 	return toObject, nil
@@ -460,6 +469,10 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 		setValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
 	}
 
+	if getValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
+		return nil, fmt.Errorf("explicitVadSignal parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -584,6 +597,11 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
 		setValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
+	}
+
+	fromExplicitVadSignal := getValueByPath(fromObject, []string{"explicitVadSignal"})
+	if fromExplicitVadSignal != nil {
+		setValueByPath(parentObject, []string{"setup", "explicitVadSignal"}, fromExplicitVadSignal)
 	}
 
 	return toObject, nil
@@ -809,6 +827,11 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 	fromSessionResumptionUpdate := getValueByPath(fromObject, []string{"sessionResumptionUpdate"})
 	if fromSessionResumptionUpdate != nil {
 		setValueByPath(toObject, []string{"sessionResumptionUpdate"}, fromSessionResumptionUpdate)
+	}
+
+	fromVoiceActivityDetectionSignal := getValueByPath(fromObject, []string{"voiceActivityDetectionSignal"})
+	if fromVoiceActivityDetectionSignal != nil {
+		setValueByPath(toObject, []string{"voiceActivityDetectionSignal"}, fromVoiceActivityDetectionSignal)
 	}
 
 	return toObject, nil

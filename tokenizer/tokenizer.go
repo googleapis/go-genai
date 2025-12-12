@@ -61,6 +61,7 @@ var geminiStableModelsToLocalTokenizerNames = map[string]string{
 	"gemini-2.5-flash-lite-preview-06-17": "gemma3",
 	"gemini-2.0-flash-001":                "gemma3",
 	"gemini-2.0-flash-lite-001":           "gemma3",
+	"gemini-3-pro-preview":                "gemma3",
 }
 
 // tokenizerConfig holds the configuration for a tokenizer

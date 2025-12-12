@@ -120,8 +120,7 @@ func ConvertBidiSetupToTokenSetup(
 
 			// Check if there is an existing fieldMask to merge
 			fieldMaskRaw, exists := body["fieldMask"]
-			var additionalFieldsList []string
-			additionalFieldsList = fieldMaskList(fieldMaskRaw, exists)
+			additionalFieldsList := fieldMaskList(fieldMaskRaw, exists)
 
 			var fieldMaskList []string
 
@@ -157,8 +156,7 @@ func ConvertBidiSetupToTokenSetup(
 		// No bidi setup found or no 'setup' key inside it
 		fieldMaskRaw, exists := body["fieldMask"]
 
-		var fieldMaskSlice []string
-		fieldMaskSlice = fieldMaskList(fieldMaskRaw, exists)
+		fieldMaskSlice := fieldMaskList(fieldMaskRaw, exists)
 
 		fieldMaskStr := strings.Join(fieldMaskSlice, ",")
 		if len(fieldMaskSlice) > 0 {
@@ -198,7 +196,10 @@ func (m Tokens) Create(ctx context.Context, config *CreateAuthTokenConfig) (*Aut
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"config": config}
-	deepMarshal(kwargs, &parameterMap)
+	err := deepMarshal(kwargs, &parameterMap)
+	if err != nil {
+		return nil, err
+	}
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -244,9 +245,8 @@ func (m Tokens) Create(ctx context.Context, config *CreateAuthTokenConfig) (*Aut
 		delete(body, "_query")
 	}
 	transformedBody := ConvertBidiSetupToTokenSetup(body, config)
-	if _, ok := transformedBody["config"]; ok {
-		delete(transformedBody, "config")
-	}
+	delete(transformedBody, "config")
+
 	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, transformedBody, httpOptions)
 	if err != nil {
 		return nil, err

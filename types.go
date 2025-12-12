@@ -1976,10 +1976,10 @@ type SpeakerVoiceConfig struct {
 	VoiceConfig *VoiceConfig `json:"voiceConfig,omitempty"`
 }
 
-// The configuration for the multi-speaker setup. This data type is not supported in
-// Vertex AI.
+// Configuration for a multi-speaker text-to-speech request.
 type MultiSpeakerVoiceConfig struct {
-	// Required. All the enabled speaker voices.
+	// Required. A list of configurations for the voices of the speakers. Exactly two speaker
+	// voice configurations must be provided.
 	SpeakerVoiceConfigs []*SpeakerVoiceConfig `json:"speakerVoiceConfigs,omitempty"`
 }
 
@@ -1988,8 +1988,8 @@ type SpeechConfig struct {
 	VoiceConfig *VoiceConfig `json:"voiceConfig,omitempty"`
 	// Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization.
 	LanguageCode string `json:"languageCode,omitempty"`
-	// Optional. The configuration for the multi-speaker setup. It is mutually exclusive
-	// with the voice_config field. This field is not supported in Vertex AI.
+	// The configuration for a multi-speaker text-to-speech request. This field is mutually
+	// exclusive with `voice_config`.
 	MultiSpeakerVoiceConfig *MultiSpeakerVoiceConfig `json:"multiSpeakerVoiceConfig,omitempty"`
 }
 

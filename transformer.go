@@ -335,6 +335,16 @@ func tJobState(state any) (any, error) {
 	}
 }
 
+// tIsVertexEmbedContentModel checks if a model is a Vertex AI embed content model.
+// This is the equivalent of t_is_vertex_embed_content_model in the Python SDK.
+func tIsVertexEmbedContentModel(model string) bool {
+	// Gemini Embeddings except gemini-embedding-001.
+	isGeminiEmbed := strings.Contains(model, "gemini") && model != "gemini-embedding-001"
+	// Open-source MaaS embedding models.
+	isMaaS := strings.Contains(model, "maas")
+	return isGeminiEmbed || isMaaS
+}
+
 func tTuningJobStatus(state any) (any, error) {
 	switch state {
 	case "STATE_UNSPECIFIED":

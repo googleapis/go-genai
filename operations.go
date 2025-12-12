@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-func fetchPredictOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func fetchPredictOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
@@ -40,7 +40,7 @@ func fetchPredictOperationParametersToVertex(fromObject map[string]any, parentOb
 	return toObject, nil
 }
 
-func getOperationParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func getOperationParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
@@ -51,7 +51,7 @@ func getOperationParametersToMldev(fromObject map[string]any, parentObject map[s
 	return toObject, nil
 }
 
-func getOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func getOperationParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromOperationName := getValueByPath(fromObject, []string{"operationName"})
@@ -62,7 +62,7 @@ func getOperationParametersToVertex(fromObject map[string]any, parentObject map[
 	return toObject, nil
 }
 
-func uploadToFileSearchStoreOperationFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func uploadToFileSearchStoreOperationFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromName := getValueByPath(fromObject, []string{"name"})
@@ -87,7 +87,7 @@ func uploadToFileSearchStoreOperationFromMldev(fromObject map[string]any, parent
 
 	fromResponse := getValueByPath(fromObject, []string{"response"})
 	if fromResponse != nil {
-		fromResponse, err = uploadToFileSearchStoreResponseFromMldev(fromResponse.(map[string]any), toObject)
+		fromResponse, err = uploadToFileSearchStoreResponseFromMldev(fromResponse.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +98,7 @@ func uploadToFileSearchStoreOperationFromMldev(fromObject map[string]any, parent
 	return toObject, nil
 }
 
-func uploadToFileSearchStoreResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func uploadToFileSearchStoreResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
@@ -143,8 +143,8 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 	}
 	var response = new(GenerateVideosOperation)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = getOperationParametersToVertex
 		fromConverter = generateVideosOperationFromVertex
@@ -153,7 +153,7 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 		fromConverter = generateVideosOperationFromMldev
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -224,8 +224,8 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 	}
 	var response = new(GenerateVideosOperation)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = fetchPredictOperationParametersToVertex
 		fromConverter = generateVideosOperationFromVertex
@@ -235,7 +235,7 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +266,7 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -306,8 +306,8 @@ func (m Operations) getUploadToFileSearchStoreOperation(ctx context.Context, ope
 	}
 	var response = new(UploadToFileSearchStoreOperation)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = getOperationParametersToVertex
 
@@ -316,7 +316,7 @@ func (m Operations) getUploadToFileSearchStoreOperation(ctx context.Context, ope
 		fromConverter = uploadToFileSearchStoreOperationFromMldev
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -347,7 +347,7 @@ func (m Operations) getUploadToFileSearchStoreOperation(ctx context.Context, ope
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -387,8 +387,8 @@ func (m Operations) getImportFileOperation(ctx context.Context, operationName st
 	}
 	var response = new(ImportFileOperation)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = getOperationParametersToVertex
 
@@ -397,7 +397,7 @@ func (m Operations) getImportFileOperation(ctx context.Context, operationName st
 		fromConverter = importFileOperationFromMldev
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +428,7 @@ func (m Operations) getImportFileOperation(ctx context.Context, operationName st
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err

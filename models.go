@@ -1263,11 +1263,6 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 			return nil, err
 		}
 
-		fromSpeechConfig, err = speechConfigToVertex(fromSpeechConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
@@ -2448,11 +2443,6 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 
 	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = speechConfigToVertex(fromSpeechConfig.(map[string]any), toObject)
-		if err != nil {
-			return nil, err
-		}
-
 		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
@@ -3480,26 +3470,6 @@ func segmentImageSourceToVertex(fromObject map[string]any, parentObject map[stri
 		}
 
 		setValueByPath(parentObject, []string{"instances[0]", "scribble"}, fromScribbleImage)
-	}
-
-	return toObject, nil
-}
-
-func speechConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromVoiceConfig := getValueByPath(fromObject, []string{"voiceConfig"})
-	if fromVoiceConfig != nil {
-		setValueByPath(toObject, []string{"voiceConfig"}, fromVoiceConfig)
-	}
-
-	fromLanguageCode := getValueByPath(fromObject, []string{"languageCode"})
-	if fromLanguageCode != nil {
-		setValueByPath(toObject, []string{"languageCode"}, fromLanguageCode)
-	}
-
-	if getValueByPath(fromObject, []string{"multiSpeakerVoiceConfig"}) != nil {
-		return nil, fmt.Errorf("multiSpeakerVoiceConfig parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil

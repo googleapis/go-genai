@@ -1976,10 +1976,10 @@ type SpeakerVoiceConfig struct {
 	VoiceConfig *VoiceConfig `json:"voiceConfig,omitempty"`
 }
 
-// The configuration for the multi-speaker setup. This data type is not supported in
-// Vertex AI.
+// Configuration for a multi-speaker text-to-speech request.
 type MultiSpeakerVoiceConfig struct {
-	// Required. All the enabled speaker voices.
+	// Required. A list of configurations for the voices of the speakers. Exactly two speaker
+	// voice configurations must be provided.
 	SpeakerVoiceConfigs []*SpeakerVoiceConfig `json:"speakerVoiceConfigs,omitempty"`
 }
 
@@ -1988,8 +1988,8 @@ type SpeechConfig struct {
 	VoiceConfig *VoiceConfig `json:"voiceConfig,omitempty"`
 	// Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization.
 	LanguageCode string `json:"languageCode,omitempty"`
-	// Optional. The configuration for the multi-speaker setup. It is mutually exclusive
-	// with the voice_config field. This field is not supported in Vertex AI.
+	// The configuration for a multi-speaker text-to-speech request. This field is mutually
+	// exclusive with `voice_config`.
 	MultiSpeakerVoiceConfig *MultiSpeakerVoiceConfig `json:"multiSpeakerVoiceConfig,omitempty"`
 }
 
@@ -6361,6 +6361,93 @@ func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage
 	return &LiveClientMessage{
 		ToolResponse: &LiveClientToolResponse{FunctionResponses: p.FunctionResponses},
 	}
+}
+
+// Config for auth_tokens.create parameters.
+type AuthToken struct {
+	// Optional. The name of the auth token.
+	Name string `json:"name,omitempty"`
+}
+
+// Config for LiveConnectConstraints for Auth Token creation.
+type LiveConnectConstraints struct {
+	// Optional. ID of the model to configure in the ephemeral token for Live API.
+	// For a list of models, see `Gemini models
+	// <https://ai.google.dev/gemini-api/docs/models>`.
+	Model string `json:"model,omitempty"`
+	// Optional. Configuration specific to Live API connections created using this token.
+	Config *LiveConnectConfig `json:"config,omitempty"`
+}
+
+// Optional parameters.
+type CreateAuthTokenConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
+	// Optional. An optional time after which, when using the resulting token,
+	// messages in Live API sessions will be rejected. (Gemini may
+	// preemptively close the session after this time.)
+	// If not set then this defaults to 30 minutes in the future. If set, this
+	// value must be less than 20 hours in the future.
+	ExpireTime time.Time `json:"expireTime,omitempty"`
+	// Optional. The time after which new Live API sessions using the token
+	// resulting from this request will be rejected.
+	// If not set this defaults to 60 seconds in the future. If set, this value
+	// must be less than 20 hours in the future.
+	NewSessionExpireTime time.Time `json:"newSessionExpireTime,omitempty"`
+	// Optional. The number of times the token can be used. If this value is zero
+	// then no limit is applied. Default is 1. Resuming a Live API session does
+	// not count as a use.
+	Uses *int32 `json:"uses,omitempty"`
+	// Optional. Configuration specific to Live API connections created using this token.
+	LiveConnectConstraints *LiveConnectConstraints `json:"liveConnectConstraints,omitempty"`
+	// Optional. Additional fields to lock in the effective LiveConnectParameters.
+	LockAdditionalFields []string `json:"lockAdditionalFields,omitempty"`
+}
+
+func (c *CreateAuthTokenConfig) UnmarshalJSON(data []byte) error {
+	type Alias CreateAuthTokenConfig
+	aux := &struct {
+		ExpireTime           *time.Time `json:"expireTime,omitempty"`
+		NewSessionExpireTime *time.Time `json:"newSessionExpireTime,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(c),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if !reflect.ValueOf(aux.ExpireTime).IsZero() {
+		c.ExpireTime = time.Time(*aux.ExpireTime)
+	}
+
+	if !reflect.ValueOf(aux.NewSessionExpireTime).IsZero() {
+		c.NewSessionExpireTime = time.Time(*aux.NewSessionExpireTime)
+	}
+
+	return nil
+}
+
+func (c *CreateAuthTokenConfig) MarshalJSON() ([]byte, error) {
+	type Alias CreateAuthTokenConfig
+	aux := &struct {
+		ExpireTime           *time.Time `json:"expireTime,omitempty"`
+		NewSessionExpireTime *time.Time `json:"newSessionExpireTime,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(c),
+	}
+
+	if !reflect.ValueOf(c.ExpireTime).IsZero() {
+		aux.ExpireTime = (*time.Time)(&c.ExpireTime)
+	}
+
+	if !reflect.ValueOf(c.NewSessionExpireTime).IsZero() {
+		aux.NewSessionExpireTime = (*time.Time)(&c.NewSessionExpireTime)
+	}
+
+	return json.Marshal(aux)
 }
 
 // Local tokenizer count tokens result.

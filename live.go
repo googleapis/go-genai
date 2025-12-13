@@ -18,9 +18,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -83,13 +85,26 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 		}
 	} else {
 		apiKey := r.apiClient.clientConfig.APIKey
+
 		if apiKey != "" {
-			header.Set("x-goog-api-key", apiKey)
-		}
-		u = url.URL{
-			Scheme: scheme,
-			Host:   baseURL.Host,
-			Path:   path.Join(baseURL.Path, fmt.Sprintf("ws/google.ai.generativelanguage.%s.GenerativeService.BidiGenerateContent", httpOptions.APIVersion)),
+			var method string
+			if strings.HasPrefix(apiKey, "auth_tokens/") {
+				log.Println("Warning: Ephemeral token support is experimental and may change in future.")
+				if r.apiClient.clientConfig.HTTPOptions.APIVersion != "v1alpha" {
+					return nil, fmt.Errorf("Warning: Ephemeral token support is only supported in v1alpha API version. Please use clientConfig: ClientConfig{HTTPOptions: HTTPOptions{APIVersion: \"v1alpha\"}}")
+				}
+				header.Set("Authorization", fmt.Sprintf("Token %s", apiKey))
+				method = "BidiGenerateContentConstrained"
+			} else {
+				header.Set("x-goog-api-key", apiKey)
+				method = "BidiGenerateContent"
+			}
+
+			u = url.URL{
+				Scheme: scheme,
+				Host:   baseURL.Host,
+				Path:   path.Join(baseURL.Path, fmt.Sprintf("ws/google.ai.generativelanguage.%s.GenerativeService.%s", httpOptions.APIVersion, method)),
+			}
 		}
 	}
 

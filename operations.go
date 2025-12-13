@@ -126,7 +126,7 @@ type Operations struct {
 	apiClient *apiClient
 }
 
-func (m Operations) getVideosOperation(ctx context.Context, operationName string, config *GetOperationConfig) (*GenerateVideosOperation, error) {
+func (m Operations) getOperation(ctx context.Context, operationName string, config *GetOperationConfig) (*GenerateVideosOperation, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"operationName": operationName, "config": config}
@@ -475,7 +475,7 @@ func (m Operations) GetVideosOperation(ctx context.Context, operation *GenerateV
 			return nil, fmt.Errorf("Invalid operation name")
 		}
 	}
-	return m.getVideosOperation(ctx, operationName, config)
+	return m.getOperation(ctx, operationName, config)
 }
 
 // GetUploadToFileSearchStoreOperation retrieves the status and result of a long-running upload to file search store operation.

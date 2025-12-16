@@ -494,6 +494,8 @@ const (
 	PartMediaResolutionLevelMediaResolutionMedium PartMediaResolutionLevel = "MEDIA_RESOLUTION_MEDIUM"
 	// Media resolution set to high.
 	PartMediaResolutionLevelMediaResolutionHigh PartMediaResolutionLevel = "MEDIA_RESOLUTION_HIGH"
+	// Media resolution set to ultra high.
+	PartMediaResolutionLevelMediaResolutionUltraHigh PartMediaResolutionLevel = "MEDIA_RESOLUTION_ULTRA_HIGH"
 )
 
 // Options for feature selection preference.

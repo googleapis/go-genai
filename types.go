@@ -170,20 +170,16 @@ const (
 	PhishBlockThresholdBlockOnlyExtremelyHigh PhishBlockThreshold = "BLOCK_ONLY_EXTREMELY_HIGH"
 )
 
-// The number of thoughts tokens that the model should generate.
+// The level of thoughts tokens that the model should generate.
 type ThinkingLevel string
 
 const (
-	// Unspecified thinking level.
+	// Default value.
 	ThinkingLevelUnspecified ThinkingLevel = "THINKING_LEVEL_UNSPECIFIED"
 	// Low thinking level.
 	ThinkingLevelLow ThinkingLevel = "LOW"
-	// Medium thinking level.
-	ThinkingLevelMedium ThinkingLevel = "MEDIUM"
 	// High thinking level.
 	ThinkingLevelHigh ThinkingLevel = "HIGH"
-	// MINIMAL thinking level.
-	ThinkingLevelMinimal ThinkingLevel = "MINIMAL"
 )
 
 // Harm category.
@@ -2004,7 +2000,7 @@ type ThinkingConfig struct {
 	IncludeThoughts bool `json:"includeThoughts,omitempty"`
 	// Optional. Indicates the thinking budget in tokens.
 	ThinkingBudget *int32 `json:"thinkingBudget,omitempty"`
-	// Optional. The number of thoughts tokens that the model should generate.
+	// Optional. The level of thoughts tokens that the model should generate.
 	ThinkingLevel ThinkingLevel `json:"thinkingLevel,omitempty"`
 }
 

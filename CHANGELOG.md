@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.40.0](https://github.com/googleapis/go-genai/compare/v1.39.0...v1.40.0) (2025-12-16)
+
+
+### Features
+
+* Add minimal and medium thinking levels. ([a7c0ed8](https://github.com/googleapis/go-genai/commit/a7c0ed8b1fcade06ffcc62a91344e36e56d17f37))
+* Add ultra high resolution to the media resolution in Parts. ([47b89eb](https://github.com/googleapis/go-genai/commit/47b89ebb0cb9531bd440afb15df14a9668142f72))
+* ephemeral token support in go ([7515bbe](https://github.com/googleapis/go-genai/commit/7515bbef37d86ac0d695c11d81c31a42cb330e7e))
+* support multi speaker for Vertex AI ([457541d](https://github.com/googleapis/go-genai/commit/457541d1839e37fe7bd588462ecb42b670a1ec1c))
+
 ## [1.39.0](https://github.com/googleapis/go-genai/compare/v1.38.0...v1.39.0) (2025-12-10)
 
 

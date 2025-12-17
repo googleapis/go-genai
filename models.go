@@ -2555,6 +2555,10 @@ func imageConfigToMldev(fromObject map[string]any, parentObject map[string]any) 
 		setValueByPath(toObject, []string{"imageSize"}, fromImageSize)
 	}
 
+	if getValueByPath(fromObject, []string{"personGeneration"}) != nil {
+		return nil, fmt.Errorf("personGeneration parameter is not supported in Gemini API")
+	}
+
 	if getValueByPath(fromObject, []string{"outputMimeType"}) != nil {
 		return nil, fmt.Errorf("outputMimeType parameter is not supported in Gemini API")
 	}
@@ -2577,6 +2581,11 @@ func imageConfigToVertex(fromObject map[string]any, parentObject map[string]any)
 	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
 	if fromImageSize != nil {
 		setValueByPath(toObject, []string{"imageSize"}, fromImageSize)
+	}
+
+	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	if fromPersonGeneration != nil {
+		setValueByPath(toObject, []string{"personGeneration"}, fromPersonGeneration)
 	}
 
 	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})

@@ -2019,6 +2019,9 @@ type ImageConfig struct {
 	// values are `1K`, `2K`, `4K`. If not specified, the model will use default
 	// value `1K`.
 	ImageSize string `json:"imageSize,omitempty"`
+	// Optional. Controls the generation of people. Supported values are:
+	// ALLOW_ALL, ALLOW_ADULT, ALLOW_NONE.
+	PersonGeneration string `json:"personGeneration,omitempty"`
 	// Optional. MIME type of the generated image. This field is not
 	// supported in Gemini API.
 	OutputMIMEType string `json:"outputMimeType,omitempty"`

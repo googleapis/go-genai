@@ -508,7 +508,7 @@ func ExampleModels_GenerateContent_httpURL_vertexai() {
 	}
 	contents := []*genai.Content{{Parts: parts}}
 
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-flash-latest", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

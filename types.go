@@ -744,6 +744,7 @@ const (
 	FileSourceUnspecified FileSource = "SOURCE_UNSPECIFIED"
 	FileSourceUploaded    FileSource = "UPLOADED"
 	FileSourceGenerated   FileSource = "GENERATED"
+	FileSourceRegistered  FileSource = "REGISTERED"
 )
 
 // The reason why the turn is complete.

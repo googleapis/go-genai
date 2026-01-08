@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.41.0](https://github.com/googleapis/go-genai/compare/v1.40.0...v1.41.0) (2026-01-07)
+
+
+### Features
+
+* [Python] add RegisterFiles so gcs files can be used with genai. ([3062834](https://github.com/googleapis/go-genai/commit/3062834b6504280e64de51f82a396d51043292f6))
+* Add gemini-3-pro-preview support for local tokenizer ([1eeac81](https://github.com/googleapis/go-genai/commit/1eeac81c22c509d77a632e52c7cd1b9eec5eec10))
+* Add PersonGeneration to ImageConfig for Vertex Gempix ([062e7e1](https://github.com/googleapis/go-genai/commit/062e7e151b9816aeebc36c630ec12438a3eb9cfd))
+
 ## [1.40.0](https://github.com/googleapis/go-genai/compare/v1.39.0...v1.40.0) (2025-12-16)
 
 

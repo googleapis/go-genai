@@ -3296,7 +3296,7 @@ type EntityLabel struct {
 	// Optional. The label of the segmented entity.
 	Label string `json:"label,omitempty"`
 	// Optional. The confidence score of the detected label.
-	Score float32 `json:"score,ommitempty,string"`
+	Score float32 `json:"score,omitempty,string"`
 }
 
 // A generated image mask.

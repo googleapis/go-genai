@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.41.1](https://github.com/googleapis/go-genai/compare/v1.41.0...v1.41.1) (2026-01-08)
+## [1.41.1](https://github.com/googleapis/go-genai/compare/v1.41.0...v1.41.1) (2026-01-14)
 
 
 ### Bug Fixes

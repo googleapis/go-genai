@@ -781,6 +781,62 @@ func liveSendRealtimeInputParametersToVertex(fromObject map[string]any, parentOb
 	return toObject, nil
 }
 
+func liveServerMessageFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSetupComplete := getValueByPath(fromObject, []string{"setupComplete"})
+	if fromSetupComplete != nil {
+		setValueByPath(toObject, []string{"setupComplete"}, fromSetupComplete)
+	}
+
+	fromServerContent := getValueByPath(fromObject, []string{"serverContent"})
+	if fromServerContent != nil {
+		setValueByPath(toObject, []string{"serverContent"}, fromServerContent)
+	}
+
+	fromToolCall := getValueByPath(fromObject, []string{"toolCall"})
+	if fromToolCall != nil {
+		setValueByPath(toObject, []string{"toolCall"}, fromToolCall)
+	}
+
+	fromToolCallCancellation := getValueByPath(fromObject, []string{"toolCallCancellation"})
+	if fromToolCallCancellation != nil {
+		setValueByPath(toObject, []string{"toolCallCancellation"}, fromToolCallCancellation)
+	}
+
+	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
+	if fromUsageMetadata != nil {
+		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
+	}
+
+	fromGoAway := getValueByPath(fromObject, []string{"goAway"})
+	if fromGoAway != nil {
+		setValueByPath(toObject, []string{"goAway"}, fromGoAway)
+	}
+
+	fromSessionResumptionUpdate := getValueByPath(fromObject, []string{"sessionResumptionUpdate"})
+	if fromSessionResumptionUpdate != nil {
+		setValueByPath(toObject, []string{"sessionResumptionUpdate"}, fromSessionResumptionUpdate)
+	}
+
+	fromVoiceActivityDetectionSignal := getValueByPath(fromObject, []string{"voiceActivityDetectionSignal"})
+	if fromVoiceActivityDetectionSignal != nil {
+		setValueByPath(toObject, []string{"voiceActivityDetectionSignal"}, fromVoiceActivityDetectionSignal)
+	}
+
+	fromVoiceActivity := getValueByPath(fromObject, []string{"voiceActivity"})
+	if fromVoiceActivity != nil {
+		fromVoiceActivity, err = voiceActivityFromMldev(fromVoiceActivity.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"voiceActivity"}, fromVoiceActivity)
+	}
+
+	return toObject, nil
+}
+
 func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -827,6 +883,16 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 	fromVoiceActivityDetectionSignal := getValueByPath(fromObject, []string{"voiceActivityDetectionSignal"})
 	if fromVoiceActivityDetectionSignal != nil {
 		setValueByPath(toObject, []string{"voiceActivityDetectionSignal"}, fromVoiceActivityDetectionSignal)
+	}
+
+	fromVoiceActivity := getValueByPath(fromObject, []string{"voiceActivity"})
+	if fromVoiceActivity != nil {
+		fromVoiceActivity, err = voiceActivityFromVertex(fromVoiceActivity.(map[string]any), toObject)
+		if err != nil {
+			return nil, err
+		}
+
+		setValueByPath(toObject, []string{"voiceActivity"}, fromVoiceActivity)
 	}
 
 	return toObject, nil
@@ -903,6 +969,28 @@ func usageMetadataFromVertex(fromObject map[string]any, parentObject map[string]
 	fromTrafficType := getValueByPath(fromObject, []string{"trafficType"})
 	if fromTrafficType != nil {
 		setValueByPath(toObject, []string{"trafficType"}, fromTrafficType)
+	}
+
+	return toObject, nil
+}
+
+func voiceActivityFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromVoiceActivityType := getValueByPath(fromObject, []string{"type"})
+	if fromVoiceActivityType != nil {
+		setValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
+	}
+
+	return toObject, nil
+}
+
+func voiceActivityFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromVoiceActivityType := getValueByPath(fromObject, []string{"type"})
+	if fromVoiceActivityType != nil {
+		setValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
 	}
 
 	return toObject, nil

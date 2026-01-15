@@ -5,5 +5,5 @@
 
 ### Features
 
-* Voice Activity Support (b7bfe9b)
+* Voice Activity Support ([b7bfe9b](https://github.com/googleapis/go-genai/commit/b7bfe9b2253f1a948c9128ff73ef45af7819ba9d))
 

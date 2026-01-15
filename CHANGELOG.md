@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.41.1](https://github.com/googleapis/go-genai/compare/v1.41.0...v1.41.1) (2026-01-14)
+
+
+### Bug Fixes
+
+* Correct json tag typo in EntityLabel ([096bff8](https://github.com/googleapis/go-genai/commit/096bff81a61d2d273b2e6a205a614000a06fc26d))
+
 ## [1.41.0](https://github.com/googleapis/go-genai/compare/v1.40.0...v1.41.0) (2026-01-07)
 
 

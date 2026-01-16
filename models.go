@@ -1101,6 +1101,10 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 		setValueByPath(toObject, []string{"enableEnhancedCivicAnswers"}, fromEnableEnhancedCivicAnswers)
 	}
 
+	if getValueByPath(fromObject, []string{"modelArmorConfig"}) != nil {
+		return nil, fmt.Errorf("modelArmorConfig parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -1289,6 +1293,11 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 
 	if getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
 		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
+	}
+
+	fromModelArmorConfig := getValueByPath(fromObject, []string{"modelArmorConfig"})
+	if fromModelArmorConfig != nil {
+		setValueByPath(parentObject, []string{"modelArmorConfig"}, fromModelArmorConfig)
 	}
 
 	return toObject, nil

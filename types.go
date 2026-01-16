@@ -2078,6 +2078,15 @@ type SafetySetting struct {
 	Threshold HarmBlockThreshold `json:"threshold,omitempty"`
 }
 
+// Configuration for Model Armor integrations of prompt and responses. This data type
+// is not supported in Gemini API.
+type ModelArmorConfig struct {
+	// Optional. The name of the Model Armor template to use for prompt sanitization.
+	PromptTemplateName string `json:"promptTemplateName,omitempty"`
+	// Optional. The name of the Model Armor template to use for response sanitization.
+	ResponseTemplateName string `json:"responseTemplateName,omitempty"`
+}
+
 // Optional model configuration parameters.
 // For more information, see `Content generation parameters
 // <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
@@ -2197,6 +2206,9 @@ type GenerateContentConfig struct {
 	// Optional. Enables enhanced civic answers. It may not be available for all
 	// models. This field is not supported in Vertex AI.
 	EnableEnhancedCivicAnswers *bool `json:"enableEnhancedCivicAnswers,omitempty"`
+	// Optional. Settings for prompt and response sanitization using the Model Armor
+	// service. If supplied, safety_settings must not be supplied.
+	ModelArmorConfig *ModelArmorConfig `json:"modelArmorConfig,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {

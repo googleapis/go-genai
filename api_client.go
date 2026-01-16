@@ -50,20 +50,6 @@ func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiC
 		return err
 	}
 
-	// Handle context timeout.
-	// The request's context deadline is set using [HTTPOptions.Timeout].
-	// [ClientConfig.HTTPClient.Timeout] does not affect the context deadline for the request.
-	// [ClientConfig.HTTPClient.Timeout] is used along with `x-server-timeout` header in order to
-	// get the end-to-end timeout value for logging.
-	requestContext := ctx
-	timeout := httpOptions.Timeout
-	var cancel context.CancelFunc
-	if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
-		requestContext, cancel = context.WithTimeout(ctx, *timeout)
-		defer cancel()
-	}
-	req = req.WithContext(requestContext)
-
 	resp, err := doRequest(ac, req)
 	if err != nil {
 		return err

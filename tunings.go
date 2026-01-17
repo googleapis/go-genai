@@ -701,9 +701,19 @@ func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any,
 		setValueByPath(toObject, []string{"customBaseModel"}, fromCustomBaseModel)
 	}
 
+	fromEvaluateDatasetRuns := getValueByPath(fromObject, []string{"evaluateDatasetRuns"})
+	if fromEvaluateDatasetRuns != nil {
+		setValueByPath(toObject, []string{"evaluateDatasetRuns"}, fromEvaluateDatasetRuns)
+	}
+
 	fromExperiment := getValueByPath(fromObject, []string{"experiment"})
 	if fromExperiment != nil {
 		setValueByPath(toObject, []string{"experiment"}, fromExperiment)
+	}
+
+	fromFullFineTuningSpec := getValueByPath(fromObject, []string{"fullFineTuningSpec"})
+	if fromFullFineTuningSpec != nil {
+		setValueByPath(toObject, []string{"fullFineTuningSpec"}, fromFullFineTuningSpec)
 	}
 
 	fromLabels := getValueByPath(fromObject, []string{"labels"})
@@ -729,6 +739,11 @@ func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any,
 	fromTunedModelDisplayName := getValueByPath(fromObject, []string{"tunedModelDisplayName"})
 	if fromTunedModelDisplayName != nil {
 		setValueByPath(toObject, []string{"tunedModelDisplayName"}, fromTunedModelDisplayName)
+	}
+
+	fromTuningJobState := getValueByPath(fromObject, []string{"tuningJobState"})
+	if fromTuningJobState != nil {
+		setValueByPath(toObject, []string{"tuningJobState"}, fromTuningJobState)
 	}
 
 	fromVeoTuningSpec := getValueByPath(fromObject, []string{"veoTuningSpec"})

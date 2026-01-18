@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.43.0](https://github.com/googleapis/go-genai/compare/v1.42.0...v1.43.0) (2026-01-18)
+
+
+### Features
+
+* Add ModelArmorConfig support for prompt and response sanitization via the Model Armor service ([580063f](https://github.com/googleapis/go-genai/commit/580063fe5dce4998d0069aec02f6c6d0c01b6016))
+* Update data types from discovery doc. ([6842c63](https://github.com/googleapis/go-genai/commit/6842c631b5502558ffec2b8faa6474b74f5374d0))
+* Update data types from discovery doc. ([8065f85](https://github.com/googleapis/go-genai/commit/8065f85e4e6f2c5210a20e4202032cc8a557babc))
+
 ## [1.42.0](https://github.com/googleapis/go-genai/compare/v1.41.1...v1.42.0) (2026-01-15)
 
 

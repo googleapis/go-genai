@@ -124,12 +124,22 @@ func createCachedContentConfigToVertex(fromObject map[string]any, parentObject m
 			return nil, err
 		}
 
+		fromContents, err = applyConverterToSlice(fromContents.([]any), contentToVertex)
+		if err != nil {
+			return nil, err
+		}
+
 		setValueByPath(parentObject, []string{"contents"}, fromContents)
 	}
 
 	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject)
 		if err != nil {
 			return nil, err
 		}

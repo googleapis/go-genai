@@ -9,6 +9,8 @@ env:
   GOTOOLCHAIN: local
 jobs:
   scan_changes:
+    permissions:
+        contents: read
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -40,6 +42,8 @@ jobs:
       changed_dirs: ${{ steps.changed_dirs.outputs.changed }}
       skip: ${{ steps.changed_dirs.outputs.skip }}
   apidiff:
+    permissions:
+      contents: read
     needs: scan_changes
     runs-on: ubuntu-latest
     if: ${{ !needs.scan_changes.outputs.skip && !contains(github.event.pull_request.labels.*.name, 'breaking change allowed') }}

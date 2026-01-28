@@ -715,6 +715,8 @@ const (
 	TuningMethodSupervisedFineTuning TuningMethod = "SUPERVISED_FINE_TUNING"
 	// Preference optimization tuning.
 	TuningMethodPreferenceTuning TuningMethod = "PREFERENCE_TUNING"
+	// Distillation tuning.
+	TuningMethodDistillation TuningMethod = "DISTILLATION"
 )
 
 // State for the lifecycle of a Document.
@@ -3924,6 +3926,42 @@ type PreferenceOptimizationSpec struct {
 	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
 }
 
+// Hyperparameters for Distillation. This data type is not supported in Gemini API.
+type DistillationHyperParameters struct {
+	// Optional. Adapter size for distillation.
+	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
+	// Optional. Number of complete passes the model makes over the entire training dataset
+	// during training.
+	EpochCount int64 `json:"epochCount,omitempty,string"`
+	// Optional. Multiplier for adjusting the default learning rate.
+	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
+}
+
+// Distillation tuning spec for tuning.
+type DistillationSpec struct {
+	// Optional. The GCS URI of the prompt dataset to use during distillation.
+	PromptDatasetURI string `json:"promptDatasetUri,omitempty"`
+	// The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).
+	BaseTeacherModel string `json:"baseTeacherModel,omitempty"`
+	// Optional. Hyperparameters for Distillation.
+	HyperParameters *DistillationHyperParameters `json:"hyperParameters,omitempty"`
+	// Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output
+	// directory of the distillation pipeline. It is used by the system to generate the
+	// paths of output artifacts.
+	PipelineRootDirectory string `json:"pipelineRootDirectory,omitempty"`
+	// The student model that is being tuned, e.g., "google/gemma-2b-1.1-it". Deprecated.
+	// Use base_model instead.
+	StudentModel string `json:"studentModel,omitempty"`
+	// Deprecated. Cloud Storage path to file containing training dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
+	// The resource name of the Tuned teacher model. Format: `projects/{project}/locations/{location}/models/{model}`.
+	TunedTeacherModelSource string `json:"tunedTeacherModelSource,omitempty"`
+	// Optional. Cloud Storage path to file containing validation dataset for tuning. The
+	// dataset must be formatted as a JSONL file.
+	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
+}
+
 // The `Status` type defines a logical error model that is suitable for different programming
 // environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc).
 // Each `Status` message contains three pieces of data: error code, error message, and
@@ -4247,6 +4285,8 @@ type TuningJob struct {
 	SupervisedTuningSpec *SupervisedTuningSpec `json:"supervisedTuningSpec,omitempty"`
 	// Tuning Spec for Preference Optimization.
 	PreferenceOptimizationSpec *PreferenceOptimizationSpec `json:"preferenceOptimizationSpec,omitempty"`
+	// Tuning Spec for Distillation.
+	DistillationSpec *DistillationSpec `json:"distillationSpec,omitempty"`
 	// Output only. The tuning data statistics associated with this TuningJob.
 	TuningDataStats *TuningDataStats `json:"tuningDataStats,omitempty"`
 	// Customer-managed encryption key options for a TuningJob. If this is set, then all
@@ -4426,8 +4466,8 @@ type TuningValidationDataset struct {
 type CreateTuningJobConfig struct {
 	// Optional. Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
-	// The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING). If not
-	// set, the default method (SFT) will be used.
+	// The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION).
+	// If not set, the default method (SFT) will be used.
 	Method TuningMethod `json:"method,omitempty"`
 	// Optional. Validation dataset for tuning. The dataset must be formatted as a JSONL
 	// file.
@@ -4465,6 +4505,14 @@ type CreateTuningJobConfig struct {
 	// Optional. Weight for KL Divergence regularization, Preference Optimization tuning
 	// only.
 	Beta *float32 `json:"beta,omitempty"`
+	// Optional. The base teacher model that is being distilled. Distillation only.
+	BaseTeacherModel string `json:"baseTeacherModel,omitempty"`
+	// Optional. The resource name of the Tuned teacher model. Distillation only.
+	TunedTeacherModelSource string `json:"tunedTeacherModelSource,omitempty"`
+	// Optional. Multiplier for adjusting the weight of the SFT loss. Distillation only.
+	SftLossWeightMultiplier *float32 `json:"sftLossWeightMultiplier,omitempty"`
+	// Optional. The Google Cloud Storage location where the tuning job outputs are written.
+	OutputURI string `json:"outputUri,omitempty"`
 }
 
 // A long-running operation.

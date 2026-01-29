@@ -126,6 +126,22 @@ func createTuningJobConfigToMldev(fromObject map[string]any, parentObject map[st
 		return nil, fmt.Errorf("beta parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"baseTeacherModel"}) != nil {
+		return nil, fmt.Errorf("baseTeacherModel parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"tunedTeacherModelSource"}) != nil {
+		return nil, fmt.Errorf("tunedTeacherModelSource parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"sftLossWeightMultiplier"}) != nil {
+		return nil, fmt.Errorf("sftLossWeightMultiplier parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"outputUri"}) != nil {
+		return nil, fmt.Errorf("outputUri parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -156,6 +172,16 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 
 			setValueByPath(parentObject, []string{"preferenceOptimizationSpec"}, fromValidationDataset)
 		}
+	} else if discriminatorValidationDataset.(string) == "DISTILLATION" {
+		fromValidationDataset := getValueByPath(fromObject, []string{"validationDataset"})
+		if fromValidationDataset != nil {
+			fromValidationDataset, err = tuningValidationDatasetToVertex(fromValidationDataset.(map[string]any), toObject, rootObject)
+			if err != nil {
+				return nil, err
+			}
+
+			setValueByPath(parentObject, []string{"distillationSpec"}, fromValidationDataset)
+		}
 	}
 
 	fromTunedModelDisplayName := getValueByPath(fromObject, []string{"tunedModelDisplayName"})
@@ -182,6 +208,11 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 		if fromEpochCount != nil {
 			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "epochCount"}, fromEpochCount)
 		}
+	} else if discriminatorEpochCount.(string) == "DISTILLATION" {
+		fromEpochCount := getValueByPath(fromObject, []string{"epochCount"})
+		if fromEpochCount != nil {
+			setValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "epochCount"}, fromEpochCount)
+		}
 	}
 
 	var discriminatorLearningRateMultiplier any = getValueByPath(rootObject, []string{"config", "method"})
@@ -197,6 +228,11 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 		fromLearningRateMultiplier := getValueByPath(fromObject, []string{"learningRateMultiplier"})
 		if fromLearningRateMultiplier != nil {
 			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
+		}
+	} else if discriminatorLearningRateMultiplier.(string) == "DISTILLATION" {
+		fromLearningRateMultiplier := getValueByPath(fromObject, []string{"learningRateMultiplier"})
+		if fromLearningRateMultiplier != nil {
+			setValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
 		}
 	}
 
@@ -214,6 +250,11 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 		if fromExportLastCheckpointOnly != nil {
 			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "exportLastCheckpointOnly"}, fromExportLastCheckpointOnly)
 		}
+	} else if discriminatorExportLastCheckpointOnly.(string) == "DISTILLATION" {
+		fromExportLastCheckpointOnly := getValueByPath(fromObject, []string{"exportLastCheckpointOnly"})
+		if fromExportLastCheckpointOnly != nil {
+			setValueByPath(parentObject, []string{"distillationSpec", "exportLastCheckpointOnly"}, fromExportLastCheckpointOnly)
+		}
 	}
 
 	var discriminatorAdapterSize any = getValueByPath(rootObject, []string{"config", "method"})
@@ -229,6 +270,11 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 		fromAdapterSize := getValueByPath(fromObject, []string{"adapterSize"})
 		if fromAdapterSize != nil {
 			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
+		}
+	} else if discriminatorAdapterSize.(string) == "DISTILLATION" {
+		fromAdapterSize := getValueByPath(fromObject, []string{"adapterSize"})
+		if fromAdapterSize != nil {
+			setValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
 		}
 	}
 
@@ -248,6 +294,26 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 	fromBeta := getValueByPath(fromObject, []string{"beta"})
 	if fromBeta != nil {
 		setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "beta"}, fromBeta)
+	}
+
+	fromBaseTeacherModel := getValueByPath(fromObject, []string{"baseTeacherModel"})
+	if fromBaseTeacherModel != nil {
+		setValueByPath(parentObject, []string{"distillationSpec", "baseTeacherModel"}, fromBaseTeacherModel)
+	}
+
+	fromTunedTeacherModelSource := getValueByPath(fromObject, []string{"tunedTeacherModelSource"})
+	if fromTunedTeacherModelSource != nil {
+		setValueByPath(parentObject, []string{"distillationSpec", "tunedTeacherModelSource"}, fromTunedTeacherModelSource)
+	}
+
+	fromSftLossWeightMultiplier := getValueByPath(fromObject, []string{"sftLossWeightMultiplier"})
+	if fromSftLossWeightMultiplier != nil {
+		setValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "sftLossWeightMultiplier"}, fromSftLossWeightMultiplier)
+	}
+
+	fromOutputUri := getValueByPath(fromObject, []string{"outputUri"})
+	if fromOutputUri != nil {
+		setValueByPath(parentObject, []string{"outputUri"}, fromOutputUri)
 	}
 
 	return toObject, nil
@@ -512,6 +578,11 @@ func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]an
 		if fromGcsUri != nil {
 			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "trainingDatasetUri"}, fromGcsUri)
 		}
+	} else if discriminatorGcsUri.(string) == "DISTILLATION" {
+		fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+		if fromGcsUri != nil {
+			setValueByPath(parentObject, []string{"distillationSpec", "promptDatasetUri"}, fromGcsUri)
+		}
 	}
 
 	var discriminatorVertexDatasetResource any = getValueByPath(rootObject, []string{"config", "method"})
@@ -527,6 +598,11 @@ func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]an
 		fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
 		if fromVertexDatasetResource != nil {
 			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
+		}
+	} else if discriminatorVertexDatasetResource.(string) == "DISTILLATION" {
+		fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
+		if fromVertexDatasetResource != nil {
+			setValueByPath(parentObject, []string{"distillationSpec", "promptDatasetUri"}, fromVertexDatasetResource)
 		}
 	}
 
@@ -679,6 +755,11 @@ func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any,
 	fromPreferenceOptimizationSpec := getValueByPath(fromObject, []string{"preferenceOptimizationSpec"})
 	if fromPreferenceOptimizationSpec != nil {
 		setValueByPath(toObject, []string{"preferenceOptimizationSpec"}, fromPreferenceOptimizationSpec)
+	}
+
+	fromDistillationSpec := getValueByPath(fromObject, []string{"distillationSpec"})
+	if fromDistillationSpec != nil {
+		setValueByPath(toObject, []string{"distillationSpec"}, fromDistillationSpec)
 	}
 
 	fromTuningDataStats := getValueByPath(fromObject, []string{"tuningDataStats"})

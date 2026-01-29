@@ -108,6 +108,14 @@ func createTuningJobConfigToMldev(fromObject map[string]any, parentObject map[st
 		return nil, fmt.Errorf("adapterSize parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"tuningMode"}) != nil {
+		return nil, fmt.Errorf("tuningMode parameter is not supported in Gemini API")
+	}
+
+	if getValueByPath(fromObject, []string{"customBaseModel"}) != nil {
+		return nil, fmt.Errorf("customBaseModel parameter is not supported in Gemini API")
+	}
+
 	fromBatchSize := getValueByPath(fromObject, []string{"batchSize"})
 	if fromBatchSize != nil {
 		setValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "batchSize"}, fromBatchSize)
@@ -278,12 +286,42 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 		}
 	}
 
-	if getValueByPath(fromObject, []string{"batchSize"}) != nil {
-		return nil, fmt.Errorf("batchSize parameter is not supported in Vertex AI")
+	var discriminatorTuningMode any = getValueByPath(rootObject, []string{"config", "method"})
+	if discriminatorTuningMode == nil {
+		discriminatorTuningMode = "SUPERVISED_FINE_TUNING"
+	}
+	if discriminatorTuningMode.(string) == "SUPERVISED_FINE_TUNING" {
+		fromTuningMode := getValueByPath(fromObject, []string{"tuningMode"})
+		if fromTuningMode != nil {
+			setValueByPath(parentObject, []string{"supervisedTuningSpec", "tuningMode"}, fromTuningMode)
+		}
 	}
 
-	if getValueByPath(fromObject, []string{"learningRate"}) != nil {
-		return nil, fmt.Errorf("learningRate parameter is not supported in Vertex AI")
+	fromCustomBaseModel := getValueByPath(fromObject, []string{"customBaseModel"})
+	if fromCustomBaseModel != nil {
+		setValueByPath(parentObject, []string{"customBaseModel"}, fromCustomBaseModel)
+	}
+
+	var discriminatorBatchSize any = getValueByPath(rootObject, []string{"config", "method"})
+	if discriminatorBatchSize == nil {
+		discriminatorBatchSize = "SUPERVISED_FINE_TUNING"
+	}
+	if discriminatorBatchSize.(string) == "SUPERVISED_FINE_TUNING" {
+		fromBatchSize := getValueByPath(fromObject, []string{"batchSize"})
+		if fromBatchSize != nil {
+			setValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "batchSize"}, fromBatchSize)
+		}
+	}
+
+	var discriminatorLearningRate any = getValueByPath(rootObject, []string{"config", "method"})
+	if discriminatorLearningRate == nil {
+		discriminatorLearningRate = "SUPERVISED_FINE_TUNING"
+	}
+	if discriminatorLearningRate.(string) == "SUPERVISED_FINE_TUNING" {
+		fromLearningRate := getValueByPath(fromObject, []string{"learningRate"})
+		if fromLearningRate != nil {
+			setValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "learningRate"}, fromLearningRate)
+		}
 	}
 
 	fromLabels := getValueByPath(fromObject, []string{"labels"})

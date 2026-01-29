@@ -4480,7 +4480,8 @@ type CreateTuningJobConfig struct {
 	// Optional. Number of complete passes the model makes over the entire training dataset
 	// during training.
 	EpochCount *int32 `json:"epochCount,omitempty"`
-	// Optional. Multiplier for adjusting the default learning rate.
+	// Optional. Multiplier for adjusting the default learning rate. 1P models only. Mutually
+	// exclusive with learning_rate.
 	LearningRateMultiplier *float32 `json:"learningRateMultiplier,omitempty"`
 	// Optional. If set to true, disable intermediate checkpoints and only the last checkpoint
 	// will be exported. Otherwise, enable intermediate checkpoints.
@@ -4490,11 +4491,16 @@ type CreateTuningJobConfig struct {
 	PreTunedModelCheckpointID string `json:"preTunedModelCheckpointId,omitempty"`
 	// Optional. Adapter size for tuning.
 	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
-	// Optional. The batch size hyperparameter for tuning. If not set, a default of 4 or
-	// 16 will be used based on the number of training examples.
+	// Optional. Tuning mode for SFT tuning.
+	TuningMode TuningMode `json:"tuningMode,omitempty"`
+	// Optional. Custom base model for tuning. This is only supported for OSS models in
+	// Vertex.
+	CustomBaseModel string `json:"customBaseModel,omitempty"`
+	// Optional. The batch size hyperparameter for tuning. This is only supported for OSS
+	// models in Vertex.
 	BatchSize *int32 `json:"batchSize,omitempty"`
-	// Optional. The learning rate hyperparameter for tuning. If not set, a default of 0.001
-	// or 0.0002 will be calculated based on the number of training examples.
+	// Optional. The learning rate for tuning. OSS models only. Mutually exclusive with
+	// learning_rate_multiplier.
 	LearningRate *float32 `json:"learningRate,omitempty"`
 	// Optional. The labels with user-defined metadata to organize TuningJob and generated
 	// resources such as Model and Endpoint. Label keys and values can be no longer than

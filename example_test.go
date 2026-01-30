@@ -485,14 +485,30 @@ func ExampleModels_GenerateContent_httpURL_vertexai() {
 		log.Fatal(err)
 	}
 
+	// Download the image and store it in-memory
+	fileResp, err := http.Get("https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var fileBytes []byte
+	if fileResp != nil && fileResp.Body != nil {
+		fileBytes, _ = io.ReadAll(fileResp.Body)
+		fileResp.Body.Close()
+	}
+
 	// Call the GenerateContent method.
 	parts := []*genai.Part{
 		{Text: "What's this picture about?"},
-		{FileData: &genai.FileData{FileURI: "https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg", MIMEType: "image/jpeg"}},
+		{
+			InlineData: &genai.Blob{
+				MIMEType: "image/jpeg",
+				Data:     fileBytes,
+			},
+		},
 	}
 	contents := []*genai.Content{{Parts: parts}}
 
-	result, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", contents, nil)
+	result, err := client.Models.GenerateContent(ctx, "gemini-flash-latest", contents, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

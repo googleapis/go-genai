@@ -754,6 +754,11 @@ func inlinedResponseFromMldev(fromObject map[string]any, parentObject map[string
 		setValueByPath(toObject, []string{"response"}, fromResponse)
 	}
 
+	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	if fromMetadata != nil {
+		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+
 	fromError := getValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
 		setValueByPath(toObject, []string{"error"}, fromError)

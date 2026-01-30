@@ -2227,9 +2227,9 @@ func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationC
 	var err error
 	switch backend {
 	case BackendGeminiAPI:
-		outputMap, err = generateContentConfigToMldev(&ac, paramsMap, parentMap)
+		outputMap, err = generateContentConfigToMldev(&ac, paramsMap, parentMap, paramsMap)
 	case BackendVertexAI:
-		outputMap, err = generateContentConfigToVertex(&ac, paramsMap, parentMap)
+		outputMap, err = generateContentConfigToVertex(&ac, paramsMap, parentMap, paramsMap)
 	default:
 		return nil, fmt.Errorf("Unsupported backend: %v", backend)
 	}

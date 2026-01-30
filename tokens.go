@@ -212,7 +212,7 @@ func (m Tokens) Create(ctx context.Context, config *CreateAuthTokenConfig) (*Aut
 	}
 	var response = new(AuthToken)
 	var responseMap map[string]any
-	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 		return nil, fmt.Errorf("method Create is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
@@ -221,7 +221,7 @@ func (m Tokens) Create(ctx context.Context, config *CreateAuthTokenConfig) (*Aut
 
 	}
 
-	body, err := toConverter(m.apiClient, parameterMap, nil)
+	body, err := toConverter(m.apiClient, parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}

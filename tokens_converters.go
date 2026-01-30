@@ -20,7 +20,7 @@ import (
 	"fmt"
 )
 
-func createAuthTokenConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func createAuthTokenConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromExpireTime := getValueByPath(fromObject, []string{"expireTime"})
@@ -40,7 +40,7 @@ func createAuthTokenConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 
 	fromLiveConnectConstraints := getValueByPath(fromObject, []string{"liveConnectConstraints"})
 	if fromLiveConnectConstraints != nil {
-		fromLiveConnectConstraints, err = liveConnectConstraintsToMldev(ac, fromLiveConnectConstraints.(map[string]any), toObject)
+		fromLiveConnectConstraints, err = liveConnectConstraintsToMldev(ac, fromLiveConnectConstraints.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -56,12 +56,12 @@ func createAuthTokenConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 	return toObject, nil
 }
 
-func createAuthTokenParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func createAuthTokenParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = createAuthTokenConfigToMldev(ac, fromConfig.(map[string]any), toObject)
+		fromConfig, err = createAuthTokenConfigToMldev(ac, fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +72,7 @@ func createAuthTokenParametersToMldev(ac *apiClient, fromObject map[string]any, 
 	return toObject, nil
 }
 
-func createAuthTokenParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func createAuthTokenParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 	if getValueByPath(fromObject, []string{"config"}) != nil {
 		return nil, fmt.Errorf("config parameter is not supported in Vertex AI")
@@ -81,7 +81,7 @@ func createAuthTokenParametersToVertex(fromObject map[string]any, parentObject m
 	return toObject, nil
 }
 
-func liveConnectConstraintsToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectConstraintsToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
@@ -96,7 +96,7 @@ func liveConnectConstraintsToMldev(ac *apiClient, fromObject map[string]any, par
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = liveConnectConfigToMldev(fromConfig.(map[string]any), toObject)
+		fromConfig, err = liveConnectConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}

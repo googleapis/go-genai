@@ -967,7 +967,7 @@ func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfi
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -1038,7 +1038,7 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -1110,7 +1110,7 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -1182,7 +1182,7 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -1254,7 +1254,7 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err

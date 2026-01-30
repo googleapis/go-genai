@@ -20,12 +20,12 @@ import (
 	"fmt"
 )
 
-func liveClientContentToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveClientContentToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromTurns := getValueByPath(fromObject, []string{"turns"})
 	if fromTurns != nil {
-		fromTurns, err = applyConverterToSlice(fromTurns.([]any), contentToMldev)
+		fromTurns, err = applyConverterToSliceWithRoot(fromTurns.([]any), contentToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -41,12 +41,12 @@ func liveClientContentToMldev(fromObject map[string]any, parentObject map[string
 	return toObject, nil
 }
 
-func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSetup := getValueByPath(fromObject, []string{"setup"})
 	if fromSetup != nil {
-		fromSetup, err = liveClientSetupToMldev(fromSetup.(map[string]any), toObject)
+		fromSetup, err = liveClientSetupToMldev(fromSetup.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -56,7 +56,7 @@ func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string
 
 	fromClientContent := getValueByPath(fromObject, []string{"clientContent"})
 	if fromClientContent != nil {
-		fromClientContent, err = liveClientContentToMldev(fromClientContent.(map[string]any), toObject)
+		fromClientContent, err = liveClientContentToMldev(fromClientContent.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string
 
 	fromRealtimeInput := getValueByPath(fromObject, []string{"realtimeInput"})
 	if fromRealtimeInput != nil {
-		fromRealtimeInput, err = liveClientRealtimeInputToMldev(fromRealtimeInput.(map[string]any), toObject)
+		fromRealtimeInput, err = liveClientRealtimeInputToMldev(fromRealtimeInput.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -82,12 +82,12 @@ func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string
 	return toObject, nil
 }
 
-func liveClientMessageToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveClientMessageToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSetup := getValueByPath(fromObject, []string{"setup"})
 	if fromSetup != nil {
-		fromSetup, err = liveClientSetupToVertex(fromSetup.(map[string]any), toObject)
+		fromSetup, err = liveClientSetupToVertex(fromSetup.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +102,7 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromRealtimeInput := getValueByPath(fromObject, []string{"realtimeInput"})
 	if fromRealtimeInput != nil {
-		fromRealtimeInput, err = liveClientRealtimeInputToVertex(fromRealtimeInput.(map[string]any), toObject)
+		fromRealtimeInput, err = liveClientRealtimeInputToVertex(fromRealtimeInput.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -118,12 +118,12 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 	return toObject, nil
 }
 
-func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromMediaChunks := getValueByPath(fromObject, []string{"mediaChunks"})
 	if fromMediaChunks != nil {
-		fromMediaChunks, err = applyConverterToSlice(fromMediaChunks.([]any), blobToMldev)
+		fromMediaChunks, err = applyConverterToSliceWithRoot(fromMediaChunks.([]any), blobToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -144,7 +144,7 @@ func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[
 	return toObject, nil
 }
 
-func liveClientRealtimeInputToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveClientRealtimeInputToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromMediaChunks := getValueByPath(fromObject, []string{"mediaChunks"})
@@ -165,7 +165,7 @@ func liveClientRealtimeInputToVertex(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
-func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
@@ -185,7 +185,7 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 			return nil, err
 		}
 
-		fromSystemInstruction, err = contentToMldev(fromSystemInstruction.(map[string]any), toObject)
+		fromSystemInstruction, err = contentToMldev(fromSystemInstruction.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -205,7 +205,7 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 			return nil, err
 		}
 
-		fromTools, err = applyConverterToSlice(fromTools.([]any), toolToMldev)
+		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -220,7 +220,7 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 
 	fromSessionResumption := getValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
-		fromSessionResumption, err = sessionResumptionConfigToMldev(fromSessionResumption.(map[string]any), toObject)
+		fromSessionResumption, err = sessionResumptionConfigToMldev(fromSessionResumption.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -255,7 +255,7 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 	return toObject, nil
 }
 
-func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
@@ -265,7 +265,7 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 
 	fromGenerationConfig := getValueByPath(fromObject, []string{"generationConfig"})
 	if fromGenerationConfig != nil {
-		fromGenerationConfig, err = generationConfigToVertex(fromGenerationConfig.(map[string]any), toObject)
+		fromGenerationConfig, err = generationConfigToVertex(fromGenerationConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -295,7 +295,7 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 			return nil, err
 		}
 
-		fromTools, err = applyConverterToSlice(fromTools.([]any), toolToVertex)
+		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -341,7 +341,7 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 	return toObject, nil
 }
 
-func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
@@ -406,7 +406,7 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 			return nil, err
 		}
 
-		fromSystemInstruction, err = contentToMldev(fromSystemInstruction.(map[string]any), toObject)
+		fromSystemInstruction, err = contentToMldev(fromSystemInstruction.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -426,7 +426,7 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 			return nil, err
 		}
 
-		fromTools, err = applyConverterToSlice(fromTools.([]any), toolToMldev)
+		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -436,7 +436,7 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 
 	fromSessionResumption := getValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
-		fromSessionResumption, err = sessionResumptionConfigToMldev(fromSessionResumption.(map[string]any), toObject)
+		fromSessionResumption, err = sessionResumptionConfigToMldev(fromSessionResumption.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -476,7 +476,7 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 	return toObject, nil
 }
 
-func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
@@ -556,7 +556,7 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 			return nil, err
 		}
 
-		fromTools, err = applyConverterToSlice(fromTools.([]any), toolToVertex)
+		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -602,7 +602,7 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 	return toObject, nil
 }
 
-func liveConnectParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
@@ -617,7 +617,7 @@ func liveConnectParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = liveConnectConfigToMldev(fromConfig.(map[string]any), toObject)
+		fromConfig, err = liveConnectConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -628,7 +628,7 @@ func liveConnectParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 	return toObject, nil
 }
 
-func liveConnectParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
@@ -643,7 +643,7 @@ func liveConnectParametersToVertex(ac *apiClient, fromObject map[string]any, par
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		fromConfig, err = liveConnectConfigToVertex(fromConfig.(map[string]any), toObject)
+		fromConfig, err = liveConnectConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -654,7 +654,7 @@ func liveConnectParametersToVertex(ac *apiClient, fromObject map[string]any, par
 	return toObject, nil
 }
 
-func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromMedia := getValueByPath(fromObject, []string{"media"})
@@ -664,7 +664,7 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		fromMedia, err = applyConverterToSlice(fromMedia.([]any), blobToMldev)
+		fromMedia, err = applyConverterToSliceWithRoot(fromMedia.([]any), blobToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -679,7 +679,7 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		fromAudio, err = blobToMldev(fromAudio.(map[string]any), toObject)
+		fromAudio, err = blobToMldev(fromAudio.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -699,7 +699,7 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		fromVideo, err = blobToMldev(fromVideo.(map[string]any), toObject)
+		fromVideo, err = blobToMldev(fromVideo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -725,7 +725,7 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 	return toObject, nil
 }
 
-func liveSendRealtimeInputParametersToVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveSendRealtimeInputParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromMedia := getValueByPath(fromObject, []string{"media"})
@@ -781,7 +781,7 @@ func liveSendRealtimeInputParametersToVertex(fromObject map[string]any, parentOb
 	return toObject, nil
 }
 
-func liveServerMessageFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveServerMessageFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSetupComplete := getValueByPath(fromObject, []string{"setupComplete"})
@@ -826,7 +826,7 @@ func liveServerMessageFromMldev(fromObject map[string]any, parentObject map[stri
 
 	fromVoiceActivity := getValueByPath(fromObject, []string{"voiceActivity"})
 	if fromVoiceActivity != nil {
-		fromVoiceActivity, err = voiceActivityFromMldev(fromVoiceActivity.(map[string]any), toObject)
+		fromVoiceActivity, err = voiceActivityFromMldev(fromVoiceActivity.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -837,7 +837,7 @@ func liveServerMessageFromMldev(fromObject map[string]any, parentObject map[stri
 	return toObject, nil
 }
 
-func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSetupComplete := getValueByPath(fromObject, []string{"setupComplete"})
@@ -862,7 +862,7 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 
 	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
 	if fromUsageMetadata != nil {
-		fromUsageMetadata, err = usageMetadataFromVertex(fromUsageMetadata.(map[string]any), toObject)
+		fromUsageMetadata, err = usageMetadataFromVertex(fromUsageMetadata.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -887,7 +887,7 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 
 	fromVoiceActivity := getValueByPath(fromObject, []string{"voiceActivity"})
 	if fromVoiceActivity != nil {
-		fromVoiceActivity, err = voiceActivityFromVertex(fromVoiceActivity.(map[string]any), toObject)
+		fromVoiceActivity, err = voiceActivityFromVertex(fromVoiceActivity.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -898,7 +898,7 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
-func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromHandle := getValueByPath(fromObject, []string{"handle"})
@@ -913,7 +913,7 @@ func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[
 	return toObject, nil
 }
 
-func usageMetadataFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func usageMetadataFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromPromptTokenCount := getValueByPath(fromObject, []string{"promptTokenCount"})
@@ -974,7 +974,7 @@ func usageMetadataFromVertex(fromObject map[string]any, parentObject map[string]
 	return toObject, nil
 }
 
-func voiceActivityFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func voiceActivityFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromVoiceActivityType := getValueByPath(fromObject, []string{"type"})
@@ -985,7 +985,7 @@ func voiceActivityFromMldev(fromObject map[string]any, parentObject map[string]a
 	return toObject, nil
 }
 
-func voiceActivityFromVertex(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func voiceActivityFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromVoiceActivityType := getValueByPath(fromObject, []string{"type"})

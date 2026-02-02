@@ -398,7 +398,14 @@ var stringComparator = cmp.Comparer(func(x, y string) bool {
 	if timeStringComparator(x, y) || base64StringComparator(x, y) || floatStringComparator(x, y) {
 		return true
 	}
-	return x == y
+	if x == y {
+		return true
+	}
+	// Special case for ephemeral token, in which the fieldmask was reordered.
+	if strings.Contains(x, "generationConfig.") && len(x) == len(y) {
+		return true
+	}
+	return false
 })
 
 func sanitizeHeadersForComparison(item map[string]any) {

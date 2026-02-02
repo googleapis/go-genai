@@ -29,7 +29,7 @@ import (
 	"strconv"
 )
 
-func createFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func createFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
@@ -40,12 +40,12 @@ func createFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject 
 	return toObject, nil
 }
 
-func createFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func createFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		_, err = createFileSearchStoreConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = createFileSearchStoreConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +54,7 @@ func createFileSearchStoreParametersToMldev(fromObject map[string]any, parentObj
 	return toObject, nil
 }
 
-func deleteFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func deleteFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromForce := getValueByPath(fromObject, []string{"force"})
@@ -65,7 +65,7 @@ func deleteFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject 
 	return toObject, nil
 }
 
-func deleteFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func deleteFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromName := getValueByPath(fromObject, []string{"name"})
@@ -75,7 +75,7 @@ func deleteFileSearchStoreParametersToMldev(fromObject map[string]any, parentObj
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		_, err = deleteFileSearchStoreConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = deleteFileSearchStoreConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +84,7 @@ func deleteFileSearchStoreParametersToMldev(fromObject map[string]any, parentObj
 	return toObject, nil
 }
 
-func getFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func getFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromName := getValueByPath(fromObject, []string{"name"})
@@ -95,7 +95,7 @@ func getFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject
 	return toObject, nil
 }
 
-func importFileConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func importFileConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromCustomMetadata := getValueByPath(fromObject, []string{"customMetadata"})
@@ -111,7 +111,7 @@ func importFileConfigToMldev(fromObject map[string]any, parentObject map[string]
 	return toObject, nil
 }
 
-func importFileOperationFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func importFileOperationFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromName := getValueByPath(fromObject, []string{"name"})
@@ -136,7 +136,7 @@ func importFileOperationFromMldev(fromObject map[string]any, parentObject map[st
 
 	fromResponse := getValueByPath(fromObject, []string{"response"})
 	if fromResponse != nil {
-		fromResponse, err = importFileResponseFromMldev(fromResponse.(map[string]any), toObject)
+		fromResponse, err = importFileResponseFromMldev(fromResponse.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +147,7 @@ func importFileOperationFromMldev(fromObject map[string]any, parentObject map[st
 	return toObject, nil
 }
 
-func importFileParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func importFileParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromFileSearchStoreName := getValueByPath(fromObject, []string{"fileSearchStoreName"})
@@ -162,7 +162,7 @@ func importFileParametersToMldev(fromObject map[string]any, parentObject map[str
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		_, err = importFileConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = importFileConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +171,7 @@ func importFileParametersToMldev(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
-func importFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func importFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
@@ -192,7 +192,7 @@ func importFileResponseFromMldev(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
-func listFileSearchStoresConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func listFileSearchStoresConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
@@ -208,12 +208,12 @@ func listFileSearchStoresConfigToMldev(fromObject map[string]any, parentObject m
 	return toObject, nil
 }
 
-func listFileSearchStoresParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func listFileSearchStoresParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		_, err = listFileSearchStoresConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = listFileSearchStoresConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -222,7 +222,7 @@ func listFileSearchStoresParametersToMldev(fromObject map[string]any, parentObje
 	return toObject, nil
 }
 
-func listFileSearchStoresResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func listFileSearchStoresResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
@@ -243,7 +243,7 @@ func listFileSearchStoresResponseFromMldev(fromObject map[string]any, parentObje
 	return toObject, nil
 }
 
-func uploadToFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func uploadToFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
@@ -269,7 +269,7 @@ func uploadToFileSearchStoreConfigToMldev(fromObject map[string]any, parentObjec
 	return toObject, nil
 }
 
-func uploadToFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func uploadToFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromFileSearchStoreName := getValueByPath(fromObject, []string{"fileSearchStoreName"})
@@ -279,7 +279,7 @@ func uploadToFileSearchStoreParametersToMldev(fromObject map[string]any, parentO
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		_, err = uploadToFileSearchStoreConfigToMldev(fromConfig.(map[string]any), toObject)
+		_, err = uploadToFileSearchStoreConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -288,7 +288,7 @@ func uploadToFileSearchStoreParametersToMldev(fromObject map[string]any, parentO
 	return toObject, nil
 }
 
-func uploadToFileSearchStoreResumableResponseFromMldev(fromObject map[string]any, parentObject map[string]any) (toObject map[string]any, err error) {
+func uploadToFileSearchStoreResumableResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
@@ -321,7 +321,7 @@ func (m FileSearchStores) Create(ctx context.Context, config *CreateFileSearchSt
 	}
 	var response = new(FileSearchStore)
 	var responseMap map[string]any
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method Create is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -331,7 +331,7 @@ func (m FileSearchStores) Create(ctx context.Context, config *CreateFileSearchSt
 
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -396,7 +396,7 @@ func (m FileSearchStores) Get(ctx context.Context, name string, config *GetFileS
 	}
 	var response = new(FileSearchStore)
 	var responseMap map[string]any
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method Get is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -406,7 +406,7 @@ func (m FileSearchStores) Get(ctx context.Context, name string, config *GetFileS
 
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -469,7 +469,7 @@ func (m FileSearchStores) Delete(ctx context.Context, name string, config *Delet
 	if httpOptions.Headers == nil {
 		httpOptions.Headers = http.Header{}
 	}
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return fmt.Errorf("method Delete is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -479,7 +479,7 @@ func (m FileSearchStores) Delete(ctx context.Context, name string, config *Delet
 
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return err
 	}
@@ -530,8 +530,8 @@ func (m FileSearchStores) list(ctx context.Context, config *ListFileSearchStores
 	}
 	var response = new(ListFileSearchStoresResponse)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method List is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -541,7 +541,7 @@ func (m FileSearchStores) list(ctx context.Context, config *ListFileSearchStores
 		fromConverter = listFileSearchStoresResponseFromMldev
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -572,7 +572,7 @@ func (m FileSearchStores) list(ctx context.Context, config *ListFileSearchStores
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -612,8 +612,8 @@ func (m FileSearchStores) uploadToFileSearchStore(ctx context.Context, fileSearc
 	}
 	var response = new(UploadToFileSearchStoreResumableResponse)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method UploadToFileSearchStore is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -623,7 +623,7 @@ func (m FileSearchStores) uploadToFileSearchStore(ctx context.Context, fileSearc
 		fromConverter = uploadToFileSearchStoreResumableResponseFromMldev
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -654,7 +654,7 @@ func (m FileSearchStores) uploadToFileSearchStore(ctx context.Context, fileSearc
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err
@@ -684,8 +684,8 @@ func (m FileSearchStores) ImportFile(ctx context.Context, fileSearchStoreName st
 	}
 	var response = new(ImportFileOperation)
 	var responseMap map[string]any
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method ImportFile is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -695,7 +695,7 @@ func (m FileSearchStores) ImportFile(ctx context.Context, fileSearchStoreName st
 		fromConverter = importFileOperationFromMldev
 	}
 
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -726,7 +726,7 @@ func (m FileSearchStores) ImportFile(ctx context.Context, fileSearchStoreName st
 		return nil, err
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
 	}
 	if err != nil {
 		return nil, err

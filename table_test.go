@@ -142,6 +142,11 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 				}
 				return result
 			}, false)
+			if *mode == replayMode {
+				sanitizeMapByPath(parameterValue, "httpOptions.baseUrl", func(data any, path string) any {
+					return ""
+				}, false)
+			}
 			convertedJSON, err := json.Marshal(parameterValue)
 			if err != nil {
 				t.Error("ExtractArgs: error marshalling:", err)

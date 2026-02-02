@@ -18,9 +18,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -83,13 +85,26 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 		}
 	} else {
 		apiKey := r.apiClient.clientConfig.APIKey
+
 		if apiKey != "" {
-			header.Set("x-goog-api-key", apiKey)
-		}
-		u = url.URL{
-			Scheme: scheme,
-			Host:   baseURL.Host,
-			Path:   path.Join(baseURL.Path, fmt.Sprintf("ws/google.ai.generativelanguage.%s.GenerativeService.BidiGenerateContent", httpOptions.APIVersion)),
+			var method string
+			if strings.HasPrefix(apiKey, "auth_tokens/") {
+				log.Println("Warning: Ephemeral token support is experimental and may change in future.")
+				if r.apiClient.clientConfig.HTTPOptions.APIVersion != "v1alpha" {
+					return nil, fmt.Errorf("Warning: Ephemeral token support is only supported in v1alpha API version. Please use clientConfig: ClientConfig{HTTPOptions: HTTPOptions{APIVersion: \"v1alpha\"}}")
+				}
+				header.Set("Authorization", fmt.Sprintf("Token %s", apiKey))
+				method = "BidiGenerateContentConstrained"
+			} else {
+				header.Set("x-goog-api-key", apiKey)
+				method = "BidiGenerateContent"
+			}
+
+			u = url.URL{
+				Scheme: scheme,
+				Host:   baseURL.Host,
+				Path:   path.Join(baseURL.Path, fmt.Sprintf("ws/google.ai.generativelanguage.%s.GenerativeService.%s", httpOptions.APIVersion, method)),
+			}
 		}
 	}
 
@@ -112,13 +127,13 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 		return nil, err
 	}
 
-	var toConverter func(*apiClient, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if r.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = liveConnectParametersToVertex
 	} else {
 		toConverter = liveConnectParametersToMldev
 	}
-	body, err := toConverter(r.apiClient, parameterMap, nil)
+	body, err := toConverter(r.apiClient, parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -198,13 +213,13 @@ func (s *Session) SendRealtimeInput(input LiveRealtimeInput) error {
 		return err
 	}
 
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if s.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = liveSendRealtimeInputParametersToVertex
 	} else {
 		toConverter = liveSendRealtimeInputParametersToMldev
 	}
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return err
 	}
@@ -242,13 +257,13 @@ func (s *Session) send(input *LiveClientMessage) error {
 		return err
 	}
 
-	var toConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if s.apiClient.clientConfig.Backend == BackendVertexAI {
 		toConverter = liveClientMessageToVertex
 	} else {
 		toConverter = liveClientMessageToMldev
 	}
-	body, err := toConverter(parameterMap, nil)
+	body, err := toConverter(parameterMap, nil, parameterMap)
 	if err != nil {
 		return err
 	}
@@ -280,12 +295,12 @@ func (s *Session) Receive() (*LiveServerMessage, error) {
 		return nil, fmt.Errorf("received error in response: %v", string(msgBytes))
 	}
 
-	var fromConverter func(map[string]any, map[string]any) (map[string]any, error)
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if s.apiClient.clientConfig.Backend == BackendVertexAI {
 		fromConverter = liveServerMessageFromVertex
 	}
 	if fromConverter != nil {
-		responseMap, err = fromConverter(responseMap, nil)
+		responseMap, err = fromConverter(responseMap, nil, nil)
 	}
 	if err != nil {
 		return nil, err

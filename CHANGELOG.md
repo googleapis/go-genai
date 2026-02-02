@@ -1,5 +1,60 @@
 # Changelog
 
+## [1.44.0](https://github.com/googleapis/go-genai/compare/v1.43.0...v1.44.0) (2026-01-30)
+
+
+### Features
+
+* Support distillation tuning ([cf4c39c](https://github.com/googleapis/go-genai/commit/cf4c39c1a88af7c00ebe92a4a04a9def3de7939d))
+* Support OSS Tuning in GenAI SDK ([9621775](https://github.com/googleapis/go-genai/commit/962177563194d9ff8021bec3afff45e4b9ec7ebc))
+
+
+### Bug Fixes
+
+* Add metadata in batch inlined response ([f8e6b9b](https://github.com/googleapis/go-genai/commit/f8e6b9b9fa6251f798ae581448bd291dfe5398ec))
+
+## [1.43.0](https://github.com/googleapis/go-genai/compare/v1.42.0...v1.43.0) (2026-01-18)
+
+
+### Features
+
+* Add ModelArmorConfig support for prompt and response sanitization via the Model Armor service ([580063f](https://github.com/googleapis/go-genai/commit/580063fe5dce4998d0069aec02f6c6d0c01b6016))
+* Update data types from discovery doc. ([6842c63](https://github.com/googleapis/go-genai/commit/6842c631b5502558ffec2b8faa6474b74f5374d0))
+* Update data types from discovery doc. ([8065f85](https://github.com/googleapis/go-genai/commit/8065f85e4e6f2c5210a20e4202032cc8a557babc))
+
+## [1.42.0](https://github.com/googleapis/go-genai/compare/v1.41.1...v1.42.0) (2026-01-15)
+
+
+### Features
+
+* voice activity support ([b7bfe9b](https://github.com/googleapis/go-genai/commit/b7bfe9b2253f1a948c9128ff73ef45af7819ba9d))
+
+## [1.41.1](https://github.com/googleapis/go-genai/compare/v1.41.0...v1.41.1) (2026-01-14)
+
+
+### Bug Fixes
+
+* Correct json tag typo in EntityLabel ([096bff8](https://github.com/googleapis/go-genai/commit/096bff81a61d2d273b2e6a205a614000a06fc26d))
+
+## [1.41.0](https://github.com/googleapis/go-genai/compare/v1.40.0...v1.41.0) (2026-01-07)
+
+
+### Features
+
+* [Python] add RegisterFiles so gcs files can be used with genai. ([3062834](https://github.com/googleapis/go-genai/commit/3062834b6504280e64de51f82a396d51043292f6))
+* Add gemini-3-pro-preview support for local tokenizer ([1eeac81](https://github.com/googleapis/go-genai/commit/1eeac81c22c509d77a632e52c7cd1b9eec5eec10))
+* Add PersonGeneration to ImageConfig for Vertex Gempix ([062e7e1](https://github.com/googleapis/go-genai/commit/062e7e151b9816aeebc36c630ec12438a3eb9cfd))
+
+## [1.40.0](https://github.com/googleapis/go-genai/compare/v1.39.0...v1.40.0) (2025-12-16)
+
+
+### Features
+
+* Add minimal and medium thinking levels. ([a7c0ed8](https://github.com/googleapis/go-genai/commit/a7c0ed8b1fcade06ffcc62a91344e36e56d17f37))
+* Add ultra high resolution to the media resolution in Parts. ([47b89eb](https://github.com/googleapis/go-genai/commit/47b89ebb0cb9531bd440afb15df14a9668142f72))
+* ephemeral token support in go ([7515bbe](https://github.com/googleapis/go-genai/commit/7515bbef37d86ac0d695c11d81c31a42cb330e7e))
+* support multi speaker for Vertex AI ([457541d](https://github.com/googleapis/go-genai/commit/457541d1839e37fe7bd588462ecb42b670a1ec1c))
+
 ## [1.39.0](https://github.com/googleapis/go-genai/compare/v1.38.0...v1.39.0) (2025-12-10)
 
 

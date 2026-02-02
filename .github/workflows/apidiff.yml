@@ -9,6 +9,8 @@ env:
   GOTOOLCHAIN: local
 jobs:
   scan_changes:
+    permissions:
+        contents: read
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -45,6 +47,7 @@ jobs:
     if: ${{ !needs.scan_changes.outputs.skip && !contains(github.event.pull_request.labels.*.name, 'breaking change allowed') }}
     continue-on-error: true
     permissions:
+      contents: read
       pull-requests: write
     steps:
     - uses: actions/setup-go@v5

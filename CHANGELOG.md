@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.45.0](https://github.com/googleapis/go-genai/compare/v1.44.0...v1.45.0) (2026-02-04)
+
+
+### Features
+
+* Update data types from discovery doc. ([10f6ed9](https://github.com/googleapis/go-genai/commit/10f6ed99013387f1435f9d0fbdd89bc15581485f))
+
 ## [1.44.0](https://github.com/googleapis/go-genai/compare/v1.43.0...v1.44.0) (2026-01-30)
 
 

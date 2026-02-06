@@ -150,6 +150,10 @@ func createTuningJobConfigToMldev(fromObject map[string]any, parentObject map[st
 		return nil, fmt.Errorf("outputUri parameter is not supported in Gemini API")
 	}
 
+	if getValueByPath(fromObject, []string{"encryptionSpec"}) != nil {
+		return nil, fmt.Errorf("encryptionSpec parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -352,6 +356,11 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 	fromOutputUri := getValueByPath(fromObject, []string{"outputUri"})
 	if fromOutputUri != nil {
 		setValueByPath(parentObject, []string{"outputUri"}, fromOutputUri)
+	}
+
+	fromEncryptionSpec := getValueByPath(fromObject, []string{"encryptionSpec"})
+	if fromEncryptionSpec != nil {
+		setValueByPath(parentObject, []string{"encryptionSpec"}, fromEncryptionSpec)
 	}
 
 	return toObject, nil

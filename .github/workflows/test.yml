@@ -7,94 +7,17 @@ on:
     branches:
       - main
 jobs:
-  go_tests_latest:
-    runs-on: windows-latest
+  go_unit_tests:
+    strategy:
+      matrix:
+        go-version: [1.23, 1.24]
+        runs-on: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-
-      - name: Run vet
-        run: go vet ./...
-
-      - name: Test
-        run: go test --mode=unit -v ./...
-  # go_tests_mac_latest:
-  #   runs-on: macos-latest
-  #   steps:
-  #     - name: Install Go
-  #       uses: actions/setup-go@v5
-  #       with:
-  #         go-version: 1.24
-
-  #     - name: Check out code into the Go module directory
-  #       uses: actions/checkout@v4
-
-  #     - name: Run vet
-  #       run: go vet ./...
-
-  #     - name: Test
-  #       run: go test --mode=unit -v ./...
-  go_tests_linux_latest:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.24
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-
-      - name: Run vet
-        run: go vet ./...
-
-      - name: Test
-        run: go test --mode=unit -v ./...
-  go_tests:
-    runs-on: windows-latest
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.23
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-
-      - name: Run vet
-        run: go vet ./...
-
-      - name: Test
-        run: go test --mode=unit -v ./...
-  go_tests_mac:
-    # TODO: Change to macos-latest once hanging issue is resolved.
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.23
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-
-      - name: Run vet
-        run: go vet ./...
-
-      - name: Test
-        run: go test --mode=unit -v ./...
-  go_tests_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.23
+          go-version: ${{ matrix.go-version }}
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
@@ -105,16 +28,20 @@ jobs:
       - name: Test
         run: go test --mode=unit -v ./...
   lint:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.23, 1.24]
+        runs-on: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Setup go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.23'
+          go-version: ${{ matrix.go-version }}
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Setup golangci-lint
+      - name: Setup and run golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
-          args: --max-same-issues 0 --out-format colored-line-number --exclude-dirs=examples
+          args: --timeout 120s --max-same-issues 0 --out-format colored-line-number --exclude-dirs=examples

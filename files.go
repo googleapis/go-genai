@@ -551,6 +551,19 @@ func (m Files) Upload(ctx context.Context, r io.Reader, config *UploadFileConfig
 	if uploadURL == "" {
 		return nil, fmt.Errorf("Failed to create file. Upload URL was not returned from the create file request.")
 	}
+	if config != nil && config.HTTPOptions != nil && config.HTTPOptions.BaseURL != "" {
+		uploadURLObj, err := url.Parse(uploadURL)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse upload URL. Ran into an error: %s", err.Error())
+		}
+		base, err := url.Parse(config.HTTPOptions.BaseURL)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse base URL. Ran into an error: %s", err.Error())
+		}
+		fullURL := base.JoinPath(uploadURLObj.Path)
+		fullURL.RawQuery = uploadURLObj.RawQuery
+		uploadURL = fullURL.String()
+	}
 	return m.apiClient.uploadFile(ctx, r, uploadURL, &httpOptions)
 }
 

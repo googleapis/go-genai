@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.46.0](https://github.com/googleapis/go-genai/compare/v1.45.0...v1.46.0) (2026-02-07)
+
+
+### Features
+
+* Support encryption_spec in tuning job creation configuration for GenAI SDK ([025a3f0](https://github.com/googleapis/go-genai/commit/025a3f0c8d88c95ebb35f884e35d389cfdd7affa))
+
 ## [1.45.0](https://github.com/googleapis/go-genai/compare/v1.44.0...v1.45.0) (2026-02-04)
 
 

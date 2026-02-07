@@ -60,15 +60,19 @@ func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiC
 	var cancel context.CancelFunc
 	if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
 		requestContext, cancel = context.WithTimeout(ctx, *timeout)
-		defer cancel()
 	}
 	req = req.WithContext(requestContext)
 
 	resp, err := doRequest(ac, req)
 	if err != nil {
+		if cancel != nil {
+			cancel()
+		}
 		return err
 	}
 
+	// Transfer cancel ownership to the stream; the iterator will call it when done.
+	output.cancel = cancel
 	// resp.Body will be closed by the iterator
 	return deserializeStreamResponse(resp, output)
 }
@@ -375,15 +379,19 @@ func deserializeUnaryResponse(resp *http.Response) (map[string]any, error) {
 }
 
 type responseStream[R any] struct {
-	r  *bufio.Scanner
-	rc io.ReadCloser
-	h  http.Header
+	r      *bufio.Scanner
+	rc     io.ReadCloser
+	h      http.Header
+	cancel context.CancelFunc // cancels the request timeout context; called when iterator completes
 }
 
 func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(responseMap map[string]any) (*R, error)) iter.Seq2[*R, error] {
 	return func(yield func(*R, error) bool) {
 		defer func() {
-			// Close the response body range over function is done.
+			// Cancel the request timeout context first, then close the response body.
+			if rs.cancel != nil {
+				rs.cancel()
+			}
 			if err := rs.rc.Close(); err != nil {
 				log.Printf("Error closing response body: %v", err)
 			}

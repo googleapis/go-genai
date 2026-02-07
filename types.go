@@ -17,7 +17,6 @@
 package genai
 
 import (
-	"cloud.google.com/go/civil"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -25,6 +24,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"cloud.google.com/go/civil"
 )
 
 // Outcome of the code execution.
@@ -1884,6 +1885,41 @@ type GoogleSearchRetrieval struct {
 	DynamicRetrievalConfig *DynamicRetrievalConfig `json:"dynamicRetrievalConfig,omitempty"`
 }
 
+// ParallelAiSearchSourcePolicy configures domain inclusion/exclusion for Parallel AI Search.
+type ParallelAiSearchSourcePolicy struct {
+	// Domains to exclude from search results. Up to 10 items.
+	ExcludeDomains []string `json:"exclude_domains,omitempty"`
+	// Domains to include in search results. Up to 10 items.
+	IncludeDomains []string `json:"include_domains,omitempty"`
+}
+
+// ParallelAiSearchExcerpts configures excerpt length limits for Parallel AI Search.
+type ParallelAiSearchExcerpts struct {
+	// Maximum characters per individual search result. Default 30000, range [1000, 100000].
+	MaxCharsPerResult *int32 `json:"max_chars_per_result,omitempty"`
+	// Maximum total characters across all results. Default 100000, range [1000, 1000000].
+	MaxCharsTotal *int32 `json:"max_chars_total,omitempty"`
+}
+
+// ParallelAiSearchCustomConfigs contains optional configuration for Parallel AI Search.
+type ParallelAiSearchCustomConfigs struct {
+	// Domain inclusion/exclusion policy.
+	SourcePolicy *ParallelAiSearchSourcePolicy `json:"source_policy,omitempty"`
+	// Excerpt length configuration.
+	Excerpts *ParallelAiSearchExcerpts `json:"excerpts,omitempty"`
+	// Maximum number of search results. Default 10, range [1, 20].
+	MaxResults *int32 `json:"max_results,omitempty"`
+}
+
+// ParallelAiSearch configures grounding with Parallel Web Systems' search API.
+// This field is not supported in Gemini API.
+type ParallelAiSearch struct {
+	// Required. API key for Parallel AI Search.
+	APIKey string `json:"api_key,omitempty"`
+	// Optional configuration for search behavior.
+	CustomConfigs *ParallelAiSearchCustomConfigs `json:"customConfigs,omitempty"`
+}
+
 // Tool to support URL context.
 type URLContext struct {
 }
@@ -1919,6 +1955,9 @@ type Tool struct {
 	GoogleSearch *GoogleSearch `json:"googleSearch,omitempty"`
 	// Optional. Specialized retrieval tool that is powered by Google Search.
 	GoogleSearchRetrieval *GoogleSearchRetrieval `json:"googleSearchRetrieval,omitempty"`
+	// Optional. Parallel AI Search tool type. Tool to support grounding with Parallel
+	// Web Systems' search API. This field is not supported in Gemini API.
+	ParallelAiSearch *ParallelAiSearch `json:"parallelAiSearch,omitempty"`
 	// Optional. Tool to support URL context retrieval.
 	URLContext *URLContext `json:"urlContext,omitempty"`
 }

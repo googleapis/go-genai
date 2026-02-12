@@ -882,6 +882,18 @@ const (
 	VideoCompressionQualityLossless VideoCompressionQuality = "LOSSLESS"
 )
 
+// Resize mode for the image input for video generation.
+type ImageResizeMode string
+
+const (
+	// Crop the image to fit the correct aspect ratio (so we lose parts
+	// of the image in the process).
+	ImageResizeModeCrop ImageResizeMode = "CROP"
+	// Pad the image to fit the correct aspect ratio (so we don't lose
+	// any parts of the image in the process).
+	ImageResizeModePad ImageResizeMode = "PAD"
+)
+
 // Enum representing the tuning method.
 type TuningMethod string
 
@@ -4485,6 +4497,8 @@ type GenerateVideosConfig struct {
 	CompressionQuality VideoCompressionQuality `json:"compressionQuality,omitempty"`
 	// Optional. User specified labels to track billing usage.
 	Labels map[string]string `json:"labels,omitempty"`
+	// Optional. Resize mode of the image input for video generation.
+	ResizeMode ImageResizeMode `json:"resizeMode,omitempty"`
 }
 
 // A generated video.

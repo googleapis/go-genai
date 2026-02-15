@@ -27,6 +27,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"cloud.google.com/go/auth"
 )
 
 func createFileParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
@@ -135,6 +137,33 @@ func listFilesResponseFromMldev(fromObject map[string]any, parentObject map[stri
 	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
 		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+	}
+
+	fromFiles := getValueByPath(fromObject, []string{"files"})
+	if fromFiles != nil {
+		setValueByPath(toObject, []string{"files"}, fromFiles)
+	}
+
+	return toObject, nil
+}
+
+func registerFilesParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromURIs := getValueByPath(fromObject, []string{"uris"})
+	if fromURIs != nil {
+		setValueByPath(toObject, []string{"uris"}, fromURIs)
+	}
+
+	return toObject, nil
+}
+
+func registerFilesResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	if fromSdkHttpResponse != nil {
+		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	fromFiles := getValueByPath(fromObject, []string{"files"})
@@ -428,6 +457,116 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 	}
 
 	return response, nil
+}
+
+func (m Files) registerFiles(ctx context.Context, uris []string, config *RegisterFilesConfig) (*RegisterFilesResponse, error) {
+	parameterMap := make(map[string]any)
+
+	kwargs := map[string]any{"uris": uris}
+	deepMarshal(kwargs, &parameterMap)
+
+	var httpOptions *HTTPOptions
+	if config == nil || config.HTTPOptions == nil {
+		httpOptions = &HTTPOptions{}
+	} else {
+		httpOptions = config.HTTPOptions
+	}
+	if httpOptions.Headers == nil {
+		httpOptions.Headers = http.Header{}
+	}
+	var response = new(RegisterFilesResponse)
+	var responseMap map[string]any
+	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+
+		return nil, fmt.Errorf("method RegisterFiles is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+
+	} else {
+		toConverter = registerFilesParametersToMldev
+		fromConverter = registerFilesResponseFromMldev
+	}
+
+	body, err := toConverter(parameterMap, nil, parameterMap)
+	if err != nil {
+		return nil, err
+	}
+	var path string
+	var urlParams map[string]any
+	if _, ok := body["_url"]; ok {
+		urlParams = body["_url"].(map[string]any)
+		delete(body, "_url")
+	}
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		path, err = formatMap("None", urlParams)
+	} else {
+		path, err = formatMap("files:register", urlParams)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
+	}
+	if _, ok := body["_query"]; ok {
+		query, err := createURLQuery(body["_query"].(map[string]any))
+		if err != nil {
+			return nil, err
+		}
+		path += "?" + query
+		delete(body, "_query")
+	}
+	responseMap, err = sendRequest(ctx, m.apiClient, path, http.MethodPost, body, httpOptions)
+	if err != nil {
+		return nil, err
+	}
+	if fromConverter != nil {
+		responseMap, err = fromConverter(responseMap, nil, parameterMap)
+	}
+	if err != nil {
+		return nil, err
+	}
+	err = mapToStruct(responseMap, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// RegisterFiles registers GCS files with the Gemini file service.
+// This method is only supported in the Gemini Developer client (not Vertex AI).
+// It requires explicit OAuth credentials for authentication.
+func (m Files) RegisterFiles(ctx context.Context, credentials *auth.Credentials, uris []string, config *RegisterFilesConfig) (*RegisterFilesResponse, error) {
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		return nil, fmt.Errorf("method RegisterFiles is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+	}
+	if credentials == nil {
+		return nil, fmt.Errorf("credentials are required for RegisterFiles")
+	}
+	if len(uris) == 0 {
+		return nil, fmt.Errorf("at least one URI is required for RegisterFiles")
+	}
+
+	token, err := credentials.Token(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
+
+	if config == nil {
+		config = &RegisterFilesConfig{}
+	}
+	if config.HTTPOptions == nil {
+		config.HTTPOptions = &HTTPOptions{}
+	}
+	if config.HTTPOptions.Headers == nil {
+		config.HTTPOptions.Headers = http.Header{}
+	}
+	config.HTTPOptions.Headers.Set("Authorization", fmt.Sprintf("Bearer %s", token.Value))
+
+	quotaProjectID, err := credentials.QuotaProjectID(ctx)
+	if err == nil && quotaProjectID != "" {
+		config.HTTPOptions.Headers.Set("X-Goog-User-Project", quotaProjectID)
+	}
+
+	return m.registerFiles(ctx, uris, config)
 }
 
 // List retrieves a paginated list of files resources.

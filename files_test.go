@@ -831,3 +831,233 @@ type errorReader struct{}
 func (r *errorReader) Read(p []byte) (n int, err error) {
 	return 0, fmt.Errorf("intentional read error")
 }
+
+// mockTokenProvider implements auth.TokenProvider for testing.
+type mockTokenProvider struct {
+	token *auth.Token
+}
+
+func (m *mockTokenProvider) Token(ctx context.Context) (*auth.Token, error) {
+	return m.token, nil
+}
+
+func newMockCredentials(tokenValue string) *auth.Credentials {
+	return auth.NewCredentials(&auth.CredentialsOptions{
+		TokenProvider: &mockTokenProvider{
+			token: &auth.Token{Value: tokenValue},
+		},
+	})
+}
+
+func TestRegisterFiles(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("Success", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPost {
+				t.Errorf("expected POST, got %s", r.Method)
+			}
+			if !strings.HasSuffix(r.URL.Path, "files:register") {
+				t.Errorf("expected path ending with files:register, got %s", r.URL.Path)
+			}
+			authHeader := r.Header.Get("Authorization")
+			if authHeader != "Bearer test-token" {
+				t.Errorf("expected Authorization header 'Bearer test-token', got %q", authHeader)
+			}
+
+			var body map[string]any
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				t.Fatalf("failed to decode request body: %v", err)
+			}
+			uris, ok := body["uris"].([]any)
+			if !ok || len(uris) != 1 || uris[0] != "gs://bucket/object" {
+				t.Errorf("expected uris [gs://bucket/object], got %v", body["uris"])
+			}
+
+			resp := map[string]any{
+				"files": []map[string]any{
+					{
+						"name":       "files/abc123",
+						"uri":        "gs://bucket/object",
+						"sizeBytes":  "1024",
+						"mimeType":   "application/octet-stream",
+						"state":      "ACTIVE",
+						"source":     "REGISTERED",
+					},
+				},
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+		}))
+		defer ts.Close()
+
+		client, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			HTTPClient:  ts.Client(),
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-api-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		creds := newMockCredentials("test-token")
+		resp, err := client.Files.RegisterFiles(ctx, creds, []string{"gs://bucket/object"}, nil)
+		if err != nil {
+			t.Fatalf("RegisterFiles() error: %v", err)
+		}
+		if len(resp.Files) != 1 {
+			t.Fatalf("expected 1 file, got %d", len(resp.Files))
+		}
+		if resp.Files[0].Name != "files/abc123" {
+			t.Errorf("expected file name 'files/abc123', got %q", resp.Files[0].Name)
+		}
+	})
+
+	t.Run("VertexAINotSupported", func(t *testing.T) {
+		client, err := NewClient(ctx, &ClientConfig{
+			Backend:     BackendVertexAI,
+			Credentials: &auth.Credentials{},
+			envVarProvider: func() map[string]string {
+				return map[string]string{
+					"GOOGLE_CLOUD_PROJECT":  "test-project",
+					"GOOGLE_CLOUD_LOCATION": "test-location",
+				}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		creds := newMockCredentials("test-token")
+		_, err = client.Files.RegisterFiles(ctx, creds, []string{"gs://bucket/object"}, nil)
+		if err == nil {
+			t.Fatal("expected error for Vertex AI, got nil")
+		}
+		if !strings.Contains(err.Error(), "only supported in the Gemini Developer client") {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("NilCredentials", func(t *testing.T) {
+		client, err := NewClient(ctx, &ClientConfig{
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-api-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		_, err = client.Files.RegisterFiles(ctx, nil, []string{"gs://bucket/object"}, nil)
+		if err == nil {
+			t.Fatal("expected error for nil credentials, got nil")
+		}
+		if !strings.Contains(err.Error(), "credentials are required") {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("EmptyURIs", func(t *testing.T) {
+		client, err := NewClient(ctx, &ClientConfig{
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-api-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		creds := newMockCredentials("test-token")
+		_, err = client.Files.RegisterFiles(ctx, creds, []string{}, nil)
+		if err == nil {
+			t.Fatal("expected error for empty URIs, got nil")
+		}
+		if !strings.Contains(err.Error(), "at least one URI is required") {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("MultipleURIs", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var body map[string]any
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				t.Fatalf("failed to decode request body: %v", err)
+			}
+			uris, ok := body["uris"].([]any)
+			if !ok || len(uris) != 3 {
+				t.Errorf("expected 3 uris, got %v", body["uris"])
+			}
+
+			resp := map[string]any{
+				"files": []map[string]any{
+					{"name": "files/file1", "uri": "gs://bucket/obj1"},
+					{"name": "files/file2", "uri": "gs://bucket/obj2"},
+					{"name": "files/file3", "uri": "gs://bucket/obj3"},
+				},
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+		}))
+		defer ts.Close()
+
+		client, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			HTTPClient:  ts.Client(),
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-api-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		creds := newMockCredentials("test-token")
+		resp, err := client.Files.RegisterFiles(ctx, creds, []string{"gs://bucket/obj1", "gs://bucket/obj2", "gs://bucket/obj3"}, nil)
+		if err != nil {
+			t.Fatalf("RegisterFiles() error: %v", err)
+		}
+		if len(resp.Files) != 3 {
+			t.Fatalf("expected 3 files, got %d", len(resp.Files))
+		}
+	})
+
+	t.Run("AuthHeaderVerification", func(t *testing.T) {
+		var receivedAuthHeader string
+		var receivedQuotaHeader string
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			receivedAuthHeader = r.Header.Get("Authorization")
+			receivedQuotaHeader = r.Header.Get("X-Goog-User-Project")
+
+			resp := map[string]any{"files": []map[string]any{}}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+		}))
+		defer ts.Close()
+
+		client, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			HTTPClient:  ts.Client(),
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-api-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		creds := newMockCredentials("my-secret-token")
+		_, err = client.Files.RegisterFiles(ctx, creds, []string{"gs://bucket/object"}, nil)
+		if err != nil {
+			t.Fatalf("RegisterFiles() error: %v", err)
+		}
+		if receivedAuthHeader != "Bearer my-secret-token" {
+			t.Errorf("expected Authorization 'Bearer my-secret-token', got %q", receivedAuthHeader)
+		}
+		// QuotaProjectID from empty credentials returns ""
+		if receivedQuotaHeader != "" {
+			t.Errorf("expected empty X-Goog-User-Project header, got %q", receivedQuotaHeader)
+		}
+	})
+}

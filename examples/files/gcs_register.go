@@ -31,7 +31,7 @@ var gcsURI = flag.String("gcs-uri", "gs://cloud-samples-data/generative-ai/pdf/2
 
 // This example shows how to register a file from GCS and use it in the Gemini API.
 // Setup instructions: https://ai.google.dev/gemini-api/docs/file-input-methods#registration
-// GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json GEMINI_API_KEY=<your-api-key> go run gcs_reference.go
+// GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json GEMINI_API_KEY=<your-api-key> go run gcs_register.go
 func run(ctx context.Context) {
 	client, err := genai.NewClient(ctx, nil)
 	if err != nil {
@@ -55,6 +55,9 @@ func run(ctx context.Context) {
 		log.Fatal(err)
 	}
 	fmt.Println("Registered files:", registeredFiles.Files)
+	if len(registeredFiles.Files) == 0 {
+		log.Fatal("No files were registered")
+	}
 
 	result, err := client.Models.GenerateContent(ctx, *model, []*genai.Content{
 		{

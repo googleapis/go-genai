@@ -550,23 +550,24 @@ func (m Files) RegisterFiles(ctx context.Context, credentials *auth.Credentials,
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
 
-	if config == nil {
-		config = &RegisterFilesConfig{}
+	var localConfig RegisterFilesConfig
+	if config != nil {
+		deepCopy(*config, &localConfig)
 	}
-	if config.HTTPOptions == nil {
-		config.HTTPOptions = &HTTPOptions{}
+	if localConfig.HTTPOptions == nil {
+		localConfig.HTTPOptions = &HTTPOptions{}
 	}
-	if config.HTTPOptions.Headers == nil {
-		config.HTTPOptions.Headers = http.Header{}
+	if localConfig.HTTPOptions.Headers == nil {
+		localConfig.HTTPOptions.Headers = http.Header{}
 	}
-	config.HTTPOptions.Headers.Set("Authorization", fmt.Sprintf("Bearer %s", token.Value))
+	localConfig.HTTPOptions.Headers.Set("Authorization", fmt.Sprintf("Bearer %s", token.Value))
 
 	quotaProjectID, err := credentials.QuotaProjectID(ctx)
 	if err == nil && quotaProjectID != "" {
-		config.HTTPOptions.Headers.Set("X-Goog-User-Project", quotaProjectID)
+		localConfig.HTTPOptions.Headers.Set("X-Goog-User-Project", quotaProjectID)
 	}
 
-	return m.registerFiles(ctx, uris, config)
+	return m.registerFiles(ctx, uris, &localConfig)
 }
 
 // List retrieves a paginated list of files resources.

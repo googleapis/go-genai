@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.47.0](https://github.com/googleapis/go-genai/compare/v1.46.0...v1.47.0) (2026-02-18)
+
+
+### Features
+
+* Support multimodal embedding for Gemini Embedding 2.0 and support MaaS models in Models.embed_content() (Vertex AI API) ([ef61dd1](https://github.com/googleapis/go-genai/commit/ef61dd1f3c65e185c594d07a2cf928e14f3b04ec))
+
 ## [1.46.0](https://github.com/googleapis/go-genai/compare/v1.45.0...v1.46.0) (2026-02-09)
 
 

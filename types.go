@@ -541,6 +541,18 @@ const (
 	PartMediaResolutionLevelMediaResolutionUltraHigh PartMediaResolutionLevel = "MEDIA_RESOLUTION_ULTRA_HIGH"
 )
 
+// Resource scope.
+type ResourceScope string
+
+const (
+	// When setting base_url, this value configures resource scope to be the collection.
+	// The resource name will not include API version, project, or location.
+	// For example, if base_url is set to "https://aiplatform.googleapis.com",
+	// then the resource name for a Model would be
+	// "https://aiplatform.googleapis.com/publishers/google/models/gemini-3-pro-preview
+	ResourceScopeCollection ResourceScope = "COLLECTION"
+)
+
 // Options for feature selection preference.
 type FeatureSelectionPreference string
 
@@ -1354,6 +1366,10 @@ type HTTPOptions struct {
 	// to "https://generativelanguage.googleapis.com/" for the Gemini API backend, and location-specific
 	// Vertex AI endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/
 	BaseURL string `json:"baseUrl,omitempty"`
+	// Optional. BaseURL specifies the base URL for the API endpoint. If empty, defaults
+	// to "https://generativelanguage.googleapis.com/" for the Gemini API backend, and location-specific
+	// Vertex AI endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/
+	BaseURLResourceScope ResourceScope `json:"baseUrlResourceScope,omitempty"`
 	// Optional. APIVersion specifies the version of the API to use. If empty, defaults
 	// to "v1beta" for Gemini API and "v1beta1" for Vertex AI.
 	APIVersion string `json:"apiVersion,omitempty"`

@@ -561,6 +561,16 @@ const (
 	EnvironmentBrowser Environment = "ENVIRONMENT_BROWSER"
 )
 
+// Enum representing the Vertex embedding API to use.
+type EmbeddingAPIType string
+
+const (
+	// predict API endpoint (default)
+	EmbeddingAPITypePredict EmbeddingAPIType = "PREDICT"
+	// embedContent API Endpoint
+	EmbeddingAPITypeEmbedContent EmbeddingAPIType = "EMBED_CONTENT"
+)
+
 // Enum that controls the safety filter level for objectionable content.
 type SafetyFilterLevel string
 

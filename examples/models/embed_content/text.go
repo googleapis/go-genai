@@ -50,6 +50,23 @@ func run(ctx context.Context) {
 		log.Fatal(err)
 	}
 	fmt.Printf("%#v\n", result.Embeddings[0])
+
+	// Vertex Multimodal embedding.
+	if client.ClientConfig().Backend == genai.BackendVertexAI {
+		fmt.Println("Embed content with GCS image example.")
+		imageParts := []*genai.Part{
+			genai.NewPartFromText("What is in this image?"),
+			genai.NewPartFromURI("gs://cloud-samples-data/generative-ai/image/a-man-and-a-dog.png", "image/png"),
+		}
+		imageContent := []*genai.Content{
+			genai.NewContentFromParts(imageParts, ""), // RoleUser
+		}
+		result, err = client.Models.EmbedContent(ctx, "gemini-embedding-2-exp-11-2025", imageContent, &genai.EmbedContentConfig{TaskType: "RETRIEVAL_DOCUMENT"})
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%#v\n", result.Embeddings[0])
+	}
 }
 
 func main() {

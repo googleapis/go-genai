@@ -633,35 +633,85 @@ func embedContentConfigToMldev(fromObject map[string]any, parentObject map[strin
 func embedContentConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromTaskType := getValueByPath(fromObject, []string{"taskType"})
-	if fromTaskType != nil {
-		setValueByPath(parentObject, []string{"instances[]", "task_type"}, fromTaskType)
+	var discriminatorTaskType any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	if discriminatorTaskType == nil {
+		discriminatorTaskType = "PREDICT"
+	}
+	if discriminatorTaskType.(string) == "PREDICT" {
+		fromTaskType := getValueByPath(fromObject, []string{"taskType"})
+		if fromTaskType != nil {
+			setValueByPath(parentObject, []string{"instances[]", "task_type"}, fromTaskType)
+		}
+	} else if discriminatorTaskType.(string) == "EMBED_CONTENT" {
+		fromTaskType := getValueByPath(fromObject, []string{"taskType"})
+		if fromTaskType != nil {
+			setValueByPath(parentObject, []string{"taskType"}, fromTaskType)
+		}
 	}
 
-	fromTitle := getValueByPath(fromObject, []string{"title"})
-	if fromTitle != nil {
-		setValueByPath(parentObject, []string{"instances[]", "title"}, fromTitle)
+	var discriminatorTitle any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	if discriminatorTitle == nil {
+		discriminatorTitle = "PREDICT"
+	}
+	if discriminatorTitle.(string) == "PREDICT" {
+		fromTitle := getValueByPath(fromObject, []string{"title"})
+		if fromTitle != nil {
+			setValueByPath(parentObject, []string{"instances[]", "title"}, fromTitle)
+		}
+	} else if discriminatorTitle.(string) == "EMBED_CONTENT" {
+		fromTitle := getValueByPath(fromObject, []string{"title"})
+		if fromTitle != nil {
+			setValueByPath(parentObject, []string{"title"}, fromTitle)
+		}
 	}
 
-	fromOutputDimensionality := getValueByPath(fromObject, []string{"outputDimensionality"})
-	if fromOutputDimensionality != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputDimensionality"}, fromOutputDimensionality)
+	var discriminatorOutputDimensionality any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	if discriminatorOutputDimensionality == nil {
+		discriminatorOutputDimensionality = "PREDICT"
+	}
+	if discriminatorOutputDimensionality.(string) == "PREDICT" {
+		fromOutputDimensionality := getValueByPath(fromObject, []string{"outputDimensionality"})
+		if fromOutputDimensionality != nil {
+			setValueByPath(parentObject, []string{"parameters", "outputDimensionality"}, fromOutputDimensionality)
+		}
+	} else if discriminatorOutputDimensionality.(string) == "EMBED_CONTENT" {
+		fromOutputDimensionality := getValueByPath(fromObject, []string{"outputDimensionality"})
+		if fromOutputDimensionality != nil {
+			setValueByPath(parentObject, []string{"outputDimensionality"}, fromOutputDimensionality)
+		}
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		setValueByPath(parentObject, []string{"instances[]", "mimeType"}, fromMimeType)
+	var discriminatorMimeType any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	if discriminatorMimeType == nil {
+		discriminatorMimeType = "PREDICT"
+	}
+	if discriminatorMimeType.(string) == "PREDICT" {
+		fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+		if fromMimeType != nil {
+			setValueByPath(parentObject, []string{"instances[]", "mimeType"}, fromMimeType)
+		}
 	}
 
-	fromAutoTruncate := getValueByPath(fromObject, []string{"autoTruncate"})
-	if fromAutoTruncate != nil {
-		setValueByPath(parentObject, []string{"parameters", "autoTruncate"}, fromAutoTruncate)
+	var discriminatorAutoTruncate any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	if discriminatorAutoTruncate == nil {
+		discriminatorAutoTruncate = "PREDICT"
+	}
+	if discriminatorAutoTruncate.(string) == "PREDICT" {
+		fromAutoTruncate := getValueByPath(fromObject, []string{"autoTruncate"})
+		if fromAutoTruncate != nil {
+			setValueByPath(parentObject, []string{"parameters", "autoTruncate"}, fromAutoTruncate)
+		}
+	} else if discriminatorAutoTruncate.(string) == "EMBED_CONTENT" {
+		fromAutoTruncate := getValueByPath(fromObject, []string{"autoTruncate"})
+		if fromAutoTruncate != nil {
+			setValueByPath(parentObject, []string{"autoTruncate"}, fromAutoTruncate)
+		}
 	}
 
 	return toObject, nil
 }
 
-func embedContentParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func embedContentParametersPrivateToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
@@ -684,6 +734,19 @@ func embedContentParametersToMldev(ac *apiClient, fromObject map[string]any, par
 		setValueByPath(toObject, []string{"requests[]", "content"}, fromContents)
 	}
 
+	fromContent := getValueByPath(fromObject, []string{"content"})
+	if fromContent != nil {
+		_, err = tContent(fromContent)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = contentToMldev(fromContent.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	fromConfig := getValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = embedContentConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
@@ -697,7 +760,7 @@ func embedContentParametersToMldev(ac *apiClient, fromObject map[string]any, par
 	return toObject, nil
 }
 
-func embedContentParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func embedContentParametersPrivateToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
@@ -710,14 +773,36 @@ func embedContentParametersToVertex(ac *apiClient, fromObject map[string]any, pa
 		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromContents := getValueByPath(fromObject, []string{"contents"})
-	if fromContents != nil {
-		fromContents, err = tContentsForEmbed(ac, fromContents)
-		if err != nil {
-			return nil, err
-		}
+	var discriminatorContents any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	if discriminatorContents == nil {
+		discriminatorContents = "PREDICT"
+	}
+	if discriminatorContents.(string) == "PREDICT" {
+		fromContents := getValueByPath(fromObject, []string{"contents"})
+		if fromContents != nil {
+			fromContents, err = tContentsForEmbed(ac, fromContents)
+			if err != nil {
+				return nil, err
+			}
 
-		setValueByPath(toObject, []string{"instances[]", "content"}, fromContents)
+			setValueByPath(toObject, []string{"instances[]", "content"}, fromContents)
+		}
+	}
+
+	var discriminatorContent any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	if discriminatorContent == nil {
+		discriminatorContent = "PREDICT"
+	}
+	if discriminatorContent.(string) == "EMBED_CONTENT" {
+		fromContent := getValueByPath(fromObject, []string{"content"})
+		if fromContent != nil {
+			fromContent, err = tContent(fromContent)
+			if err != nil {
+				return nil, err
+			}
+
+			setValueByPath(toObject, []string{"content"}, fromContent)
+		}
 	}
 
 	fromConfig := getValueByPath(fromObject, []string{"config"})
@@ -773,6 +858,25 @@ func embedContentResponseFromVertex(fromObject map[string]any, parentObject map[
 	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
 	if fromMetadata != nil {
 		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+
+	if rootObject != nil && getValueByPath(rootObject, []string{"embeddingApiType"}) != nil && getValueByPath(rootObject, []string{"embeddingApiType"}).(string) == "EMBED_CONTENT" {
+		embedding := getValueByPath(fromObject, []string{"embedding"})
+		usageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
+		truncated := getValueByPath(fromObject, []string{"truncated"})
+		if embedding != nil {
+			stats := make(map[string]any)
+			if um, ok := usageMetadata.(map[string]any); ok {
+				if ptc, ok := um["promptTokenCount"]; ok && ptc != nil {
+					stats["tokenCount"] = ptc
+				}
+			}
+			if truncated != nil {
+				stats["truncated"] = truncated
+			}
+			embedding.(map[string]any)["statistics"] = stats
+			setValueByPath(toObject, []string{"embeddings"}, []any{embedding})
+		}
 	}
 
 	return toObject, nil
@@ -4180,10 +4284,10 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 }
 
 // EmbedContent generates embeddings for the provided contents using the specified model.
-func (m Models) EmbedContent(ctx context.Context, model string, contents []*Content, config *EmbedContentConfig) (*EmbedContentResponse, error) {
+func (m Models) embedContent(ctx context.Context, model string, contents []*Content, content *Content, embeddingApiType *EmbeddingAPIType, config *EmbedContentConfig) (*EmbedContentResponse, error) {
 	parameterMap := make(map[string]any)
 
-	kwargs := map[string]any{"model": model, "contents": contents, "config": config}
+	kwargs := map[string]any{"model": model, "contents": contents, "content": content, "embeddingApiType": embeddingApiType, "config": config}
 	deepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
@@ -4200,10 +4304,10 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		toConverter = embedContentParametersToVertex
+		toConverter = embedContentParametersPrivateToVertex
 		fromConverter = embedContentResponseFromVertex
 	} else {
-		toConverter = embedContentParametersToMldev
+		toConverter = embedContentParametersPrivateToMldev
 		fromConverter = embedContentResponseFromMldev
 	}
 
@@ -4218,7 +4322,11 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 		delete(body, "_url")
 	}
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:predict", urlParams)
+		if tIsVertexEmbedContentModel(parameterMap["model"].(string)) {
+			path, err = formatMap("{model}:embedContent", urlParams)
+		} else {
+			path, err = formatMap("{model}:predict", urlParams)
+		}
 	} else {
 		path, err = formatMap("{model}:batchEmbedContents", urlParams)
 	}
@@ -5336,4 +5444,21 @@ func (m Models) GenerateVideosFromSource(ctx context.Context, model string, sour
 	}
 	// Rely on backend validation for combinations of prompt, image, and video.
 	return m.generateVideos(ctx, model, nil, nil, nil, source, config)
+}
+
+func (m Models) EmbedContent(ctx context.Context, model string, contents []*Content, config *EmbedContentConfig) (*EmbedContentResponse, error) {
+	// if not Vertex, call embedContent normally
+	if m.apiClient.clientConfig.Backend != BackendVertexAI {
+		return m.embedContent(ctx, model, contents, nil, nil, config)
+	}
+	if tIsVertexEmbedContentModel(model) {
+		if len(contents) > 1 {
+			return nil, fmt.Errorf("the embedContent API for this model only supports one content at a time")
+		}
+		eac := EmbeddingAPITypeEmbedContent
+		return m.embedContent(ctx, model, contents, contents[0], &eac, config)
+	} else {
+		eap := EmbeddingAPITypePredict
+		return m.embedContent(ctx, model, contents, nil, &eap, config)
+	}
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.48.0](https://github.com/googleapis/go-genai/compare/v1.47.0...v1.48.0) (2026-02-25)
+
+
+### Features
+
+* Add Image Grounding support to GoogleSearch tool ([ba34adf](https://github.com/googleapis/go-genai/commit/ba34adf470dbb213383df5951ee641cd899958ef))
+* enable server side MCP and disable all other AFC when server side MCP is configured. ([a550b3c](https://github.com/googleapis/go-genai/commit/a550b3c7f84e0fe2fd5e5221ac3aa7d20ce4cbf2))
+
 ## [1.47.0](https://github.com/googleapis/go-genai/compare/v1.46.0...v1.47.0) (2026-02-18)
 
 

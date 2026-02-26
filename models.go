@@ -3689,6 +3689,10 @@ func toolToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 		setValueByPath(toObject, []string{"googleSearchRetrieval"}, fromGoogleSearchRetrieval)
 	}
 
+	if getValueByPath(fromObject, []string{"parallelAiSearch"}) != nil {
+		return nil, fmt.Errorf("parallelAiSearch parameter is not supported in Gemini API")
+	}
+
 	fromUrlContext := getValueByPath(fromObject, []string{"urlContext"})
 	if fromUrlContext != nil {
 		setValueByPath(toObject, []string{"urlContext"}, fromUrlContext)
@@ -3752,6 +3756,11 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 	fromGoogleSearchRetrieval := getValueByPath(fromObject, []string{"googleSearchRetrieval"})
 	if fromGoogleSearchRetrieval != nil {
 		setValueByPath(toObject, []string{"googleSearchRetrieval"}, fromGoogleSearchRetrieval)
+	}
+
+	fromParallelAiSearch := getValueByPath(fromObject, []string{"parallelAiSearch"})
+	if fromParallelAiSearch != nil {
+		setValueByPath(toObject, []string{"parallelAiSearch"}, fromParallelAiSearch)
 	}
 
 	fromUrlContext := getValueByPath(fromObject, []string{"urlContext"})

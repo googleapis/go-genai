@@ -27,32 +27,32 @@ import (
 func authConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromApiKey := getValueByPath(fromObject, []string{"apiKey"})
+	fromApiKey := InternalGetValueByPath(fromObject, []string{"apiKey"})
 	if fromApiKey != nil {
-		setValueByPath(toObject, []string{"apiKey"}, fromApiKey)
+		InternalSetValueByPath(toObject, []string{"apiKey"}, fromApiKey)
 	}
 
-	if getValueByPath(fromObject, []string{"apiKeyConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"apiKeyConfig"}) != nil {
 		return nil, fmt.Errorf("apiKeyConfig parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"authType"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"authType"}) != nil {
 		return nil, fmt.Errorf("authType parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"googleServiceAccountConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"googleServiceAccountConfig"}) != nil {
 		return nil, fmt.Errorf("googleServiceAccountConfig parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"httpBasicAuthConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"httpBasicAuthConfig"}) != nil {
 		return nil, fmt.Errorf("httpBasicAuthConfig parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"oauthConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"oauthConfig"}) != nil {
 		return nil, fmt.Errorf("oauthConfig parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"oidcConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"oidcConfig"}) != nil {
 		return nil, fmt.Errorf("oidcConfig parameter is not supported in Gemini API")
 	}
 
@@ -62,18 +62,18 @@ func authConfigToMldev(fromObject map[string]any, parentObject map[string]any, r
 func blobToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromData := getValueByPath(fromObject, []string{"data"})
+	fromData := InternalGetValueByPath(fromObject, []string{"data"})
 	if fromData != nil {
-		setValueByPath(toObject, []string{"data"}, fromData)
+		InternalSetValueByPath(toObject, []string{"data"}, fromData)
 	}
 
-	if getValueByPath(fromObject, []string{"displayName"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"displayName"}) != nil {
 		return nil, fmt.Errorf("displayName parameter is not supported in Gemini API")
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -82,59 +82,59 @@ func blobToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 func candidateFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromContent := getValueByPath(fromObject, []string{"content"})
+	fromContent := InternalGetValueByPath(fromObject, []string{"content"})
 	if fromContent != nil {
-		setValueByPath(toObject, []string{"content"}, fromContent)
+		InternalSetValueByPath(toObject, []string{"content"}, fromContent)
 	}
 
-	fromCitationMetadata := getValueByPath(fromObject, []string{"citationMetadata"})
+	fromCitationMetadata := InternalGetValueByPath(fromObject, []string{"citationMetadata"})
 	if fromCitationMetadata != nil {
 		fromCitationMetadata, err = citationMetadataFromMldev(fromCitationMetadata.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"citationMetadata"}, fromCitationMetadata)
+		InternalSetValueByPath(toObject, []string{"citationMetadata"}, fromCitationMetadata)
 	}
 
-	fromTokenCount := getValueByPath(fromObject, []string{"tokenCount"})
+	fromTokenCount := InternalGetValueByPath(fromObject, []string{"tokenCount"})
 	if fromTokenCount != nil {
-		setValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
+		InternalSetValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
 	}
 
-	fromFinishReason := getValueByPath(fromObject, []string{"finishReason"})
+	fromFinishReason := InternalGetValueByPath(fromObject, []string{"finishReason"})
 	if fromFinishReason != nil {
-		setValueByPath(toObject, []string{"finishReason"}, fromFinishReason)
+		InternalSetValueByPath(toObject, []string{"finishReason"}, fromFinishReason)
 	}
 
-	fromGroundingMetadata := getValueByPath(fromObject, []string{"groundingMetadata"})
+	fromGroundingMetadata := InternalGetValueByPath(fromObject, []string{"groundingMetadata"})
 	if fromGroundingMetadata != nil {
-		setValueByPath(toObject, []string{"groundingMetadata"}, fromGroundingMetadata)
+		InternalSetValueByPath(toObject, []string{"groundingMetadata"}, fromGroundingMetadata)
 	}
 
-	fromAvgLogprobs := getValueByPath(fromObject, []string{"avgLogprobs"})
+	fromAvgLogprobs := InternalGetValueByPath(fromObject, []string{"avgLogprobs"})
 	if fromAvgLogprobs != nil {
-		setValueByPath(toObject, []string{"avgLogprobs"}, fromAvgLogprobs)
+		InternalSetValueByPath(toObject, []string{"avgLogprobs"}, fromAvgLogprobs)
 	}
 
-	fromIndex := getValueByPath(fromObject, []string{"index"})
+	fromIndex := InternalGetValueByPath(fromObject, []string{"index"})
 	if fromIndex != nil {
-		setValueByPath(toObject, []string{"index"}, fromIndex)
+		InternalSetValueByPath(toObject, []string{"index"}, fromIndex)
 	}
 
-	fromLogprobsResult := getValueByPath(fromObject, []string{"logprobsResult"})
+	fromLogprobsResult := InternalGetValueByPath(fromObject, []string{"logprobsResult"})
 	if fromLogprobsResult != nil {
-		setValueByPath(toObject, []string{"logprobsResult"}, fromLogprobsResult)
+		InternalSetValueByPath(toObject, []string{"logprobsResult"}, fromLogprobsResult)
 	}
 
-	fromSafetyRatings := getValueByPath(fromObject, []string{"safetyRatings"})
+	fromSafetyRatings := InternalGetValueByPath(fromObject, []string{"safetyRatings"})
 	if fromSafetyRatings != nil {
-		setValueByPath(toObject, []string{"safetyRatings"}, fromSafetyRatings)
+		InternalSetValueByPath(toObject, []string{"safetyRatings"}, fromSafetyRatings)
 	}
 
-	fromUrlContextMetadata := getValueByPath(fromObject, []string{"urlContextMetadata"})
+	fromUrlContextMetadata := InternalGetValueByPath(fromObject, []string{"urlContextMetadata"})
 	if fromUrlContextMetadata != nil {
-		setValueByPath(toObject, []string{"urlContextMetadata"}, fromUrlContextMetadata)
+		InternalSetValueByPath(toObject, []string{"urlContextMetadata"}, fromUrlContextMetadata)
 	}
 
 	return toObject, nil
@@ -143,35 +143,35 @@ func candidateFromMldev(fromObject map[string]any, parentObject map[string]any, 
 func citationMetadataFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromCitations := getValueByPath(fromObject, []string{"citationSources"})
+	fromCitations := InternalGetValueByPath(fromObject, []string{"citationSources"})
 	if fromCitations != nil {
-		setValueByPath(toObject, []string{"citations"}, fromCitations)
+		InternalSetValueByPath(toObject, []string{"citations"}, fromCitations)
 	}
 
 	return toObject, nil
 }
 
-func computeTokensParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func computeTokensParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromContents := getValueByPath(fromObject, []string{"contents"})
+	fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
-		fromContents, err = tContents(fromContents)
+		fromContents, err = InternalTContents(fromContents)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"contents"}, fromContents)
+		InternalSetValueByPath(toObject, []string{"contents"}, fromContents)
 	}
 
 	return toObject, nil
@@ -180,14 +180,14 @@ func computeTokensParametersToVertex(ac *apiClient, fromObject map[string]any, p
 func computeTokensResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromTokensInfo := getValueByPath(fromObject, []string{"tokensInfo"})
+	fromTokensInfo := InternalGetValueByPath(fromObject, []string{"tokensInfo"})
 	if fromTokensInfo != nil {
-		setValueByPath(toObject, []string{"tokensInfo"}, fromTokensInfo)
+		InternalSetValueByPath(toObject, []string{"tokensInfo"}, fromTokensInfo)
 	}
 
 	return toObject, nil
@@ -196,19 +196,19 @@ func computeTokensResponseFromVertex(fromObject map[string]any, parentObject map
 func contentEmbeddingFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromValues := getValueByPath(fromObject, []string{"values"})
+	fromValues := InternalGetValueByPath(fromObject, []string{"values"})
 	if fromValues != nil {
-		setValueByPath(toObject, []string{"values"}, fromValues)
+		InternalSetValueByPath(toObject, []string{"values"}, fromValues)
 	}
 
-	fromStatistics := getValueByPath(fromObject, []string{"statistics"})
+	fromStatistics := InternalGetValueByPath(fromObject, []string{"statistics"})
 	if fromStatistics != nil {
 		fromStatistics, err = contentEmbeddingStatisticsFromVertex(fromStatistics.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"statistics"}, fromStatistics)
+		InternalSetValueByPath(toObject, []string{"statistics"}, fromStatistics)
 	}
 
 	return toObject, nil
@@ -217,14 +217,14 @@ func contentEmbeddingFromVertex(fromObject map[string]any, parentObject map[stri
 func contentEmbeddingStatisticsFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromTruncated := getValueByPath(fromObject, []string{"truncated"})
+	fromTruncated := InternalGetValueByPath(fromObject, []string{"truncated"})
 	if fromTruncated != nil {
-		setValueByPath(toObject, []string{"truncated"}, fromTruncated)
+		InternalSetValueByPath(toObject, []string{"truncated"}, fromTruncated)
 	}
 
-	fromTokenCount := getValueByPath(fromObject, []string{"token_count"})
+	fromTokenCount := InternalGetValueByPath(fromObject, []string{"token_count"})
 	if fromTokenCount != nil {
-		setValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
+		InternalSetValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
 	}
 
 	return toObject, nil
@@ -233,19 +233,19 @@ func contentEmbeddingStatisticsFromVertex(fromObject map[string]any, parentObjec
 func contentToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromParts := getValueByPath(fromObject, []string{"parts"})
+	fromParts := InternalGetValueByPath(fromObject, []string{"parts"})
 	if fromParts != nil {
 		fromParts, err = applyConverterToSliceWithRoot(fromParts.([]any), partToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"parts"}, fromParts)
+		InternalSetValueByPath(toObject, []string{"parts"}, fromParts)
 	}
 
-	fromRole := getValueByPath(fromObject, []string{"role"})
+	fromRole := InternalGetValueByPath(fromObject, []string{"role"})
 	if fromRole != nil {
-		setValueByPath(toObject, []string{"role"}, fromRole)
+		InternalSetValueByPath(toObject, []string{"role"}, fromRole)
 	}
 
 	return toObject, nil
@@ -254,14 +254,14 @@ func contentToMldev(fromObject map[string]any, parentObject map[string]any, root
 func controlReferenceConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromControlType := getValueByPath(fromObject, []string{"controlType"})
+	fromControlType := InternalGetValueByPath(fromObject, []string{"controlType"})
 	if fromControlType != nil {
-		setValueByPath(toObject, []string{"controlType"}, fromControlType)
+		InternalSetValueByPath(toObject, []string{"controlType"}, fromControlType)
 	}
 
-	fromEnableControlImageComputation := getValueByPath(fromObject, []string{"enableControlImageComputation"})
+	fromEnableControlImageComputation := InternalGetValueByPath(fromObject, []string{"enableControlImageComputation"})
 	if fromEnableControlImageComputation != nil {
-		setValueByPath(toObject, []string{"computeControl"}, fromEnableControlImageComputation)
+		InternalSetValueByPath(toObject, []string{"computeControl"}, fromEnableControlImageComputation)
 	}
 
 	return toObject, nil
@@ -270,15 +270,15 @@ func controlReferenceConfigToVertex(fromObject map[string]any, parentObject map[
 func countTokensConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	if getValueByPath(fromObject, []string{"systemInstruction"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"systemInstruction"}) != nil {
 		return nil, fmt.Errorf("systemInstruction parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"tools"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"tools"}) != nil {
 		return nil, fmt.Errorf("tools parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"generationConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"generationConfig"}) != nil {
 		return nil, fmt.Errorf("generationConfig parameter is not supported in Gemini API")
 	}
 
@@ -288,55 +288,55 @@ func countTokensConfigToMldev(fromObject map[string]any, parentObject map[string
 func countTokensConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
+	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
-		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
+		InternalSetValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
 	}
 
-	fromTools := getValueByPath(fromObject, []string{"tools"})
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
 	if fromTools != nil {
 		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"tools"}, fromTools)
+		InternalSetValueByPath(parentObject, []string{"tools"}, fromTools)
 	}
 
-	fromGenerationConfig := getValueByPath(fromObject, []string{"generationConfig"})
+	fromGenerationConfig := InternalGetValueByPath(fromObject, []string{"generationConfig"})
 	if fromGenerationConfig != nil {
 		fromGenerationConfig, err = generationConfigToVertex(fromGenerationConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"generationConfig"}, fromGenerationConfig)
+		InternalSetValueByPath(parentObject, []string{"generationConfig"}, fromGenerationConfig)
 	}
 
 	return toObject, nil
 }
 
-func countTokensParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func countTokensParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromContents := getValueByPath(fromObject, []string{"contents"})
+	fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
-		fromContents, err = tContents(fromContents)
+		fromContents, err = InternalTContents(fromContents)
 		if err != nil {
 			return nil, err
 		}
@@ -346,10 +346,10 @@ func countTokensParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"contents"}, fromContents)
+		InternalSetValueByPath(toObject, []string{"contents"}, fromContents)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = countTokensConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -360,30 +360,30 @@ func countTokensParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 	return toObject, nil
 }
 
-func countTokensParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func countTokensParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromContents := getValueByPath(fromObject, []string{"contents"})
+	fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
-		fromContents, err = tContents(fromContents)
+		fromContents, err = InternalTContents(fromContents)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"contents"}, fromContents)
+		InternalSetValueByPath(toObject, []string{"contents"}, fromContents)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = countTokensConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -397,19 +397,19 @@ func countTokensParametersToVertex(ac *apiClient, fromObject map[string]any, par
 func countTokensResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromTotalTokens := getValueByPath(fromObject, []string{"totalTokens"})
+	fromTotalTokens := InternalGetValueByPath(fromObject, []string{"totalTokens"})
 	if fromTotalTokens != nil {
-		setValueByPath(toObject, []string{"totalTokens"}, fromTotalTokens)
+		InternalSetValueByPath(toObject, []string{"totalTokens"}, fromTotalTokens)
 	}
 
-	fromCachedContentTokenCount := getValueByPath(fromObject, []string{"cachedContentTokenCount"})
+	fromCachedContentTokenCount := InternalGetValueByPath(fromObject, []string{"cachedContentTokenCount"})
 	if fromCachedContentTokenCount != nil {
-		setValueByPath(toObject, []string{"cachedContentTokenCount"}, fromCachedContentTokenCount)
+		InternalSetValueByPath(toObject, []string{"cachedContentTokenCount"}, fromCachedContentTokenCount)
 	}
 
 	return toObject, nil
@@ -418,46 +418,46 @@ func countTokensResponseFromMldev(fromObject map[string]any, parentObject map[st
 func countTokensResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromTotalTokens := getValueByPath(fromObject, []string{"totalTokens"})
+	fromTotalTokens := InternalGetValueByPath(fromObject, []string{"totalTokens"})
 	if fromTotalTokens != nil {
-		setValueByPath(toObject, []string{"totalTokens"}, fromTotalTokens)
+		InternalSetValueByPath(toObject, []string{"totalTokens"}, fromTotalTokens)
 	}
 
 	return toObject, nil
 }
 
-func deleteModelParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func deleteModelParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromModel)
 	}
 
 	return toObject, nil
 }
 
-func deleteModelParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func deleteModelParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromModel)
 	}
 
 	return toObject, nil
@@ -466,9 +466,9 @@ func deleteModelParametersToVertex(ac *apiClient, fromObject map[string]any, par
 func deleteModelResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	return toObject, nil
@@ -477,9 +477,9 @@ func deleteModelResponseFromMldev(fromObject map[string]any, parentObject map[st
 func deleteModelResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	return toObject, nil
@@ -488,123 +488,123 @@ func deleteModelResponseFromVertex(fromObject map[string]any, parentObject map[s
 func editImageConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	fromOutputGcsUri := InternalGetValueByPath(fromObject, []string{"outputGcsUri"})
 	if fromOutputGcsUri != nil {
-		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+		InternalSetValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
 	}
 
-	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	fromNegativePrompt := InternalGetValueByPath(fromObject, []string{"negativePrompt"})
 	if fromNegativePrompt != nil {
-		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+		InternalSetValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
 	}
 
-	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	fromNumberOfImages := InternalGetValueByPath(fromObject, []string{"numberOfImages"})
 	if fromNumberOfImages != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
 	}
 
-	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	fromAspectRatio := InternalGetValueByPath(fromObject, []string{"aspectRatio"})
 	if fromAspectRatio != nil {
-		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+		InternalSetValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
 	}
 
-	fromGuidanceScale := getValueByPath(fromObject, []string{"guidanceScale"})
+	fromGuidanceScale := InternalGetValueByPath(fromObject, []string{"guidanceScale"})
 	if fromGuidanceScale != nil {
-		setValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
+		InternalSetValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
+		InternalSetValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
 	}
 
-	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	fromSafetyFilterLevel := InternalGetValueByPath(fromObject, []string{"safetyFilterLevel"})
 	if fromSafetyFilterLevel != nil {
-		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+		InternalSetValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
 	}
 
-	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	fromPersonGeneration := InternalGetValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
-		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+		InternalSetValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
 	}
 
-	fromIncludeSafetyAttributes := getValueByPath(fromObject, []string{"includeSafetyAttributes"})
+	fromIncludeSafetyAttributes := InternalGetValueByPath(fromObject, []string{"includeSafetyAttributes"})
 	if fromIncludeSafetyAttributes != nil {
-		setValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
+		InternalSetValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
 	}
 
-	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
+	fromIncludeRaiReason := InternalGetValueByPath(fromObject, []string{"includeRaiReason"})
 	if fromIncludeRaiReason != nil {
-		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
+		InternalSetValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
 	}
 
-	fromLanguage := getValueByPath(fromObject, []string{"language"})
+	fromLanguage := InternalGetValueByPath(fromObject, []string{"language"})
 	if fromLanguage != nil {
-		setValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
+		InternalSetValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
 	}
 
-	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	fromOutputMimeType := InternalGetValueByPath(fromObject, []string{"outputMimeType"})
 	if fromOutputMimeType != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
 	}
 
-	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	fromOutputCompressionQuality := InternalGetValueByPath(fromObject, []string{"outputCompressionQuality"})
 	if fromOutputCompressionQuality != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
 	}
 
-	fromAddWatermark := getValueByPath(fromObject, []string{"addWatermark"})
+	fromAddWatermark := InternalGetValueByPath(fromObject, []string{"addWatermark"})
 	if fromAddWatermark != nil {
-		setValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
+		InternalSetValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
-	fromEditMode := getValueByPath(fromObject, []string{"editMode"})
+	fromEditMode := InternalGetValueByPath(fromObject, []string{"editMode"})
 	if fromEditMode != nil {
-		setValueByPath(parentObject, []string{"parameters", "editMode"}, fromEditMode)
+		InternalSetValueByPath(parentObject, []string{"parameters", "editMode"}, fromEditMode)
 	}
 
-	fromBaseSteps := getValueByPath(fromObject, []string{"baseSteps"})
+	fromBaseSteps := InternalGetValueByPath(fromObject, []string{"baseSteps"})
 	if fromBaseSteps != nil {
-		setValueByPath(parentObject, []string{"parameters", "editConfig", "baseSteps"}, fromBaseSteps)
+		InternalSetValueByPath(parentObject, []string{"parameters", "editConfig", "baseSteps"}, fromBaseSteps)
 	}
 
 	return toObject, nil
 }
 
-func editImageParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func editImageParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	fromReferenceImages := InternalGetValueByPath(fromObject, []string{"referenceImages"})
 	if fromReferenceImages != nil {
 		fromReferenceImages, err = applyConverterToSliceWithRoot(fromReferenceImages.([]any), referenceImageAPIToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = editImageConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -618,19 +618,19 @@ func editImageParametersToVertex(ac *apiClient, fromObject map[string]any, paren
 func editImageResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	fromGeneratedImages := InternalGetValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
 		fromGeneratedImages, err = applyConverterToSliceWithRoot(fromGeneratedImages.([]any), generatedImageFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+		InternalSetValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
 	}
 
 	return toObject, nil
@@ -639,26 +639,26 @@ func editImageResponseFromVertex(fromObject map[string]any, parentObject map[str
 func embedContentConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromTaskType := getValueByPath(fromObject, []string{"taskType"})
+	fromTaskType := InternalGetValueByPath(fromObject, []string{"taskType"})
 	if fromTaskType != nil {
-		setValueByPath(parentObject, []string{"requests[]", "taskType"}, fromTaskType)
+		InternalSetValueByPath(parentObject, []string{"requests[]", "taskType"}, fromTaskType)
 	}
 
-	fromTitle := getValueByPath(fromObject, []string{"title"})
+	fromTitle := InternalGetValueByPath(fromObject, []string{"title"})
 	if fromTitle != nil {
-		setValueByPath(parentObject, []string{"requests[]", "title"}, fromTitle)
+		InternalSetValueByPath(parentObject, []string{"requests[]", "title"}, fromTitle)
 	}
 
-	fromOutputDimensionality := getValueByPath(fromObject, []string{"outputDimensionality"})
+	fromOutputDimensionality := InternalGetValueByPath(fromObject, []string{"outputDimensionality"})
 	if fromOutputDimensionality != nil {
-		setValueByPath(parentObject, []string{"requests[]", "outputDimensionality"}, fromOutputDimensionality)
+		InternalSetValueByPath(parentObject, []string{"requests[]", "outputDimensionality"}, fromOutputDimensionality)
 	}
 
-	if getValueByPath(fromObject, []string{"mimeType"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"mimeType"}) != nil {
 		return nil, fmt.Errorf("mimeType parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"autoTruncate"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"autoTruncate"}) != nil {
 		return nil, fmt.Errorf("autoTruncate parameter is not supported in Gemini API")
 	}
 
@@ -668,110 +668,110 @@ func embedContentConfigToMldev(fromObject map[string]any, parentObject map[strin
 func embedContentConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	var discriminatorTaskType any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	var discriminatorTaskType any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
 	if discriminatorTaskType == nil {
 		discriminatorTaskType = "PREDICT"
 	}
 	if discriminatorTaskType.(string) == "PREDICT" {
-		fromTaskType := getValueByPath(fromObject, []string{"taskType"})
+		fromTaskType := InternalGetValueByPath(fromObject, []string{"taskType"})
 		if fromTaskType != nil {
-			setValueByPath(parentObject, []string{"instances[]", "task_type"}, fromTaskType)
+			InternalSetValueByPath(parentObject, []string{"instances[]", "task_type"}, fromTaskType)
 		}
 	} else if discriminatorTaskType.(string) == "EMBED_CONTENT" {
-		fromTaskType := getValueByPath(fromObject, []string{"taskType"})
+		fromTaskType := InternalGetValueByPath(fromObject, []string{"taskType"})
 		if fromTaskType != nil {
-			setValueByPath(parentObject, []string{"taskType"}, fromTaskType)
+			InternalSetValueByPath(parentObject, []string{"taskType"}, fromTaskType)
 		}
 	}
 
-	var discriminatorTitle any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	var discriminatorTitle any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
 	if discriminatorTitle == nil {
 		discriminatorTitle = "PREDICT"
 	}
 	if discriminatorTitle.(string) == "PREDICT" {
-		fromTitle := getValueByPath(fromObject, []string{"title"})
+		fromTitle := InternalGetValueByPath(fromObject, []string{"title"})
 		if fromTitle != nil {
-			setValueByPath(parentObject, []string{"instances[]", "title"}, fromTitle)
+			InternalSetValueByPath(parentObject, []string{"instances[]", "title"}, fromTitle)
 		}
 	} else if discriminatorTitle.(string) == "EMBED_CONTENT" {
-		fromTitle := getValueByPath(fromObject, []string{"title"})
+		fromTitle := InternalGetValueByPath(fromObject, []string{"title"})
 		if fromTitle != nil {
-			setValueByPath(parentObject, []string{"title"}, fromTitle)
+			InternalSetValueByPath(parentObject, []string{"title"}, fromTitle)
 		}
 	}
 
-	var discriminatorOutputDimensionality any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	var discriminatorOutputDimensionality any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
 	if discriminatorOutputDimensionality == nil {
 		discriminatorOutputDimensionality = "PREDICT"
 	}
 	if discriminatorOutputDimensionality.(string) == "PREDICT" {
-		fromOutputDimensionality := getValueByPath(fromObject, []string{"outputDimensionality"})
+		fromOutputDimensionality := InternalGetValueByPath(fromObject, []string{"outputDimensionality"})
 		if fromOutputDimensionality != nil {
-			setValueByPath(parentObject, []string{"parameters", "outputDimensionality"}, fromOutputDimensionality)
+			InternalSetValueByPath(parentObject, []string{"parameters", "outputDimensionality"}, fromOutputDimensionality)
 		}
 	} else if discriminatorOutputDimensionality.(string) == "EMBED_CONTENT" {
-		fromOutputDimensionality := getValueByPath(fromObject, []string{"outputDimensionality"})
+		fromOutputDimensionality := InternalGetValueByPath(fromObject, []string{"outputDimensionality"})
 		if fromOutputDimensionality != nil {
-			setValueByPath(parentObject, []string{"outputDimensionality"}, fromOutputDimensionality)
+			InternalSetValueByPath(parentObject, []string{"outputDimensionality"}, fromOutputDimensionality)
 		}
 	}
 
-	var discriminatorMimeType any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	var discriminatorMimeType any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
 	if discriminatorMimeType == nil {
 		discriminatorMimeType = "PREDICT"
 	}
 	if discriminatorMimeType.(string) == "PREDICT" {
-		fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+		fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 		if fromMimeType != nil {
-			setValueByPath(parentObject, []string{"instances[]", "mimeType"}, fromMimeType)
+			InternalSetValueByPath(parentObject, []string{"instances[]", "mimeType"}, fromMimeType)
 		}
 	}
 
-	var discriminatorAutoTruncate any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	var discriminatorAutoTruncate any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
 	if discriminatorAutoTruncate == nil {
 		discriminatorAutoTruncate = "PREDICT"
 	}
 	if discriminatorAutoTruncate.(string) == "PREDICT" {
-		fromAutoTruncate := getValueByPath(fromObject, []string{"autoTruncate"})
+		fromAutoTruncate := InternalGetValueByPath(fromObject, []string{"autoTruncate"})
 		if fromAutoTruncate != nil {
-			setValueByPath(parentObject, []string{"parameters", "autoTruncate"}, fromAutoTruncate)
+			InternalSetValueByPath(parentObject, []string{"parameters", "autoTruncate"}, fromAutoTruncate)
 		}
 	} else if discriminatorAutoTruncate.(string) == "EMBED_CONTENT" {
-		fromAutoTruncate := getValueByPath(fromObject, []string{"autoTruncate"})
+		fromAutoTruncate := InternalGetValueByPath(fromObject, []string{"autoTruncate"})
 		if fromAutoTruncate != nil {
-			setValueByPath(parentObject, []string{"autoTruncate"}, fromAutoTruncate)
+			InternalSetValueByPath(parentObject, []string{"autoTruncate"}, fromAutoTruncate)
 		}
 	}
 
 	return toObject, nil
 }
 
-func embedContentParametersPrivateToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func embedContentParametersPrivateToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromContents := getValueByPath(fromObject, []string{"contents"})
+	fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
-		fromContents, err = tContentsForEmbed(ac, fromContents)
+		fromContents, err = InternalTContentsForEmbed(ac, fromContents)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"requests[]", "content"}, fromContents)
+		InternalSetValueByPath(toObject, []string{"requests[]", "content"}, fromContents)
 	}
 
-	fromContent := getValueByPath(fromObject, []string{"content"})
+	fromContent := InternalGetValueByPath(fromObject, []string{"content"})
 	if fromContent != nil {
-		_, err = tContent(fromContent)
+		_, err = InternalTContent(fromContent)
 		if err != nil {
 			return nil, err
 		}
@@ -782,7 +782,7 @@ func embedContentParametersPrivateToMldev(ac *apiClient, fromObject map[string]a
 		}
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = embedContentConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -795,52 +795,52 @@ func embedContentParametersPrivateToMldev(ac *apiClient, fromObject map[string]a
 	return toObject, nil
 }
 
-func embedContentParametersPrivateToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func embedContentParametersPrivateToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	var discriminatorContents any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	var discriminatorContents any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
 	if discriminatorContents == nil {
 		discriminatorContents = "PREDICT"
 	}
 	if discriminatorContents.(string) == "PREDICT" {
-		fromContents := getValueByPath(fromObject, []string{"contents"})
+		fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 		if fromContents != nil {
-			fromContents, err = tContentsForEmbed(ac, fromContents)
+			fromContents, err = InternalTContentsForEmbed(ac, fromContents)
 			if err != nil {
 				return nil, err
 			}
 
-			setValueByPath(toObject, []string{"instances[]", "content"}, fromContents)
+			InternalSetValueByPath(toObject, []string{"instances[]", "content"}, fromContents)
 		}
 	}
 
-	var discriminatorContent any = getValueByPath(rootObject, []string{"embeddingApiType"})
+	var discriminatorContent any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
 	if discriminatorContent == nil {
 		discriminatorContent = "PREDICT"
 	}
 	if discriminatorContent.(string) == "EMBED_CONTENT" {
-		fromContent := getValueByPath(fromObject, []string{"content"})
+		fromContent := InternalGetValueByPath(fromObject, []string{"content"})
 		if fromContent != nil {
-			fromContent, err = tContent(fromContent)
+			fromContent, err = InternalTContent(fromContent)
 			if err != nil {
 				return nil, err
 			}
 
-			setValueByPath(toObject, []string{"content"}, fromContent)
+			InternalSetValueByPath(toObject, []string{"content"}, fromContent)
 		}
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = embedContentConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -854,19 +854,19 @@ func embedContentParametersPrivateToVertex(ac *apiClient, fromObject map[string]
 func embedContentResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromEmbeddings := getValueByPath(fromObject, []string{"embeddings"})
+	fromEmbeddings := InternalGetValueByPath(fromObject, []string{"embeddings"})
 	if fromEmbeddings != nil {
-		setValueByPath(toObject, []string{"embeddings"}, fromEmbeddings)
+		InternalSetValueByPath(toObject, []string{"embeddings"}, fromEmbeddings)
 	}
 
-	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	fromMetadata := InternalGetValueByPath(fromObject, []string{"metadata"})
 	if fromMetadata != nil {
-		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+		InternalSetValueByPath(toObject, []string{"metadata"}, fromMetadata)
 	}
 
 	return toObject, nil
@@ -875,24 +875,24 @@ func embedContentResponseFromMldev(fromObject map[string]any, parentObject map[s
 func embedContentResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromEmbeddings := getValueByPath(fromObject, []string{"predictions[]", "embeddings"})
+	fromEmbeddings := InternalGetValueByPath(fromObject, []string{"predictions[]", "embeddings"})
 	if fromEmbeddings != nil {
 		fromEmbeddings, err = applyConverterToSliceWithRoot(fromEmbeddings.([]any), contentEmbeddingFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"embeddings"}, fromEmbeddings)
+		InternalSetValueByPath(toObject, []string{"embeddings"}, fromEmbeddings)
 	}
 
-	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	fromMetadata := InternalGetValueByPath(fromObject, []string{"metadata"})
 	if fromMetadata != nil {
-		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+		InternalSetValueByPath(toObject, []string{"metadata"}, fromMetadata)
 	}
 
 	if rootObject != nil && getValueByPath(rootObject, []string{"embeddingApiType"}) != nil && getValueByPath(rootObject, []string{"embeddingApiType"}).(string) == "EMBED_CONTENT" {
@@ -920,14 +920,14 @@ func embedContentResponseFromVertex(fromObject map[string]any, parentObject map[
 func endpointFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"endpoint"})
+	fromName := InternalGetValueByPath(fromObject, []string{"endpoint"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromDeployedModelId := getValueByPath(fromObject, []string{"deployedModelId"})
+	fromDeployedModelId := InternalGetValueByPath(fromObject, []string{"deployedModelId"})
 	if fromDeployedModelId != nil {
-		setValueByPath(toObject, []string{"deployedModelId"}, fromDeployedModelId)
+		InternalSetValueByPath(toObject, []string{"deployedModelId"}, fromDeployedModelId)
 	}
 
 	return toObject, nil
@@ -935,18 +935,18 @@ func endpointFromVertex(fromObject map[string]any, parentObject map[string]any, 
 
 func fileDataToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"displayName"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"displayName"}) != nil {
 		return nil, fmt.Errorf("displayName parameter is not supported in Gemini API")
 	}
 
-	fromFileUri := getValueByPath(fromObject, []string{"fileUri"})
+	fromFileUri := InternalGetValueByPath(fromObject, []string{"fileUri"})
 	if fromFileUri != nil {
-		setValueByPath(toObject, []string{"fileUri"}, fromFileUri)
+		InternalSetValueByPath(toObject, []string{"fileUri"}, fromFileUri)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -955,26 +955,26 @@ func fileDataToMldev(fromObject map[string]any, parentObject map[string]any, roo
 func functionCallToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromId := getValueByPath(fromObject, []string{"id"})
+	fromId := InternalGetValueByPath(fromObject, []string{"id"})
 	if fromId != nil {
-		setValueByPath(toObject, []string{"id"}, fromId)
+		InternalSetValueByPath(toObject, []string{"id"}, fromId)
 	}
 
-	fromArgs := getValueByPath(fromObject, []string{"args"})
+	fromArgs := InternalGetValueByPath(fromObject, []string{"args"})
 	if fromArgs != nil {
-		setValueByPath(toObject, []string{"args"}, fromArgs)
+		InternalSetValueByPath(toObject, []string{"args"}, fromArgs)
 	}
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	if getValueByPath(fromObject, []string{"partialArgs"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"partialArgs"}) != nil {
 		return nil, fmt.Errorf("partialArgs parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"willContinue"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"willContinue"}) != nil {
 		return nil, fmt.Errorf("willContinue parameter is not supported in Gemini API")
 	}
 
@@ -984,17 +984,17 @@ func functionCallToMldev(fromObject map[string]any, parentObject map[string]any,
 func functionCallingConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromAllowedFunctionNames := getValueByPath(fromObject, []string{"allowedFunctionNames"})
+	fromAllowedFunctionNames := InternalGetValueByPath(fromObject, []string{"allowedFunctionNames"})
 	if fromAllowedFunctionNames != nil {
-		setValueByPath(toObject, []string{"allowedFunctionNames"}, fromAllowedFunctionNames)
+		InternalSetValueByPath(toObject, []string{"allowedFunctionNames"}, fromAllowedFunctionNames)
 	}
 
-	fromMode := getValueByPath(fromObject, []string{"mode"})
+	fromMode := InternalGetValueByPath(fromObject, []string{"mode"})
 	if fromMode != nil {
-		setValueByPath(toObject, []string{"mode"}, fromMode)
+		InternalSetValueByPath(toObject, []string{"mode"}, fromMode)
 	}
 
-	if getValueByPath(fromObject, []string{"streamFunctionCallArguments"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"streamFunctionCallArguments"}) != nil {
 		return nil, fmt.Errorf("streamFunctionCallArguments parameter is not supported in Gemini API")
 	}
 
@@ -1004,49 +1004,49 @@ func functionCallingConfigToMldev(fromObject map[string]any, parentObject map[st
 func functionDeclarationToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromDescription := getValueByPath(fromObject, []string{"description"})
+	fromDescription := InternalGetValueByPath(fromObject, []string{"description"})
 	if fromDescription != nil {
-		setValueByPath(toObject, []string{"description"}, fromDescription)
+		InternalSetValueByPath(toObject, []string{"description"}, fromDescription)
 	}
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromParameters := getValueByPath(fromObject, []string{"parameters"})
+	fromParameters := InternalGetValueByPath(fromObject, []string{"parameters"})
 	if fromParameters != nil {
-		setValueByPath(toObject, []string{"parameters"}, fromParameters)
+		InternalSetValueByPath(toObject, []string{"parameters"}, fromParameters)
 	}
 
-	fromParametersJsonSchema := getValueByPath(fromObject, []string{"parametersJsonSchema"})
+	fromParametersJsonSchema := InternalGetValueByPath(fromObject, []string{"parametersJsonSchema"})
 	if fromParametersJsonSchema != nil {
-		setValueByPath(toObject, []string{"parametersJsonSchema"}, fromParametersJsonSchema)
+		InternalSetValueByPath(toObject, []string{"parametersJsonSchema"}, fromParametersJsonSchema)
 	}
 
-	fromResponse := getValueByPath(fromObject, []string{"response"})
+	fromResponse := InternalGetValueByPath(fromObject, []string{"response"})
 	if fromResponse != nil {
-		setValueByPath(toObject, []string{"response"}, fromResponse)
+		InternalSetValueByPath(toObject, []string{"response"}, fromResponse)
 	}
 
-	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	fromResponseJsonSchema := InternalGetValueByPath(fromObject, []string{"responseJsonSchema"})
 	if fromResponseJsonSchema != nil {
-		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+		InternalSetValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
 	}
 
-	if getValueByPath(fromObject, []string{"behavior"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"behavior"}) != nil {
 		return nil, fmt.Errorf("behavior parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
 }
 
-func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
+	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
-		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
 		if err != nil {
 			return nil, err
 		}
@@ -1056,110 +1056,110 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
+		InternalSetValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
 	}
 
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	fromTemperature := InternalGetValueByPath(fromObject, []string{"temperature"})
 	if fromTemperature != nil {
-		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
+		InternalSetValueByPath(toObject, []string{"temperature"}, fromTemperature)
 	}
 
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	fromTopP := InternalGetValueByPath(fromObject, []string{"topP"})
 	if fromTopP != nil {
-		setValueByPath(toObject, []string{"topP"}, fromTopP)
+		InternalSetValueByPath(toObject, []string{"topP"}, fromTopP)
 	}
 
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	fromTopK := InternalGetValueByPath(fromObject, []string{"topK"})
 	if fromTopK != nil {
-		setValueByPath(toObject, []string{"topK"}, fromTopK)
+		InternalSetValueByPath(toObject, []string{"topK"}, fromTopK)
 	}
 
-	fromCandidateCount := getValueByPath(fromObject, []string{"candidateCount"})
+	fromCandidateCount := InternalGetValueByPath(fromObject, []string{"candidateCount"})
 	if fromCandidateCount != nil {
-		setValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
+		InternalSetValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
 	}
 
-	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
+	fromMaxOutputTokens := InternalGetValueByPath(fromObject, []string{"maxOutputTokens"})
 	if fromMaxOutputTokens != nil {
-		setValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
+		InternalSetValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
 	}
 
-	fromStopSequences := getValueByPath(fromObject, []string{"stopSequences"})
+	fromStopSequences := InternalGetValueByPath(fromObject, []string{"stopSequences"})
 	if fromStopSequences != nil {
-		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
+		InternalSetValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
 	}
 
-	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
+	fromResponseLogprobs := InternalGetValueByPath(fromObject, []string{"responseLogprobs"})
 	if fromResponseLogprobs != nil {
-		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
+		InternalSetValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
 	}
 
-	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
+	fromLogprobs := InternalGetValueByPath(fromObject, []string{"logprobs"})
 	if fromLogprobs != nil {
-		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
+		InternalSetValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
 	}
 
-	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
+	fromPresencePenalty := InternalGetValueByPath(fromObject, []string{"presencePenalty"})
 	if fromPresencePenalty != nil {
-		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+		InternalSetValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
 	}
 
-	fromFrequencyPenalty := getValueByPath(fromObject, []string{"frequencyPenalty"})
+	fromFrequencyPenalty := InternalGetValueByPath(fromObject, []string{"frequencyPenalty"})
 	if fromFrequencyPenalty != nil {
-		setValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
+		InternalSetValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(toObject, []string{"seed"}, fromSeed)
+		InternalSetValueByPath(toObject, []string{"seed"}, fromSeed)
 	}
 
-	fromResponseMimeType := getValueByPath(fromObject, []string{"responseMimeType"})
+	fromResponseMimeType := InternalGetValueByPath(fromObject, []string{"responseMimeType"})
 	if fromResponseMimeType != nil {
-		setValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
+		InternalSetValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
 	}
 
-	fromResponseSchema := getValueByPath(fromObject, []string{"responseSchema"})
+	fromResponseSchema := InternalGetValueByPath(fromObject, []string{"responseSchema"})
 	if fromResponseSchema != nil {
-		fromResponseSchema, err = tSchema(fromResponseSchema)
+		fromResponseSchema, err = InternalTSchema(fromResponseSchema)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
+		InternalSetValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
 	}
 
-	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	fromResponseJsonSchema := InternalGetValueByPath(fromObject, []string{"responseJsonSchema"})
 	if fromResponseJsonSchema != nil {
-		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+		InternalSetValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
 	}
 
-	if getValueByPath(fromObject, []string{"routingConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"routingConfig"}) != nil {
 		return nil, fmt.Errorf("routingConfig parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"modelSelectionConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"modelSelectionConfig"}) != nil {
 		return nil, fmt.Errorf("modelSelectionConfig parameter is not supported in Gemini API")
 	}
 
-	fromSafetySettings := getValueByPath(fromObject, []string{"safetySettings"})
+	fromSafetySettings := InternalGetValueByPath(fromObject, []string{"safetySettings"})
 	if fromSafetySettings != nil {
 		fromSafetySettings, err = applyConverterToSliceWithRoot(fromSafetySettings.([]any), safetySettingToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"safetySettings"}, fromSafetySettings)
+		InternalSetValueByPath(parentObject, []string{"safetySettings"}, fromSafetySettings)
 	}
 
-	fromTools := getValueByPath(fromObject, []string{"tools"})
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
 	if fromTools != nil {
 		fromTools, err = applyItemTransformerToSlice(fromTools.([]any), tTool)
 		if err != nil {
 			return nil, err
 		}
 
-		fromTools, err = tTools(fromTools)
+		fromTools, err = InternalTTools(fromTools)
 		if err != nil {
 			return nil, err
 		}
@@ -1169,195 +1169,195 @@ func generateContentConfigToMldev(ac *apiClient, fromObject map[string]any, pare
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"tools"}, fromTools)
+		InternalSetValueByPath(parentObject, []string{"tools"}, fromTools)
 	}
 
-	fromToolConfig := getValueByPath(fromObject, []string{"toolConfig"})
+	fromToolConfig := InternalGetValueByPath(fromObject, []string{"toolConfig"})
 	if fromToolConfig != nil {
 		fromToolConfig, err = toolConfigToMldev(fromToolConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
+		InternalSetValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
-	if getValueByPath(fromObject, []string{"labels"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"labels"}) != nil {
 		return nil, fmt.Errorf("labels parameter is not supported in Gemini API")
 	}
 
-	fromCachedContent := getValueByPath(fromObject, []string{"cachedContent"})
+	fromCachedContent := InternalGetValueByPath(fromObject, []string{"cachedContent"})
 	if fromCachedContent != nil {
-		fromCachedContent, err = tCachedContentName(ac, fromCachedContent)
+		fromCachedContent, err = InternalTCachedContentName(ac, fromCachedContent)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"cachedContent"}, fromCachedContent)
+		InternalSetValueByPath(parentObject, []string{"cachedContent"}, fromCachedContent)
 	}
 
-	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
+	fromResponseModalities := InternalGetValueByPath(fromObject, []string{"responseModalities"})
 	if fromResponseModalities != nil {
-		setValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
+		InternalSetValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
 	}
 
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
 	if fromMediaResolution != nil {
-		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
 	}
 
-	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
+	fromSpeechConfig := InternalGetValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = tSpeechConfig(fromSpeechConfig)
+		fromSpeechConfig, err = InternalTSpeechConfig(fromSpeechConfig)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
+		InternalSetValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
-	if getValueByPath(fromObject, []string{"audioTimestamp"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"audioTimestamp"}) != nil {
 		return nil, fmt.Errorf("audioTimestamp parameter is not supported in Gemini API")
 	}
 
-	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
+	fromThinkingConfig := InternalGetValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
-		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
+		InternalSetValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
 	}
 
-	fromImageConfig := getValueByPath(fromObject, []string{"imageConfig"})
+	fromImageConfig := InternalGetValueByPath(fromObject, []string{"imageConfig"})
 	if fromImageConfig != nil {
 		fromImageConfig, err = imageConfigToMldev(fromImageConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
+		InternalSetValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
 	}
 
-	fromEnableEnhancedCivicAnswers := getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"})
+	fromEnableEnhancedCivicAnswers := InternalGetValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"})
 	if fromEnableEnhancedCivicAnswers != nil {
-		setValueByPath(toObject, []string{"enableEnhancedCivicAnswers"}, fromEnableEnhancedCivicAnswers)
+		InternalSetValueByPath(toObject, []string{"enableEnhancedCivicAnswers"}, fromEnableEnhancedCivicAnswers)
 	}
 
-	if getValueByPath(fromObject, []string{"modelArmorConfig"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"modelArmorConfig"}) != nil {
 		return nil, fmt.Errorf("modelArmorConfig parameter is not supported in Gemini API")
 	}
 
 	return toObject, nil
 }
 
-func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
+	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
-		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
+		InternalSetValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
 	}
 
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	fromTemperature := InternalGetValueByPath(fromObject, []string{"temperature"})
 	if fromTemperature != nil {
-		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
+		InternalSetValueByPath(toObject, []string{"temperature"}, fromTemperature)
 	}
 
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	fromTopP := InternalGetValueByPath(fromObject, []string{"topP"})
 	if fromTopP != nil {
-		setValueByPath(toObject, []string{"topP"}, fromTopP)
+		InternalSetValueByPath(toObject, []string{"topP"}, fromTopP)
 	}
 
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	fromTopK := InternalGetValueByPath(fromObject, []string{"topK"})
 	if fromTopK != nil {
-		setValueByPath(toObject, []string{"topK"}, fromTopK)
+		InternalSetValueByPath(toObject, []string{"topK"}, fromTopK)
 	}
 
-	fromCandidateCount := getValueByPath(fromObject, []string{"candidateCount"})
+	fromCandidateCount := InternalGetValueByPath(fromObject, []string{"candidateCount"})
 	if fromCandidateCount != nil {
-		setValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
+		InternalSetValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
 	}
 
-	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
+	fromMaxOutputTokens := InternalGetValueByPath(fromObject, []string{"maxOutputTokens"})
 	if fromMaxOutputTokens != nil {
-		setValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
+		InternalSetValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
 	}
 
-	fromStopSequences := getValueByPath(fromObject, []string{"stopSequences"})
+	fromStopSequences := InternalGetValueByPath(fromObject, []string{"stopSequences"})
 	if fromStopSequences != nil {
-		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
+		InternalSetValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
 	}
 
-	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
+	fromResponseLogprobs := InternalGetValueByPath(fromObject, []string{"responseLogprobs"})
 	if fromResponseLogprobs != nil {
-		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
+		InternalSetValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
 	}
 
-	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
+	fromLogprobs := InternalGetValueByPath(fromObject, []string{"logprobs"})
 	if fromLogprobs != nil {
-		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
+		InternalSetValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
 	}
 
-	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
+	fromPresencePenalty := InternalGetValueByPath(fromObject, []string{"presencePenalty"})
 	if fromPresencePenalty != nil {
-		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+		InternalSetValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
 	}
 
-	fromFrequencyPenalty := getValueByPath(fromObject, []string{"frequencyPenalty"})
+	fromFrequencyPenalty := InternalGetValueByPath(fromObject, []string{"frequencyPenalty"})
 	if fromFrequencyPenalty != nil {
-		setValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
+		InternalSetValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(toObject, []string{"seed"}, fromSeed)
+		InternalSetValueByPath(toObject, []string{"seed"}, fromSeed)
 	}
 
-	fromResponseMimeType := getValueByPath(fromObject, []string{"responseMimeType"})
+	fromResponseMimeType := InternalGetValueByPath(fromObject, []string{"responseMimeType"})
 	if fromResponseMimeType != nil {
-		setValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
+		InternalSetValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
 	}
 
-	fromResponseSchema := getValueByPath(fromObject, []string{"responseSchema"})
+	fromResponseSchema := InternalGetValueByPath(fromObject, []string{"responseSchema"})
 	if fromResponseSchema != nil {
-		fromResponseSchema, err = tSchema(fromResponseSchema)
+		fromResponseSchema, err = InternalTSchema(fromResponseSchema)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
+		InternalSetValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
 	}
 
-	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	fromResponseJsonSchema := InternalGetValueByPath(fromObject, []string{"responseJsonSchema"})
 	if fromResponseJsonSchema != nil {
-		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+		InternalSetValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
 	}
 
-	fromRoutingConfig := getValueByPath(fromObject, []string{"routingConfig"})
+	fromRoutingConfig := InternalGetValueByPath(fromObject, []string{"routingConfig"})
 	if fromRoutingConfig != nil {
-		setValueByPath(toObject, []string{"routingConfig"}, fromRoutingConfig)
+		InternalSetValueByPath(toObject, []string{"routingConfig"}, fromRoutingConfig)
 	}
 
-	fromModelSelectionConfig := getValueByPath(fromObject, []string{"modelSelectionConfig"})
+	fromModelSelectionConfig := InternalGetValueByPath(fromObject, []string{"modelSelectionConfig"})
 	if fromModelSelectionConfig != nil {
-		setValueByPath(toObject, []string{"modelConfig"}, fromModelSelectionConfig)
+		InternalSetValueByPath(toObject, []string{"modelConfig"}, fromModelSelectionConfig)
 	}
 
-	fromSafetySettings := getValueByPath(fromObject, []string{"safetySettings"})
+	fromSafetySettings := InternalGetValueByPath(fromObject, []string{"safetySettings"})
 	if fromSafetySettings != nil {
-		setValueByPath(parentObject, []string{"safetySettings"}, fromSafetySettings)
+		InternalSetValueByPath(parentObject, []string{"safetySettings"}, fromSafetySettings)
 	}
 
-	fromTools := getValueByPath(fromObject, []string{"tools"})
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
 	if fromTools != nil {
 		fromTools, err = applyItemTransformerToSlice(fromTools.([]any), tTool)
 		if err != nil {
 			return nil, err
 		}
 
-		fromTools, err = tTools(fromTools)
+		fromTools, err = InternalTTools(fromTools)
 		if err != nil {
 			return nil, err
 		}
@@ -1367,97 +1367,97 @@ func generateContentConfigToVertex(ac *apiClient, fromObject map[string]any, par
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"tools"}, fromTools)
+		InternalSetValueByPath(parentObject, []string{"tools"}, fromTools)
 	}
 
-	fromToolConfig := getValueByPath(fromObject, []string{"toolConfig"})
+	fromToolConfig := InternalGetValueByPath(fromObject, []string{"toolConfig"})
 	if fromToolConfig != nil {
-		setValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
+		InternalSetValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
-	fromCachedContent := getValueByPath(fromObject, []string{"cachedContent"})
+	fromCachedContent := InternalGetValueByPath(fromObject, []string{"cachedContent"})
 	if fromCachedContent != nil {
-		fromCachedContent, err = tCachedContentName(ac, fromCachedContent)
+		fromCachedContent, err = InternalTCachedContentName(ac, fromCachedContent)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"cachedContent"}, fromCachedContent)
+		InternalSetValueByPath(parentObject, []string{"cachedContent"}, fromCachedContent)
 	}
 
-	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
+	fromResponseModalities := InternalGetValueByPath(fromObject, []string{"responseModalities"})
 	if fromResponseModalities != nil {
-		setValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
+		InternalSetValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
 	}
 
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
 	if fromMediaResolution != nil {
-		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
 	}
 
-	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
+	fromSpeechConfig := InternalGetValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = tSpeechConfig(fromSpeechConfig)
+		fromSpeechConfig, err = InternalTSpeechConfig(fromSpeechConfig)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
+		InternalSetValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
-	fromAudioTimestamp := getValueByPath(fromObject, []string{"audioTimestamp"})
+	fromAudioTimestamp := InternalGetValueByPath(fromObject, []string{"audioTimestamp"})
 	if fromAudioTimestamp != nil {
-		setValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
+		InternalSetValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
 	}
 
-	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
+	fromThinkingConfig := InternalGetValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
-		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
+		InternalSetValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
 	}
 
-	fromImageConfig := getValueByPath(fromObject, []string{"imageConfig"})
+	fromImageConfig := InternalGetValueByPath(fromObject, []string{"imageConfig"})
 	if fromImageConfig != nil {
 		fromImageConfig, err = imageConfigToVertex(fromImageConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
+		InternalSetValueByPath(toObject, []string{"imageConfig"}, fromImageConfig)
 	}
 
-	if getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
 		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
 	}
 
-	fromModelArmorConfig := getValueByPath(fromObject, []string{"modelArmorConfig"})
+	fromModelArmorConfig := InternalGetValueByPath(fromObject, []string{"modelArmorConfig"})
 	if fromModelArmorConfig != nil {
-		setValueByPath(parentObject, []string{"modelArmorConfig"}, fromModelArmorConfig)
+		InternalSetValueByPath(parentObject, []string{"modelArmorConfig"}, fromModelArmorConfig)
 	}
 
 	return toObject, nil
 }
 
-func generateContentParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func generateContentParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromContents := getValueByPath(fromObject, []string{"contents"})
+	fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
-		fromContents, err = tContents(fromContents)
+		fromContents, err = InternalTContents(fromContents)
 		if err != nil {
 			return nil, err
 		}
@@ -1467,53 +1467,53 @@ func generateContentParametersToMldev(ac *apiClient, fromObject map[string]any, 
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"contents"}, fromContents)
+		InternalSetValueByPath(toObject, []string{"contents"}, fromContents)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		fromConfig, err = generateContentConfigToMldev(ac, fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generationConfig"}, fromConfig)
+		InternalSetValueByPath(toObject, []string{"generationConfig"}, fromConfig)
 	}
 
 	return toObject, nil
 }
 
-func generateContentParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func generateContentParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromContents := getValueByPath(fromObject, []string{"contents"})
+	fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
-		fromContents, err = tContents(fromContents)
+		fromContents, err = InternalTContents(fromContents)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"contents"}, fromContents)
+		InternalSetValueByPath(toObject, []string{"contents"}, fromContents)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		fromConfig, err = generateContentConfigToVertex(ac, fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generationConfig"}, fromConfig)
+		InternalSetValueByPath(toObject, []string{"generationConfig"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -1522,39 +1522,39 @@ func generateContentParametersToVertex(ac *apiClient, fromObject map[string]any,
 func generateContentResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromCandidates := getValueByPath(fromObject, []string{"candidates"})
+	fromCandidates := InternalGetValueByPath(fromObject, []string{"candidates"})
 	if fromCandidates != nil {
 		fromCandidates, err = applyConverterToSliceWithRoot(fromCandidates.([]any), candidateFromMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"candidates"}, fromCandidates)
+		InternalSetValueByPath(toObject, []string{"candidates"}, fromCandidates)
 	}
 
-	fromModelVersion := getValueByPath(fromObject, []string{"modelVersion"})
+	fromModelVersion := InternalGetValueByPath(fromObject, []string{"modelVersion"})
 	if fromModelVersion != nil {
-		setValueByPath(toObject, []string{"modelVersion"}, fromModelVersion)
+		InternalSetValueByPath(toObject, []string{"modelVersion"}, fromModelVersion)
 	}
 
-	fromPromptFeedback := getValueByPath(fromObject, []string{"promptFeedback"})
+	fromPromptFeedback := InternalGetValueByPath(fromObject, []string{"promptFeedback"})
 	if fromPromptFeedback != nil {
-		setValueByPath(toObject, []string{"promptFeedback"}, fromPromptFeedback)
+		InternalSetValueByPath(toObject, []string{"promptFeedback"}, fromPromptFeedback)
 	}
 
-	fromResponseId := getValueByPath(fromObject, []string{"responseId"})
+	fromResponseId := InternalGetValueByPath(fromObject, []string{"responseId"})
 	if fromResponseId != nil {
-		setValueByPath(toObject, []string{"responseId"}, fromResponseId)
+		InternalSetValueByPath(toObject, []string{"responseId"}, fromResponseId)
 	}
 
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
+	fromUsageMetadata := InternalGetValueByPath(fromObject, []string{"usageMetadata"})
 	if fromUsageMetadata != nil {
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
+		InternalSetValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
 	}
 
 	return toObject, nil
@@ -1563,39 +1563,39 @@ func generateContentResponseFromMldev(fromObject map[string]any, parentObject ma
 func generateContentResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromCandidates := getValueByPath(fromObject, []string{"candidates"})
+	fromCandidates := InternalGetValueByPath(fromObject, []string{"candidates"})
 	if fromCandidates != nil {
-		setValueByPath(toObject, []string{"candidates"}, fromCandidates)
+		InternalSetValueByPath(toObject, []string{"candidates"}, fromCandidates)
 	}
 
-	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
+	fromCreateTime := InternalGetValueByPath(fromObject, []string{"createTime"})
 	if fromCreateTime != nil {
-		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
+		InternalSetValueByPath(toObject, []string{"createTime"}, fromCreateTime)
 	}
 
-	fromModelVersion := getValueByPath(fromObject, []string{"modelVersion"})
+	fromModelVersion := InternalGetValueByPath(fromObject, []string{"modelVersion"})
 	if fromModelVersion != nil {
-		setValueByPath(toObject, []string{"modelVersion"}, fromModelVersion)
+		InternalSetValueByPath(toObject, []string{"modelVersion"}, fromModelVersion)
 	}
 
-	fromPromptFeedback := getValueByPath(fromObject, []string{"promptFeedback"})
+	fromPromptFeedback := InternalGetValueByPath(fromObject, []string{"promptFeedback"})
 	if fromPromptFeedback != nil {
-		setValueByPath(toObject, []string{"promptFeedback"}, fromPromptFeedback)
+		InternalSetValueByPath(toObject, []string{"promptFeedback"}, fromPromptFeedback)
 	}
 
-	fromResponseId := getValueByPath(fromObject, []string{"responseId"})
+	fromResponseId := InternalGetValueByPath(fromObject, []string{"responseId"})
 	if fromResponseId != nil {
-		setValueByPath(toObject, []string{"responseId"}, fromResponseId)
+		InternalSetValueByPath(toObject, []string{"responseId"}, fromResponseId)
 	}
 
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
+	fromUsageMetadata := InternalGetValueByPath(fromObject, []string{"usageMetadata"})
 	if fromUsageMetadata != nil {
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
+		InternalSetValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
 	}
 
 	return toObject, nil
@@ -1604,82 +1604,82 @@ func generateContentResponseFromVertex(fromObject map[string]any, parentObject m
 func generateImagesConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	if getValueByPath(fromObject, []string{"outputGcsUri"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"outputGcsUri"}) != nil {
 		return nil, fmt.Errorf("outputGcsUri parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"negativePrompt"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"negativePrompt"}) != nil {
 		return nil, fmt.Errorf("negativePrompt parameter is not supported in Gemini API")
 	}
 
-	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	fromNumberOfImages := InternalGetValueByPath(fromObject, []string{"numberOfImages"})
 	if fromNumberOfImages != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
 	}
 
-	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	fromAspectRatio := InternalGetValueByPath(fromObject, []string{"aspectRatio"})
 	if fromAspectRatio != nil {
-		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+		InternalSetValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
 	}
 
-	fromGuidanceScale := getValueByPath(fromObject, []string{"guidanceScale"})
+	fromGuidanceScale := InternalGetValueByPath(fromObject, []string{"guidanceScale"})
 	if fromGuidanceScale != nil {
-		setValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
+		InternalSetValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
 	}
 
-	if getValueByPath(fromObject, []string{"seed"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"seed"}) != nil {
 		return nil, fmt.Errorf("seed parameter is not supported in Gemini API")
 	}
 
-	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	fromSafetyFilterLevel := InternalGetValueByPath(fromObject, []string{"safetyFilterLevel"})
 	if fromSafetyFilterLevel != nil {
-		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+		InternalSetValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
 	}
 
-	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	fromPersonGeneration := InternalGetValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
-		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+		InternalSetValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
 	}
 
-	fromIncludeSafetyAttributes := getValueByPath(fromObject, []string{"includeSafetyAttributes"})
+	fromIncludeSafetyAttributes := InternalGetValueByPath(fromObject, []string{"includeSafetyAttributes"})
 	if fromIncludeSafetyAttributes != nil {
-		setValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
+		InternalSetValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
 	}
 
-	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
+	fromIncludeRaiReason := InternalGetValueByPath(fromObject, []string{"includeRaiReason"})
 	if fromIncludeRaiReason != nil {
-		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
+		InternalSetValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
 	}
 
-	fromLanguage := getValueByPath(fromObject, []string{"language"})
+	fromLanguage := InternalGetValueByPath(fromObject, []string{"language"})
 	if fromLanguage != nil {
-		setValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
+		InternalSetValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
 	}
 
-	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	fromOutputMimeType := InternalGetValueByPath(fromObject, []string{"outputMimeType"})
 	if fromOutputMimeType != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
 	}
 
-	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	fromOutputCompressionQuality := InternalGetValueByPath(fromObject, []string{"outputCompressionQuality"})
 	if fromOutputCompressionQuality != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
 	}
 
-	if getValueByPath(fromObject, []string{"addWatermark"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"addWatermark"}) != nil {
 		return nil, fmt.Errorf("addWatermark parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"labels"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"labels"}) != nil {
 		return nil, fmt.Errorf("labels parameter is not supported in Gemini API")
 	}
 
-	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
+	fromImageSize := InternalGetValueByPath(fromObject, []string{"imageSize"})
 	if fromImageSize != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleImageSize"}, fromImageSize)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleImageSize"}, fromImageSize)
 	}
 
-	if getValueByPath(fromObject, []string{"enhancePrompt"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"enhancePrompt"}) != nil {
 		return nil, fmt.Errorf("enhancePrompt parameter is not supported in Gemini API")
 	}
 
@@ -1689,113 +1689,113 @@ func generateImagesConfigToMldev(fromObject map[string]any, parentObject map[str
 func generateImagesConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	fromOutputGcsUri := InternalGetValueByPath(fromObject, []string{"outputGcsUri"})
 	if fromOutputGcsUri != nil {
-		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+		InternalSetValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
 	}
 
-	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	fromNegativePrompt := InternalGetValueByPath(fromObject, []string{"negativePrompt"})
 	if fromNegativePrompt != nil {
-		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+		InternalSetValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
 	}
 
-	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	fromNumberOfImages := InternalGetValueByPath(fromObject, []string{"numberOfImages"})
 	if fromNumberOfImages != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
 	}
 
-	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	fromAspectRatio := InternalGetValueByPath(fromObject, []string{"aspectRatio"})
 	if fromAspectRatio != nil {
-		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+		InternalSetValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
 	}
 
-	fromGuidanceScale := getValueByPath(fromObject, []string{"guidanceScale"})
+	fromGuidanceScale := InternalGetValueByPath(fromObject, []string{"guidanceScale"})
 	if fromGuidanceScale != nil {
-		setValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
+		InternalSetValueByPath(parentObject, []string{"parameters", "guidanceScale"}, fromGuidanceScale)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
+		InternalSetValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
 	}
 
-	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	fromSafetyFilterLevel := InternalGetValueByPath(fromObject, []string{"safetyFilterLevel"})
 	if fromSafetyFilterLevel != nil {
-		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+		InternalSetValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
 	}
 
-	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	fromPersonGeneration := InternalGetValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
-		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+		InternalSetValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
 	}
 
-	fromIncludeSafetyAttributes := getValueByPath(fromObject, []string{"includeSafetyAttributes"})
+	fromIncludeSafetyAttributes := InternalGetValueByPath(fromObject, []string{"includeSafetyAttributes"})
 	if fromIncludeSafetyAttributes != nil {
-		setValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
+		InternalSetValueByPath(parentObject, []string{"parameters", "includeSafetyAttributes"}, fromIncludeSafetyAttributes)
 	}
 
-	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
+	fromIncludeRaiReason := InternalGetValueByPath(fromObject, []string{"includeRaiReason"})
 	if fromIncludeRaiReason != nil {
-		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
+		InternalSetValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
 	}
 
-	fromLanguage := getValueByPath(fromObject, []string{"language"})
+	fromLanguage := InternalGetValueByPath(fromObject, []string{"language"})
 	if fromLanguage != nil {
-		setValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
+		InternalSetValueByPath(parentObject, []string{"parameters", "language"}, fromLanguage)
 	}
 
-	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	fromOutputMimeType := InternalGetValueByPath(fromObject, []string{"outputMimeType"})
 	if fromOutputMimeType != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
 	}
 
-	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	fromOutputCompressionQuality := InternalGetValueByPath(fromObject, []string{"outputCompressionQuality"})
 	if fromOutputCompressionQuality != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
 	}
 
-	fromAddWatermark := getValueByPath(fromObject, []string{"addWatermark"})
+	fromAddWatermark := InternalGetValueByPath(fromObject, []string{"addWatermark"})
 	if fromAddWatermark != nil {
-		setValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
+		InternalSetValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
-	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
+	fromImageSize := InternalGetValueByPath(fromObject, []string{"imageSize"})
 	if fromImageSize != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleImageSize"}, fromImageSize)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleImageSize"}, fromImageSize)
 	}
 
-	fromEnhancePrompt := getValueByPath(fromObject, []string{"enhancePrompt"})
+	fromEnhancePrompt := InternalGetValueByPath(fromObject, []string{"enhancePrompt"})
 	if fromEnhancePrompt != nil {
-		setValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
+		InternalSetValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
 	}
 
 	return toObject, nil
 }
 
-func generateImagesParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func generateImagesParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = generateImagesConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -1806,25 +1806,25 @@ func generateImagesParametersToMldev(ac *apiClient, fromObject map[string]any, p
 	return toObject, nil
 }
 
-func generateImagesParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func generateImagesParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = generateImagesConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -1838,29 +1838,29 @@ func generateImagesParametersToVertex(ac *apiClient, fromObject map[string]any, 
 func generateImagesResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	fromGeneratedImages := InternalGetValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
 		fromGeneratedImages, err = applyConverterToSliceWithRoot(fromGeneratedImages.([]any), generatedImageFromMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+		InternalSetValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
 	}
 
-	fromPositivePromptSafetyAttributes := getValueByPath(fromObject, []string{"positivePromptSafetyAttributes"})
+	fromPositivePromptSafetyAttributes := InternalGetValueByPath(fromObject, []string{"positivePromptSafetyAttributes"})
 	if fromPositivePromptSafetyAttributes != nil {
 		fromPositivePromptSafetyAttributes, err = safetyAttributesFromMldev(fromPositivePromptSafetyAttributes.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"positivePromptSafetyAttributes"}, fromPositivePromptSafetyAttributes)
+		InternalSetValueByPath(toObject, []string{"positivePromptSafetyAttributes"}, fromPositivePromptSafetyAttributes)
 	}
 
 	return toObject, nil
@@ -1869,29 +1869,29 @@ func generateImagesResponseFromMldev(fromObject map[string]any, parentObject map
 func generateImagesResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	fromGeneratedImages := InternalGetValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
 		fromGeneratedImages, err = applyConverterToSliceWithRoot(fromGeneratedImages.([]any), generatedImageFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+		InternalSetValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
 	}
 
-	fromPositivePromptSafetyAttributes := getValueByPath(fromObject, []string{"positivePromptSafetyAttributes"})
+	fromPositivePromptSafetyAttributes := InternalGetValueByPath(fromObject, []string{"positivePromptSafetyAttributes"})
 	if fromPositivePromptSafetyAttributes != nil {
 		fromPositivePromptSafetyAttributes, err = safetyAttributesFromVertex(fromPositivePromptSafetyAttributes.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"positivePromptSafetyAttributes"}, fromPositivePromptSafetyAttributes)
+		InternalSetValueByPath(toObject, []string{"positivePromptSafetyAttributes"}, fromPositivePromptSafetyAttributes)
 	}
 
 	return toObject, nil
@@ -1900,86 +1900,86 @@ func generateImagesResponseFromVertex(fromObject map[string]any, parentObject ma
 func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromNumberOfVideos := getValueByPath(fromObject, []string{"numberOfVideos"})
+	fromNumberOfVideos := InternalGetValueByPath(fromObject, []string{"numberOfVideos"})
 	if fromNumberOfVideos != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfVideos)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfVideos)
 	}
 
-	if getValueByPath(fromObject, []string{"outputGcsUri"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"outputGcsUri"}) != nil {
 		return nil, fmt.Errorf("outputGcsUri parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"fps"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"fps"}) != nil {
 		return nil, fmt.Errorf("fps parameter is not supported in Gemini API")
 	}
 
-	fromDurationSeconds := getValueByPath(fromObject, []string{"durationSeconds"})
+	fromDurationSeconds := InternalGetValueByPath(fromObject, []string{"durationSeconds"})
 	if fromDurationSeconds != nil {
-		setValueByPath(parentObject, []string{"parameters", "durationSeconds"}, fromDurationSeconds)
+		InternalSetValueByPath(parentObject, []string{"parameters", "durationSeconds"}, fromDurationSeconds)
 	}
 
-	if getValueByPath(fromObject, []string{"seed"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"seed"}) != nil {
 		return nil, fmt.Errorf("seed parameter is not supported in Gemini API")
 	}
 
-	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	fromAspectRatio := InternalGetValueByPath(fromObject, []string{"aspectRatio"})
 	if fromAspectRatio != nil {
-		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+		InternalSetValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
 	}
 
-	fromResolution := getValueByPath(fromObject, []string{"resolution"})
+	fromResolution := InternalGetValueByPath(fromObject, []string{"resolution"})
 	if fromResolution != nil {
-		setValueByPath(parentObject, []string{"parameters", "resolution"}, fromResolution)
+		InternalSetValueByPath(parentObject, []string{"parameters", "resolution"}, fromResolution)
 	}
 
-	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	fromPersonGeneration := InternalGetValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
-		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+		InternalSetValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
 	}
 
-	if getValueByPath(fromObject, []string{"pubsubTopic"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"pubsubTopic"}) != nil {
 		return nil, fmt.Errorf("pubsubTopic parameter is not supported in Gemini API")
 	}
 
-	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	fromNegativePrompt := InternalGetValueByPath(fromObject, []string{"negativePrompt"})
 	if fromNegativePrompt != nil {
-		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+		InternalSetValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
 	}
 
-	fromEnhancePrompt := getValueByPath(fromObject, []string{"enhancePrompt"})
+	fromEnhancePrompt := InternalGetValueByPath(fromObject, []string{"enhancePrompt"})
 	if fromEnhancePrompt != nil {
-		setValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
+		InternalSetValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
 	}
 
-	if getValueByPath(fromObject, []string{"generateAudio"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"generateAudio"}) != nil {
 		return nil, fmt.Errorf("generateAudio parameter is not supported in Gemini API")
 	}
 
-	fromLastFrame := getValueByPath(fromObject, []string{"lastFrame"})
+	fromLastFrame := InternalGetValueByPath(fromObject, []string{"lastFrame"})
 	if fromLastFrame != nil {
 		fromLastFrame, err = imageToMldev(fromLastFrame.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
 	}
 
-	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	fromReferenceImages := InternalGetValueByPath(fromObject, []string{"referenceImages"})
 	if fromReferenceImages != nil {
 		fromReferenceImages, err = applyConverterToSliceWithRoot(fromReferenceImages.([]any), videoGenerationReferenceImageToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
 	}
 
-	if getValueByPath(fromObject, []string{"mask"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"mask"}) != nil {
 		return nil, fmt.Errorf("mask parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"compressionQuality"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"compressionQuality"}) != nil {
 		return nil, fmt.Errorf("compressionQuality parameter is not supported in Gemini API")
 	}
 
@@ -1989,99 +1989,99 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromNumberOfVideos := getValueByPath(fromObject, []string{"numberOfVideos"})
+	fromNumberOfVideos := InternalGetValueByPath(fromObject, []string{"numberOfVideos"})
 	if fromNumberOfVideos != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfVideos)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfVideos)
 	}
 
-	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	fromOutputGcsUri := InternalGetValueByPath(fromObject, []string{"outputGcsUri"})
 	if fromOutputGcsUri != nil {
-		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+		InternalSetValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
 	}
 
-	fromFps := getValueByPath(fromObject, []string{"fps"})
+	fromFps := InternalGetValueByPath(fromObject, []string{"fps"})
 	if fromFps != nil {
-		setValueByPath(parentObject, []string{"parameters", "fps"}, fromFps)
+		InternalSetValueByPath(parentObject, []string{"parameters", "fps"}, fromFps)
 	}
 
-	fromDurationSeconds := getValueByPath(fromObject, []string{"durationSeconds"})
+	fromDurationSeconds := InternalGetValueByPath(fromObject, []string{"durationSeconds"})
 	if fromDurationSeconds != nil {
-		setValueByPath(parentObject, []string{"parameters", "durationSeconds"}, fromDurationSeconds)
+		InternalSetValueByPath(parentObject, []string{"parameters", "durationSeconds"}, fromDurationSeconds)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
+		InternalSetValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
 	}
 
-	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	fromAspectRatio := InternalGetValueByPath(fromObject, []string{"aspectRatio"})
 	if fromAspectRatio != nil {
-		setValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
+		InternalSetValueByPath(parentObject, []string{"parameters", "aspectRatio"}, fromAspectRatio)
 	}
 
-	fromResolution := getValueByPath(fromObject, []string{"resolution"})
+	fromResolution := InternalGetValueByPath(fromObject, []string{"resolution"})
 	if fromResolution != nil {
-		setValueByPath(parentObject, []string{"parameters", "resolution"}, fromResolution)
+		InternalSetValueByPath(parentObject, []string{"parameters", "resolution"}, fromResolution)
 	}
 
-	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	fromPersonGeneration := InternalGetValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
-		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+		InternalSetValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
 	}
 
-	fromPubsubTopic := getValueByPath(fromObject, []string{"pubsubTopic"})
+	fromPubsubTopic := InternalGetValueByPath(fromObject, []string{"pubsubTopic"})
 	if fromPubsubTopic != nil {
-		setValueByPath(parentObject, []string{"parameters", "pubsubTopic"}, fromPubsubTopic)
+		InternalSetValueByPath(parentObject, []string{"parameters", "pubsubTopic"}, fromPubsubTopic)
 	}
 
-	fromNegativePrompt := getValueByPath(fromObject, []string{"negativePrompt"})
+	fromNegativePrompt := InternalGetValueByPath(fromObject, []string{"negativePrompt"})
 	if fromNegativePrompt != nil {
-		setValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
+		InternalSetValueByPath(parentObject, []string{"parameters", "negativePrompt"}, fromNegativePrompt)
 	}
 
-	fromEnhancePrompt := getValueByPath(fromObject, []string{"enhancePrompt"})
+	fromEnhancePrompt := InternalGetValueByPath(fromObject, []string{"enhancePrompt"})
 	if fromEnhancePrompt != nil {
-		setValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
+		InternalSetValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
 	}
 
-	fromGenerateAudio := getValueByPath(fromObject, []string{"generateAudio"})
+	fromGenerateAudio := InternalGetValueByPath(fromObject, []string{"generateAudio"})
 	if fromGenerateAudio != nil {
-		setValueByPath(parentObject, []string{"parameters", "generateAudio"}, fromGenerateAudio)
+		InternalSetValueByPath(parentObject, []string{"parameters", "generateAudio"}, fromGenerateAudio)
 	}
 
-	fromLastFrame := getValueByPath(fromObject, []string{"lastFrame"})
+	fromLastFrame := InternalGetValueByPath(fromObject, []string{"lastFrame"})
 	if fromLastFrame != nil {
 		fromLastFrame, err = imageToVertex(fromLastFrame.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "lastFrame"}, fromLastFrame)
 	}
 
-	fromReferenceImages := getValueByPath(fromObject, []string{"referenceImages"})
+	fromReferenceImages := InternalGetValueByPath(fromObject, []string{"referenceImages"})
 	if fromReferenceImages != nil {
 		fromReferenceImages, err = applyConverterToSliceWithRoot(fromReferenceImages.([]any), videoGenerationReferenceImageToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "referenceImages"}, fromReferenceImages)
 	}
 
-	fromMask := getValueByPath(fromObject, []string{"mask"})
+	fromMask := InternalGetValueByPath(fromObject, []string{"mask"})
 	if fromMask != nil {
 		fromMask, err = videoGenerationMaskToVertex(fromMask.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "mask"}, fromMask)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "mask"}, fromMask)
 	}
 
-	fromCompressionQuality := getValueByPath(fromObject, []string{"compressionQuality"})
+	fromCompressionQuality := InternalGetValueByPath(fromObject, []string{"compressionQuality"})
 	if fromCompressionQuality != nil {
-		setValueByPath(parentObject, []string{"parameters", "compressionQuality"}, fromCompressionQuality)
+		InternalSetValueByPath(parentObject, []string{"parameters", "compressionQuality"}, fromCompressionQuality)
 	}
 
 	return toObject, nil
@@ -2090,34 +2090,34 @@ func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[st
 func generateVideosOperationFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	fromMetadata := InternalGetValueByPath(fromObject, []string{"metadata"})
 	if fromMetadata != nil {
-		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+		InternalSetValueByPath(toObject, []string{"metadata"}, fromMetadata)
 	}
 
-	fromDone := getValueByPath(fromObject, []string{"done"})
+	fromDone := InternalGetValueByPath(fromObject, []string{"done"})
 	if fromDone != nil {
-		setValueByPath(toObject, []string{"done"}, fromDone)
+		InternalSetValueByPath(toObject, []string{"done"}, fromDone)
 	}
 
-	fromError := getValueByPath(fromObject, []string{"error"})
+	fromError := InternalGetValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
-		setValueByPath(toObject, []string{"error"}, fromError)
+		InternalSetValueByPath(toObject, []string{"error"}, fromError)
 	}
 
-	fromResponse := getValueByPath(fromObject, []string{"response", "generateVideoResponse"})
+	fromResponse := InternalGetValueByPath(fromObject, []string{"response", "generateVideoResponse"})
 	if fromResponse != nil {
 		fromResponse, err = generateVideosResponseFromMldev(fromResponse.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"response"}, fromResponse)
+		InternalSetValueByPath(toObject, []string{"response"}, fromResponse)
 	}
 
 	return toObject, nil
@@ -2126,78 +2126,78 @@ func generateVideosOperationFromMldev(fromObject map[string]any, parentObject ma
 func generateVideosOperationFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	fromMetadata := InternalGetValueByPath(fromObject, []string{"metadata"})
 	if fromMetadata != nil {
-		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+		InternalSetValueByPath(toObject, []string{"metadata"}, fromMetadata)
 	}
 
-	fromDone := getValueByPath(fromObject, []string{"done"})
+	fromDone := InternalGetValueByPath(fromObject, []string{"done"})
 	if fromDone != nil {
-		setValueByPath(toObject, []string{"done"}, fromDone)
+		InternalSetValueByPath(toObject, []string{"done"}, fromDone)
 	}
 
-	fromError := getValueByPath(fromObject, []string{"error"})
+	fromError := InternalGetValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
-		setValueByPath(toObject, []string{"error"}, fromError)
+		InternalSetValueByPath(toObject, []string{"error"}, fromError)
 	}
 
-	fromResponse := getValueByPath(fromObject, []string{"response"})
+	fromResponse := InternalGetValueByPath(fromObject, []string{"response"})
 	if fromResponse != nil {
 		fromResponse, err = generateVideosResponseFromVertex(fromResponse.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"response"}, fromResponse)
+		InternalSetValueByPath(toObject, []string{"response"}, fromResponse)
 	}
 
 	return toObject, nil
 }
 
-func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func generateVideosParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToMldev(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	fromVideo := getValueByPath(fromObject, []string{"video"})
+	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
 		fromVideo, err = videoToMldev(fromVideo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
-	fromSource := getValueByPath(fromObject, []string{"source"})
+	fromSource := InternalGetValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
 		_, err = generateVideosSourceToMldev(fromSource.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -2205,7 +2205,7 @@ func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, p
 		}
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = generateVideosConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -2216,45 +2216,45 @@ func generateVideosParametersToMldev(ac *apiClient, fromObject map[string]any, p
 	return toObject, nil
 }
 
-func generateVideosParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func generateVideosParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	fromVideo := getValueByPath(fromObject, []string{"video"})
+	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
 		fromVideo, err = videoToVertex(fromVideo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
-	fromSource := getValueByPath(fromObject, []string{"source"})
+	fromSource := InternalGetValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
 		_, err = generateVideosSourceToVertex(fromSource.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -2262,7 +2262,7 @@ func generateVideosParametersToVertex(ac *apiClient, fromObject map[string]any, 
 		}
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = generateVideosConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -2276,24 +2276,24 @@ func generateVideosParametersToVertex(ac *apiClient, fromObject map[string]any, 
 func generateVideosResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromGeneratedVideos := getValueByPath(fromObject, []string{"generatedSamples"})
+	fromGeneratedVideos := InternalGetValueByPath(fromObject, []string{"generatedSamples"})
 	if fromGeneratedVideos != nil {
 		fromGeneratedVideos, err = applyConverterToSliceWithRoot(fromGeneratedVideos.([]any), generatedVideoFromMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generatedVideos"}, fromGeneratedVideos)
+		InternalSetValueByPath(toObject, []string{"generatedVideos"}, fromGeneratedVideos)
 	}
 
-	fromRaiMediaFilteredCount := getValueByPath(fromObject, []string{"raiMediaFilteredCount"})
+	fromRaiMediaFilteredCount := InternalGetValueByPath(fromObject, []string{"raiMediaFilteredCount"})
 	if fromRaiMediaFilteredCount != nil {
-		setValueByPath(toObject, []string{"raiMediaFilteredCount"}, fromRaiMediaFilteredCount)
+		InternalSetValueByPath(toObject, []string{"raiMediaFilteredCount"}, fromRaiMediaFilteredCount)
 	}
 
-	fromRaiMediaFilteredReasons := getValueByPath(fromObject, []string{"raiMediaFilteredReasons"})
+	fromRaiMediaFilteredReasons := InternalGetValueByPath(fromObject, []string{"raiMediaFilteredReasons"})
 	if fromRaiMediaFilteredReasons != nil {
-		setValueByPath(toObject, []string{"raiMediaFilteredReasons"}, fromRaiMediaFilteredReasons)
+		InternalSetValueByPath(toObject, []string{"raiMediaFilteredReasons"}, fromRaiMediaFilteredReasons)
 	}
 
 	return toObject, nil
@@ -2302,24 +2302,24 @@ func generateVideosResponseFromMldev(fromObject map[string]any, parentObject map
 func generateVideosResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromGeneratedVideos := getValueByPath(fromObject, []string{"videos"})
+	fromGeneratedVideos := InternalGetValueByPath(fromObject, []string{"videos"})
 	if fromGeneratedVideos != nil {
 		fromGeneratedVideos, err = applyConverterToSliceWithRoot(fromGeneratedVideos.([]any), generatedVideoFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generatedVideos"}, fromGeneratedVideos)
+		InternalSetValueByPath(toObject, []string{"generatedVideos"}, fromGeneratedVideos)
 	}
 
-	fromRaiMediaFilteredCount := getValueByPath(fromObject, []string{"raiMediaFilteredCount"})
+	fromRaiMediaFilteredCount := InternalGetValueByPath(fromObject, []string{"raiMediaFilteredCount"})
 	if fromRaiMediaFilteredCount != nil {
-		setValueByPath(toObject, []string{"raiMediaFilteredCount"}, fromRaiMediaFilteredCount)
+		InternalSetValueByPath(toObject, []string{"raiMediaFilteredCount"}, fromRaiMediaFilteredCount)
 	}
 
-	fromRaiMediaFilteredReasons := getValueByPath(fromObject, []string{"raiMediaFilteredReasons"})
+	fromRaiMediaFilteredReasons := InternalGetValueByPath(fromObject, []string{"raiMediaFilteredReasons"})
 	if fromRaiMediaFilteredReasons != nil {
-		setValueByPath(toObject, []string{"raiMediaFilteredReasons"}, fromRaiMediaFilteredReasons)
+		InternalSetValueByPath(toObject, []string{"raiMediaFilteredReasons"}, fromRaiMediaFilteredReasons)
 	}
 
 	return toObject, nil
@@ -2328,29 +2328,29 @@ func generateVideosResponseFromVertex(fromObject map[string]any, parentObject ma
 func generateVideosSourceToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToMldev(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	fromVideo := getValueByPath(fromObject, []string{"video"})
+	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
 		fromVideo, err = videoToMldev(fromVideo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "video"}, fromVideo)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
 	return toObject, nil
@@ -2359,29 +2359,29 @@ func generateVideosSourceToMldev(fromObject map[string]any, parentObject map[str
 func generateVideosSourceToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	fromVideo := getValueByPath(fromObject, []string{"video"})
+	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
 		fromVideo, err = videoToVertex(fromVideo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "video"}, fromVideo)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
 	return toObject, nil
@@ -2390,29 +2390,29 @@ func generateVideosSourceToVertex(fromObject map[string]any, parentObject map[st
 func generatedImageFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromImage := getValueByPath(fromObject, []string{"_self"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromImage != nil {
 		fromImage, err = imageFromMldev(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"image"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"image"}, fromImage)
 	}
 
-	fromRaiFilteredReason := getValueByPath(fromObject, []string{"raiFilteredReason"})
+	fromRaiFilteredReason := InternalGetValueByPath(fromObject, []string{"raiFilteredReason"})
 	if fromRaiFilteredReason != nil {
-		setValueByPath(toObject, []string{"raiFilteredReason"}, fromRaiFilteredReason)
+		InternalSetValueByPath(toObject, []string{"raiFilteredReason"}, fromRaiFilteredReason)
 	}
 
-	fromSafetyAttributes := getValueByPath(fromObject, []string{"_self"})
+	fromSafetyAttributes := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromSafetyAttributes != nil {
 		fromSafetyAttributes, err = safetyAttributesFromMldev(fromSafetyAttributes.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"safetyAttributes"}, fromSafetyAttributes)
+		InternalSetValueByPath(toObject, []string{"safetyAttributes"}, fromSafetyAttributes)
 	}
 
 	return toObject, nil
@@ -2421,34 +2421,34 @@ func generatedImageFromMldev(fromObject map[string]any, parentObject map[string]
 func generatedImageFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromImage := getValueByPath(fromObject, []string{"_self"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromImage != nil {
 		fromImage, err = imageFromVertex(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"image"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"image"}, fromImage)
 	}
 
-	fromRaiFilteredReason := getValueByPath(fromObject, []string{"raiFilteredReason"})
+	fromRaiFilteredReason := InternalGetValueByPath(fromObject, []string{"raiFilteredReason"})
 	if fromRaiFilteredReason != nil {
-		setValueByPath(toObject, []string{"raiFilteredReason"}, fromRaiFilteredReason)
+		InternalSetValueByPath(toObject, []string{"raiFilteredReason"}, fromRaiFilteredReason)
 	}
 
-	fromSafetyAttributes := getValueByPath(fromObject, []string{"_self"})
+	fromSafetyAttributes := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromSafetyAttributes != nil {
 		fromSafetyAttributes, err = safetyAttributesFromVertex(fromSafetyAttributes.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"safetyAttributes"}, fromSafetyAttributes)
+		InternalSetValueByPath(toObject, []string{"safetyAttributes"}, fromSafetyAttributes)
 	}
 
-	fromEnhancedPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromEnhancedPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromEnhancedPrompt != nil {
-		setValueByPath(toObject, []string{"enhancedPrompt"}, fromEnhancedPrompt)
+		InternalSetValueByPath(toObject, []string{"enhancedPrompt"}, fromEnhancedPrompt)
 	}
 
 	return toObject, nil
@@ -2457,19 +2457,19 @@ func generatedImageFromVertex(fromObject map[string]any, parentObject map[string
 func generatedImageMaskFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMask := getValueByPath(fromObject, []string{"_self"})
+	fromMask := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromMask != nil {
 		fromMask, err = imageFromVertex(fromMask.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"mask"}, fromMask)
+		InternalSetValueByPath(toObject, []string{"mask"}, fromMask)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(toObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(toObject, []string{"labels"}, fromLabels)
 	}
 
 	return toObject, nil
@@ -2478,14 +2478,14 @@ func generatedImageMaskFromVertex(fromObject map[string]any, parentObject map[st
 func generatedVideoFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromVideo := getValueByPath(fromObject, []string{"video"})
+	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
 		fromVideo, err = videoFromMldev(fromVideo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"video"}, fromVideo)
+		InternalSetValueByPath(toObject, []string{"video"}, fromVideo)
 	}
 
 	return toObject, nil
@@ -2494,14 +2494,14 @@ func generatedVideoFromMldev(fromObject map[string]any, parentObject map[string]
 func generatedVideoFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromVideo := getValueByPath(fromObject, []string{"_self"})
+	fromVideo := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromVideo != nil {
 		fromVideo, err = videoFromVertex(fromVideo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"video"}, fromVideo)
+		InternalSetValueByPath(toObject, []string{"video"}, fromVideo)
 	}
 
 	return toObject, nil
@@ -2510,150 +2510,150 @@ func generatedVideoFromVertex(fromObject map[string]any, parentObject map[string
 func generationConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModelSelectionConfig := getValueByPath(fromObject, []string{"modelSelectionConfig"})
+	fromModelSelectionConfig := InternalGetValueByPath(fromObject, []string{"modelSelectionConfig"})
 	if fromModelSelectionConfig != nil {
-		setValueByPath(toObject, []string{"modelConfig"}, fromModelSelectionConfig)
+		InternalSetValueByPath(toObject, []string{"modelConfig"}, fromModelSelectionConfig)
 	}
 
-	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	fromResponseJsonSchema := InternalGetValueByPath(fromObject, []string{"responseJsonSchema"})
 	if fromResponseJsonSchema != nil {
-		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+		InternalSetValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
 	}
 
-	fromAudioTimestamp := getValueByPath(fromObject, []string{"audioTimestamp"})
+	fromAudioTimestamp := InternalGetValueByPath(fromObject, []string{"audioTimestamp"})
 	if fromAudioTimestamp != nil {
-		setValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
+		InternalSetValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
 	}
 
-	fromCandidateCount := getValueByPath(fromObject, []string{"candidateCount"})
+	fromCandidateCount := InternalGetValueByPath(fromObject, []string{"candidateCount"})
 	if fromCandidateCount != nil {
-		setValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
+		InternalSetValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
 	}
 
-	fromEnableAffectiveDialog := getValueByPath(fromObject, []string{"enableAffectiveDialog"})
+	fromEnableAffectiveDialog := InternalGetValueByPath(fromObject, []string{"enableAffectiveDialog"})
 	if fromEnableAffectiveDialog != nil {
-		setValueByPath(toObject, []string{"enableAffectiveDialog"}, fromEnableAffectiveDialog)
+		InternalSetValueByPath(toObject, []string{"enableAffectiveDialog"}, fromEnableAffectiveDialog)
 	}
 
-	fromFrequencyPenalty := getValueByPath(fromObject, []string{"frequencyPenalty"})
+	fromFrequencyPenalty := InternalGetValueByPath(fromObject, []string{"frequencyPenalty"})
 	if fromFrequencyPenalty != nil {
-		setValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
+		InternalSetValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
 	}
 
-	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
+	fromLogprobs := InternalGetValueByPath(fromObject, []string{"logprobs"})
 	if fromLogprobs != nil {
-		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
+		InternalSetValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
 	}
 
-	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
+	fromMaxOutputTokens := InternalGetValueByPath(fromObject, []string{"maxOutputTokens"})
 	if fromMaxOutputTokens != nil {
-		setValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
+		InternalSetValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
 	}
 
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
 	if fromMediaResolution != nil {
-		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
 	}
 
-	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
+	fromPresencePenalty := InternalGetValueByPath(fromObject, []string{"presencePenalty"})
 	if fromPresencePenalty != nil {
-		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+		InternalSetValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
 	}
 
-	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
+	fromResponseLogprobs := InternalGetValueByPath(fromObject, []string{"responseLogprobs"})
 	if fromResponseLogprobs != nil {
-		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
+		InternalSetValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
 	}
 
-	fromResponseMimeType := getValueByPath(fromObject, []string{"responseMimeType"})
+	fromResponseMimeType := InternalGetValueByPath(fromObject, []string{"responseMimeType"})
 	if fromResponseMimeType != nil {
-		setValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
+		InternalSetValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
 	}
 
-	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
+	fromResponseModalities := InternalGetValueByPath(fromObject, []string{"responseModalities"})
 	if fromResponseModalities != nil {
-		setValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
+		InternalSetValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
 	}
 
-	fromResponseSchema := getValueByPath(fromObject, []string{"responseSchema"})
+	fromResponseSchema := InternalGetValueByPath(fromObject, []string{"responseSchema"})
 	if fromResponseSchema != nil {
-		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
+		InternalSetValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
 	}
 
-	fromRoutingConfig := getValueByPath(fromObject, []string{"routingConfig"})
+	fromRoutingConfig := InternalGetValueByPath(fromObject, []string{"routingConfig"})
 	if fromRoutingConfig != nil {
-		setValueByPath(toObject, []string{"routingConfig"}, fromRoutingConfig)
+		InternalSetValueByPath(toObject, []string{"routingConfig"}, fromRoutingConfig)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(toObject, []string{"seed"}, fromSeed)
+		InternalSetValueByPath(toObject, []string{"seed"}, fromSeed)
 	}
 
-	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
+	fromSpeechConfig := InternalGetValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
+		InternalSetValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
-	fromStopSequences := getValueByPath(fromObject, []string{"stopSequences"})
+	fromStopSequences := InternalGetValueByPath(fromObject, []string{"stopSequences"})
 	if fromStopSequences != nil {
-		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
+		InternalSetValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
 	}
 
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	fromTemperature := InternalGetValueByPath(fromObject, []string{"temperature"})
 	if fromTemperature != nil {
-		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
+		InternalSetValueByPath(toObject, []string{"temperature"}, fromTemperature)
 	}
 
-	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
+	fromThinkingConfig := InternalGetValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
-		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
+		InternalSetValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
 	}
 
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	fromTopK := InternalGetValueByPath(fromObject, []string{"topK"})
 	if fromTopK != nil {
-		setValueByPath(toObject, []string{"topK"}, fromTopK)
+		InternalSetValueByPath(toObject, []string{"topK"}, fromTopK)
 	}
 
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	fromTopP := InternalGetValueByPath(fromObject, []string{"topP"})
 	if fromTopP != nil {
-		setValueByPath(toObject, []string{"topP"}, fromTopP)
+		InternalSetValueByPath(toObject, []string{"topP"}, fromTopP)
 	}
 
-	if getValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
 		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
 }
 
-func getModelParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func getModelParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromModel)
 	}
 
 	return toObject, nil
 }
 
-func getModelParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func getModelParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromModel)
 	}
 
 	return toObject, nil
@@ -2662,19 +2662,19 @@ func getModelParametersToVertex(ac *apiClient, fromObject map[string]any, parent
 func googleMapsToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromAuthConfig := getValueByPath(fromObject, []string{"authConfig"})
+	fromAuthConfig := InternalGetValueByPath(fromObject, []string{"authConfig"})
 	if fromAuthConfig != nil {
 		fromAuthConfig, err = authConfigToMldev(fromAuthConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"authConfig"}, fromAuthConfig)
+		InternalSetValueByPath(toObject, []string{"authConfig"}, fromAuthConfig)
 	}
 
-	fromEnableWidget := getValueByPath(fromObject, []string{"enableWidget"})
+	fromEnableWidget := InternalGetValueByPath(fromObject, []string{"enableWidget"})
 	if fromEnableWidget != nil {
-		setValueByPath(toObject, []string{"enableWidget"}, fromEnableWidget)
+		InternalSetValueByPath(toObject, []string{"enableWidget"}, fromEnableWidget)
 	}
 
 	return toObject, nil
@@ -2683,22 +2683,22 @@ func googleMapsToMldev(fromObject map[string]any, parentObject map[string]any, r
 func googleSearchToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSearchTypes := getValueByPath(fromObject, []string{"searchTypes"})
+	fromSearchTypes := InternalGetValueByPath(fromObject, []string{"searchTypes"})
 	if fromSearchTypes != nil {
-		setValueByPath(toObject, []string{"searchTypes"}, fromSearchTypes)
+		InternalSetValueByPath(toObject, []string{"searchTypes"}, fromSearchTypes)
 	}
 
-	if getValueByPath(fromObject, []string{"blockingConfidence"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"blockingConfidence"}) != nil {
 		return nil, fmt.Errorf("blockingConfidence parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"excludeDomains"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"excludeDomains"}) != nil {
 		return nil, fmt.Errorf("excludeDomains parameter is not supported in Gemini API")
 	}
 
-	fromTimeRangeFilter := getValueByPath(fromObject, []string{"timeRangeFilter"})
+	fromTimeRangeFilter := InternalGetValueByPath(fromObject, []string{"timeRangeFilter"})
 	if fromTimeRangeFilter != nil {
-		setValueByPath(toObject, []string{"timeRangeFilter"}, fromTimeRangeFilter)
+		InternalSetValueByPath(toObject, []string{"timeRangeFilter"}, fromTimeRangeFilter)
 	}
 
 	return toObject, nil
@@ -2707,33 +2707,33 @@ func googleSearchToMldev(fromObject map[string]any, parentObject map[string]any,
 func imageConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	fromAspectRatio := InternalGetValueByPath(fromObject, []string{"aspectRatio"})
 	if fromAspectRatio != nil {
-		setValueByPath(toObject, []string{"aspectRatio"}, fromAspectRatio)
+		InternalSetValueByPath(toObject, []string{"aspectRatio"}, fromAspectRatio)
 	}
 
-	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
+	fromImageSize := InternalGetValueByPath(fromObject, []string{"imageSize"})
 	if fromImageSize != nil {
-		setValueByPath(toObject, []string{"imageSize"}, fromImageSize)
+		InternalSetValueByPath(toObject, []string{"imageSize"}, fromImageSize)
 	}
 
-	if getValueByPath(fromObject, []string{"personGeneration"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"personGeneration"}) != nil {
 		return nil, fmt.Errorf("personGeneration parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"prominentPeople"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"prominentPeople"}) != nil {
 		return nil, fmt.Errorf("prominentPeople parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"outputMimeType"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"outputMimeType"}) != nil {
 		return nil, fmt.Errorf("outputMimeType parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"outputCompressionQuality"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"outputCompressionQuality"}) != nil {
 		return nil, fmt.Errorf("outputCompressionQuality parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"imageOutputOptions"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"imageOutputOptions"}) != nil {
 		return nil, fmt.Errorf("imageOutputOptions parameter is not supported in Gemini API")
 	}
 
@@ -2743,39 +2743,39 @@ func imageConfigToMldev(fromObject map[string]any, parentObject map[string]any, 
 func imageConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromAspectRatio := getValueByPath(fromObject, []string{"aspectRatio"})
+	fromAspectRatio := InternalGetValueByPath(fromObject, []string{"aspectRatio"})
 	if fromAspectRatio != nil {
-		setValueByPath(toObject, []string{"aspectRatio"}, fromAspectRatio)
+		InternalSetValueByPath(toObject, []string{"aspectRatio"}, fromAspectRatio)
 	}
 
-	fromImageSize := getValueByPath(fromObject, []string{"imageSize"})
+	fromImageSize := InternalGetValueByPath(fromObject, []string{"imageSize"})
 	if fromImageSize != nil {
-		setValueByPath(toObject, []string{"imageSize"}, fromImageSize)
+		InternalSetValueByPath(toObject, []string{"imageSize"}, fromImageSize)
 	}
 
-	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	fromPersonGeneration := InternalGetValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
-		setValueByPath(toObject, []string{"personGeneration"}, fromPersonGeneration)
+		InternalSetValueByPath(toObject, []string{"personGeneration"}, fromPersonGeneration)
 	}
 
-	fromProminentPeople := getValueByPath(fromObject, []string{"prominentPeople"})
+	fromProminentPeople := InternalGetValueByPath(fromObject, []string{"prominentPeople"})
 	if fromProminentPeople != nil {
-		setValueByPath(toObject, []string{"prominentPeople"}, fromProminentPeople)
+		InternalSetValueByPath(toObject, []string{"prominentPeople"}, fromProminentPeople)
 	}
 
-	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	fromOutputMimeType := InternalGetValueByPath(fromObject, []string{"outputMimeType"})
 	if fromOutputMimeType != nil {
-		setValueByPath(toObject, []string{"imageOutputOptions", "mimeType"}, fromOutputMimeType)
+		InternalSetValueByPath(toObject, []string{"imageOutputOptions", "mimeType"}, fromOutputMimeType)
 	}
 
-	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	fromOutputCompressionQuality := InternalGetValueByPath(fromObject, []string{"outputCompressionQuality"})
 	if fromOutputCompressionQuality != nil {
-		setValueByPath(toObject, []string{"imageOutputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+		InternalSetValueByPath(toObject, []string{"imageOutputOptions", "compressionQuality"}, fromOutputCompressionQuality)
 	}
 
-	fromImageOutputOptions := getValueByPath(fromObject, []string{"imageOutputOptions"})
+	fromImageOutputOptions := InternalGetValueByPath(fromObject, []string{"imageOutputOptions"})
 	if fromImageOutputOptions != nil {
-		setValueByPath(toObject, []string{"imageOutputOptions"}, fromImageOutputOptions)
+		InternalSetValueByPath(toObject, []string{"imageOutputOptions"}, fromImageOutputOptions)
 	}
 
 	return toObject, nil
@@ -2784,19 +2784,19 @@ func imageConfigToVertex(fromObject map[string]any, parentObject map[string]any,
 func imageFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromImageBytes := getValueByPath(fromObject, []string{"bytesBase64Encoded"})
+	fromImageBytes := InternalGetValueByPath(fromObject, []string{"bytesBase64Encoded"})
 	if fromImageBytes != nil {
-		fromImageBytes, err = tBytes(fromImageBytes)
+		fromImageBytes, err = InternalTBytes(fromImageBytes)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"imageBytes"}, fromImageBytes)
+		InternalSetValueByPath(toObject, []string{"imageBytes"}, fromImageBytes)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -2805,24 +2805,24 @@ func imageFromMldev(fromObject map[string]any, parentObject map[string]any, root
 func imageFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+	fromGcsUri := InternalGetValueByPath(fromObject, []string{"gcsUri"})
 	if fromGcsUri != nil {
-		setValueByPath(toObject, []string{"gcsUri"}, fromGcsUri)
+		InternalSetValueByPath(toObject, []string{"gcsUri"}, fromGcsUri)
 	}
 
-	fromImageBytes := getValueByPath(fromObject, []string{"bytesBase64Encoded"})
+	fromImageBytes := InternalGetValueByPath(fromObject, []string{"bytesBase64Encoded"})
 	if fromImageBytes != nil {
-		fromImageBytes, err = tBytes(fromImageBytes)
+		fromImageBytes, err = InternalTBytes(fromImageBytes)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"imageBytes"}, fromImageBytes)
+		InternalSetValueByPath(toObject, []string{"imageBytes"}, fromImageBytes)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -2830,23 +2830,23 @@ func imageFromVertex(fromObject map[string]any, parentObject map[string]any, roo
 
 func imageToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"gcsUri"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"gcsUri"}) != nil {
 		return nil, fmt.Errorf("gcsUri parameter is not supported in Gemini API")
 	}
 
-	fromImageBytes := getValueByPath(fromObject, []string{"imageBytes"})
+	fromImageBytes := InternalGetValueByPath(fromObject, []string{"imageBytes"})
 	if fromImageBytes != nil {
-		fromImageBytes, err = tBytes(fromImageBytes)
+		fromImageBytes, err = InternalTBytes(fromImageBytes)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"bytesBase64Encoded"}, fromImageBytes)
+		InternalSetValueByPath(toObject, []string{"bytesBase64Encoded"}, fromImageBytes)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -2855,95 +2855,95 @@ func imageToMldev(fromObject map[string]any, parentObject map[string]any, rootOb
 func imageToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+	fromGcsUri := InternalGetValueByPath(fromObject, []string{"gcsUri"})
 	if fromGcsUri != nil {
-		setValueByPath(toObject, []string{"gcsUri"}, fromGcsUri)
+		InternalSetValueByPath(toObject, []string{"gcsUri"}, fromGcsUri)
 	}
 
-	fromImageBytes := getValueByPath(fromObject, []string{"imageBytes"})
+	fromImageBytes := InternalGetValueByPath(fromObject, []string{"imageBytes"})
 	if fromImageBytes != nil {
-		fromImageBytes, err = tBytes(fromImageBytes)
+		fromImageBytes, err = InternalTBytes(fromImageBytes)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"bytesBase64Encoded"}, fromImageBytes)
+		InternalSetValueByPath(toObject, []string{"bytesBase64Encoded"}, fromImageBytes)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
 }
 
-func listModelsConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func listModelsConfigToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	fromPageSize := InternalGetValueByPath(fromObject, []string{"pageSize"})
 	if fromPageSize != nil {
-		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
 	}
 
-	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	fromPageToken := InternalGetValueByPath(fromObject, []string{"pageToken"})
 	if fromPageToken != nil {
-		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
 	}
 
-	fromFilter := getValueByPath(fromObject, []string{"filter"})
+	fromFilter := InternalGetValueByPath(fromObject, []string{"filter"})
 	if fromFilter != nil {
-		setValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
+		InternalSetValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
 	}
 
-	fromQueryBase := getValueByPath(fromObject, []string{"queryBase"})
+	fromQueryBase := InternalGetValueByPath(fromObject, []string{"queryBase"})
 	if fromQueryBase != nil {
-		fromQueryBase, err = tModelsURL(ac, fromQueryBase)
+		fromQueryBase, err = InternalTModelsURL(ac, fromQueryBase)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"_url", "models_url"}, fromQueryBase)
+		InternalSetValueByPath(parentObject, []string{"_url", "models_url"}, fromQueryBase)
 	}
 
 	return toObject, nil
 }
 
-func listModelsConfigToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func listModelsConfigToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	fromPageSize := InternalGetValueByPath(fromObject, []string{"pageSize"})
 	if fromPageSize != nil {
-		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
 	}
 
-	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	fromPageToken := InternalGetValueByPath(fromObject, []string{"pageToken"})
 	if fromPageToken != nil {
-		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
 	}
 
-	fromFilter := getValueByPath(fromObject, []string{"filter"})
+	fromFilter := InternalGetValueByPath(fromObject, []string{"filter"})
 	if fromFilter != nil {
-		setValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
+		InternalSetValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
 	}
 
-	fromQueryBase := getValueByPath(fromObject, []string{"queryBase"})
+	fromQueryBase := InternalGetValueByPath(fromObject, []string{"queryBase"})
 	if fromQueryBase != nil {
-		fromQueryBase, err = tModelsURL(ac, fromQueryBase)
+		fromQueryBase, err = InternalTModelsURL(ac, fromQueryBase)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"_url", "models_url"}, fromQueryBase)
+		InternalSetValueByPath(parentObject, []string{"_url", "models_url"}, fromQueryBase)
 	}
 
 	return toObject, nil
 }
 
-func listModelsParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func listModelsParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = listModelsConfigToMldev(ac, fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -2954,10 +2954,10 @@ func listModelsParametersToMldev(ac *apiClient, fromObject map[string]any, paren
 	return toObject, nil
 }
 
-func listModelsParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func listModelsParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = listModelsConfigToVertex(ac, fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -2971,19 +2971,19 @@ func listModelsParametersToVertex(ac *apiClient, fromObject map[string]any, pare
 func listModelsResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	fromNextPageToken := InternalGetValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
-		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+		InternalSetValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
 	}
 
-	fromModels := getValueByPath(fromObject, []string{"_self"})
+	fromModels := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromModels != nil {
-		fromModels, err = tExtractModels(fromModels)
+		fromModels, err = InternalTExtractModels(fromModels)
 		if err != nil {
 			return nil, err
 		}
@@ -2993,7 +2993,7 @@ func listModelsResponseFromMldev(fromObject map[string]any, parentObject map[str
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"models"}, fromModels)
+		InternalSetValueByPath(toObject, []string{"models"}, fromModels)
 	}
 
 	return toObject, nil
@@ -3002,19 +3002,19 @@ func listModelsResponseFromMldev(fromObject map[string]any, parentObject map[str
 func listModelsResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	fromNextPageToken := InternalGetValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
-		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+		InternalSetValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
 	}
 
-	fromModels := getValueByPath(fromObject, []string{"_self"})
+	fromModels := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromModels != nil {
-		fromModels, err = tExtractModels(fromModels)
+		fromModels, err = InternalTExtractModels(fromModels)
 		if err != nil {
 			return nil, err
 		}
@@ -3024,7 +3024,7 @@ func listModelsResponseFromVertex(fromObject map[string]any, parentObject map[st
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"models"}, fromModels)
+		InternalSetValueByPath(toObject, []string{"models"}, fromModels)
 	}
 
 	return toObject, nil
@@ -3033,19 +3033,19 @@ func listModelsResponseFromVertex(fromObject map[string]any, parentObject map[st
 func maskReferenceConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMaskMode := getValueByPath(fromObject, []string{"maskMode"})
+	fromMaskMode := InternalGetValueByPath(fromObject, []string{"maskMode"})
 	if fromMaskMode != nil {
-		setValueByPath(toObject, []string{"maskMode"}, fromMaskMode)
+		InternalSetValueByPath(toObject, []string{"maskMode"}, fromMaskMode)
 	}
 
-	fromSegmentationClasses := getValueByPath(fromObject, []string{"segmentationClasses"})
+	fromSegmentationClasses := InternalGetValueByPath(fromObject, []string{"segmentationClasses"})
 	if fromSegmentationClasses != nil {
-		setValueByPath(toObject, []string{"maskClasses"}, fromSegmentationClasses)
+		InternalSetValueByPath(toObject, []string{"maskClasses"}, fromSegmentationClasses)
 	}
 
-	fromMaskDilation := getValueByPath(fromObject, []string{"maskDilation"})
+	fromMaskDilation := InternalGetValueByPath(fromObject, []string{"maskDilation"})
 	if fromMaskDilation != nil {
-		setValueByPath(toObject, []string{"dilation"}, fromMaskDilation)
+		InternalSetValueByPath(toObject, []string{"dilation"}, fromMaskDilation)
 	}
 
 	return toObject, nil
@@ -3054,69 +3054,69 @@ func maskReferenceConfigToVertex(fromObject map[string]any, parentObject map[str
 func modelFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
+	fromDisplayName := InternalGetValueByPath(fromObject, []string{"displayName"})
 	if fromDisplayName != nil {
-		setValueByPath(toObject, []string{"displayName"}, fromDisplayName)
+		InternalSetValueByPath(toObject, []string{"displayName"}, fromDisplayName)
 	}
 
-	fromDescription := getValueByPath(fromObject, []string{"description"})
+	fromDescription := InternalGetValueByPath(fromObject, []string{"description"})
 	if fromDescription != nil {
-		setValueByPath(toObject, []string{"description"}, fromDescription)
+		InternalSetValueByPath(toObject, []string{"description"}, fromDescription)
 	}
 
-	fromVersion := getValueByPath(fromObject, []string{"version"})
+	fromVersion := InternalGetValueByPath(fromObject, []string{"version"})
 	if fromVersion != nil {
-		setValueByPath(toObject, []string{"version"}, fromVersion)
+		InternalSetValueByPath(toObject, []string{"version"}, fromVersion)
 	}
 
-	fromTunedModelInfo := getValueByPath(fromObject, []string{"_self"})
+	fromTunedModelInfo := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromTunedModelInfo != nil {
-		setValueByPath(toObject, []string{"tunedModelInfo"}, fromTunedModelInfo)
+		InternalSetValueByPath(toObject, []string{"tunedModelInfo"}, fromTunedModelInfo)
 	}
 
-	fromInputTokenLimit := getValueByPath(fromObject, []string{"inputTokenLimit"})
+	fromInputTokenLimit := InternalGetValueByPath(fromObject, []string{"inputTokenLimit"})
 	if fromInputTokenLimit != nil {
-		setValueByPath(toObject, []string{"inputTokenLimit"}, fromInputTokenLimit)
+		InternalSetValueByPath(toObject, []string{"inputTokenLimit"}, fromInputTokenLimit)
 	}
 
-	fromOutputTokenLimit := getValueByPath(fromObject, []string{"outputTokenLimit"})
+	fromOutputTokenLimit := InternalGetValueByPath(fromObject, []string{"outputTokenLimit"})
 	if fromOutputTokenLimit != nil {
-		setValueByPath(toObject, []string{"outputTokenLimit"}, fromOutputTokenLimit)
+		InternalSetValueByPath(toObject, []string{"outputTokenLimit"}, fromOutputTokenLimit)
 	}
 
-	fromSupportedActions := getValueByPath(fromObject, []string{"supportedGenerationMethods"})
+	fromSupportedActions := InternalGetValueByPath(fromObject, []string{"supportedGenerationMethods"})
 	if fromSupportedActions != nil {
-		setValueByPath(toObject, []string{"supportedActions"}, fromSupportedActions)
+		InternalSetValueByPath(toObject, []string{"supportedActions"}, fromSupportedActions)
 	}
 
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	fromTemperature := InternalGetValueByPath(fromObject, []string{"temperature"})
 	if fromTemperature != nil {
-		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
+		InternalSetValueByPath(toObject, []string{"temperature"}, fromTemperature)
 	}
 
-	fromMaxTemperature := getValueByPath(fromObject, []string{"maxTemperature"})
+	fromMaxTemperature := InternalGetValueByPath(fromObject, []string{"maxTemperature"})
 	if fromMaxTemperature != nil {
-		setValueByPath(toObject, []string{"maxTemperature"}, fromMaxTemperature)
+		InternalSetValueByPath(toObject, []string{"maxTemperature"}, fromMaxTemperature)
 	}
 
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	fromTopP := InternalGetValueByPath(fromObject, []string{"topP"})
 	if fromTopP != nil {
-		setValueByPath(toObject, []string{"topP"}, fromTopP)
+		InternalSetValueByPath(toObject, []string{"topP"}, fromTopP)
 	}
 
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	fromTopK := InternalGetValueByPath(fromObject, []string{"topK"})
 	if fromTopK != nil {
-		setValueByPath(toObject, []string{"topK"}, fromTopK)
+		InternalSetValueByPath(toObject, []string{"topK"}, fromTopK)
 	}
 
-	fromThinking := getValueByPath(fromObject, []string{"thinking"})
+	fromThinking := InternalGetValueByPath(fromObject, []string{"thinking"})
 	if fromThinking != nil {
-		setValueByPath(toObject, []string{"thinking"}, fromThinking)
+		InternalSetValueByPath(toObject, []string{"thinking"}, fromThinking)
 	}
 
 	return toObject, nil
@@ -3125,59 +3125,59 @@ func modelFromMldev(fromObject map[string]any, parentObject map[string]any, root
 func modelFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
+	fromDisplayName := InternalGetValueByPath(fromObject, []string{"displayName"})
 	if fromDisplayName != nil {
-		setValueByPath(toObject, []string{"displayName"}, fromDisplayName)
+		InternalSetValueByPath(toObject, []string{"displayName"}, fromDisplayName)
 	}
 
-	fromDescription := getValueByPath(fromObject, []string{"description"})
+	fromDescription := InternalGetValueByPath(fromObject, []string{"description"})
 	if fromDescription != nil {
-		setValueByPath(toObject, []string{"description"}, fromDescription)
+		InternalSetValueByPath(toObject, []string{"description"}, fromDescription)
 	}
 
-	fromVersion := getValueByPath(fromObject, []string{"versionId"})
+	fromVersion := InternalGetValueByPath(fromObject, []string{"versionId"})
 	if fromVersion != nil {
-		setValueByPath(toObject, []string{"version"}, fromVersion)
+		InternalSetValueByPath(toObject, []string{"version"}, fromVersion)
 	}
 
-	fromEndpoints := getValueByPath(fromObject, []string{"deployedModels"})
+	fromEndpoints := InternalGetValueByPath(fromObject, []string{"deployedModels"})
 	if fromEndpoints != nil {
 		fromEndpoints, err = applyConverterToSliceWithRoot(fromEndpoints.([]any), endpointFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"endpoints"}, fromEndpoints)
+		InternalSetValueByPath(toObject, []string{"endpoints"}, fromEndpoints)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(toObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(toObject, []string{"labels"}, fromLabels)
 	}
 
-	fromTunedModelInfo := getValueByPath(fromObject, []string{"_self"})
+	fromTunedModelInfo := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromTunedModelInfo != nil {
 		fromTunedModelInfo, err = tunedModelInfoFromVertex(fromTunedModelInfo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"tunedModelInfo"}, fromTunedModelInfo)
+		InternalSetValueByPath(toObject, []string{"tunedModelInfo"}, fromTunedModelInfo)
 	}
 
-	fromDefaultCheckpointId := getValueByPath(fromObject, []string{"defaultCheckpointId"})
+	fromDefaultCheckpointId := InternalGetValueByPath(fromObject, []string{"defaultCheckpointId"})
 	if fromDefaultCheckpointId != nil {
-		setValueByPath(toObject, []string{"defaultCheckpointId"}, fromDefaultCheckpointId)
+		InternalSetValueByPath(toObject, []string{"defaultCheckpointId"}, fromDefaultCheckpointId)
 	}
 
-	fromCheckpoints := getValueByPath(fromObject, []string{"checkpoints"})
+	fromCheckpoints := InternalGetValueByPath(fromObject, []string{"checkpoints"})
 	if fromCheckpoints != nil {
-		setValueByPath(toObject, []string{"checkpoints"}, fromCheckpoints)
+		InternalSetValueByPath(toObject, []string{"checkpoints"}, fromCheckpoints)
 	}
 
 	return toObject, nil
@@ -3186,74 +3186,74 @@ func modelFromVertex(fromObject map[string]any, parentObject map[string]any, roo
 func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
 	if fromMediaResolution != nil {
-		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
 	}
 
-	fromCodeExecutionResult := getValueByPath(fromObject, []string{"codeExecutionResult"})
+	fromCodeExecutionResult := InternalGetValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
-		setValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
+		InternalSetValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
 	}
 
-	fromExecutableCode := getValueByPath(fromObject, []string{"executableCode"})
+	fromExecutableCode := InternalGetValueByPath(fromObject, []string{"executableCode"})
 	if fromExecutableCode != nil {
-		setValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
+		InternalSetValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
 	}
 
-	fromFileData := getValueByPath(fromObject, []string{"fileData"})
+	fromFileData := InternalGetValueByPath(fromObject, []string{"fileData"})
 	if fromFileData != nil {
 		fromFileData, err = fileDataToMldev(fromFileData.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"fileData"}, fromFileData)
+		InternalSetValueByPath(toObject, []string{"fileData"}, fromFileData)
 	}
 
-	fromFunctionCall := getValueByPath(fromObject, []string{"functionCall"})
+	fromFunctionCall := InternalGetValueByPath(fromObject, []string{"functionCall"})
 	if fromFunctionCall != nil {
 		fromFunctionCall, err = functionCallToMldev(fromFunctionCall.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
+		InternalSetValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
 	}
 
-	fromFunctionResponse := getValueByPath(fromObject, []string{"functionResponse"})
+	fromFunctionResponse := InternalGetValueByPath(fromObject, []string{"functionResponse"})
 	if fromFunctionResponse != nil {
-		setValueByPath(toObject, []string{"functionResponse"}, fromFunctionResponse)
+		InternalSetValueByPath(toObject, []string{"functionResponse"}, fromFunctionResponse)
 	}
 
-	fromInlineData := getValueByPath(fromObject, []string{"inlineData"})
+	fromInlineData := InternalGetValueByPath(fromObject, []string{"inlineData"})
 	if fromInlineData != nil {
 		fromInlineData, err = blobToMldev(fromInlineData.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"inlineData"}, fromInlineData)
+		InternalSetValueByPath(toObject, []string{"inlineData"}, fromInlineData)
 	}
 
-	fromText := getValueByPath(fromObject, []string{"text"})
+	fromText := InternalGetValueByPath(fromObject, []string{"text"})
 	if fromText != nil {
-		setValueByPath(toObject, []string{"text"}, fromText)
+		InternalSetValueByPath(toObject, []string{"text"}, fromText)
 	}
 
-	fromThought := getValueByPath(fromObject, []string{"thought"})
+	fromThought := InternalGetValueByPath(fromObject, []string{"thought"})
 	if fromThought != nil {
-		setValueByPath(toObject, []string{"thought"}, fromThought)
+		InternalSetValueByPath(toObject, []string{"thought"}, fromThought)
 	}
 
-	fromThoughtSignature := getValueByPath(fromObject, []string{"thoughtSignature"})
+	fromThoughtSignature := InternalGetValueByPath(fromObject, []string{"thoughtSignature"})
 	if fromThoughtSignature != nil {
-		setValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
+		InternalSetValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
 	}
 
-	fromVideoMetadata := getValueByPath(fromObject, []string{"videoMetadata"})
+	fromVideoMetadata := InternalGetValueByPath(fromObject, []string{"videoMetadata"})
 	if fromVideoMetadata != nil {
-		setValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
+		InternalSetValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
 	}
 
 	return toObject, nil
@@ -3262,14 +3262,14 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 func productImageToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromProductImage := getValueByPath(fromObject, []string{"productImage"})
+	fromProductImage := InternalGetValueByPath(fromObject, []string{"productImage"})
 	if fromProductImage != nil {
 		fromProductImage, err = imageToVertex(fromProductImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"image"}, fromProductImage)
+		InternalSetValueByPath(toObject, []string{"image"}, fromProductImage)
 	}
 
 	return toObject, nil
@@ -3278,78 +3278,78 @@ func productImageToVertex(fromObject map[string]any, parentObject map[string]any
 func recontextImageConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	fromNumberOfImages := InternalGetValueByPath(fromObject, []string{"numberOfImages"})
 	if fromNumberOfImages != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
 	}
 
-	fromBaseSteps := getValueByPath(fromObject, []string{"baseSteps"})
+	fromBaseSteps := InternalGetValueByPath(fromObject, []string{"baseSteps"})
 	if fromBaseSteps != nil {
-		setValueByPath(parentObject, []string{"parameters", "baseSteps"}, fromBaseSteps)
+		InternalSetValueByPath(parentObject, []string{"parameters", "baseSteps"}, fromBaseSteps)
 	}
 
-	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	fromOutputGcsUri := InternalGetValueByPath(fromObject, []string{"outputGcsUri"})
 	if fromOutputGcsUri != nil {
-		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+		InternalSetValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
+		InternalSetValueByPath(parentObject, []string{"parameters", "seed"}, fromSeed)
 	}
 
-	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	fromSafetyFilterLevel := InternalGetValueByPath(fromObject, []string{"safetyFilterLevel"})
 	if fromSafetyFilterLevel != nil {
-		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+		InternalSetValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
 	}
 
-	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	fromPersonGeneration := InternalGetValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
-		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+		InternalSetValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
 	}
 
-	fromAddWatermark := getValueByPath(fromObject, []string{"addWatermark"})
+	fromAddWatermark := InternalGetValueByPath(fromObject, []string{"addWatermark"})
 	if fromAddWatermark != nil {
-		setValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
+		InternalSetValueByPath(parentObject, []string{"parameters", "addWatermark"}, fromAddWatermark)
 	}
 
-	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	fromOutputMimeType := InternalGetValueByPath(fromObject, []string{"outputMimeType"})
 	if fromOutputMimeType != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
 	}
 
-	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	fromOutputCompressionQuality := InternalGetValueByPath(fromObject, []string{"outputCompressionQuality"})
 	if fromOutputCompressionQuality != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
 	}
 
-	fromEnhancePrompt := getValueByPath(fromObject, []string{"enhancePrompt"})
+	fromEnhancePrompt := InternalGetValueByPath(fromObject, []string{"enhancePrompt"})
 	if fromEnhancePrompt != nil {
-		setValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
+		InternalSetValueByPath(parentObject, []string{"parameters", "enhancePrompt"}, fromEnhancePrompt)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
 	return toObject, nil
 }
 
-func recontextImageParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func recontextImageParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromSource := getValueByPath(fromObject, []string{"source"})
+	fromSource := InternalGetValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
 		_, err = recontextImageSourceToVertex(fromSource.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -3357,7 +3357,7 @@ func recontextImageParametersToVertex(ac *apiClient, fromObject map[string]any, 
 		}
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = recontextImageConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -3371,14 +3371,14 @@ func recontextImageParametersToVertex(ac *apiClient, fromObject map[string]any, 
 func recontextImageResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	fromGeneratedImages := InternalGetValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
 		fromGeneratedImages, err = applyConverterToSliceWithRoot(fromGeneratedImages.([]any), generatedImageFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+		InternalSetValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
 	}
 
 	return toObject, nil
@@ -3387,29 +3387,29 @@ func recontextImageResponseFromVertex(fromObject map[string]any, parentObject ma
 func recontextImageSourceToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromPersonImage := getValueByPath(fromObject, []string{"personImage"})
+	fromPersonImage := InternalGetValueByPath(fromObject, []string{"personImage"})
 	if fromPersonImage != nil {
 		fromPersonImage, err = imageToVertex(fromPersonImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "personImage", "image"}, fromPersonImage)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "personImage", "image"}, fromPersonImage)
 	}
 
-	fromProductImages := getValueByPath(fromObject, []string{"productImages"})
+	fromProductImages := InternalGetValueByPath(fromObject, []string{"productImages"})
 	if fromProductImages != nil {
 		fromProductImages, err = applyConverterToSliceWithRoot(fromProductImages.([]any), productImageToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "productImages"}, fromProductImages)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "productImages"}, fromProductImages)
 	}
 
 	return toObject, nil
@@ -3418,54 +3418,54 @@ func recontextImageSourceToVertex(fromObject map[string]any, parentObject map[st
 func referenceImageAPIToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromReferenceImage := getValueByPath(fromObject, []string{"referenceImage"})
+	fromReferenceImage := InternalGetValueByPath(fromObject, []string{"referenceImage"})
 	if fromReferenceImage != nil {
 		fromReferenceImage, err = imageToVertex(fromReferenceImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"referenceImage"}, fromReferenceImage)
+		InternalSetValueByPath(toObject, []string{"referenceImage"}, fromReferenceImage)
 	}
 
-	fromReferenceId := getValueByPath(fromObject, []string{"referenceId"})
+	fromReferenceId := InternalGetValueByPath(fromObject, []string{"referenceId"})
 	if fromReferenceId != nil {
-		setValueByPath(toObject, []string{"referenceId"}, fromReferenceId)
+		InternalSetValueByPath(toObject, []string{"referenceId"}, fromReferenceId)
 	}
 
-	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
+	fromReferenceType := InternalGetValueByPath(fromObject, []string{"referenceType"})
 	if fromReferenceType != nil {
-		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+		InternalSetValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
 	}
 
-	fromMaskImageConfig := getValueByPath(fromObject, []string{"maskImageConfig"})
+	fromMaskImageConfig := InternalGetValueByPath(fromObject, []string{"maskImageConfig"})
 	if fromMaskImageConfig != nil {
 		fromMaskImageConfig, err = maskReferenceConfigToVertex(fromMaskImageConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"maskImageConfig"}, fromMaskImageConfig)
+		InternalSetValueByPath(toObject, []string{"maskImageConfig"}, fromMaskImageConfig)
 	}
 
-	fromControlImageConfig := getValueByPath(fromObject, []string{"controlImageConfig"})
+	fromControlImageConfig := InternalGetValueByPath(fromObject, []string{"controlImageConfig"})
 	if fromControlImageConfig != nil {
 		fromControlImageConfig, err = controlReferenceConfigToVertex(fromControlImageConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"controlImageConfig"}, fromControlImageConfig)
+		InternalSetValueByPath(toObject, []string{"controlImageConfig"}, fromControlImageConfig)
 	}
 
-	fromStyleImageConfig := getValueByPath(fromObject, []string{"styleImageConfig"})
+	fromStyleImageConfig := InternalGetValueByPath(fromObject, []string{"styleImageConfig"})
 	if fromStyleImageConfig != nil {
-		setValueByPath(toObject, []string{"styleImageConfig"}, fromStyleImageConfig)
+		InternalSetValueByPath(toObject, []string{"styleImageConfig"}, fromStyleImageConfig)
 	}
 
-	fromSubjectImageConfig := getValueByPath(fromObject, []string{"subjectImageConfig"})
+	fromSubjectImageConfig := InternalGetValueByPath(fromObject, []string{"subjectImageConfig"})
 	if fromSubjectImageConfig != nil {
-		setValueByPath(toObject, []string{"subjectImageConfig"}, fromSubjectImageConfig)
+		InternalSetValueByPath(toObject, []string{"subjectImageConfig"}, fromSubjectImageConfig)
 	}
 
 	return toObject, nil
@@ -3474,19 +3474,19 @@ func referenceImageAPIToVertex(fromObject map[string]any, parentObject map[strin
 func safetyAttributesFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromCategories := getValueByPath(fromObject, []string{"safetyAttributes", "categories"})
+	fromCategories := InternalGetValueByPath(fromObject, []string{"safetyAttributes", "categories"})
 	if fromCategories != nil {
-		setValueByPath(toObject, []string{"categories"}, fromCategories)
+		InternalSetValueByPath(toObject, []string{"categories"}, fromCategories)
 	}
 
-	fromScores := getValueByPath(fromObject, []string{"safetyAttributes", "scores"})
+	fromScores := InternalGetValueByPath(fromObject, []string{"safetyAttributes", "scores"})
 	if fromScores != nil {
-		setValueByPath(toObject, []string{"scores"}, fromScores)
+		InternalSetValueByPath(toObject, []string{"scores"}, fromScores)
 	}
 
-	fromContentType := getValueByPath(fromObject, []string{"contentType"})
+	fromContentType := InternalGetValueByPath(fromObject, []string{"contentType"})
 	if fromContentType != nil {
-		setValueByPath(toObject, []string{"contentType"}, fromContentType)
+		InternalSetValueByPath(toObject, []string{"contentType"}, fromContentType)
 	}
 
 	return toObject, nil
@@ -3495,19 +3495,19 @@ func safetyAttributesFromMldev(fromObject map[string]any, parentObject map[strin
 func safetyAttributesFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromCategories := getValueByPath(fromObject, []string{"safetyAttributes", "categories"})
+	fromCategories := InternalGetValueByPath(fromObject, []string{"safetyAttributes", "categories"})
 	if fromCategories != nil {
-		setValueByPath(toObject, []string{"categories"}, fromCategories)
+		InternalSetValueByPath(toObject, []string{"categories"}, fromCategories)
 	}
 
-	fromScores := getValueByPath(fromObject, []string{"safetyAttributes", "scores"})
+	fromScores := InternalGetValueByPath(fromObject, []string{"safetyAttributes", "scores"})
 	if fromScores != nil {
-		setValueByPath(toObject, []string{"scores"}, fromScores)
+		InternalSetValueByPath(toObject, []string{"scores"}, fromScores)
 	}
 
-	fromContentType := getValueByPath(fromObject, []string{"contentType"})
+	fromContentType := InternalGetValueByPath(fromObject, []string{"contentType"})
 	if fromContentType != nil {
-		setValueByPath(toObject, []string{"contentType"}, fromContentType)
+		InternalSetValueByPath(toObject, []string{"contentType"}, fromContentType)
 	}
 
 	return toObject, nil
@@ -3516,18 +3516,18 @@ func safetyAttributesFromVertex(fromObject map[string]any, parentObject map[stri
 func safetySettingToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromCategory := getValueByPath(fromObject, []string{"category"})
+	fromCategory := InternalGetValueByPath(fromObject, []string{"category"})
 	if fromCategory != nil {
-		setValueByPath(toObject, []string{"category"}, fromCategory)
+		InternalSetValueByPath(toObject, []string{"category"}, fromCategory)
 	}
 
-	if getValueByPath(fromObject, []string{"method"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"method"}) != nil {
 		return nil, fmt.Errorf("method parameter is not supported in Gemini API")
 	}
 
-	fromThreshold := getValueByPath(fromObject, []string{"threshold"})
+	fromThreshold := InternalGetValueByPath(fromObject, []string{"threshold"})
 	if fromThreshold != nil {
-		setValueByPath(toObject, []string{"threshold"}, fromThreshold)
+		InternalSetValueByPath(toObject, []string{"threshold"}, fromThreshold)
 	}
 
 	return toObject, nil
@@ -3536,14 +3536,14 @@ func safetySettingToMldev(fromObject map[string]any, parentObject map[string]any
 func scribbleImageToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"image"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"image"}, fromImage)
 	}
 
 	return toObject, nil
@@ -3552,53 +3552,53 @@ func scribbleImageToVertex(fromObject map[string]any, parentObject map[string]an
 func segmentImageConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMode := getValueByPath(fromObject, []string{"mode"})
+	fromMode := InternalGetValueByPath(fromObject, []string{"mode"})
 	if fromMode != nil {
-		setValueByPath(parentObject, []string{"parameters", "mode"}, fromMode)
+		InternalSetValueByPath(parentObject, []string{"parameters", "mode"}, fromMode)
 	}
 
-	fromMaxPredictions := getValueByPath(fromObject, []string{"maxPredictions"})
+	fromMaxPredictions := InternalGetValueByPath(fromObject, []string{"maxPredictions"})
 	if fromMaxPredictions != nil {
-		setValueByPath(parentObject, []string{"parameters", "maxPredictions"}, fromMaxPredictions)
+		InternalSetValueByPath(parentObject, []string{"parameters", "maxPredictions"}, fromMaxPredictions)
 	}
 
-	fromConfidenceThreshold := getValueByPath(fromObject, []string{"confidenceThreshold"})
+	fromConfidenceThreshold := InternalGetValueByPath(fromObject, []string{"confidenceThreshold"})
 	if fromConfidenceThreshold != nil {
-		setValueByPath(parentObject, []string{"parameters", "confidenceThreshold"}, fromConfidenceThreshold)
+		InternalSetValueByPath(parentObject, []string{"parameters", "confidenceThreshold"}, fromConfidenceThreshold)
 	}
 
-	fromMaskDilation := getValueByPath(fromObject, []string{"maskDilation"})
+	fromMaskDilation := InternalGetValueByPath(fromObject, []string{"maskDilation"})
 	if fromMaskDilation != nil {
-		setValueByPath(parentObject, []string{"parameters", "maskDilation"}, fromMaskDilation)
+		InternalSetValueByPath(parentObject, []string{"parameters", "maskDilation"}, fromMaskDilation)
 	}
 
-	fromBinaryColorThreshold := getValueByPath(fromObject, []string{"binaryColorThreshold"})
+	fromBinaryColorThreshold := InternalGetValueByPath(fromObject, []string{"binaryColorThreshold"})
 	if fromBinaryColorThreshold != nil {
-		setValueByPath(parentObject, []string{"parameters", "binaryColorThreshold"}, fromBinaryColorThreshold)
+		InternalSetValueByPath(parentObject, []string{"parameters", "binaryColorThreshold"}, fromBinaryColorThreshold)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
 	return toObject, nil
 }
 
-func segmentImageParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func segmentImageParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromSource := getValueByPath(fromObject, []string{"source"})
+	fromSource := InternalGetValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
 		_, err = segmentImageSourceToVertex(fromSource.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -3606,7 +3606,7 @@ func segmentImageParametersToVertex(ac *apiClient, fromObject map[string]any, pa
 		}
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = segmentImageConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -3620,14 +3620,14 @@ func segmentImageParametersToVertex(ac *apiClient, fromObject map[string]any, pa
 func segmentImageResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromGeneratedMasks := getValueByPath(fromObject, []string{"predictions"})
+	fromGeneratedMasks := InternalGetValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedMasks != nil {
 		fromGeneratedMasks, err = applyConverterToSliceWithRoot(fromGeneratedMasks.([]any), generatedImageMaskFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generatedMasks"}, fromGeneratedMasks)
+		InternalSetValueByPath(toObject, []string{"generatedMasks"}, fromGeneratedMasks)
 	}
 
 	return toObject, nil
@@ -3636,29 +3636,29 @@ func segmentImageResponseFromVertex(fromObject map[string]any, parentObject map[
 func segmentImageSourceToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPrompt := getValueByPath(fromObject, []string{"prompt"})
+	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
 	if fromPrompt != nil {
-		setValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "prompt"}, fromPrompt)
 	}
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	fromScribbleImage := getValueByPath(fromObject, []string{"scribbleImage"})
+	fromScribbleImage := InternalGetValueByPath(fromObject, []string{"scribbleImage"})
 	if fromScribbleImage != nil {
 		fromScribbleImage, err = scribbleImageToVertex(fromScribbleImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"instances[0]", "scribble"}, fromScribbleImage)
+		InternalSetValueByPath(parentObject, []string{"instances[0]", "scribble"}, fromScribbleImage)
 	}
 
 	return toObject, nil
@@ -3667,19 +3667,19 @@ func segmentImageSourceToVertex(fromObject map[string]any, parentObject map[stri
 func toolConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromRetrievalConfig := getValueByPath(fromObject, []string{"retrievalConfig"})
+	fromRetrievalConfig := InternalGetValueByPath(fromObject, []string{"retrievalConfig"})
 	if fromRetrievalConfig != nil {
-		setValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
+		InternalSetValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
 	}
 
-	fromFunctionCallingConfig := getValueByPath(fromObject, []string{"functionCallingConfig"})
+	fromFunctionCallingConfig := InternalGetValueByPath(fromObject, []string{"functionCallingConfig"})
 	if fromFunctionCallingConfig != nil {
 		fromFunctionCallingConfig, err = functionCallingConfigToMldev(fromFunctionCallingConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
+		InternalSetValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
 	}
 
 	return toObject, nil
@@ -3687,71 +3687,71 @@ func toolConfigToMldev(fromObject map[string]any, parentObject map[string]any, r
 
 func toolToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"retrieval"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"retrieval"}) != nil {
 		return nil, fmt.Errorf("retrieval parameter is not supported in Gemini API")
 	}
 
-	fromComputerUse := getValueByPath(fromObject, []string{"computerUse"})
+	fromComputerUse := InternalGetValueByPath(fromObject, []string{"computerUse"})
 	if fromComputerUse != nil {
-		setValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
+		InternalSetValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
 	}
 
-	fromFileSearch := getValueByPath(fromObject, []string{"fileSearch"})
+	fromFileSearch := InternalGetValueByPath(fromObject, []string{"fileSearch"})
 	if fromFileSearch != nil {
-		setValueByPath(toObject, []string{"fileSearch"}, fromFileSearch)
+		InternalSetValueByPath(toObject, []string{"fileSearch"}, fromFileSearch)
 	}
 
-	fromGoogleSearch := getValueByPath(fromObject, []string{"googleSearch"})
+	fromGoogleSearch := InternalGetValueByPath(fromObject, []string{"googleSearch"})
 	if fromGoogleSearch != nil {
 		fromGoogleSearch, err = googleSearchToMldev(fromGoogleSearch.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"googleSearch"}, fromGoogleSearch)
+		InternalSetValueByPath(toObject, []string{"googleSearch"}, fromGoogleSearch)
 	}
 
-	fromGoogleMaps := getValueByPath(fromObject, []string{"googleMaps"})
+	fromGoogleMaps := InternalGetValueByPath(fromObject, []string{"googleMaps"})
 	if fromGoogleMaps != nil {
 		fromGoogleMaps, err = googleMapsToMldev(fromGoogleMaps.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"googleMaps"}, fromGoogleMaps)
+		InternalSetValueByPath(toObject, []string{"googleMaps"}, fromGoogleMaps)
 	}
 
-	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
+	fromCodeExecution := InternalGetValueByPath(fromObject, []string{"codeExecution"})
 	if fromCodeExecution != nil {
-		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
+		InternalSetValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
 	}
 
-	if getValueByPath(fromObject, []string{"enterpriseWebSearch"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"enterpriseWebSearch"}) != nil {
 		return nil, fmt.Errorf("enterpriseWebSearch parameter is not supported in Gemini API")
 	}
 
-	fromFunctionDeclarations := getValueByPath(fromObject, []string{"functionDeclarations"})
+	fromFunctionDeclarations := InternalGetValueByPath(fromObject, []string{"functionDeclarations"})
 	if fromFunctionDeclarations != nil {
-		setValueByPath(toObject, []string{"functionDeclarations"}, fromFunctionDeclarations)
+		InternalSetValueByPath(toObject, []string{"functionDeclarations"}, fromFunctionDeclarations)
 	}
 
-	fromGoogleSearchRetrieval := getValueByPath(fromObject, []string{"googleSearchRetrieval"})
+	fromGoogleSearchRetrieval := InternalGetValueByPath(fromObject, []string{"googleSearchRetrieval"})
 	if fromGoogleSearchRetrieval != nil {
-		setValueByPath(toObject, []string{"googleSearchRetrieval"}, fromGoogleSearchRetrieval)
+		InternalSetValueByPath(toObject, []string{"googleSearchRetrieval"}, fromGoogleSearchRetrieval)
 	}
 
-	if getValueByPath(fromObject, []string{"parallelAiSearch"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"parallelAiSearch"}) != nil {
 		return nil, fmt.Errorf("parallelAiSearch parameter is not supported in Gemini API")
 	}
 
-	fromUrlContext := getValueByPath(fromObject, []string{"urlContext"})
+	fromUrlContext := InternalGetValueByPath(fromObject, []string{"urlContext"})
 	if fromUrlContext != nil {
-		setValueByPath(toObject, []string{"urlContext"}, fromUrlContext)
+		InternalSetValueByPath(toObject, []string{"urlContext"}, fromUrlContext)
 	}
 
-	fromMcpServers := getValueByPath(fromObject, []string{"mcpServers"})
+	fromMcpServers := InternalGetValueByPath(fromObject, []string{"mcpServers"})
 	if fromMcpServers != nil {
-		setValueByPath(toObject, []string{"mcpServers"}, fromMcpServers)
+		InternalSetValueByPath(toObject, []string{"mcpServers"}, fromMcpServers)
 	}
 
 	return toObject, nil
@@ -3760,66 +3760,66 @@ func toolToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 func toolToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromRetrieval := getValueByPath(fromObject, []string{"retrieval"})
+	fromRetrieval := InternalGetValueByPath(fromObject, []string{"retrieval"})
 	if fromRetrieval != nil {
-		setValueByPath(toObject, []string{"retrieval"}, fromRetrieval)
+		InternalSetValueByPath(toObject, []string{"retrieval"}, fromRetrieval)
 	}
 
-	fromComputerUse := getValueByPath(fromObject, []string{"computerUse"})
+	fromComputerUse := InternalGetValueByPath(fromObject, []string{"computerUse"})
 	if fromComputerUse != nil {
-		setValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
+		InternalSetValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
 	}
 
-	if getValueByPath(fromObject, []string{"fileSearch"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"fileSearch"}) != nil {
 		return nil, fmt.Errorf("fileSearch parameter is not supported in Vertex AI")
 	}
 
-	fromGoogleSearch := getValueByPath(fromObject, []string{"googleSearch"})
+	fromGoogleSearch := InternalGetValueByPath(fromObject, []string{"googleSearch"})
 	if fromGoogleSearch != nil {
-		setValueByPath(toObject, []string{"googleSearch"}, fromGoogleSearch)
+		InternalSetValueByPath(toObject, []string{"googleSearch"}, fromGoogleSearch)
 	}
 
-	fromGoogleMaps := getValueByPath(fromObject, []string{"googleMaps"})
+	fromGoogleMaps := InternalGetValueByPath(fromObject, []string{"googleMaps"})
 	if fromGoogleMaps != nil {
-		setValueByPath(toObject, []string{"googleMaps"}, fromGoogleMaps)
+		InternalSetValueByPath(toObject, []string{"googleMaps"}, fromGoogleMaps)
 	}
 
-	fromCodeExecution := getValueByPath(fromObject, []string{"codeExecution"})
+	fromCodeExecution := InternalGetValueByPath(fromObject, []string{"codeExecution"})
 	if fromCodeExecution != nil {
-		setValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
+		InternalSetValueByPath(toObject, []string{"codeExecution"}, fromCodeExecution)
 	}
 
-	fromEnterpriseWebSearch := getValueByPath(fromObject, []string{"enterpriseWebSearch"})
+	fromEnterpriseWebSearch := InternalGetValueByPath(fromObject, []string{"enterpriseWebSearch"})
 	if fromEnterpriseWebSearch != nil {
-		setValueByPath(toObject, []string{"enterpriseWebSearch"}, fromEnterpriseWebSearch)
+		InternalSetValueByPath(toObject, []string{"enterpriseWebSearch"}, fromEnterpriseWebSearch)
 	}
 
-	fromFunctionDeclarations := getValueByPath(fromObject, []string{"functionDeclarations"})
+	fromFunctionDeclarations := InternalGetValueByPath(fromObject, []string{"functionDeclarations"})
 	if fromFunctionDeclarations != nil {
 		fromFunctionDeclarations, err = applyConverterToSliceWithRoot(fromFunctionDeclarations.([]any), functionDeclarationToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"functionDeclarations"}, fromFunctionDeclarations)
+		InternalSetValueByPath(toObject, []string{"functionDeclarations"}, fromFunctionDeclarations)
 	}
 
-	fromGoogleSearchRetrieval := getValueByPath(fromObject, []string{"googleSearchRetrieval"})
+	fromGoogleSearchRetrieval := InternalGetValueByPath(fromObject, []string{"googleSearchRetrieval"})
 	if fromGoogleSearchRetrieval != nil {
-		setValueByPath(toObject, []string{"googleSearchRetrieval"}, fromGoogleSearchRetrieval)
+		InternalSetValueByPath(toObject, []string{"googleSearchRetrieval"}, fromGoogleSearchRetrieval)
 	}
 
-	fromParallelAiSearch := getValueByPath(fromObject, []string{"parallelAiSearch"})
+	fromParallelAiSearch := InternalGetValueByPath(fromObject, []string{"parallelAiSearch"})
 	if fromParallelAiSearch != nil {
-		setValueByPath(toObject, []string{"parallelAiSearch"}, fromParallelAiSearch)
+		InternalSetValueByPath(toObject, []string{"parallelAiSearch"}, fromParallelAiSearch)
 	}
 
-	fromUrlContext := getValueByPath(fromObject, []string{"urlContext"})
+	fromUrlContext := InternalGetValueByPath(fromObject, []string{"urlContext"})
 	if fromUrlContext != nil {
-		setValueByPath(toObject, []string{"urlContext"}, fromUrlContext)
+		InternalSetValueByPath(toObject, []string{"urlContext"}, fromUrlContext)
 	}
 
-	if getValueByPath(fromObject, []string{"mcpServers"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"mcpServers"}) != nil {
 		return nil, fmt.Errorf("mcpServers parameter is not supported in Vertex AI")
 	}
 
@@ -3829,19 +3829,19 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 func tunedModelInfoFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromBaseModel := getValueByPath(fromObject, []string{"labels", "google-vertex-llm-tuning-base-model-id"})
+	fromBaseModel := InternalGetValueByPath(fromObject, []string{"labels", "google-vertex-llm-tuning-base-model-id"})
 	if fromBaseModel != nil {
-		setValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
+		InternalSetValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
 	}
 
-	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
+	fromCreateTime := InternalGetValueByPath(fromObject, []string{"createTime"})
 	if fromCreateTime != nil {
-		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
+		InternalSetValueByPath(toObject, []string{"createTime"}, fromCreateTime)
 	}
 
-	fromUpdateTime := getValueByPath(fromObject, []string{"updateTime"})
+	fromUpdateTime := InternalGetValueByPath(fromObject, []string{"updateTime"})
 	if fromUpdateTime != nil {
-		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
+		InternalSetValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
 	}
 
 	return toObject, nil
@@ -3850,19 +3850,19 @@ func tunedModelInfoFromVertex(fromObject map[string]any, parentObject map[string
 func updateModelConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
+	fromDisplayName := InternalGetValueByPath(fromObject, []string{"displayName"})
 	if fromDisplayName != nil {
-		setValueByPath(parentObject, []string{"displayName"}, fromDisplayName)
+		InternalSetValueByPath(parentObject, []string{"displayName"}, fromDisplayName)
 	}
 
-	fromDescription := getValueByPath(fromObject, []string{"description"})
+	fromDescription := InternalGetValueByPath(fromObject, []string{"description"})
 	if fromDescription != nil {
-		setValueByPath(parentObject, []string{"description"}, fromDescription)
+		InternalSetValueByPath(parentObject, []string{"description"}, fromDescription)
 	}
 
-	fromDefaultCheckpointId := getValueByPath(fromObject, []string{"defaultCheckpointId"})
+	fromDefaultCheckpointId := InternalGetValueByPath(fromObject, []string{"defaultCheckpointId"})
 	if fromDefaultCheckpointId != nil {
-		setValueByPath(parentObject, []string{"defaultCheckpointId"}, fromDefaultCheckpointId)
+		InternalSetValueByPath(parentObject, []string{"defaultCheckpointId"}, fromDefaultCheckpointId)
 	}
 
 	return toObject, nil
@@ -3871,38 +3871,38 @@ func updateModelConfigToMldev(fromObject map[string]any, parentObject map[string
 func updateModelConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromDisplayName := getValueByPath(fromObject, []string{"displayName"})
+	fromDisplayName := InternalGetValueByPath(fromObject, []string{"displayName"})
 	if fromDisplayName != nil {
-		setValueByPath(parentObject, []string{"displayName"}, fromDisplayName)
+		InternalSetValueByPath(parentObject, []string{"displayName"}, fromDisplayName)
 	}
 
-	fromDescription := getValueByPath(fromObject, []string{"description"})
+	fromDescription := InternalGetValueByPath(fromObject, []string{"description"})
 	if fromDescription != nil {
-		setValueByPath(parentObject, []string{"description"}, fromDescription)
+		InternalSetValueByPath(parentObject, []string{"description"}, fromDescription)
 	}
 
-	fromDefaultCheckpointId := getValueByPath(fromObject, []string{"defaultCheckpointId"})
+	fromDefaultCheckpointId := InternalGetValueByPath(fromObject, []string{"defaultCheckpointId"})
 	if fromDefaultCheckpointId != nil {
-		setValueByPath(parentObject, []string{"defaultCheckpointId"}, fromDefaultCheckpointId)
+		InternalSetValueByPath(parentObject, []string{"defaultCheckpointId"}, fromDefaultCheckpointId)
 	}
 
 	return toObject, nil
 }
 
-func updateModelParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func updateModelParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "name"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromModel)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = updateModelConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -3913,20 +3913,20 @@ func updateModelParametersToMldev(ac *apiClient, fromObject map[string]any, pare
 	return toObject, nil
 }
 
-func updateModelParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func updateModelParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = updateModelConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -3940,93 +3940,93 @@ func updateModelParametersToVertex(ac *apiClient, fromObject map[string]any, par
 func upscaleImageAPIConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromOutputGcsUri := getValueByPath(fromObject, []string{"outputGcsUri"})
+	fromOutputGcsUri := InternalGetValueByPath(fromObject, []string{"outputGcsUri"})
 	if fromOutputGcsUri != nil {
-		setValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
+		InternalSetValueByPath(parentObject, []string{"parameters", "storageUri"}, fromOutputGcsUri)
 	}
 
-	fromSafetyFilterLevel := getValueByPath(fromObject, []string{"safetyFilterLevel"})
+	fromSafetyFilterLevel := InternalGetValueByPath(fromObject, []string{"safetyFilterLevel"})
 	if fromSafetyFilterLevel != nil {
-		setValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
+		InternalSetValueByPath(parentObject, []string{"parameters", "safetySetting"}, fromSafetyFilterLevel)
 	}
 
-	fromPersonGeneration := getValueByPath(fromObject, []string{"personGeneration"})
+	fromPersonGeneration := InternalGetValueByPath(fromObject, []string{"personGeneration"})
 	if fromPersonGeneration != nil {
-		setValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
+		InternalSetValueByPath(parentObject, []string{"parameters", "personGeneration"}, fromPersonGeneration)
 	}
 
-	fromIncludeRaiReason := getValueByPath(fromObject, []string{"includeRaiReason"})
+	fromIncludeRaiReason := InternalGetValueByPath(fromObject, []string{"includeRaiReason"})
 	if fromIncludeRaiReason != nil {
-		setValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
+		InternalSetValueByPath(parentObject, []string{"parameters", "includeRaiReason"}, fromIncludeRaiReason)
 	}
 
-	fromOutputMimeType := getValueByPath(fromObject, []string{"outputMimeType"})
+	fromOutputMimeType := InternalGetValueByPath(fromObject, []string{"outputMimeType"})
 	if fromOutputMimeType != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "mimeType"}, fromOutputMimeType)
 	}
 
-	fromOutputCompressionQuality := getValueByPath(fromObject, []string{"outputCompressionQuality"})
+	fromOutputCompressionQuality := InternalGetValueByPath(fromObject, []string{"outputCompressionQuality"})
 	if fromOutputCompressionQuality != nil {
-		setValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
+		InternalSetValueByPath(parentObject, []string{"parameters", "outputOptions", "compressionQuality"}, fromOutputCompressionQuality)
 	}
 
-	fromEnhanceInputImage := getValueByPath(fromObject, []string{"enhanceInputImage"})
+	fromEnhanceInputImage := InternalGetValueByPath(fromObject, []string{"enhanceInputImage"})
 	if fromEnhanceInputImage != nil {
-		setValueByPath(parentObject, []string{"parameters", "upscaleConfig", "enhanceInputImage"}, fromEnhanceInputImage)
+		InternalSetValueByPath(parentObject, []string{"parameters", "upscaleConfig", "enhanceInputImage"}, fromEnhanceInputImage)
 	}
 
-	fromImagePreservationFactor := getValueByPath(fromObject, []string{"imagePreservationFactor"})
+	fromImagePreservationFactor := InternalGetValueByPath(fromObject, []string{"imagePreservationFactor"})
 	if fromImagePreservationFactor != nil {
-		setValueByPath(parentObject, []string{"parameters", "upscaleConfig", "imagePreservationFactor"}, fromImagePreservationFactor)
+		InternalSetValueByPath(parentObject, []string{"parameters", "upscaleConfig", "imagePreservationFactor"}, fromImagePreservationFactor)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
-	fromNumberOfImages := getValueByPath(fromObject, []string{"numberOfImages"})
+	fromNumberOfImages := InternalGetValueByPath(fromObject, []string{"numberOfImages"})
 	if fromNumberOfImages != nil {
-		setValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
+		InternalSetValueByPath(parentObject, []string{"parameters", "sampleCount"}, fromNumberOfImages)
 	}
 
-	fromMode := getValueByPath(fromObject, []string{"mode"})
+	fromMode := InternalGetValueByPath(fromObject, []string{"mode"})
 	if fromMode != nil {
-		setValueByPath(parentObject, []string{"parameters", "mode"}, fromMode)
+		InternalSetValueByPath(parentObject, []string{"parameters", "mode"}, fromMode)
 	}
 
 	return toObject, nil
 }
 
-func upscaleImageAPIParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func upscaleImageAPIParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
 	}
 
-	fromUpscaleFactor := getValueByPath(fromObject, []string{"upscaleFactor"})
+	fromUpscaleFactor := InternalGetValueByPath(fromObject, []string{"upscaleFactor"})
 	if fromUpscaleFactor != nil {
-		setValueByPath(toObject, []string{"parameters", "upscaleConfig", "upscaleFactor"}, fromUpscaleFactor)
+		InternalSetValueByPath(toObject, []string{"parameters", "upscaleConfig", "upscaleFactor"}, fromUpscaleFactor)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = upscaleImageAPIConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -4040,19 +4040,19 @@ func upscaleImageAPIParametersToVertex(ac *apiClient, fromObject map[string]any,
 func upscaleImageResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromGeneratedImages := getValueByPath(fromObject, []string{"predictions"})
+	fromGeneratedImages := InternalGetValueByPath(fromObject, []string{"predictions"})
 	if fromGeneratedImages != nil {
 		fromGeneratedImages, err = applyConverterToSliceWithRoot(fromGeneratedImages.([]any), generatedImageFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+		InternalSetValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
 	}
 
 	return toObject, nil
@@ -4061,24 +4061,24 @@ func upscaleImageResponseFromVertex(fromObject map[string]any, parentObject map[
 func videoFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromUri := getValueByPath(fromObject, []string{"uri"})
+	fromUri := InternalGetValueByPath(fromObject, []string{"uri"})
 	if fromUri != nil {
-		setValueByPath(toObject, []string{"uri"}, fromUri)
+		InternalSetValueByPath(toObject, []string{"uri"}, fromUri)
 	}
 
-	fromVideoBytes := getValueByPath(fromObject, []string{"encodedVideo"})
+	fromVideoBytes := InternalGetValueByPath(fromObject, []string{"encodedVideo"})
 	if fromVideoBytes != nil {
-		fromVideoBytes, err = tBytes(fromVideoBytes)
+		fromVideoBytes, err = InternalTBytes(fromVideoBytes)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"videoBytes"}, fromVideoBytes)
+		InternalSetValueByPath(toObject, []string{"videoBytes"}, fromVideoBytes)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"encoding"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"encoding"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -4087,24 +4087,24 @@ func videoFromMldev(fromObject map[string]any, parentObject map[string]any, root
 func videoFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromUri := getValueByPath(fromObject, []string{"gcsUri"})
+	fromUri := InternalGetValueByPath(fromObject, []string{"gcsUri"})
 	if fromUri != nil {
-		setValueByPath(toObject, []string{"uri"}, fromUri)
+		InternalSetValueByPath(toObject, []string{"uri"}, fromUri)
 	}
 
-	fromVideoBytes := getValueByPath(fromObject, []string{"bytesBase64Encoded"})
+	fromVideoBytes := InternalGetValueByPath(fromObject, []string{"bytesBase64Encoded"})
 	if fromVideoBytes != nil {
-		fromVideoBytes, err = tBytes(fromVideoBytes)
+		fromVideoBytes, err = InternalTBytes(fromVideoBytes)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"videoBytes"}, fromVideoBytes)
+		InternalSetValueByPath(toObject, []string{"videoBytes"}, fromVideoBytes)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -4113,19 +4113,19 @@ func videoFromVertex(fromObject map[string]any, parentObject map[string]any, roo
 func videoGenerationMaskToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_self"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"_self"}, fromImage)
 	}
 
-	fromMaskMode := getValueByPath(fromObject, []string{"maskMode"})
+	fromMaskMode := InternalGetValueByPath(fromObject, []string{"maskMode"})
 	if fromMaskMode != nil {
-		setValueByPath(toObject, []string{"maskMode"}, fromMaskMode)
+		InternalSetValueByPath(toObject, []string{"maskMode"}, fromMaskMode)
 	}
 
 	return toObject, nil
@@ -4134,19 +4134,19 @@ func videoGenerationMaskToVertex(fromObject map[string]any, parentObject map[str
 func videoGenerationReferenceImageToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToMldev(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"image"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"image"}, fromImage)
 	}
 
-	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
+	fromReferenceType := InternalGetValueByPath(fromObject, []string{"referenceType"})
 	if fromReferenceType != nil {
-		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+		InternalSetValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
 	}
 
 	return toObject, nil
@@ -4155,19 +4155,19 @@ func videoGenerationReferenceImageToMldev(fromObject map[string]any, parentObjec
 func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromImage := getValueByPath(fromObject, []string{"image"})
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
 	if fromImage != nil {
 		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"image"}, fromImage)
+		InternalSetValueByPath(toObject, []string{"image"}, fromImage)
 	}
 
-	fromReferenceType := getValueByPath(fromObject, []string{"referenceType"})
+	fromReferenceType := InternalGetValueByPath(fromObject, []string{"referenceType"})
 	if fromReferenceType != nil {
-		setValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
+		InternalSetValueByPath(toObject, []string{"referenceType"}, fromReferenceType)
 	}
 
 	return toObject, nil
@@ -4176,24 +4176,24 @@ func videoGenerationReferenceImageToVertex(fromObject map[string]any, parentObje
 func videoToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromUri := getValueByPath(fromObject, []string{"uri"})
+	fromUri := InternalGetValueByPath(fromObject, []string{"uri"})
 	if fromUri != nil {
-		setValueByPath(toObject, []string{"uri"}, fromUri)
+		InternalSetValueByPath(toObject, []string{"uri"}, fromUri)
 	}
 
-	fromVideoBytes := getValueByPath(fromObject, []string{"videoBytes"})
+	fromVideoBytes := InternalGetValueByPath(fromObject, []string{"videoBytes"})
 	if fromVideoBytes != nil {
-		fromVideoBytes, err = tBytes(fromVideoBytes)
+		fromVideoBytes, err = InternalTBytes(fromVideoBytes)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"encodedVideo"}, fromVideoBytes)
+		InternalSetValueByPath(toObject, []string{"encodedVideo"}, fromVideoBytes)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"encoding"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"encoding"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -4202,24 +4202,24 @@ func videoToMldev(fromObject map[string]any, parentObject map[string]any, rootOb
 func videoToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromUri := getValueByPath(fromObject, []string{"uri"})
+	fromUri := InternalGetValueByPath(fromObject, []string{"uri"})
 	if fromUri != nil {
-		setValueByPath(toObject, []string{"gcsUri"}, fromUri)
+		InternalSetValueByPath(toObject, []string{"gcsUri"}, fromUri)
 	}
 
-	fromVideoBytes := getValueByPath(fromObject, []string{"videoBytes"})
+	fromVideoBytes := InternalGetValueByPath(fromObject, []string{"videoBytes"})
 	if fromVideoBytes != nil {
-		fromVideoBytes, err = tBytes(fromVideoBytes)
+		fromVideoBytes, err = InternalTBytes(fromVideoBytes)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"bytesBase64Encoded"}, fromVideoBytes)
+		InternalSetValueByPath(toObject, []string{"bytesBase64Encoded"}, fromVideoBytes)
 	}
 
-	fromMimeType := getValueByPath(fromObject, []string{"mimeType"})
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
 	if fromMimeType != nil {
-		setValueByPath(toObject, []string{"mimeType"}, fromMimeType)
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -4229,14 +4229,14 @@ func videoToVertex(fromObject map[string]any, parentObject map[string]any, rootO
 // You don't need to initiate this struct. Create a client instance via NewClient, and
 // then access Models through client.Models field.
 type Models struct {
-	apiClient *apiClient
+	apiClient *InternalAPIClient
 }
 
 func (m Models) generateContent(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) (*GenerateContentResponse, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "contents": contents, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4250,8 +4250,8 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 	var response = new(GenerateContentResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = generateContentParametersToVertex
 		fromConverter = generateContentResponseFromVertex
 	} else {
@@ -4269,16 +4269,16 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:generateContent", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:generateContent", urlParams)
 	} else {
-		path, err = formatMap("{model}:generateContent", urlParams)
+		path, err = InternalFormatMap("{model}:generateContent", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -4295,7 +4295,7 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -4307,7 +4307,7 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "contents": contents, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4320,8 +4320,8 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 	}
 	var rs responseStream[GenerateContentResponse]
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = generateContentParametersToVertex
 		fromConverter = generateContentResponseFromVertex
 	} else {
@@ -4339,10 +4339,10 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:streamGenerateContent?alt=sse", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:streamGenerateContent?alt=sse", urlParams)
 	} else {
-		path, err = formatMap("{model}:streamGenerateContent?alt=sse", urlParams)
+		path, err = InternalFormatMap("{model}:streamGenerateContent?alt=sse", urlParams)
 	}
 	if err != nil {
 		return yieldErrorAndEndIterator[GenerateContentResponse](fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err))
@@ -4359,7 +4359,7 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 			return nil, err
 		}
 		var response = new(GenerateContentResponse)
-		err = mapToStruct(responseMap, response)
+		err = InternalMapToStruct(responseMap, response)
 		if err != nil {
 			return nil, err
 		}
@@ -4372,7 +4372,7 @@ func (m Models) embedContent(ctx context.Context, model string, contents []*Cont
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "contents": contents, "content": content, "embeddingApiType": embeddingApiType, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4386,8 +4386,8 @@ func (m Models) embedContent(ctx context.Context, model string, contents []*Cont
 	var response = new(EmbedContentResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = embedContentParametersPrivateToVertex
 		fromConverter = embedContentResponseFromVertex
 	} else {
@@ -4405,20 +4405,20 @@ func (m Models) embedContent(ctx context.Context, model string, contents []*Cont
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		if tIsVertexEmbedContentModel(parameterMap["model"].(string)) {
-			path, err = formatMap("{model}:embedContent", urlParams)
+			path, err = InternalFormatMap("{model}:embedContent", urlParams)
 		} else {
-			path, err = formatMap("{model}:predict", urlParams)
+			path, err = InternalFormatMap("{model}:predict", urlParams)
 		}
 	} else {
-		path, err = formatMap("{model}:batchEmbedContents", urlParams)
+		path, err = InternalFormatMap("{model}:batchEmbedContents", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -4435,7 +4435,7 @@ func (m Models) embedContent(ctx context.Context, model string, contents []*Cont
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -4448,7 +4448,7 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "prompt": prompt, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4462,8 +4462,8 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 	var response = new(GenerateImagesResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = generateImagesParametersToVertex
 		fromConverter = generateImagesResponseFromVertex
 	} else {
@@ -4481,16 +4481,16 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:predict", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:predict", urlParams)
 	} else {
-		path, err = formatMap("{model}:predict", urlParams)
+		path, err = InternalFormatMap("{model}:predict", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -4507,7 +4507,7 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -4520,7 +4520,7 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "prompt": prompt, "referenceImages": referenceImages, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4534,8 +4534,8 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 	var response = new(EditImageResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = editImageParametersToVertex
 		fromConverter = editImageResponseFromVertex
 	} else {
@@ -4554,16 +4554,16 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:predict", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:predict", urlParams)
 	} else {
-		path, err = formatMap("None", urlParams)
+		path, err = InternalFormatMap("None", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -4580,7 +4580,7 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -4593,7 +4593,7 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "image": image, "upscaleFactor": upscaleFactor, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4607,8 +4607,8 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 	var response = new(UpscaleImageResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = upscaleImageAPIParametersToVertex
 		fromConverter = upscaleImageResponseFromVertex
 	} else {
@@ -4627,16 +4627,16 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:predict", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:predict", urlParams)
 	} else {
-		path, err = formatMap("None", urlParams)
+		path, err = InternalFormatMap("None", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -4653,7 +4653,7 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -4670,7 +4670,7 @@ func (m Models) RecontextImage(ctx context.Context, model string, source *Recont
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "source": source, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4684,8 +4684,8 @@ func (m Models) RecontextImage(ctx context.Context, model string, source *Recont
 	var response = new(RecontextImageResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = recontextImageParametersToVertex
 		fromConverter = recontextImageResponseFromVertex
 	} else {
@@ -4704,16 +4704,16 @@ func (m Models) RecontextImage(ctx context.Context, model string, source *Recont
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:predict", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:predict", urlParams)
 	} else {
-		path, err = formatMap("None", urlParams)
+		path, err = InternalFormatMap("None", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -4730,7 +4730,7 @@ func (m Models) RecontextImage(ctx context.Context, model string, source *Recont
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -4753,7 +4753,7 @@ func (m Models) SegmentImage(ctx context.Context, model string, source *SegmentI
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "source": source, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4767,8 +4767,8 @@ func (m Models) SegmentImage(ctx context.Context, model string, source *SegmentI
 	var response = new(SegmentImageResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = segmentImageParametersToVertex
 		fromConverter = segmentImageResponseFromVertex
 	} else {
@@ -4787,16 +4787,16 @@ func (m Models) SegmentImage(ctx context.Context, model string, source *SegmentI
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:predict", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:predict", urlParams)
 	} else {
-		path, err = formatMap("None", urlParams)
+		path, err = InternalFormatMap("None", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -4813,7 +4813,7 @@ func (m Models) SegmentImage(ctx context.Context, model string, source *SegmentI
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -4836,7 +4836,7 @@ func (m Models) Get(ctx context.Context, model string, config *GetModelConfig) (
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4850,8 +4850,8 @@ func (m Models) Get(ctx context.Context, model string, config *GetModelConfig) (
 	var response = new(Model)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = getModelParametersToVertex
 		fromConverter = modelFromVertex
 	} else {
@@ -4869,16 +4869,16 @@ func (m Models) Get(ctx context.Context, model string, config *GetModelConfig) (
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{name}", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{name}", urlParams)
 	} else {
-		path, err = formatMap("{name}", urlParams)
+		path, err = InternalFormatMap("{name}", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -4895,7 +4895,7 @@ func (m Models) Get(ctx context.Context, model string, config *GetModelConfig) (
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -4917,7 +4917,7 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4931,8 +4931,8 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 	var response = new(ListModelsResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = listModelsParametersToVertex
 		fromConverter = listModelsResponseFromVertex
 	} else {
@@ -4950,10 +4950,10 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{models_url}", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{models_url}", urlParams)
 	} else {
-		path, err = formatMap("{models_url}", urlParams)
+		path, err = InternalFormatMap("{models_url}", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
@@ -4962,7 +4962,7 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 		if body["_query"].(map[string]any)["filter"] != nil {
 			filter := body["_query"].(map[string]any)["filter"].(string)
 			delete(body["_query"].(map[string]any), "filter")
-			query, err := createURLQuery(body["_query"].(map[string]any))
+			query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 			if err != nil {
 				return nil, err
 			}
@@ -4971,7 +4971,7 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 			}
 			path += "?filter=" + filter + query
 		} else {
-			query, err := createURLQuery(body["_query"].(map[string]any))
+			query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 			if err != nil {
 				return nil, err
 			}
@@ -4989,7 +4989,7 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -5002,7 +5002,7 @@ func (m Models) Update(ctx context.Context, model string, config *UpdateModelCon
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -5016,8 +5016,8 @@ func (m Models) Update(ctx context.Context, model string, config *UpdateModelCon
 	var response = new(Model)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = updateModelParametersToVertex
 		fromConverter = modelFromVertex
 	} else {
@@ -5035,16 +5035,16 @@ func (m Models) Update(ctx context.Context, model string, config *UpdateModelCon
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}", urlParams)
 	} else {
-		path, err = formatMap("{name}", urlParams)
+		path, err = InternalFormatMap("{name}", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -5061,7 +5061,7 @@ func (m Models) Update(ctx context.Context, model string, config *UpdateModelCon
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -5084,7 +5084,7 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -5098,8 +5098,8 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 	var response = new(DeleteModelResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = deleteModelParametersToVertex
 		fromConverter = deleteModelResponseFromVertex
 	} else {
@@ -5117,16 +5117,16 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{name}", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{name}", urlParams)
 	} else {
-		path, err = formatMap("{name}", urlParams)
+		path, err = InternalFormatMap("{name}", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -5143,7 +5143,7 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -5156,7 +5156,7 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "contents": contents, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -5170,8 +5170,8 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 	var response = new(CountTokensResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = countTokensParametersToVertex
 		fromConverter = countTokensResponseFromVertex
 	} else {
@@ -5189,16 +5189,16 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:countTokens", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:countTokens", urlParams)
 	} else {
-		path, err = formatMap("{model}:countTokens", urlParams)
+		path, err = InternalFormatMap("{model}:countTokens", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -5215,7 +5215,7 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -5228,7 +5228,7 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "contents": contents, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -5242,8 +5242,8 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 	var response = new(ComputeTokensResponse)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = computeTokensParametersToVertex
 		fromConverter = computeTokensResponseFromVertex
 	} else {
@@ -5262,16 +5262,16 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:computeTokens", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:computeTokens", urlParams)
 	} else {
-		path, err = formatMap("None", urlParams)
+		path, err = InternalFormatMap("None", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -5288,7 +5288,7 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -5301,7 +5301,7 @@ func (m Models) generateVideos(ctx context.Context, model string, prompt *string
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"model": model, "prompt": prompt, "image": image, "video": video, "source": source, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -5315,8 +5315,8 @@ func (m Models) generateVideos(ctx context.Context, model string, prompt *string
 	var response = new(GenerateVideosOperation)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	var toConverter func(*apiClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = generateVideosParametersToVertex
 		fromConverter = generateVideosOperationFromVertex
 	} else {
@@ -5334,16 +5334,16 @@ func (m Models) generateVideos(ctx context.Context, model string, prompt *string
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:predictLongRunning", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{model}:predictLongRunning", urlParams)
 	} else {
-		path, err = formatMap("{model}:predictLongRunning", urlParams)
+		path, err = InternalFormatMap("{model}:predictLongRunning", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -5360,7 +5360,7 @@ func (m Models) generateVideos(ctx context.Context, model string, prompt *string
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}

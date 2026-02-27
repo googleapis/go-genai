@@ -44,6 +44,11 @@ type apiClient struct {
 	clientConfig *ClientConfig
 }
 
+// InternalAPIClient is an internal type that exposes the apiClient struct.
+// This type is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+type InternalAPIClient = apiClient
+
 // sendStreamRequest issues an server streaming API request and returns a map of the response contents.
 func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiClient, path string, method string, body map[string]any, httpOptions *HTTPOptions, output *responseStream[R]) error {
 	req, httpOptions, err := buildRequest(ctx, ac, path, body, method, httpOptions)
@@ -72,6 +77,11 @@ func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiC
 
 	// resp.Body will be closed by the iterator
 	return deserializeStreamResponse(resp, output)
+}
+
+// SendRequest issues an API request and returns a map of the response contents.
+func SendRequest(ctx context.Context, ac *apiClient, path string, method string, body map[string]any, httpOptions *HTTPOptions) (map[string]any, error) {
+	return sendRequest(ctx, ac, path, method, body, httpOptions)
 }
 
 // sendRequest issues an API request and returns a map of the response contents.
@@ -116,6 +126,13 @@ func downloadFile(ctx context.Context, ac *apiClient, path string, httpOptions *
 	}
 
 	return io.ReadAll(resp.Body)
+}
+
+// InternalMapToStruct is an internal function used for converting a map[string]any to a struct.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalMapToStruct[R any](input map[string]any, output *R) error {
+	return mapToStruct(input, output)
 }
 
 func mapToStruct[R any](input map[string]any, output *R) error {
@@ -684,4 +701,8 @@ func (ac *apiClient) uploadToFileSearchStore(ctx context.Context, r io.Reader, u
 		return nil, err
 	}
 	return response, nil
+}
+
+func (ac *apiClient) ClientConfig() ClientConfig {
+	return *ac.clientConfig
 }

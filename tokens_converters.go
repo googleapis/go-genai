@@ -20,53 +20,53 @@ import (
 	"fmt"
 )
 
-func createAuthTokenConfigToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func createAuthTokenConfigToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromExpireTime := getValueByPath(fromObject, []string{"expireTime"})
+	fromExpireTime := InternalGetValueByPath(fromObject, []string{"expireTime"})
 	if fromExpireTime != nil {
-		setValueByPath(parentObject, []string{"expireTime"}, fromExpireTime)
+		InternalSetValueByPath(parentObject, []string{"expireTime"}, fromExpireTime)
 	}
 
-	fromNewSessionExpireTime := getValueByPath(fromObject, []string{"newSessionExpireTime"})
+	fromNewSessionExpireTime := InternalGetValueByPath(fromObject, []string{"newSessionExpireTime"})
 	if fromNewSessionExpireTime != nil {
-		setValueByPath(parentObject, []string{"newSessionExpireTime"}, fromNewSessionExpireTime)
+		InternalSetValueByPath(parentObject, []string{"newSessionExpireTime"}, fromNewSessionExpireTime)
 	}
 
-	fromUses := getValueByPath(fromObject, []string{"uses"})
+	fromUses := InternalGetValueByPath(fromObject, []string{"uses"})
 	if fromUses != nil {
-		setValueByPath(parentObject, []string{"uses"}, fromUses)
+		InternalSetValueByPath(parentObject, []string{"uses"}, fromUses)
 	}
 
-	fromLiveConnectConstraints := getValueByPath(fromObject, []string{"liveConnectConstraints"})
+	fromLiveConnectConstraints := InternalGetValueByPath(fromObject, []string{"liveConnectConstraints"})
 	if fromLiveConnectConstraints != nil {
 		fromLiveConnectConstraints, err = liveConnectConstraintsToMldev(ac, fromLiveConnectConstraints.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"bidiGenerateContentSetup"}, fromLiveConnectConstraints)
+		InternalSetValueByPath(parentObject, []string{"bidiGenerateContentSetup"}, fromLiveConnectConstraints)
 	}
 
-	fromLockAdditionalFields := getValueByPath(fromObject, []string{"lockAdditionalFields"})
+	fromLockAdditionalFields := InternalGetValueByPath(fromObject, []string{"lockAdditionalFields"})
 	if fromLockAdditionalFields != nil {
-		setValueByPath(parentObject, []string{"fieldMask"}, fromLockAdditionalFields)
+		InternalSetValueByPath(parentObject, []string{"fieldMask"}, fromLockAdditionalFields)
 	}
 
 	return toObject, nil
 }
 
-func createAuthTokenParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func createAuthTokenParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		fromConfig, err = createAuthTokenConfigToMldev(ac, fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"config"}, fromConfig)
+		InternalSetValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -74,34 +74,34 @@ func createAuthTokenParametersToMldev(ac *apiClient, fromObject map[string]any, 
 
 func createAuthTokenParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"config"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"config"}) != nil {
 		return nil, fmt.Errorf("config parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil
 }
 
-func liveConnectConstraintsToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectConstraintsToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"setup", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"setup", "model"}, fromModel)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		fromConfig, err = liveConnectConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"config"}, fromConfig)
+		InternalSetValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil

@@ -42,6 +42,13 @@ type converterFuncWithRoot func(map[string]any, map[string]any, map[string]any) 
 
 type transformerFunc[T any] func(T) (T, error)
 
+// InternalSetValueByPath is an internal function used for setting values by path.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalSetValueByPath(data map[string]any, keys []string, value any) {
+	setValueByPath(data, keys, value)
+}
+
 // setValueByPath handles setting values within nested maps, including handling array-like structures.
 //
 // Examples:
@@ -159,6 +166,13 @@ func setValueByPath(data map[string]any, keys []string, value any) {
 	}
 }
 
+// InternalGetValueByPath is an internal function used for retrieving values by path.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalGetValueByPath(data any, keys []string) any {
+	return getValueByPath(data, keys)
+}
+
 // getValueByPath retrieves a value from a nested map or slice or struct based on a path of keys.
 //
 // Examples:
@@ -270,6 +284,13 @@ func getValueByPathOrDefault(data any, keys []string, defaultValue any) any {
 	return current
 }
 
+// InternalFormatMap is an internal function used for formatting maps.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalFormatMap(template string, variables map[string]any) (string, error) {
+	return formatMap(template, variables)
+}
+
 func formatMap(template string, variables map[string]any) (string, error) {
 	var buffer bytes.Buffer
 	for i := 0; i < len(template); i++ {
@@ -340,6 +361,13 @@ func applyItemTransformerToSlice[T any](inputs []T, itemTransformer transformerF
 	return outputs, nil
 }
 
+// InternalDeepMarshal is an internal function used for deep marshaling.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalDeepMarshal(input any, output *map[string]any) error {
+	return deepMarshal(input, output)
+}
+
 func deepMarshal(input any, output *map[string]any) error {
 	if inputBytes, err := json.Marshal(input); err != nil {
 		return fmt.Errorf("deepMarshal: unable to marshal input: %w", err)
@@ -357,6 +385,13 @@ func deepCopy[T any](original T, copied *T) error {
 
 	err = json.Unmarshal(bytes, copied)
 	return err
+}
+
+// InternalCreateURLQuery is an internal function used for creating URL queries.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalCreateURLQuery(query map[string]any) (string, error) {
+	return createURLQuery(query)
 }
 
 // createURLQuery creates a URL query string from a map of key-value pairs.

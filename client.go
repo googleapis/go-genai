@@ -159,7 +159,7 @@ func getAPIKeyFromEnv(envVars map[string]string) string {
 	return geminiAPIKey
 }
 
-// NewClient creates a new GenAI client.
+// NewInternalAPIClient creates a new internal API client.
 //
 // You can configure the client by passing in a ClientConfig struct.
 //
@@ -185,7 +185,7 @@ func getAPIKeyFromEnv(envVars map[string]string) string {
 //
 // If using the Vertex AI backend and no credentials are provided in the
 // ClientConfig, the client will attempt to use application default credentials.
-func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
+func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPIClient, error) {
 	if cc == nil {
 		cc = &ClientConfig{}
 	}
@@ -326,8 +326,40 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 			cc.HTTPClient = &http.Client{}
 		}
 	}
+	return &apiClient{clientConfig: cc}, nil
+}
 
-	ac := &apiClient{clientConfig: cc}
+// NewClient creates a new GenAI client.
+//
+// You can configure the client by passing in a ClientConfig struct.
+//
+// If a nil ClientConfig is provided, the client will be configured using
+// default settings and environment variables:
+//
+//   - Environment Variables for BackendGeminiAPI:
+//
+//   - GEMINI_API_KEY: Specifies the API key for the Gemini API.
+//
+//   - GOOGLE_API_KEY: Can also be used to specify the API key for the Gemini API.
+//     If both GOOGLE_API_KEY and GEMINI_API_KEY are set, GOOGLE_API_KEY will be used.
+//
+//   - Environment Variables for BackendVertexAI:
+//
+//   - GOOGLE_GENAI_USE_VERTEXAI: Must be set to "1" or "true" to use the Vertex AI
+//     backend.
+//
+//   - GOOGLE_CLOUD_PROJECT: Required. Specifies the GCP project ID.
+//
+//   - GOOGLE_CLOUD_LOCATION or GOOGLE_CLOUD_REGION: Required. Specifies the GCP
+//     location/region.
+//
+// If using the Vertex AI backend and no credentials are provided in the
+// ClientConfig, the client will attempt to use application default credentials.
+func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
+	ac, err := NewInternalAPIClient(ctx, cc)
+	if err != nil {
+		return nil, err
+	}
 	c := &Client{
 		clientConfig:     *cc,
 		Models:           &Models{apiClient: ac},

@@ -22,6 +22,13 @@ import (
 	"strings"
 )
 
+// InternalTResourceName is an internal function used for transforming resource names.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTResourceName(ac *InternalAPIClient, resourceName string, collectionIdentifier string, collectionHierarchyDepth int) string {
+	return tResourceName(ac, resourceName, collectionIdentifier, collectionHierarchyDepth)
+}
+
 func tResourceName(ac *apiClient, resourceName string, collectionIdentifier string, collectionHierarchyDepth int) string {
 	shouldPrependCollectionIdentifier := !strings.HasPrefix(resourceName, collectionIdentifier+"/") &&
 		strings.Count(collectionIdentifier+"/"+resourceName, "/")+1 == collectionHierarchyDepth
@@ -48,8 +55,22 @@ func tResourceName(ac *apiClient, resourceName string, collectionIdentifier stri
 	}
 }
 
+// InternalTCachedContentName is an internal function used for transforming cached content names.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTCachedContentName(ac *InternalAPIClient, name any) (string, error) {
+	return tCachedContentName(ac, name)
+}
+
 func tCachedContentName(ac *apiClient, name any) (string, error) {
 	return tResourceName(ac, name.(string), "cachedContents", 2), nil
+}
+
+// InternalTModel is an internal function used for transforming model names.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTModel(ac *InternalAPIClient, origin any) (string, error) {
+	return tModel(ac, origin)
 }
 
 func tModel(ac *apiClient, origin any) (string, error) {
@@ -82,6 +103,13 @@ func tModel(ac *apiClient, origin any) (string, error) {
 	}
 }
 
+// InternalTModelFullName is an internal function used for transforming full model names.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTModelFullName(ac *InternalAPIClient, origin any) (string, error) {
+	return tModelFullName(ac, origin)
+}
+
 func tModelFullName(ac *apiClient, origin any) (string, error) {
 	switch model := origin.(type) {
 	case string:
@@ -101,32 +129,88 @@ func tModelFullName(ac *apiClient, origin any) (string, error) {
 	}
 }
 
+// InternalTCachesModel is an internal function used for transforming cached model names.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTCachesModel(ac *InternalAPIClient, origin any) (string, error) {
+	return tCachesModel(ac, origin)
+}
+
 func tCachesModel(ac *apiClient, origin any) (string, error) {
 	return tModelFullName(ac, origin)
+}
+
+// InternalTContent is an internal function used for transforming content.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTContent(content any) (any, error) {
+	return tContent(content)
 }
 
 func tContent(content any) (any, error) {
 	return content, nil
 }
 
+// InternalTContents is an internal function used for transforming contents.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTContents(contents any) (any, error) {
+	return tContents(contents)
+}
+
 func tContents(contents any) (any, error) {
 	return contents, nil
+}
+
+// InternalTTool is an internal function used for transforming tools.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTTool(tool any) (any, error) {
+	return tTool(tool)
 }
 
 func tTool(tool any) (any, error) {
 	return tool, nil
 }
 
+// InternalTTools is an internal function used for transforming collections of tools.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTTools(tools any) (any, error) {
+	return tTools(tools)
+}
+
 func tTools(tools any) (any, error) {
 	return tools, nil
+}
+
+// InternalTSchema is an internal function used for transforming schemas.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTSchema(origin any) (any, error) {
+	return tSchema(origin)
 }
 
 func tSchema(origin any) (any, error) {
 	return origin, nil
 }
 
+// InternalTSpeechConfig is an internal function used for transforming speech configurations.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTSpeechConfig(speechConfig any) (any, error) {
+	return tSpeechConfig(speechConfig)
+}
+
 func tSpeechConfig(speechConfig any) (any, error) {
 	return speechConfig, nil
+}
+
+// InternalTLiveSpeechConfig is an internal function used for transforming live speech configurations.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTLiveSpeechConfig(speechConfig any) (any, error) {
+	return tLiveSpeechConfig(speechConfig)
 }
 
 func tLiveSpeechConfig(speechConfig any) (any, error) {
@@ -142,9 +226,24 @@ func tLiveSpeechConfig(speechConfig any) (any, error) {
 		return nil, fmt.Errorf("unsupported speechConfig type: %T", speechConfig)
 	}
 }
+
+// InternalTBytes is an internal function used for transforming bytes.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTBytes(fromImageBytes any) (any, error) {
+	return tBytes(fromImageBytes)
+}
+
 func tBytes(fromImageBytes any) (any, error) {
 	// TODO(b/389133914): Remove dummy bytes converter.
 	return fromImageBytes, nil
+}
+
+// InternalTContentsForEmbed is an internal function used for transforming contents for embedding.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTContentsForEmbed(ac *InternalAPIClient, contents any) (any, error) {
+	return tContentsForEmbed(ac, contents)
 }
 
 func tContentsForEmbed(ac *apiClient, contents any) (any, error) {
@@ -172,6 +271,13 @@ func tContentsForEmbed(ac *apiClient, contents any) (any, error) {
 	}
 }
 
+// InternalTModelsURL is an internal function used for generating models URL.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTModelsURL(ac *InternalAPIClient, baseModels any) (string, error) {
+	return tModelsURL(ac, baseModels)
+}
+
 func tModelsURL(ac *apiClient, baseModels any) (string, error) {
 	if ac.clientConfig.Backend == BackendVertexAI {
 		if baseModels.(bool) {
@@ -186,6 +292,13 @@ func tModelsURL(ac *apiClient, baseModels any) (string, error) {
 			return "tunedModels", nil
 		}
 	}
+}
+
+// InternalTExtractModels is an internal function used for extracting models from a response.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTExtractModels(response any) (any, error) {
+	return tExtractModels(response)
 }
 
 func tExtractModels(response any) (any, error) {
@@ -204,6 +317,13 @@ func tExtractModels(response any) (any, error) {
 	default:
 		return nil, fmt.Errorf("tExtractModels: response is not a map")
 	}
+}
+
+// InternalTFileName is an internal function used for transforming filenames.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTFileName(name any) (string, error) {
+	return tFileName(name)
 }
 
 func tFileName(name any) (string, error) {
@@ -232,6 +352,13 @@ func tFileName(name any) (string, error) {
 	}
 }
 
+// InternalTBlobs is an internal function used for transforming collections of blobs.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTBlobs(blobs any) (any, error) {
+	return tBlobs(blobs)
+}
+
 func tBlobs(blobs any) (any, error) {
 	switch blobs := blobs.(type) {
 	case []any:
@@ -250,8 +377,22 @@ func tBlobs(blobs any) (any, error) {
 	}
 }
 
+// InternalTBlob is an internal function used for transforming a blob.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTBlob(blob any) (any, error) {
+	return tBlob(blob)
+}
+
 func tBlob(blob any) (any, error) {
 	return blob, nil
+}
+
+// InternalTImageBlob is an internal function used for transforming an image blob.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTImageBlob(blob any) (any, error) {
+	return tImageBlob(blob)
 }
 
 func tImageBlob(blob any) (any, error) {
@@ -266,6 +407,13 @@ func tImageBlob(blob any) (any, error) {
 	}
 }
 
+// InternalTAudioBlob is an internal function used for transforming an audio blob.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTAudioBlob(blob any) (any, error) {
+	return tAudioBlob(blob)
+}
+
 func tAudioBlob(blob any) (any, error) {
 	switch blob := blob.(type) {
 	case map[string]any:
@@ -278,16 +426,44 @@ func tAudioBlob(blob any) (any, error) {
 	}
 }
 
+// InternalTBatchJobSource is an internal function used for transforming batch job sources.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTBatchJobSource(src any) (any, error) {
+	return tBatchJobSource(src)
+}
+
 func tBatchJobSource(src any) (any, error) {
 	return src, nil
+}
+
+// InternalTBatchJobDestination is an internal function used for transforming batch job destinations.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTBatchJobDestination(dest any) (any, error) {
+	return tBatchJobDestination(dest)
 }
 
 func tBatchJobDestination(dest any) (any, error) {
 	return dest, nil
 }
 
+// InternalTRecvBatchJobDestination is an internal function used for transforming received batch job destinations.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTRecvBatchJobDestination(dest any) (any, error) {
+	return tRecvBatchJobDestination(dest)
+}
+
 func tRecvBatchJobDestination(dest any) (any, error) {
 	return dest, nil
+}
+
+// InternalTBatchJobName is an internal function used for transforming batch job names.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTBatchJobName(ac *InternalAPIClient, name any) (any, error) {
+	return tBatchJobName(ac, name)
 }
 
 func tBatchJobName(ac *apiClient, name any) (any, error) {
@@ -314,6 +490,13 @@ func tBatchJobName(ac *apiClient, name any) (any, error) {
 	return nil, fmt.Errorf("Invalid batch job name: %s. Expected format like 'batches/id'", nameStr)
 }
 
+// InternalTJobState is an internal function used for transforming job states.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTJobState(state any) (any, error) {
+	return tJobState(state)
+}
+
 func tJobState(state any) (any, error) {
 	switch state {
 	case "BATCH_STATE_UNSPECIFIED":
@@ -335,6 +518,13 @@ func tJobState(state any) (any, error) {
 	}
 }
 
+// InternalTIsVertexEmbedContentModel is an internal function that checks if a model is a Vertex AI embed content model.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTIsVertexEmbedContentModel(model string) bool {
+	return tIsVertexEmbedContentModel(model)
+}
+
 // tIsVertexEmbedContentModel checks if a model is a Vertex AI embed content model.
 // This is the equivalent of t_is_vertex_embed_content_model in the Python SDK.
 func tIsVertexEmbedContentModel(model string) bool {
@@ -343,6 +533,13 @@ func tIsVertexEmbedContentModel(model string) bool {
 	// Open-source MaaS embedding models.
 	isMaaS := strings.Contains(model, "maas")
 	return isGeminiEmbed || isMaaS
+}
+
+// InternalTTuningJobStatus is an internal function used for transforming tuning job status.
+// This function is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+func InternalTTuningJobStatus(state any) (any, error) {
+	return tTuningJobStatus(state)
 }
 
 func tTuningJobStatus(state any) (any, error) {

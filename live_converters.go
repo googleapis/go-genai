@@ -50,6 +50,27 @@ func liveClientContentToMldev(fromObject map[string]any, parentObject map[string
 	return toObject, nil
 }
 
+func liveClientContentToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromTurns := InternalGetValueByPath(fromObject, []string{"turns"})
+	if fromTurns != nil {
+		fromTurns, err = applyConverterToSliceWithRoot(fromTurns.([]any), contentToVertex, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"turns"}, fromTurns)
+	}
+
+	fromTurnComplete := InternalGetValueByPath(fromObject, []string{"turnComplete"})
+	if fromTurnComplete != nil {
+		InternalSetValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
+	}
+
+	return toObject, nil
+}
+
 func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -106,6 +127,11 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromClientContent := InternalGetValueByPath(fromObject, []string{"clientContent"})
 	if fromClientContent != nil {
+		fromClientContent, err = liveClientContentToVertex(fromClientContent.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"clientContent"}, fromClientContent)
 	}
 
@@ -295,6 +321,11 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -566,6 +597,11 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}

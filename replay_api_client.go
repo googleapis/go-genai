@@ -357,6 +357,8 @@ func convertKeysToCamelCase(v any, parentKey string) any {
 			camelCaseKey := toCamelCase(key)
 			if parentKey == "response" && key == "body_segments" {
 				newMap[camelCaseKey] = value
+			} else if parentKey == "tool_response" && key == "response" {
+				newMap[camelCaseKey] = value
 			} else {
 				newMap[camelCaseKey] = convertKeysToCamelCase(value, key)
 			}

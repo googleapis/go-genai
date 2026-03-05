@@ -6021,6 +6021,8 @@ type JobError struct {
 
 // Config for `inlined_responses` parameter.
 type InlinedResponse struct {
+	// Optional. The metadata associated with the request.
+	Metadata map[string]any `json:"metadata,omitempty"`	
 	// The response to the request.
 	Response *GenerateContentResponse `json:"response,omitempty"`
 	// Optional. The metadata to be associated with the request.

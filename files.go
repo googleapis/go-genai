@@ -33,9 +33,9 @@ import (
 func createFileParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromFile := getValueByPath(fromObject, []string{"file"})
+	fromFile := InternalGetValueByPath(fromObject, []string{"file"})
 	if fromFile != nil {
-		setValueByPath(toObject, []string{"file"}, fromFile)
+		InternalSetValueByPath(toObject, []string{"file"}, fromFile)
 	}
 
 	return toObject, nil
@@ -44,9 +44,9 @@ func createFileParametersToMldev(fromObject map[string]any, parentObject map[str
 func createFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	return toObject, nil
@@ -55,14 +55,14 @@ func createFileResponseFromMldev(fromObject map[string]any, parentObject map[str
 func deleteFileParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		fromName, err = tFileName(fromName)
+		fromName, err = InternalTFileName(fromName)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "file"}, fromName)
+		InternalSetValueByPath(toObject, []string{"_url", "file"}, fromName)
 	}
 
 	return toObject, nil
@@ -71,9 +71,9 @@ func deleteFileParametersToMldev(fromObject map[string]any, parentObject map[str
 func deleteFileResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	return toObject, nil
@@ -82,14 +82,14 @@ func deleteFileResponseFromMldev(fromObject map[string]any, parentObject map[str
 func getFileParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		fromName, err = tFileName(fromName)
+		fromName, err = InternalTFileName(fromName)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"_url", "file"}, fromName)
+		InternalSetValueByPath(toObject, []string{"_url", "file"}, fromName)
 	}
 
 	return toObject, nil
@@ -98,9 +98,9 @@ func getFileParametersToMldev(fromObject map[string]any, parentObject map[string
 func internalRegisterFilesParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromUris := getValueByPath(fromObject, []string{"uris"})
+	fromUris := InternalGetValueByPath(fromObject, []string{"uris"})
 	if fromUris != nil {
-		setValueByPath(toObject, []string{"uris"}, fromUris)
+		InternalSetValueByPath(toObject, []string{"uris"}, fromUris)
 	}
 
 	return toObject, nil
@@ -109,14 +109,14 @@ func internalRegisterFilesParametersToMldev(fromObject map[string]any, parentObj
 func listFilesConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	fromPageSize := InternalGetValueByPath(fromObject, []string{"pageSize"})
 	if fromPageSize != nil {
-		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
 	}
 
-	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	fromPageToken := InternalGetValueByPath(fromObject, []string{"pageToken"})
 	if fromPageToken != nil {
-		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
 	}
 
 	return toObject, nil
@@ -125,7 +125,7 @@ func listFilesConfigToMldev(fromObject map[string]any, parentObject map[string]a
 func listFilesParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = listFilesConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -139,19 +139,19 @@ func listFilesParametersToMldev(fromObject map[string]any, parentObject map[stri
 func listFilesResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	fromNextPageToken := InternalGetValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
-		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+		InternalSetValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
 	}
 
-	fromFiles := getValueByPath(fromObject, []string{"files"})
+	fromFiles := InternalGetValueByPath(fromObject, []string{"files"})
 	if fromFiles != nil {
-		setValueByPath(toObject, []string{"files"}, fromFiles)
+		InternalSetValueByPath(toObject, []string{"files"}, fromFiles)
 	}
 
 	return toObject, nil
@@ -160,28 +160,28 @@ func listFilesResponseFromMldev(fromObject map[string]any, parentObject map[stri
 func registerFilesResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromFiles := getValueByPath(fromObject, []string{"files"})
+	fromFiles := InternalGetValueByPath(fromObject, []string{"files"})
 	if fromFiles != nil {
-		setValueByPath(toObject, []string{"files"}, fromFiles)
+		InternalSetValueByPath(toObject, []string{"files"}, fromFiles)
 	}
 
 	return toObject, nil
 }
 
 type Files struct {
-	apiClient *apiClient
+	apiClient *InternalAPIClient
 }
 
 func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesResponse, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -196,7 +196,7 @@ func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesRes
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method List is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
@@ -215,16 +215,16 @@ func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesRes
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("None", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("None", urlParams)
 	} else {
-		path, err = formatMap("files", urlParams)
+		path, err = InternalFormatMap("files", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -241,7 +241,7 @@ func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesRes
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"file": file, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -268,7 +268,7 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method Create is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
@@ -287,16 +287,16 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("None", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("None", urlParams)
 	} else {
-		path, err = formatMap("upload/v1beta/files", urlParams)
+		path, err = InternalFormatMap("upload/v1beta/files", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -313,7 +313,7 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +325,7 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"name": name, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -339,7 +339,7 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 	var response = new(File)
 	var responseMap map[string]any
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method Get is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
@@ -358,16 +358,16 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("None", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("None", urlParams)
 	} else {
-		path, err = formatMap("files/{file}", urlParams)
+		path, err = InternalFormatMap("files/{file}", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -378,7 +378,7 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +390,7 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"name": name, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -405,7 +405,7 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method Delete is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
@@ -424,16 +424,16 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("None", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("None", urlParams)
 	} else {
-		path, err = formatMap("files/{file}", urlParams)
+		path, err = InternalFormatMap("files/{file}", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -450,7 +450,7 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -462,7 +462,7 @@ func (m Files) registerFiles(ctx context.Context, uris []string, config *Registe
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"uris": uris, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -477,7 +477,7 @@ func (m Files) registerFiles(ctx context.Context, uris []string, config *Registe
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method RegisterFiles is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
@@ -496,16 +496,16 @@ func (m Files) registerFiles(ctx context.Context, uris []string, config *Registe
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("None", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("None", urlParams)
 	} else {
-		path, err = formatMap("files:register", urlParams)
+		path, err = InternalFormatMap("files:register", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -522,7 +522,7 @@ func (m Files) registerFiles(ctx context.Context, uris []string, config *Registe
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -534,7 +534,7 @@ func (m Files) registerFiles(ctx context.Context, uris []string, config *Registe
 func (m Files) List(ctx context.Context, config *ListFilesConfig) (Page[File], error) {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*File, string, *HTTPResponse, error) {
 		var c ListFilesConfig
-		if err := mapToStruct(config, &c); err != nil {
+		if err := InternalMapToStruct(config, &c); err != nil {
 			return nil, "", nil, err
 		}
 		resp, err := m.list(ctx, &c)
@@ -544,7 +544,7 @@ func (m Files) List(ctx context.Context, config *ListFilesConfig) (Page[File], e
 		return resp.Files, resp.NextPageToken, resp.SDKHTTPResponse, nil
 	}
 	c := make(map[string]any)
-	deepMarshal(config, &c)
+	InternalDeepMarshal(config, &c)
 	return newPage(ctx, "files", c, listFunc)
 }
 
@@ -557,7 +557,7 @@ func (m Files) List(ctx context.Context, config *ListFilesConfig) (Page[File], e
 func (m Files) All(ctx context.Context) iter.Seq2[*File, error] {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*File, string, *HTTPResponse, error) {
 		var c ListFilesConfig
-		if err := mapToStruct(config, &c); err != nil {
+		if err := InternalMapToStruct(config, &c); err != nil {
 			return nil, "", nil, err
 		}
 		resp, err := m.list(ctx, &c)

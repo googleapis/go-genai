@@ -29,9 +29,9 @@ import (
 func cancelTuningJobParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
 	return toObject, nil
@@ -40,9 +40,9 @@ func cancelTuningJobParametersToMldev(fromObject map[string]any, parentObject ma
 func cancelTuningJobParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
 	return toObject, nil
@@ -51,9 +51,9 @@ func cancelTuningJobParametersToVertex(fromObject map[string]any, parentObject m
 func cancelTuningJobResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	return toObject, nil
@@ -62,9 +62,9 @@ func cancelTuningJobResponseFromMldev(fromObject map[string]any, parentObject ma
 func cancelTuningJobResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
 	return toObject, nil
@@ -73,84 +73,84 @@ func cancelTuningJobResponseFromVertex(fromObject map[string]any, parentObject m
 func createTuningJobConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	if getValueByPath(fromObject, []string{"validationDataset"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"validationDataset"}) != nil {
 		return nil, fmt.Errorf("validationDataset parameter is not supported in Gemini API")
 	}
 
-	fromTunedModelDisplayName := getValueByPath(fromObject, []string{"tunedModelDisplayName"})
+	fromTunedModelDisplayName := InternalGetValueByPath(fromObject, []string{"tunedModelDisplayName"})
 	if fromTunedModelDisplayName != nil {
-		setValueByPath(parentObject, []string{"displayName"}, fromTunedModelDisplayName)
+		InternalSetValueByPath(parentObject, []string{"displayName"}, fromTunedModelDisplayName)
 	}
 
-	if getValueByPath(fromObject, []string{"description"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"description"}) != nil {
 		return nil, fmt.Errorf("description parameter is not supported in Gemini API")
 	}
 
-	fromEpochCount := getValueByPath(fromObject, []string{"epochCount"})
+	fromEpochCount := InternalGetValueByPath(fromObject, []string{"epochCount"})
 	if fromEpochCount != nil {
-		setValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "epochCount"}, fromEpochCount)
+		InternalSetValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "epochCount"}, fromEpochCount)
 	}
 
-	fromLearningRateMultiplier := getValueByPath(fromObject, []string{"learningRateMultiplier"})
+	fromLearningRateMultiplier := InternalGetValueByPath(fromObject, []string{"learningRateMultiplier"})
 	if fromLearningRateMultiplier != nil {
-		setValueByPath(toObject, []string{"tuningTask", "hyperparameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
+		InternalSetValueByPath(toObject, []string{"tuningTask", "hyperparameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
 	}
 
-	if getValueByPath(fromObject, []string{"exportLastCheckpointOnly"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"exportLastCheckpointOnly"}) != nil {
 		return nil, fmt.Errorf("exportLastCheckpointOnly parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"preTunedModelCheckpointId"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"preTunedModelCheckpointId"}) != nil {
 		return nil, fmt.Errorf("preTunedModelCheckpointId parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"adapterSize"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"adapterSize"}) != nil {
 		return nil, fmt.Errorf("adapterSize parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"tuningMode"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"tuningMode"}) != nil {
 		return nil, fmt.Errorf("tuningMode parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"customBaseModel"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"customBaseModel"}) != nil {
 		return nil, fmt.Errorf("customBaseModel parameter is not supported in Gemini API")
 	}
 
-	fromBatchSize := getValueByPath(fromObject, []string{"batchSize"})
+	fromBatchSize := InternalGetValueByPath(fromObject, []string{"batchSize"})
 	if fromBatchSize != nil {
-		setValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "batchSize"}, fromBatchSize)
+		InternalSetValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "batchSize"}, fromBatchSize)
 	}
 
-	fromLearningRate := getValueByPath(fromObject, []string{"learningRate"})
+	fromLearningRate := InternalGetValueByPath(fromObject, []string{"learningRate"})
 	if fromLearningRate != nil {
-		setValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "learningRate"}, fromLearningRate)
+		InternalSetValueByPath(parentObject, []string{"tuningTask", "hyperparameters", "learningRate"}, fromLearningRate)
 	}
 
-	if getValueByPath(fromObject, []string{"labels"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"labels"}) != nil {
 		return nil, fmt.Errorf("labels parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"beta"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"beta"}) != nil {
 		return nil, fmt.Errorf("beta parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"baseTeacherModel"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"baseTeacherModel"}) != nil {
 		return nil, fmt.Errorf("baseTeacherModel parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"tunedTeacherModelSource"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"tunedTeacherModelSource"}) != nil {
 		return nil, fmt.Errorf("tunedTeacherModelSource parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"sftLossWeightMultiplier"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"sftLossWeightMultiplier"}) != nil {
 		return nil, fmt.Errorf("sftLossWeightMultiplier parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"outputUri"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"outputUri"}) != nil {
 		return nil, fmt.Errorf("outputUri parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"encryptionSpec"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"encryptionSpec"}) != nil {
 		return nil, fmt.Errorf("encryptionSpec parameter is not supported in Gemini API")
 	}
 
@@ -160,207 +160,207 @@ func createTuningJobConfigToMldev(fromObject map[string]any, parentObject map[st
 func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	var discriminatorValidationDataset any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorValidationDataset any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorValidationDataset == nil {
 		discriminatorValidationDataset = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorValidationDataset.(string) == "SUPERVISED_FINE_TUNING" {
-		fromValidationDataset := getValueByPath(fromObject, []string{"validationDataset"})
+		fromValidationDataset := InternalGetValueByPath(fromObject, []string{"validationDataset"})
 		if fromValidationDataset != nil {
 			fromValidationDataset, err = tuningValidationDatasetToVertex(fromValidationDataset.(map[string]any), toObject, rootObject)
 			if err != nil {
 				return nil, err
 			}
 
-			setValueByPath(parentObject, []string{"supervisedTuningSpec"}, fromValidationDataset)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec"}, fromValidationDataset)
 		}
 	} else if discriminatorValidationDataset.(string) == "PREFERENCE_TUNING" {
-		fromValidationDataset := getValueByPath(fromObject, []string{"validationDataset"})
+		fromValidationDataset := InternalGetValueByPath(fromObject, []string{"validationDataset"})
 		if fromValidationDataset != nil {
 			fromValidationDataset, err = tuningValidationDatasetToVertex(fromValidationDataset.(map[string]any), toObject, rootObject)
 			if err != nil {
 				return nil, err
 			}
 
-			setValueByPath(parentObject, []string{"preferenceOptimizationSpec"}, fromValidationDataset)
+			InternalSetValueByPath(parentObject, []string{"preferenceOptimizationSpec"}, fromValidationDataset)
 		}
 	} else if discriminatorValidationDataset.(string) == "DISTILLATION" {
-		fromValidationDataset := getValueByPath(fromObject, []string{"validationDataset"})
+		fromValidationDataset := InternalGetValueByPath(fromObject, []string{"validationDataset"})
 		if fromValidationDataset != nil {
 			fromValidationDataset, err = tuningValidationDatasetToVertex(fromValidationDataset.(map[string]any), toObject, rootObject)
 			if err != nil {
 				return nil, err
 			}
 
-			setValueByPath(parentObject, []string{"distillationSpec"}, fromValidationDataset)
+			InternalSetValueByPath(parentObject, []string{"distillationSpec"}, fromValidationDataset)
 		}
 	}
 
-	fromTunedModelDisplayName := getValueByPath(fromObject, []string{"tunedModelDisplayName"})
+	fromTunedModelDisplayName := InternalGetValueByPath(fromObject, []string{"tunedModelDisplayName"})
 	if fromTunedModelDisplayName != nil {
-		setValueByPath(parentObject, []string{"tunedModelDisplayName"}, fromTunedModelDisplayName)
+		InternalSetValueByPath(parentObject, []string{"tunedModelDisplayName"}, fromTunedModelDisplayName)
 	}
 
-	fromDescription := getValueByPath(fromObject, []string{"description"})
+	fromDescription := InternalGetValueByPath(fromObject, []string{"description"})
 	if fromDescription != nil {
-		setValueByPath(parentObject, []string{"description"}, fromDescription)
+		InternalSetValueByPath(parentObject, []string{"description"}, fromDescription)
 	}
 
-	var discriminatorEpochCount any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorEpochCount any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorEpochCount == nil {
 		discriminatorEpochCount = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorEpochCount.(string) == "SUPERVISED_FINE_TUNING" {
-		fromEpochCount := getValueByPath(fromObject, []string{"epochCount"})
+		fromEpochCount := InternalGetValueByPath(fromObject, []string{"epochCount"})
 		if fromEpochCount != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "epochCount"}, fromEpochCount)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "epochCount"}, fromEpochCount)
 		}
 	} else if discriminatorEpochCount.(string) == "PREFERENCE_TUNING" {
-		fromEpochCount := getValueByPath(fromObject, []string{"epochCount"})
+		fromEpochCount := InternalGetValueByPath(fromObject, []string{"epochCount"})
 		if fromEpochCount != nil {
-			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "epochCount"}, fromEpochCount)
+			InternalSetValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "epochCount"}, fromEpochCount)
 		}
 	} else if discriminatorEpochCount.(string) == "DISTILLATION" {
-		fromEpochCount := getValueByPath(fromObject, []string{"epochCount"})
+		fromEpochCount := InternalGetValueByPath(fromObject, []string{"epochCount"})
 		if fromEpochCount != nil {
-			setValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "epochCount"}, fromEpochCount)
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "epochCount"}, fromEpochCount)
 		}
 	}
 
-	var discriminatorLearningRateMultiplier any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorLearningRateMultiplier any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorLearningRateMultiplier == nil {
 		discriminatorLearningRateMultiplier = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorLearningRateMultiplier.(string) == "SUPERVISED_FINE_TUNING" {
-		fromLearningRateMultiplier := getValueByPath(fromObject, []string{"learningRateMultiplier"})
+		fromLearningRateMultiplier := InternalGetValueByPath(fromObject, []string{"learningRateMultiplier"})
 		if fromLearningRateMultiplier != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
 		}
 	} else if discriminatorLearningRateMultiplier.(string) == "PREFERENCE_TUNING" {
-		fromLearningRateMultiplier := getValueByPath(fromObject, []string{"learningRateMultiplier"})
+		fromLearningRateMultiplier := InternalGetValueByPath(fromObject, []string{"learningRateMultiplier"})
 		if fromLearningRateMultiplier != nil {
-			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
+			InternalSetValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
 		}
 	} else if discriminatorLearningRateMultiplier.(string) == "DISTILLATION" {
-		fromLearningRateMultiplier := getValueByPath(fromObject, []string{"learningRateMultiplier"})
+		fromLearningRateMultiplier := InternalGetValueByPath(fromObject, []string{"learningRateMultiplier"})
 		if fromLearningRateMultiplier != nil {
-			setValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "learningRateMultiplier"}, fromLearningRateMultiplier)
 		}
 	}
 
-	var discriminatorExportLastCheckpointOnly any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorExportLastCheckpointOnly any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorExportLastCheckpointOnly == nil {
 		discriminatorExportLastCheckpointOnly = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorExportLastCheckpointOnly.(string) == "SUPERVISED_FINE_TUNING" {
-		fromExportLastCheckpointOnly := getValueByPath(fromObject, []string{"exportLastCheckpointOnly"})
+		fromExportLastCheckpointOnly := InternalGetValueByPath(fromObject, []string{"exportLastCheckpointOnly"})
 		if fromExportLastCheckpointOnly != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "exportLastCheckpointOnly"}, fromExportLastCheckpointOnly)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "exportLastCheckpointOnly"}, fromExportLastCheckpointOnly)
 		}
 	} else if discriminatorExportLastCheckpointOnly.(string) == "PREFERENCE_TUNING" {
-		fromExportLastCheckpointOnly := getValueByPath(fromObject, []string{"exportLastCheckpointOnly"})
+		fromExportLastCheckpointOnly := InternalGetValueByPath(fromObject, []string{"exportLastCheckpointOnly"})
 		if fromExportLastCheckpointOnly != nil {
-			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "exportLastCheckpointOnly"}, fromExportLastCheckpointOnly)
+			InternalSetValueByPath(parentObject, []string{"preferenceOptimizationSpec", "exportLastCheckpointOnly"}, fromExportLastCheckpointOnly)
 		}
 	} else if discriminatorExportLastCheckpointOnly.(string) == "DISTILLATION" {
-		fromExportLastCheckpointOnly := getValueByPath(fromObject, []string{"exportLastCheckpointOnly"})
+		fromExportLastCheckpointOnly := InternalGetValueByPath(fromObject, []string{"exportLastCheckpointOnly"})
 		if fromExportLastCheckpointOnly != nil {
-			setValueByPath(parentObject, []string{"distillationSpec", "exportLastCheckpointOnly"}, fromExportLastCheckpointOnly)
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "exportLastCheckpointOnly"}, fromExportLastCheckpointOnly)
 		}
 	}
 
-	var discriminatorAdapterSize any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorAdapterSize any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorAdapterSize == nil {
 		discriminatorAdapterSize = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorAdapterSize.(string) == "SUPERVISED_FINE_TUNING" {
-		fromAdapterSize := getValueByPath(fromObject, []string{"adapterSize"})
+		fromAdapterSize := InternalGetValueByPath(fromObject, []string{"adapterSize"})
 		if fromAdapterSize != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
 		}
 	} else if discriminatorAdapterSize.(string) == "PREFERENCE_TUNING" {
-		fromAdapterSize := getValueByPath(fromObject, []string{"adapterSize"})
+		fromAdapterSize := InternalGetValueByPath(fromObject, []string{"adapterSize"})
 		if fromAdapterSize != nil {
-			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
+			InternalSetValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
 		}
 	} else if discriminatorAdapterSize.(string) == "DISTILLATION" {
-		fromAdapterSize := getValueByPath(fromObject, []string{"adapterSize"})
+		fromAdapterSize := InternalGetValueByPath(fromObject, []string{"adapterSize"})
 		if fromAdapterSize != nil {
-			setValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "adapterSize"}, fromAdapterSize)
 		}
 	}
 
-	var discriminatorTuningMode any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorTuningMode any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorTuningMode == nil {
 		discriminatorTuningMode = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorTuningMode.(string) == "SUPERVISED_FINE_TUNING" {
-		fromTuningMode := getValueByPath(fromObject, []string{"tuningMode"})
+		fromTuningMode := InternalGetValueByPath(fromObject, []string{"tuningMode"})
 		if fromTuningMode != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "tuningMode"}, fromTuningMode)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "tuningMode"}, fromTuningMode)
 		}
 	}
 
-	fromCustomBaseModel := getValueByPath(fromObject, []string{"customBaseModel"})
+	fromCustomBaseModel := InternalGetValueByPath(fromObject, []string{"customBaseModel"})
 	if fromCustomBaseModel != nil {
-		setValueByPath(parentObject, []string{"customBaseModel"}, fromCustomBaseModel)
+		InternalSetValueByPath(parentObject, []string{"customBaseModel"}, fromCustomBaseModel)
 	}
 
-	var discriminatorBatchSize any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorBatchSize any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorBatchSize == nil {
 		discriminatorBatchSize = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorBatchSize.(string) == "SUPERVISED_FINE_TUNING" {
-		fromBatchSize := getValueByPath(fromObject, []string{"batchSize"})
+		fromBatchSize := InternalGetValueByPath(fromObject, []string{"batchSize"})
 		if fromBatchSize != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "batchSize"}, fromBatchSize)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "batchSize"}, fromBatchSize)
 		}
 	}
 
-	var discriminatorLearningRate any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorLearningRate any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorLearningRate == nil {
 		discriminatorLearningRate = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorLearningRate.(string) == "SUPERVISED_FINE_TUNING" {
-		fromLearningRate := getValueByPath(fromObject, []string{"learningRate"})
+		fromLearningRate := InternalGetValueByPath(fromObject, []string{"learningRate"})
 		if fromLearningRate != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "learningRate"}, fromLearningRate)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "learningRate"}, fromLearningRate)
 		}
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(parentObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
-	fromBeta := getValueByPath(fromObject, []string{"beta"})
+	fromBeta := InternalGetValueByPath(fromObject, []string{"beta"})
 	if fromBeta != nil {
-		setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "beta"}, fromBeta)
+		InternalSetValueByPath(parentObject, []string{"preferenceOptimizationSpec", "hyperParameters", "beta"}, fromBeta)
 	}
 
-	fromBaseTeacherModel := getValueByPath(fromObject, []string{"baseTeacherModel"})
+	fromBaseTeacherModel := InternalGetValueByPath(fromObject, []string{"baseTeacherModel"})
 	if fromBaseTeacherModel != nil {
-		setValueByPath(parentObject, []string{"distillationSpec", "baseTeacherModel"}, fromBaseTeacherModel)
+		InternalSetValueByPath(parentObject, []string{"distillationSpec", "baseTeacherModel"}, fromBaseTeacherModel)
 	}
 
-	fromTunedTeacherModelSource := getValueByPath(fromObject, []string{"tunedTeacherModelSource"})
+	fromTunedTeacherModelSource := InternalGetValueByPath(fromObject, []string{"tunedTeacherModelSource"})
 	if fromTunedTeacherModelSource != nil {
-		setValueByPath(parentObject, []string{"distillationSpec", "tunedTeacherModelSource"}, fromTunedTeacherModelSource)
+		InternalSetValueByPath(parentObject, []string{"distillationSpec", "tunedTeacherModelSource"}, fromTunedTeacherModelSource)
 	}
 
-	fromSftLossWeightMultiplier := getValueByPath(fromObject, []string{"sftLossWeightMultiplier"})
+	fromSftLossWeightMultiplier := InternalGetValueByPath(fromObject, []string{"sftLossWeightMultiplier"})
 	if fromSftLossWeightMultiplier != nil {
-		setValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "sftLossWeightMultiplier"}, fromSftLossWeightMultiplier)
+		InternalSetValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "sftLossWeightMultiplier"}, fromSftLossWeightMultiplier)
 	}
 
-	fromOutputUri := getValueByPath(fromObject, []string{"outputUri"})
+	fromOutputUri := InternalGetValueByPath(fromObject, []string{"outputUri"})
 	if fromOutputUri != nil {
-		setValueByPath(parentObject, []string{"outputUri"}, fromOutputUri)
+		InternalSetValueByPath(parentObject, []string{"outputUri"}, fromOutputUri)
 	}
 
-	fromEncryptionSpec := getValueByPath(fromObject, []string{"encryptionSpec"})
+	fromEncryptionSpec := InternalGetValueByPath(fromObject, []string{"encryptionSpec"})
 	if fromEncryptionSpec != nil {
-		setValueByPath(parentObject, []string{"encryptionSpec"}, fromEncryptionSpec)
+		InternalSetValueByPath(parentObject, []string{"encryptionSpec"}, fromEncryptionSpec)
 	}
 
 	return toObject, nil
@@ -369,17 +369,17 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 func createTuningJobParametersPrivateToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromBaseModel := getValueByPath(fromObject, []string{"baseModel"})
+	fromBaseModel := InternalGetValueByPath(fromObject, []string{"baseModel"})
 	if fromBaseModel != nil {
-		setValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
+		InternalSetValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
 	}
 
-	fromPreTunedModel := getValueByPath(fromObject, []string{"preTunedModel"})
+	fromPreTunedModel := InternalGetValueByPath(fromObject, []string{"preTunedModel"})
 	if fromPreTunedModel != nil {
-		setValueByPath(toObject, []string{"preTunedModel"}, fromPreTunedModel)
+		InternalSetValueByPath(toObject, []string{"preTunedModel"}, fromPreTunedModel)
 	}
 
-	fromTrainingDataset := getValueByPath(fromObject, []string{"trainingDataset"})
+	fromTrainingDataset := InternalGetValueByPath(fromObject, []string{"trainingDataset"})
 	if fromTrainingDataset != nil {
 		_, err = tuningDatasetToMldev(fromTrainingDataset.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -387,7 +387,7 @@ func createTuningJobParametersPrivateToMldev(fromObject map[string]any, parentOb
 		}
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = createTuningJobConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -401,17 +401,17 @@ func createTuningJobParametersPrivateToMldev(fromObject map[string]any, parentOb
 func createTuningJobParametersPrivateToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromBaseModel := getValueByPath(fromObject, []string{"baseModel"})
+	fromBaseModel := InternalGetValueByPath(fromObject, []string{"baseModel"})
 	if fromBaseModel != nil {
-		setValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
+		InternalSetValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
 	}
 
-	fromPreTunedModel := getValueByPath(fromObject, []string{"preTunedModel"})
+	fromPreTunedModel := InternalGetValueByPath(fromObject, []string{"preTunedModel"})
 	if fromPreTunedModel != nil {
-		setValueByPath(toObject, []string{"preTunedModel"}, fromPreTunedModel)
+		InternalSetValueByPath(toObject, []string{"preTunedModel"}, fromPreTunedModel)
 	}
 
-	fromTrainingDataset := getValueByPath(fromObject, []string{"trainingDataset"})
+	fromTrainingDataset := InternalGetValueByPath(fromObject, []string{"trainingDataset"})
 	if fromTrainingDataset != nil {
 		_, err = tuningDatasetToVertex(fromTrainingDataset.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -419,7 +419,7 @@ func createTuningJobParametersPrivateToVertex(fromObject map[string]any, parentO
 		}
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = createTuningJobConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -433,114 +433,114 @@ func createTuningJobParametersPrivateToVertex(fromObject map[string]any, parentO
 func generationConfigFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModelSelectionConfig := getValueByPath(fromObject, []string{"modelConfig"})
+	fromModelSelectionConfig := InternalGetValueByPath(fromObject, []string{"modelConfig"})
 	if fromModelSelectionConfig != nil {
-		setValueByPath(toObject, []string{"modelSelectionConfig"}, fromModelSelectionConfig)
+		InternalSetValueByPath(toObject, []string{"modelSelectionConfig"}, fromModelSelectionConfig)
 	}
 
-	fromResponseJsonSchema := getValueByPath(fromObject, []string{"responseJsonSchema"})
+	fromResponseJsonSchema := InternalGetValueByPath(fromObject, []string{"responseJsonSchema"})
 	if fromResponseJsonSchema != nil {
-		setValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+		InternalSetValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
 	}
 
-	fromAudioTimestamp := getValueByPath(fromObject, []string{"audioTimestamp"})
+	fromAudioTimestamp := InternalGetValueByPath(fromObject, []string{"audioTimestamp"})
 	if fromAudioTimestamp != nil {
-		setValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
+		InternalSetValueByPath(toObject, []string{"audioTimestamp"}, fromAudioTimestamp)
 	}
 
-	fromCandidateCount := getValueByPath(fromObject, []string{"candidateCount"})
+	fromCandidateCount := InternalGetValueByPath(fromObject, []string{"candidateCount"})
 	if fromCandidateCount != nil {
-		setValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
+		InternalSetValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
 	}
 
-	fromEnableAffectiveDialog := getValueByPath(fromObject, []string{"enableAffectiveDialog"})
+	fromEnableAffectiveDialog := InternalGetValueByPath(fromObject, []string{"enableAffectiveDialog"})
 	if fromEnableAffectiveDialog != nil {
-		setValueByPath(toObject, []string{"enableAffectiveDialog"}, fromEnableAffectiveDialog)
+		InternalSetValueByPath(toObject, []string{"enableAffectiveDialog"}, fromEnableAffectiveDialog)
 	}
 
-	fromFrequencyPenalty := getValueByPath(fromObject, []string{"frequencyPenalty"})
+	fromFrequencyPenalty := InternalGetValueByPath(fromObject, []string{"frequencyPenalty"})
 	if fromFrequencyPenalty != nil {
-		setValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
+		InternalSetValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
 	}
 
-	fromLogprobs := getValueByPath(fromObject, []string{"logprobs"})
+	fromLogprobs := InternalGetValueByPath(fromObject, []string{"logprobs"})
 	if fromLogprobs != nil {
-		setValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
+		InternalSetValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
 	}
 
-	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
+	fromMaxOutputTokens := InternalGetValueByPath(fromObject, []string{"maxOutputTokens"})
 	if fromMaxOutputTokens != nil {
-		setValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
+		InternalSetValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
 	}
 
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
 	if fromMediaResolution != nil {
-		setValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
 	}
 
-	fromPresencePenalty := getValueByPath(fromObject, []string{"presencePenalty"})
+	fromPresencePenalty := InternalGetValueByPath(fromObject, []string{"presencePenalty"})
 	if fromPresencePenalty != nil {
-		setValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+		InternalSetValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
 	}
 
-	fromResponseLogprobs := getValueByPath(fromObject, []string{"responseLogprobs"})
+	fromResponseLogprobs := InternalGetValueByPath(fromObject, []string{"responseLogprobs"})
 	if fromResponseLogprobs != nil {
-		setValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
+		InternalSetValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
 	}
 
-	fromResponseMimeType := getValueByPath(fromObject, []string{"responseMimeType"})
+	fromResponseMimeType := InternalGetValueByPath(fromObject, []string{"responseMimeType"})
 	if fromResponseMimeType != nil {
-		setValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
+		InternalSetValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
 	}
 
-	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
+	fromResponseModalities := InternalGetValueByPath(fromObject, []string{"responseModalities"})
 	if fromResponseModalities != nil {
-		setValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
+		InternalSetValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
 	}
 
-	fromResponseSchema := getValueByPath(fromObject, []string{"responseSchema"})
+	fromResponseSchema := InternalGetValueByPath(fromObject, []string{"responseSchema"})
 	if fromResponseSchema != nil {
-		setValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
+		InternalSetValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
 	}
 
-	fromRoutingConfig := getValueByPath(fromObject, []string{"routingConfig"})
+	fromRoutingConfig := InternalGetValueByPath(fromObject, []string{"routingConfig"})
 	if fromRoutingConfig != nil {
-		setValueByPath(toObject, []string{"routingConfig"}, fromRoutingConfig)
+		InternalSetValueByPath(toObject, []string{"routingConfig"}, fromRoutingConfig)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(toObject, []string{"seed"}, fromSeed)
+		InternalSetValueByPath(toObject, []string{"seed"}, fromSeed)
 	}
 
-	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
+	fromSpeechConfig := InternalGetValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		setValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
+		InternalSetValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
 	}
 
-	fromStopSequences := getValueByPath(fromObject, []string{"stopSequences"})
+	fromStopSequences := InternalGetValueByPath(fromObject, []string{"stopSequences"})
 	if fromStopSequences != nil {
-		setValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
+		InternalSetValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
 	}
 
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	fromTemperature := InternalGetValueByPath(fromObject, []string{"temperature"})
 	if fromTemperature != nil {
-		setValueByPath(toObject, []string{"temperature"}, fromTemperature)
+		InternalSetValueByPath(toObject, []string{"temperature"}, fromTemperature)
 	}
 
-	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
+	fromThinkingConfig := InternalGetValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
-		setValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
+		InternalSetValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
 	}
 
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	fromTopK := InternalGetValueByPath(fromObject, []string{"topK"})
 	if fromTopK != nil {
-		setValueByPath(toObject, []string{"topK"}, fromTopK)
+		InternalSetValueByPath(toObject, []string{"topK"}, fromTopK)
 	}
 
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	fromTopP := InternalGetValueByPath(fromObject, []string{"topP"})
 	if fromTopP != nil {
-		setValueByPath(toObject, []string{"topP"}, fromTopP)
+		InternalSetValueByPath(toObject, []string{"topP"}, fromTopP)
 	}
 
 	return toObject, nil
@@ -549,9 +549,9 @@ func generationConfigFromVertex(fromObject map[string]any, parentObject map[stri
 func getTuningJobParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
 	return toObject, nil
@@ -560,9 +560,9 @@ func getTuningJobParametersToMldev(fromObject map[string]any, parentObject map[s
 func getTuningJobParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"_url", "name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"_url", "name"}, fromName)
 	}
 
 	return toObject, nil
@@ -571,19 +571,19 @@ func getTuningJobParametersToVertex(fromObject map[string]any, parentObject map[
 func listTuningJobsConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	fromPageSize := InternalGetValueByPath(fromObject, []string{"pageSize"})
 	if fromPageSize != nil {
-		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
 	}
 
-	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	fromPageToken := InternalGetValueByPath(fromObject, []string{"pageToken"})
 	if fromPageToken != nil {
-		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
 	}
 
-	fromFilter := getValueByPath(fromObject, []string{"filter"})
+	fromFilter := InternalGetValueByPath(fromObject, []string{"filter"})
 	if fromFilter != nil {
-		setValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
+		InternalSetValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
 	}
 
 	return toObject, nil
@@ -592,19 +592,19 @@ func listTuningJobsConfigToMldev(fromObject map[string]any, parentObject map[str
 func listTuningJobsConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPageSize := getValueByPath(fromObject, []string{"pageSize"})
+	fromPageSize := InternalGetValueByPath(fromObject, []string{"pageSize"})
 	if fromPageSize != nil {
-		setValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageSize"}, fromPageSize)
 	}
 
-	fromPageToken := getValueByPath(fromObject, []string{"pageToken"})
+	fromPageToken := InternalGetValueByPath(fromObject, []string{"pageToken"})
 	if fromPageToken != nil {
-		setValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
+		InternalSetValueByPath(parentObject, []string{"_query", "pageToken"}, fromPageToken)
 	}
 
-	fromFilter := getValueByPath(fromObject, []string{"filter"})
+	fromFilter := InternalGetValueByPath(fromObject, []string{"filter"})
 	if fromFilter != nil {
-		setValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
+		InternalSetValueByPath(parentObject, []string{"_query", "filter"}, fromFilter)
 	}
 
 	return toObject, nil
@@ -613,7 +613,7 @@ func listTuningJobsConfigToVertex(fromObject map[string]any, parentObject map[st
 func listTuningJobsParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = listTuningJobsConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -627,7 +627,7 @@ func listTuningJobsParametersToMldev(fromObject map[string]any, parentObject map
 func listTuningJobsParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		_, err = listTuningJobsConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
@@ -641,24 +641,24 @@ func listTuningJobsParametersToVertex(fromObject map[string]any, parentObject ma
 func listTuningJobsResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	fromNextPageToken := InternalGetValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
-		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+		InternalSetValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
 	}
 
-	fromTuningJobs := getValueByPath(fromObject, []string{"tunedModels"})
+	fromTuningJobs := InternalGetValueByPath(fromObject, []string{"tunedModels"})
 	if fromTuningJobs != nil {
 		fromTuningJobs, err = applyConverterToSliceWithRoot(fromTuningJobs.([]any), tuningJobFromMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"tuningJobs"}, fromTuningJobs)
+		InternalSetValueByPath(toObject, []string{"tuningJobs"}, fromTuningJobs)
 	}
 
 	return toObject, nil
@@ -667,24 +667,24 @@ func listTuningJobsResponseFromMldev(fromObject map[string]any, parentObject map
 func listTuningJobsResponseFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromNextPageToken := getValueByPath(fromObject, []string{"nextPageToken"})
+	fromNextPageToken := InternalGetValueByPath(fromObject, []string{"nextPageToken"})
 	if fromNextPageToken != nil {
-		setValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
+		InternalSetValueByPath(toObject, []string{"nextPageToken"}, fromNextPageToken)
 	}
 
-	fromTuningJobs := getValueByPath(fromObject, []string{"tuningJobs"})
+	fromTuningJobs := InternalGetValueByPath(fromObject, []string{"tuningJobs"})
 	if fromTuningJobs != nil {
 		fromTuningJobs, err = applyConverterToSliceWithRoot(fromTuningJobs.([]any), tuningJobFromVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"tuningJobs"}, fromTuningJobs)
+		InternalSetValueByPath(toObject, []string{"tuningJobs"}, fromTuningJobs)
 	}
 
 	return toObject, nil
@@ -693,14 +693,14 @@ func listTuningJobsResponseFromVertex(fromObject map[string]any, parentObject ma
 func tunedModelFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"name"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromModel != nil {
-		setValueByPath(toObject, []string{"model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"model"}, fromModel)
 	}
 
-	fromEndpoint := getValueByPath(fromObject, []string{"name"})
+	fromEndpoint := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromEndpoint != nil {
-		setValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
+		InternalSetValueByPath(toObject, []string{"endpoint"}, fromEndpoint)
 	}
 
 	return toObject, nil
@@ -708,17 +708,17 @@ func tunedModelFromMldev(fromObject map[string]any, parentObject map[string]any,
 
 func tuningDatasetToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
-	if getValueByPath(fromObject, []string{"gcsUri"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"gcsUri"}) != nil {
 		return nil, fmt.Errorf("gcsUri parameter is not supported in Gemini API")
 	}
 
-	if getValueByPath(fromObject, []string{"vertexDatasetResource"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"vertexDatasetResource"}) != nil {
 		return nil, fmt.Errorf("vertexDatasetResource parameter is not supported in Gemini API")
 	}
 
-	fromExamples := getValueByPath(fromObject, []string{"examples"})
+	fromExamples := InternalGetValueByPath(fromObject, []string{"examples"})
 	if fromExamples != nil {
-		setValueByPath(toObject, []string{"examples", "examples"}, fromExamples)
+		InternalSetValueByPath(toObject, []string{"examples", "examples"}, fromExamples)
 	}
 
 	return toObject, nil
@@ -727,49 +727,49 @@ func tuningDatasetToMldev(fromObject map[string]any, parentObject map[string]any
 func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	var discriminatorGcsUri any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorGcsUri any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorGcsUri == nil {
 		discriminatorGcsUri = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorGcsUri.(string) == "SUPERVISED_FINE_TUNING" {
-		fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+		fromGcsUri := InternalGetValueByPath(fromObject, []string{"gcsUri"})
 		if fromGcsUri != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromGcsUri)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromGcsUri)
 		}
 	} else if discriminatorGcsUri.(string) == "PREFERENCE_TUNING" {
-		fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+		fromGcsUri := InternalGetValueByPath(fromObject, []string{"gcsUri"})
 		if fromGcsUri != nil {
-			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "trainingDatasetUri"}, fromGcsUri)
+			InternalSetValueByPath(parentObject, []string{"preferenceOptimizationSpec", "trainingDatasetUri"}, fromGcsUri)
 		}
 	} else if discriminatorGcsUri.(string) == "DISTILLATION" {
-		fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+		fromGcsUri := InternalGetValueByPath(fromObject, []string{"gcsUri"})
 		if fromGcsUri != nil {
-			setValueByPath(parentObject, []string{"distillationSpec", "promptDatasetUri"}, fromGcsUri)
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "promptDatasetUri"}, fromGcsUri)
 		}
 	}
 
-	var discriminatorVertexDatasetResource any = getValueByPath(rootObject, []string{"config", "method"})
+	var discriminatorVertexDatasetResource any = InternalGetValueByPath(rootObject, []string{"config", "method"})
 	if discriminatorVertexDatasetResource == nil {
 		discriminatorVertexDatasetResource = "SUPERVISED_FINE_TUNING"
 	}
 	if discriminatorVertexDatasetResource.(string) == "SUPERVISED_FINE_TUNING" {
-		fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
+		fromVertexDatasetResource := InternalGetValueByPath(fromObject, []string{"vertexDatasetResource"})
 		if fromVertexDatasetResource != nil {
-			setValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
+			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
 		}
 	} else if discriminatorVertexDatasetResource.(string) == "PREFERENCE_TUNING" {
-		fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
+		fromVertexDatasetResource := InternalGetValueByPath(fromObject, []string{"vertexDatasetResource"})
 		if fromVertexDatasetResource != nil {
-			setValueByPath(parentObject, []string{"preferenceOptimizationSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
+			InternalSetValueByPath(parentObject, []string{"preferenceOptimizationSpec", "trainingDatasetUri"}, fromVertexDatasetResource)
 		}
 	} else if discriminatorVertexDatasetResource.(string) == "DISTILLATION" {
-		fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
+		fromVertexDatasetResource := InternalGetValueByPath(fromObject, []string{"vertexDatasetResource"})
 		if fromVertexDatasetResource != nil {
-			setValueByPath(parentObject, []string{"distillationSpec", "promptDatasetUri"}, fromVertexDatasetResource)
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "promptDatasetUri"}, fromVertexDatasetResource)
 		}
 	}
 
-	if getValueByPath(fromObject, []string{"examples"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"examples"}) != nil {
 		return nil, fmt.Errorf("examples parameter is not supported in Vertex AI")
 	}
 
@@ -779,64 +779,64 @@ func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]an
 func tuningJobFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromState := getValueByPath(fromObject, []string{"state"})
+	fromState := InternalGetValueByPath(fromObject, []string{"state"})
 	if fromState != nil {
-		fromState, err = tTuningJobStatus(fromState)
+		fromState, err = InternalTTuningJobStatus(fromState)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"state"}, fromState)
+		InternalSetValueByPath(toObject, []string{"state"}, fromState)
 	}
 
-	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
+	fromCreateTime := InternalGetValueByPath(fromObject, []string{"createTime"})
 	if fromCreateTime != nil {
-		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
+		InternalSetValueByPath(toObject, []string{"createTime"}, fromCreateTime)
 	}
 
-	fromStartTime := getValueByPath(fromObject, []string{"tuningTask", "startTime"})
+	fromStartTime := InternalGetValueByPath(fromObject, []string{"tuningTask", "startTime"})
 	if fromStartTime != nil {
-		setValueByPath(toObject, []string{"startTime"}, fromStartTime)
+		InternalSetValueByPath(toObject, []string{"startTime"}, fromStartTime)
 	}
 
-	fromEndTime := getValueByPath(fromObject, []string{"tuningTask", "completeTime"})
+	fromEndTime := InternalGetValueByPath(fromObject, []string{"tuningTask", "completeTime"})
 	if fromEndTime != nil {
-		setValueByPath(toObject, []string{"endTime"}, fromEndTime)
+		InternalSetValueByPath(toObject, []string{"endTime"}, fromEndTime)
 	}
 
-	fromUpdateTime := getValueByPath(fromObject, []string{"updateTime"})
+	fromUpdateTime := InternalGetValueByPath(fromObject, []string{"updateTime"})
 	if fromUpdateTime != nil {
-		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
+		InternalSetValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
 	}
 
-	fromDescription := getValueByPath(fromObject, []string{"description"})
+	fromDescription := InternalGetValueByPath(fromObject, []string{"description"})
 	if fromDescription != nil {
-		setValueByPath(toObject, []string{"description"}, fromDescription)
+		InternalSetValueByPath(toObject, []string{"description"}, fromDescription)
 	}
 
-	fromBaseModel := getValueByPath(fromObject, []string{"baseModel"})
+	fromBaseModel := InternalGetValueByPath(fromObject, []string{"baseModel"})
 	if fromBaseModel != nil {
-		setValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
+		InternalSetValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
 	}
 
-	fromTunedModel := getValueByPath(fromObject, []string{"_self"})
+	fromTunedModel := InternalGetValueByPath(fromObject, []string{"_self"})
 	if fromTunedModel != nil {
 		fromTunedModel, err = tunedModelFromMldev(fromTunedModel.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"tunedModel"}, fromTunedModel)
+		InternalSetValueByPath(toObject, []string{"tunedModel"}, fromTunedModel)
 	}
 
 	return toObject, nil
@@ -845,154 +845,154 @@ func tuningJobFromMldev(fromObject map[string]any, parentObject map[string]any, 
 func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromState := getValueByPath(fromObject, []string{"state"})
+	fromState := InternalGetValueByPath(fromObject, []string{"state"})
 	if fromState != nil {
-		fromState, err = tTuningJobStatus(fromState)
+		fromState, err = InternalTTuningJobStatus(fromState)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"state"}, fromState)
+		InternalSetValueByPath(toObject, []string{"state"}, fromState)
 	}
 
-	fromCreateTime := getValueByPath(fromObject, []string{"createTime"})
+	fromCreateTime := InternalGetValueByPath(fromObject, []string{"createTime"})
 	if fromCreateTime != nil {
-		setValueByPath(toObject, []string{"createTime"}, fromCreateTime)
+		InternalSetValueByPath(toObject, []string{"createTime"}, fromCreateTime)
 	}
 
-	fromStartTime := getValueByPath(fromObject, []string{"startTime"})
+	fromStartTime := InternalGetValueByPath(fromObject, []string{"startTime"})
 	if fromStartTime != nil {
-		setValueByPath(toObject, []string{"startTime"}, fromStartTime)
+		InternalSetValueByPath(toObject, []string{"startTime"}, fromStartTime)
 	}
 
-	fromEndTime := getValueByPath(fromObject, []string{"endTime"})
+	fromEndTime := InternalGetValueByPath(fromObject, []string{"endTime"})
 	if fromEndTime != nil {
-		setValueByPath(toObject, []string{"endTime"}, fromEndTime)
+		InternalSetValueByPath(toObject, []string{"endTime"}, fromEndTime)
 	}
 
-	fromUpdateTime := getValueByPath(fromObject, []string{"updateTime"})
+	fromUpdateTime := InternalGetValueByPath(fromObject, []string{"updateTime"})
 	if fromUpdateTime != nil {
-		setValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
+		InternalSetValueByPath(toObject, []string{"updateTime"}, fromUpdateTime)
 	}
 
-	fromError := getValueByPath(fromObject, []string{"error"})
+	fromError := InternalGetValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
-		setValueByPath(toObject, []string{"error"}, fromError)
+		InternalSetValueByPath(toObject, []string{"error"}, fromError)
 	}
 
-	fromDescription := getValueByPath(fromObject, []string{"description"})
+	fromDescription := InternalGetValueByPath(fromObject, []string{"description"})
 	if fromDescription != nil {
-		setValueByPath(toObject, []string{"description"}, fromDescription)
+		InternalSetValueByPath(toObject, []string{"description"}, fromDescription)
 	}
 
-	fromBaseModel := getValueByPath(fromObject, []string{"baseModel"})
+	fromBaseModel := InternalGetValueByPath(fromObject, []string{"baseModel"})
 	if fromBaseModel != nil {
-		setValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
+		InternalSetValueByPath(toObject, []string{"baseModel"}, fromBaseModel)
 	}
 
-	fromTunedModel := getValueByPath(fromObject, []string{"tunedModel"})
+	fromTunedModel := InternalGetValueByPath(fromObject, []string{"tunedModel"})
 	if fromTunedModel != nil {
-		setValueByPath(toObject, []string{"tunedModel"}, fromTunedModel)
+		InternalSetValueByPath(toObject, []string{"tunedModel"}, fromTunedModel)
 	}
 
-	fromPreTunedModel := getValueByPath(fromObject, []string{"preTunedModel"})
+	fromPreTunedModel := InternalGetValueByPath(fromObject, []string{"preTunedModel"})
 	if fromPreTunedModel != nil {
-		setValueByPath(toObject, []string{"preTunedModel"}, fromPreTunedModel)
+		InternalSetValueByPath(toObject, []string{"preTunedModel"}, fromPreTunedModel)
 	}
 
-	fromSupervisedTuningSpec := getValueByPath(fromObject, []string{"supervisedTuningSpec"})
+	fromSupervisedTuningSpec := InternalGetValueByPath(fromObject, []string{"supervisedTuningSpec"})
 	if fromSupervisedTuningSpec != nil {
-		setValueByPath(toObject, []string{"supervisedTuningSpec"}, fromSupervisedTuningSpec)
+		InternalSetValueByPath(toObject, []string{"supervisedTuningSpec"}, fromSupervisedTuningSpec)
 	}
 
-	fromPreferenceOptimizationSpec := getValueByPath(fromObject, []string{"preferenceOptimizationSpec"})
+	fromPreferenceOptimizationSpec := InternalGetValueByPath(fromObject, []string{"preferenceOptimizationSpec"})
 	if fromPreferenceOptimizationSpec != nil {
-		setValueByPath(toObject, []string{"preferenceOptimizationSpec"}, fromPreferenceOptimizationSpec)
+		InternalSetValueByPath(toObject, []string{"preferenceOptimizationSpec"}, fromPreferenceOptimizationSpec)
 	}
 
-	fromDistillationSpec := getValueByPath(fromObject, []string{"distillationSpec"})
+	fromDistillationSpec := InternalGetValueByPath(fromObject, []string{"distillationSpec"})
 	if fromDistillationSpec != nil {
-		setValueByPath(toObject, []string{"distillationSpec"}, fromDistillationSpec)
+		InternalSetValueByPath(toObject, []string{"distillationSpec"}, fromDistillationSpec)
 	}
 
-	fromTuningDataStats := getValueByPath(fromObject, []string{"tuningDataStats"})
+	fromTuningDataStats := InternalGetValueByPath(fromObject, []string{"tuningDataStats"})
 	if fromTuningDataStats != nil {
-		setValueByPath(toObject, []string{"tuningDataStats"}, fromTuningDataStats)
+		InternalSetValueByPath(toObject, []string{"tuningDataStats"}, fromTuningDataStats)
 	}
 
-	fromEncryptionSpec := getValueByPath(fromObject, []string{"encryptionSpec"})
+	fromEncryptionSpec := InternalGetValueByPath(fromObject, []string{"encryptionSpec"})
 	if fromEncryptionSpec != nil {
-		setValueByPath(toObject, []string{"encryptionSpec"}, fromEncryptionSpec)
+		InternalSetValueByPath(toObject, []string{"encryptionSpec"}, fromEncryptionSpec)
 	}
 
-	fromPartnerModelTuningSpec := getValueByPath(fromObject, []string{"partnerModelTuningSpec"})
+	fromPartnerModelTuningSpec := InternalGetValueByPath(fromObject, []string{"partnerModelTuningSpec"})
 	if fromPartnerModelTuningSpec != nil {
-		setValueByPath(toObject, []string{"partnerModelTuningSpec"}, fromPartnerModelTuningSpec)
+		InternalSetValueByPath(toObject, []string{"partnerModelTuningSpec"}, fromPartnerModelTuningSpec)
 	}
 
-	fromCustomBaseModel := getValueByPath(fromObject, []string{"customBaseModel"})
+	fromCustomBaseModel := InternalGetValueByPath(fromObject, []string{"customBaseModel"})
 	if fromCustomBaseModel != nil {
-		setValueByPath(toObject, []string{"customBaseModel"}, fromCustomBaseModel)
+		InternalSetValueByPath(toObject, []string{"customBaseModel"}, fromCustomBaseModel)
 	}
 
-	fromEvaluateDatasetRuns := getValueByPath(fromObject, []string{"evaluateDatasetRuns"})
+	fromEvaluateDatasetRuns := InternalGetValueByPath(fromObject, []string{"evaluateDatasetRuns"})
 	if fromEvaluateDatasetRuns != nil {
-		setValueByPath(toObject, []string{"evaluateDatasetRuns"}, fromEvaluateDatasetRuns)
+		InternalSetValueByPath(toObject, []string{"evaluateDatasetRuns"}, fromEvaluateDatasetRuns)
 	}
 
-	fromExperiment := getValueByPath(fromObject, []string{"experiment"})
+	fromExperiment := InternalGetValueByPath(fromObject, []string{"experiment"})
 	if fromExperiment != nil {
-		setValueByPath(toObject, []string{"experiment"}, fromExperiment)
+		InternalSetValueByPath(toObject, []string{"experiment"}, fromExperiment)
 	}
 
-	fromFullFineTuningSpec := getValueByPath(fromObject, []string{"fullFineTuningSpec"})
+	fromFullFineTuningSpec := InternalGetValueByPath(fromObject, []string{"fullFineTuningSpec"})
 	if fromFullFineTuningSpec != nil {
-		setValueByPath(toObject, []string{"fullFineTuningSpec"}, fromFullFineTuningSpec)
+		InternalSetValueByPath(toObject, []string{"fullFineTuningSpec"}, fromFullFineTuningSpec)
 	}
 
-	fromLabels := getValueByPath(fromObject, []string{"labels"})
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
-		setValueByPath(toObject, []string{"labels"}, fromLabels)
+		InternalSetValueByPath(toObject, []string{"labels"}, fromLabels)
 	}
 
-	fromOutputUri := getValueByPath(fromObject, []string{"outputUri"})
+	fromOutputUri := InternalGetValueByPath(fromObject, []string{"outputUri"})
 	if fromOutputUri != nil {
-		setValueByPath(toObject, []string{"outputUri"}, fromOutputUri)
+		InternalSetValueByPath(toObject, []string{"outputUri"}, fromOutputUri)
 	}
 
-	fromPipelineJob := getValueByPath(fromObject, []string{"pipelineJob"})
+	fromPipelineJob := InternalGetValueByPath(fromObject, []string{"pipelineJob"})
 	if fromPipelineJob != nil {
-		setValueByPath(toObject, []string{"pipelineJob"}, fromPipelineJob)
+		InternalSetValueByPath(toObject, []string{"pipelineJob"}, fromPipelineJob)
 	}
 
-	fromServiceAccount := getValueByPath(fromObject, []string{"serviceAccount"})
+	fromServiceAccount := InternalGetValueByPath(fromObject, []string{"serviceAccount"})
 	if fromServiceAccount != nil {
-		setValueByPath(toObject, []string{"serviceAccount"}, fromServiceAccount)
+		InternalSetValueByPath(toObject, []string{"serviceAccount"}, fromServiceAccount)
 	}
 
-	fromTunedModelDisplayName := getValueByPath(fromObject, []string{"tunedModelDisplayName"})
+	fromTunedModelDisplayName := InternalGetValueByPath(fromObject, []string{"tunedModelDisplayName"})
 	if fromTunedModelDisplayName != nil {
-		setValueByPath(toObject, []string{"tunedModelDisplayName"}, fromTunedModelDisplayName)
+		InternalSetValueByPath(toObject, []string{"tunedModelDisplayName"}, fromTunedModelDisplayName)
 	}
 
-	fromTuningJobState := getValueByPath(fromObject, []string{"tuningJobState"})
+	fromTuningJobState := InternalGetValueByPath(fromObject, []string{"tuningJobState"})
 	if fromTuningJobState != nil {
-		setValueByPath(toObject, []string{"tuningJobState"}, fromTuningJobState)
+		InternalSetValueByPath(toObject, []string{"tuningJobState"}, fromTuningJobState)
 	}
 
-	fromVeoTuningSpec := getValueByPath(fromObject, []string{"veoTuningSpec"})
+	fromVeoTuningSpec := InternalGetValueByPath(fromObject, []string{"veoTuningSpec"})
 	if fromVeoTuningSpec != nil {
-		setValueByPath(toObject, []string{"veoTuningSpec"}, fromVeoTuningSpec)
+		InternalSetValueByPath(toObject, []string{"veoTuningSpec"}, fromVeoTuningSpec)
 	}
 
 	return toObject, nil
@@ -1001,29 +1001,29 @@ func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any,
 func tuningOperationFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSdkHttpResponse := getValueByPath(fromObject, []string{"sdkHttpResponse"})
+	fromSdkHttpResponse := InternalGetValueByPath(fromObject, []string{"sdkHttpResponse"})
 	if fromSdkHttpResponse != nil {
-		setValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
+		InternalSetValueByPath(toObject, []string{"sdkHttpResponse"}, fromSdkHttpResponse)
 	}
 
-	fromName := getValueByPath(fromObject, []string{"name"})
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
 	if fromName != nil {
-		setValueByPath(toObject, []string{"name"}, fromName)
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
 	}
 
-	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	fromMetadata := InternalGetValueByPath(fromObject, []string{"metadata"})
 	if fromMetadata != nil {
-		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+		InternalSetValueByPath(toObject, []string{"metadata"}, fromMetadata)
 	}
 
-	fromDone := getValueByPath(fromObject, []string{"done"})
+	fromDone := InternalGetValueByPath(fromObject, []string{"done"})
 	if fromDone != nil {
-		setValueByPath(toObject, []string{"done"}, fromDone)
+		InternalSetValueByPath(toObject, []string{"done"}, fromDone)
 	}
 
-	fromError := getValueByPath(fromObject, []string{"error"})
+	fromError := InternalGetValueByPath(fromObject, []string{"error"})
 	if fromError != nil {
-		setValueByPath(toObject, []string{"error"}, fromError)
+		InternalSetValueByPath(toObject, []string{"error"}, fromError)
 	}
 
 	return toObject, nil
@@ -1032,28 +1032,28 @@ func tuningOperationFromMldev(fromObject map[string]any, parentObject map[string
 func tuningValidationDatasetToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromGcsUri := getValueByPath(fromObject, []string{"gcsUri"})
+	fromGcsUri := InternalGetValueByPath(fromObject, []string{"gcsUri"})
 	if fromGcsUri != nil {
-		setValueByPath(toObject, []string{"validationDatasetUri"}, fromGcsUri)
+		InternalSetValueByPath(toObject, []string{"validationDatasetUri"}, fromGcsUri)
 	}
 
-	fromVertexDatasetResource := getValueByPath(fromObject, []string{"vertexDatasetResource"})
+	fromVertexDatasetResource := InternalGetValueByPath(fromObject, []string{"vertexDatasetResource"})
 	if fromVertexDatasetResource != nil {
-		setValueByPath(toObject, []string{"validationDatasetUri"}, fromVertexDatasetResource)
+		InternalSetValueByPath(toObject, []string{"validationDatasetUri"}, fromVertexDatasetResource)
 	}
 
 	return toObject, nil
 }
 
 type Tunings struct {
-	apiClient *apiClient
+	apiClient *InternalAPIClient
 }
 
 func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfig) (*TuningJob, error) {
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"name": name, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -1068,7 +1068,7 @@ func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfi
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = getTuningJobParametersToVertex
 		fromConverter = tuningJobFromVertex
 	} else {
@@ -1086,16 +1086,16 @@ func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfi
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{name}", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{name}", urlParams)
 	} else {
-		path, err = formatMap("{name}", urlParams)
+		path, err = InternalFormatMap("{name}", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -1112,7 +1112,7 @@ func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfi
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -1124,7 +1124,7 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -1139,7 +1139,7 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = listTuningJobsParametersToVertex
 		fromConverter = listTuningJobsResponseFromVertex
 	} else {
@@ -1157,16 +1157,16 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("tuningJobs", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("tuningJobs", urlParams)
 	} else {
-		path, err = formatMap("tunedModels", urlParams)
+		path, err = InternalFormatMap("tunedModels", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -1183,7 +1183,7 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -1196,7 +1196,7 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"name": name, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -1211,7 +1211,7 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = cancelTuningJobParametersToVertex
 		fromConverter = cancelTuningJobResponseFromVertex
 	} else {
@@ -1229,16 +1229,16 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{name}:cancel", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("{name}:cancel", urlParams)
 	} else {
-		path, err = formatMap("{name}:cancel", urlParams)
+		path, err = InternalFormatMap("{name}:cancel", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -1255,7 +1255,7 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -1267,7 +1267,7 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"baseModel": baseModel, "preTunedModel": preTunedModel, "trainingDataset": trainingDataset, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -1282,7 +1282,7 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		toConverter = createTuningJobParametersPrivateToVertex
 		fromConverter = tuningJobFromVertex
 	} else {
@@ -1301,16 +1301,16 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("tuningJobs", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("tuningJobs", urlParams)
 	} else {
-		path, err = formatMap("None", urlParams)
+		path, err = InternalFormatMap("None", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -1327,7 +1327,7 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -1339,7 +1339,7 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 	parameterMap := make(map[string]any)
 
 	kwargs := map[string]any{"baseModel": baseModel, "preTunedModel": preTunedModel, "trainingDataset": trainingDataset, "config": config}
-	deepMarshal(kwargs, &parameterMap)
+	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -1354,7 +1354,7 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 	var responseMap map[string]any
 	var fromConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method TuneMldev is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
@@ -1373,16 +1373,16 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("None", urlParams)
+	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
+		path, err = InternalFormatMap("None", urlParams)
 	} else {
-		path, err = formatMap("tunedModels", urlParams)
+		path, err = InternalFormatMap("tunedModels", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
 	if _, ok := body["_query"]; ok {
-		query, err := createURLQuery(body["_query"].(map[string]any))
+		query, err := InternalCreateURLQuery(body["_query"].(map[string]any))
 		if err != nil {
 			return nil, err
 		}
@@ -1399,7 +1399,7 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 	if err != nil {
 		return nil, err
 	}
-	err = mapToStruct(responseMap, response)
+	err = InternalMapToStruct(responseMap, response)
 	if err != nil {
 		return nil, err
 	}
@@ -1411,7 +1411,7 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 func (m Tunings) List(ctx context.Context, config *ListTuningJobsConfig) (Page[TuningJob], error) {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*TuningJob, string, *HTTPResponse, error) {
 		var c ListTuningJobsConfig
-		if err := mapToStruct(config, &c); err != nil {
+		if err := InternalMapToStruct(config, &c); err != nil {
 			return nil, "", nil, err
 		}
 		resp, err := m.list(ctx, &c)
@@ -1421,7 +1421,7 @@ func (m Tunings) List(ctx context.Context, config *ListTuningJobsConfig) (Page[T
 		return resp.TuningJobs, resp.NextPageToken, resp.SDKHTTPResponse, nil
 	}
 	c := make(map[string]any)
-	deepMarshal(config, &c)
+	InternalDeepMarshal(config, &c)
 	return newPage(ctx, "tuningJobs", c, listFunc)
 }
 
@@ -1434,7 +1434,7 @@ func (m Tunings) List(ctx context.Context, config *ListTuningJobsConfig) (Page[T
 func (m Tunings) All(ctx context.Context) iter.Seq2[*TuningJob, error] {
 	listFunc := func(ctx context.Context, config map[string]any) ([]*TuningJob, string, *HTTPResponse, error) {
 		var c ListTuningJobsConfig
-		if err := mapToStruct(config, &c); err != nil {
+		if err := InternalMapToStruct(config, &c); err != nil {
 			return nil, "", nil, err
 		}
 		resp, err := m.list(ctx, &c)

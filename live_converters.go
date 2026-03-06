@@ -23,19 +23,19 @@ import (
 func liveClientContentToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromTurns := getValueByPath(fromObject, []string{"turns"})
+	fromTurns := InternalGetValueByPath(fromObject, []string{"turns"})
 	if fromTurns != nil {
 		fromTurns, err = applyConverterToSliceWithRoot(fromTurns.([]any), contentToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"turns"}, fromTurns)
+		InternalSetValueByPath(toObject, []string{"turns"}, fromTurns)
 	}
 
-	fromTurnComplete := getValueByPath(fromObject, []string{"turnComplete"})
+	fromTurnComplete := InternalGetValueByPath(fromObject, []string{"turnComplete"})
 	if fromTurnComplete != nil {
-		setValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
+		InternalSetValueByPath(toObject, []string{"turnComplete"}, fromTurnComplete)
 	}
 
 	return toObject, nil
@@ -44,39 +44,39 @@ func liveClientContentToMldev(fromObject map[string]any, parentObject map[string
 func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSetup := getValueByPath(fromObject, []string{"setup"})
+	fromSetup := InternalGetValueByPath(fromObject, []string{"setup"})
 	if fromSetup != nil {
 		fromSetup, err = liveClientSetupToMldev(fromSetup.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"setup"}, fromSetup)
+		InternalSetValueByPath(toObject, []string{"setup"}, fromSetup)
 	}
 
-	fromClientContent := getValueByPath(fromObject, []string{"clientContent"})
+	fromClientContent := InternalGetValueByPath(fromObject, []string{"clientContent"})
 	if fromClientContent != nil {
 		fromClientContent, err = liveClientContentToMldev(fromClientContent.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"clientContent"}, fromClientContent)
+		InternalSetValueByPath(toObject, []string{"clientContent"}, fromClientContent)
 	}
 
-	fromRealtimeInput := getValueByPath(fromObject, []string{"realtimeInput"})
+	fromRealtimeInput := InternalGetValueByPath(fromObject, []string{"realtimeInput"})
 	if fromRealtimeInput != nil {
 		fromRealtimeInput, err = liveClientRealtimeInputToMldev(fromRealtimeInput.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"realtimeInput"}, fromRealtimeInput)
+		InternalSetValueByPath(toObject, []string{"realtimeInput"}, fromRealtimeInput)
 	}
 
-	fromToolResponse := getValueByPath(fromObject, []string{"toolResponse"})
+	fromToolResponse := InternalGetValueByPath(fromObject, []string{"toolResponse"})
 	if fromToolResponse != nil {
-		setValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
+		InternalSetValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
 	}
 
 	return toObject, nil
@@ -85,34 +85,34 @@ func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string
 func liveClientMessageToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSetup := getValueByPath(fromObject, []string{"setup"})
+	fromSetup := InternalGetValueByPath(fromObject, []string{"setup"})
 	if fromSetup != nil {
 		fromSetup, err = liveClientSetupToVertex(fromSetup.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"setup"}, fromSetup)
+		InternalSetValueByPath(toObject, []string{"setup"}, fromSetup)
 	}
 
-	fromClientContent := getValueByPath(fromObject, []string{"clientContent"})
+	fromClientContent := InternalGetValueByPath(fromObject, []string{"clientContent"})
 	if fromClientContent != nil {
-		setValueByPath(toObject, []string{"clientContent"}, fromClientContent)
+		InternalSetValueByPath(toObject, []string{"clientContent"}, fromClientContent)
 	}
 
-	fromRealtimeInput := getValueByPath(fromObject, []string{"realtimeInput"})
+	fromRealtimeInput := InternalGetValueByPath(fromObject, []string{"realtimeInput"})
 	if fromRealtimeInput != nil {
 		fromRealtimeInput, err = liveClientRealtimeInputToVertex(fromRealtimeInput.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"realtimeInput"}, fromRealtimeInput)
+		InternalSetValueByPath(toObject, []string{"realtimeInput"}, fromRealtimeInput)
 	}
 
-	fromToolResponse := getValueByPath(fromObject, []string{"toolResponse"})
+	fromToolResponse := InternalGetValueByPath(fromObject, []string{"toolResponse"})
 	if fromToolResponse != nil {
-		setValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
+		InternalSetValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
 	}
 
 	return toObject, nil
@@ -121,24 +121,24 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMediaChunks := getValueByPath(fromObject, []string{"mediaChunks"})
+	fromMediaChunks := InternalGetValueByPath(fromObject, []string{"mediaChunks"})
 	if fromMediaChunks != nil {
 		fromMediaChunks, err = applyConverterToSliceWithRoot(fromMediaChunks.([]any), blobToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"mediaChunks"}, fromMediaChunks)
+		InternalSetValueByPath(toObject, []string{"mediaChunks"}, fromMediaChunks)
 	}
 
-	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
+	fromActivityStart := InternalGetValueByPath(fromObject, []string{"activityStart"})
 	if fromActivityStart != nil {
-		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
+		InternalSetValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
 	}
 
-	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
+	fromActivityEnd := InternalGetValueByPath(fromObject, []string{"activityEnd"})
 	if fromActivityEnd != nil {
-		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
+		InternalSetValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
 	}
 
 	return toObject, nil
@@ -147,19 +147,19 @@ func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[
 func liveClientRealtimeInputToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMediaChunks := getValueByPath(fromObject, []string{"mediaChunks"})
+	fromMediaChunks := InternalGetValueByPath(fromObject, []string{"mediaChunks"})
 	if fromMediaChunks != nil {
-		setValueByPath(toObject, []string{"mediaChunks"}, fromMediaChunks)
+		InternalSetValueByPath(toObject, []string{"mediaChunks"}, fromMediaChunks)
 	}
 
-	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
+	fromActivityStart := InternalGetValueByPath(fromObject, []string{"activityStart"})
 	if fromActivityStart != nil {
-		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
+		InternalSetValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
 	}
 
-	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
+	fromActivityEnd := InternalGetValueByPath(fromObject, []string{"activityEnd"})
 	if fromActivityEnd != nil {
-		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
+		InternalSetValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
 	}
 
 	return toObject, nil
@@ -168,19 +168,19 @@ func liveClientRealtimeInputToVertex(fromObject map[string]any, parentObject map
 func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		setValueByPath(toObject, []string{"model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"model"}, fromModel)
 	}
 
-	fromGenerationConfig := getValueByPath(fromObject, []string{"generationConfig"})
+	fromGenerationConfig := InternalGetValueByPath(fromObject, []string{"generationConfig"})
 	if fromGenerationConfig != nil {
-		setValueByPath(toObject, []string{"generationConfig"}, fromGenerationConfig)
+		InternalSetValueByPath(toObject, []string{"generationConfig"}, fromGenerationConfig)
 	}
 
-	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
+	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
-		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
 		if err != nil {
 			return nil, err
 		}
@@ -190,17 +190,17 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"systemInstruction"}, fromSystemInstruction)
+		InternalSetValueByPath(toObject, []string{"systemInstruction"}, fromSystemInstruction)
 	}
 
-	fromTools := getValueByPath(fromObject, []string{"tools"})
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
 	if fromTools != nil {
 		fromTools, err = applyItemTransformerToSlice(fromTools.([]any), tTool)
 		if err != nil {
 			return nil, err
 		}
 
-		fromTools, err = tTools(fromTools)
+		fromTools, err = InternalTTools(fromTools)
 		if err != nil {
 			return nil, err
 		}
@@ -210,45 +210,45 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"tools"}, fromTools)
+		InternalSetValueByPath(toObject, []string{"tools"}, fromTools)
 	}
 
-	fromRealtimeInputConfig := getValueByPath(fromObject, []string{"realtimeInputConfig"})
+	fromRealtimeInputConfig := InternalGetValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
-		setValueByPath(toObject, []string{"realtimeInputConfig"}, fromRealtimeInputConfig)
+		InternalSetValueByPath(toObject, []string{"realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
-	fromSessionResumption := getValueByPath(fromObject, []string{"sessionResumption"})
+	fromSessionResumption := InternalGetValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
 		fromSessionResumption, err = sessionResumptionConfigToMldev(fromSessionResumption.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"sessionResumption"}, fromSessionResumption)
+		InternalSetValueByPath(toObject, []string{"sessionResumption"}, fromSessionResumption)
 	}
 
-	fromContextWindowCompression := getValueByPath(fromObject, []string{"contextWindowCompression"})
+	fromContextWindowCompression := InternalGetValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
-		setValueByPath(toObject, []string{"contextWindowCompression"}, fromContextWindowCompression)
+		InternalSetValueByPath(toObject, []string{"contextWindowCompression"}, fromContextWindowCompression)
 	}
 
-	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
+	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		setValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
+		InternalSetValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
-	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
+	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		setValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
+		InternalSetValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
-	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
+	fromProactivity := InternalGetValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
-		setValueByPath(toObject, []string{"proactivity"}, fromProactivity)
+		InternalSetValueByPath(toObject, []string{"proactivity"}, fromProactivity)
 	}
 
-	if getValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
 		return nil, fmt.Errorf("explicitVadSignal parameter is not supported in Gemini API")
 	}
 
@@ -258,39 +258,39 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		setValueByPath(toObject, []string{"model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"model"}, fromModel)
 	}
 
-	fromGenerationConfig := getValueByPath(fromObject, []string{"generationConfig"})
+	fromGenerationConfig := InternalGetValueByPath(fromObject, []string{"generationConfig"})
 	if fromGenerationConfig != nil {
 		fromGenerationConfig, err = generationConfigToVertex(fromGenerationConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"generationConfig"}, fromGenerationConfig)
+		InternalSetValueByPath(toObject, []string{"generationConfig"}, fromGenerationConfig)
 	}
 
-	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
+	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
-		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"systemInstruction"}, fromSystemInstruction)
+		InternalSetValueByPath(toObject, []string{"systemInstruction"}, fromSystemInstruction)
 	}
 
-	fromTools := getValueByPath(fromObject, []string{"tools"})
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
 	if fromTools != nil {
 		fromTools, err = applyItemTransformerToSlice(fromTools.([]any), tTool)
 		if err != nil {
 			return nil, err
 		}
 
-		fromTools, err = tTools(fromTools)
+		fromTools, err = InternalTTools(fromTools)
 		if err != nil {
 			return nil, err
 		}
@@ -300,42 +300,42 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"tools"}, fromTools)
+		InternalSetValueByPath(toObject, []string{"tools"}, fromTools)
 	}
 
-	fromRealtimeInputConfig := getValueByPath(fromObject, []string{"realtimeInputConfig"})
+	fromRealtimeInputConfig := InternalGetValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
-		setValueByPath(toObject, []string{"realtimeInputConfig"}, fromRealtimeInputConfig)
+		InternalSetValueByPath(toObject, []string{"realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
-	fromSessionResumption := getValueByPath(fromObject, []string{"sessionResumption"})
+	fromSessionResumption := InternalGetValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
-		setValueByPath(toObject, []string{"sessionResumption"}, fromSessionResumption)
+		InternalSetValueByPath(toObject, []string{"sessionResumption"}, fromSessionResumption)
 	}
 
-	fromContextWindowCompression := getValueByPath(fromObject, []string{"contextWindowCompression"})
+	fromContextWindowCompression := InternalGetValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
-		setValueByPath(toObject, []string{"contextWindowCompression"}, fromContextWindowCompression)
+		InternalSetValueByPath(toObject, []string{"contextWindowCompression"}, fromContextWindowCompression)
 	}
 
-	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
+	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		setValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
+		InternalSetValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
-	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
+	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		setValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
+		InternalSetValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
-	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
+	fromProactivity := InternalGetValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
-		setValueByPath(toObject, []string{"proactivity"}, fromProactivity)
+		InternalSetValueByPath(toObject, []string{"proactivity"}, fromProactivity)
 	}
 
-	fromExplicitVadSignal := getValueByPath(fromObject, []string{"explicitVadSignal"})
+	fromExplicitVadSignal := InternalGetValueByPath(fromObject, []string{"explicitVadSignal"})
 	if fromExplicitVadSignal != nil {
-		setValueByPath(toObject, []string{"explicitVadSignal"}, fromExplicitVadSignal)
+		InternalSetValueByPath(toObject, []string{"explicitVadSignal"}, fromExplicitVadSignal)
 	}
 
 	return toObject, nil
@@ -344,64 +344,64 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
+	fromResponseModalities := InternalGetValueByPath(fromObject, []string{"responseModalities"})
 	if fromResponseModalities != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "responseModalities"}, fromResponseModalities)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "responseModalities"}, fromResponseModalities)
 	}
 
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	fromTemperature := InternalGetValueByPath(fromObject, []string{"temperature"})
 	if fromTemperature != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "temperature"}, fromTemperature)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "temperature"}, fromTemperature)
 	}
 
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	fromTopP := InternalGetValueByPath(fromObject, []string{"topP"})
 	if fromTopP != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "topP"}, fromTopP)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "topP"}, fromTopP)
 	}
 
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	fromTopK := InternalGetValueByPath(fromObject, []string{"topK"})
 	if fromTopK != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "topK"}, fromTopK)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "topK"}, fromTopK)
 	}
 
-	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
+	fromMaxOutputTokens := InternalGetValueByPath(fromObject, []string{"maxOutputTokens"})
 	if fromMaxOutputTokens != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "maxOutputTokens"}, fromMaxOutputTokens)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "maxOutputTokens"}, fromMaxOutputTokens)
 	}
 
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
 	if fromMediaResolution != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "mediaResolution"}, fromMediaResolution)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "mediaResolution"}, fromMediaResolution)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "seed"}, fromSeed)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "seed"}, fromSeed)
 	}
 
-	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
+	fromSpeechConfig := InternalGetValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = tLiveSpeechConfig(fromSpeechConfig)
+		fromSpeechConfig, err = InternalTLiveSpeechConfig(fromSpeechConfig)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "speechConfig"}, fromSpeechConfig)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "speechConfig"}, fromSpeechConfig)
 	}
 
-	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
+	fromThinkingConfig := InternalGetValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "thinkingConfig"}, fromThinkingConfig)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "thinkingConfig"}, fromThinkingConfig)
 	}
 
-	fromEnableAffectiveDialog := getValueByPath(fromObject, []string{"enableAffectiveDialog"})
+	fromEnableAffectiveDialog := InternalGetValueByPath(fromObject, []string{"enableAffectiveDialog"})
 	if fromEnableAffectiveDialog != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "enableAffectiveDialog"}, fromEnableAffectiveDialog)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "enableAffectiveDialog"}, fromEnableAffectiveDialog)
 	}
 
-	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
+	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
-		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
 		if err != nil {
 			return nil, err
 		}
@@ -411,17 +411,17 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"setup", "systemInstruction"}, fromSystemInstruction)
+		InternalSetValueByPath(parentObject, []string{"setup", "systemInstruction"}, fromSystemInstruction)
 	}
 
-	fromTools := getValueByPath(fromObject, []string{"tools"})
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
 	if fromTools != nil {
 		fromTools, err = applyItemTransformerToSlice(fromTools.([]any), tTool)
 		if err != nil {
 			return nil, err
 		}
 
-		fromTools, err = tTools(fromTools)
+		fromTools, err = InternalTTools(fromTools)
 		if err != nil {
 			return nil, err
 		}
@@ -431,45 +431,45 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"setup", "tools"}, fromTools)
+		InternalSetValueByPath(parentObject, []string{"setup", "tools"}, fromTools)
 	}
 
-	fromSessionResumption := getValueByPath(fromObject, []string{"sessionResumption"})
+	fromSessionResumption := InternalGetValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
 		fromSessionResumption, err = sessionResumptionConfigToMldev(fromSessionResumption.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"setup", "sessionResumption"}, fromSessionResumption)
+		InternalSetValueByPath(parentObject, []string{"setup", "sessionResumption"}, fromSessionResumption)
 	}
 
-	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
+	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		setValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
+		InternalSetValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
-	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
+	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		setValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
+		InternalSetValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
-	fromRealtimeInputConfig := getValueByPath(fromObject, []string{"realtimeInputConfig"})
+	fromRealtimeInputConfig := InternalGetValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
-		setValueByPath(parentObject, []string{"setup", "realtimeInputConfig"}, fromRealtimeInputConfig)
+		InternalSetValueByPath(parentObject, []string{"setup", "realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
-	fromContextWindowCompression := getValueByPath(fromObject, []string{"contextWindowCompression"})
+	fromContextWindowCompression := InternalGetValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
-		setValueByPath(parentObject, []string{"setup", "contextWindowCompression"}, fromContextWindowCompression)
+		InternalSetValueByPath(parentObject, []string{"setup", "contextWindowCompression"}, fromContextWindowCompression)
 	}
 
-	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
+	fromProactivity := InternalGetValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
-		setValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
+		InternalSetValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
 	}
 
-	if getValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
 		return nil, fmt.Errorf("explicitVadSignal parameter is not supported in Gemini API")
 	}
 
@@ -479,79 +479,79 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromResponseModalities := getValueByPath(fromObject, []string{"responseModalities"})
+	fromResponseModalities := InternalGetValueByPath(fromObject, []string{"responseModalities"})
 	if fromResponseModalities != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "responseModalities"}, fromResponseModalities)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "responseModalities"}, fromResponseModalities)
 	}
 
-	fromTemperature := getValueByPath(fromObject, []string{"temperature"})
+	fromTemperature := InternalGetValueByPath(fromObject, []string{"temperature"})
 	if fromTemperature != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "temperature"}, fromTemperature)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "temperature"}, fromTemperature)
 	}
 
-	fromTopP := getValueByPath(fromObject, []string{"topP"})
+	fromTopP := InternalGetValueByPath(fromObject, []string{"topP"})
 	if fromTopP != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "topP"}, fromTopP)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "topP"}, fromTopP)
 	}
 
-	fromTopK := getValueByPath(fromObject, []string{"topK"})
+	fromTopK := InternalGetValueByPath(fromObject, []string{"topK"})
 	if fromTopK != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "topK"}, fromTopK)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "topK"}, fromTopK)
 	}
 
-	fromMaxOutputTokens := getValueByPath(fromObject, []string{"maxOutputTokens"})
+	fromMaxOutputTokens := InternalGetValueByPath(fromObject, []string{"maxOutputTokens"})
 	if fromMaxOutputTokens != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "maxOutputTokens"}, fromMaxOutputTokens)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "maxOutputTokens"}, fromMaxOutputTokens)
 	}
 
-	fromMediaResolution := getValueByPath(fromObject, []string{"mediaResolution"})
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
 	if fromMediaResolution != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "mediaResolution"}, fromMediaResolution)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "mediaResolution"}, fromMediaResolution)
 	}
 
-	fromSeed := getValueByPath(fromObject, []string{"seed"})
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
 	if fromSeed != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "seed"}, fromSeed)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "seed"}, fromSeed)
 	}
 
-	fromSpeechConfig := getValueByPath(fromObject, []string{"speechConfig"})
+	fromSpeechConfig := InternalGetValueByPath(fromObject, []string{"speechConfig"})
 	if fromSpeechConfig != nil {
-		fromSpeechConfig, err = tLiveSpeechConfig(fromSpeechConfig)
+		fromSpeechConfig, err = InternalTLiveSpeechConfig(fromSpeechConfig)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "speechConfig"}, fromSpeechConfig)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "speechConfig"}, fromSpeechConfig)
 	}
 
-	fromThinkingConfig := getValueByPath(fromObject, []string{"thinkingConfig"})
+	fromThinkingConfig := InternalGetValueByPath(fromObject, []string{"thinkingConfig"})
 	if fromThinkingConfig != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "thinkingConfig"}, fromThinkingConfig)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "thinkingConfig"}, fromThinkingConfig)
 	}
 
-	fromEnableAffectiveDialog := getValueByPath(fromObject, []string{"enableAffectiveDialog"})
+	fromEnableAffectiveDialog := InternalGetValueByPath(fromObject, []string{"enableAffectiveDialog"})
 	if fromEnableAffectiveDialog != nil {
-		setValueByPath(parentObject, []string{"setup", "generationConfig", "enableAffectiveDialog"}, fromEnableAffectiveDialog)
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "enableAffectiveDialog"}, fromEnableAffectiveDialog)
 	}
 
-	fromSystemInstruction := getValueByPath(fromObject, []string{"systemInstruction"})
+	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
-		fromSystemInstruction, err = tContent(fromSystemInstruction)
+		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"setup", "systemInstruction"}, fromSystemInstruction)
+		InternalSetValueByPath(parentObject, []string{"setup", "systemInstruction"}, fromSystemInstruction)
 	}
 
-	fromTools := getValueByPath(fromObject, []string{"tools"})
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
 	if fromTools != nil {
 		fromTools, err = applyItemTransformerToSlice(fromTools.([]any), tTool)
 		if err != nil {
 			return nil, err
 		}
 
-		fromTools, err = tTools(fromTools)
+		fromTools, err = InternalTTools(fromTools)
 		if err != nil {
 			return nil, err
 		}
@@ -561,94 +561,94 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 			return nil, err
 		}
 
-		setValueByPath(parentObject, []string{"setup", "tools"}, fromTools)
+		InternalSetValueByPath(parentObject, []string{"setup", "tools"}, fromTools)
 	}
 
-	fromSessionResumption := getValueByPath(fromObject, []string{"sessionResumption"})
+	fromSessionResumption := InternalGetValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
-		setValueByPath(parentObject, []string{"setup", "sessionResumption"}, fromSessionResumption)
+		InternalSetValueByPath(parentObject, []string{"setup", "sessionResumption"}, fromSessionResumption)
 	}
 
-	fromInputAudioTranscription := getValueByPath(fromObject, []string{"inputAudioTranscription"})
+	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		setValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
+		InternalSetValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
-	fromOutputAudioTranscription := getValueByPath(fromObject, []string{"outputAudioTranscription"})
+	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		setValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
+		InternalSetValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
-	fromRealtimeInputConfig := getValueByPath(fromObject, []string{"realtimeInputConfig"})
+	fromRealtimeInputConfig := InternalGetValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
-		setValueByPath(parentObject, []string{"setup", "realtimeInputConfig"}, fromRealtimeInputConfig)
+		InternalSetValueByPath(parentObject, []string{"setup", "realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
-	fromContextWindowCompression := getValueByPath(fromObject, []string{"contextWindowCompression"})
+	fromContextWindowCompression := InternalGetValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
-		setValueByPath(parentObject, []string{"setup", "contextWindowCompression"}, fromContextWindowCompression)
+		InternalSetValueByPath(parentObject, []string{"setup", "contextWindowCompression"}, fromContextWindowCompression)
 	}
 
-	fromProactivity := getValueByPath(fromObject, []string{"proactivity"})
+	fromProactivity := InternalGetValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
-		setValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
+		InternalSetValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
 	}
 
-	fromExplicitVadSignal := getValueByPath(fromObject, []string{"explicitVadSignal"})
+	fromExplicitVadSignal := InternalGetValueByPath(fromObject, []string{"explicitVadSignal"})
 	if fromExplicitVadSignal != nil {
-		setValueByPath(parentObject, []string{"setup", "explicitVadSignal"}, fromExplicitVadSignal)
+		InternalSetValueByPath(parentObject, []string{"setup", "explicitVadSignal"}, fromExplicitVadSignal)
 	}
 
 	return toObject, nil
 }
 
-func liveConnectParametersToMldev(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"setup", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"setup", "model"}, fromModel)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		fromConfig, err = liveConnectConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"config"}, fromConfig)
+		InternalSetValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
 }
 
-func liveConnectParametersToVertex(ac *apiClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func liveConnectParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromModel := getValueByPath(fromObject, []string{"model"})
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
+		fromModel, err = InternalTModel(ac, fromModel)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"setup", "model"}, fromModel)
+		InternalSetValueByPath(toObject, []string{"setup", "model"}, fromModel)
 	}
 
-	fromConfig := getValueByPath(fromObject, []string{"config"})
+	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
 		fromConfig, err = liveConnectConfigToVertex(fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"config"}, fromConfig)
+		InternalSetValueByPath(toObject, []string{"config"}, fromConfig)
 	}
 
 	return toObject, nil
@@ -657,9 +657,9 @@ func liveConnectParametersToVertex(ac *apiClient, fromObject map[string]any, par
 func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMedia := getValueByPath(fromObject, []string{"media"})
+	fromMedia := InternalGetValueByPath(fromObject, []string{"media"})
 	if fromMedia != nil {
-		fromMedia, err = tBlobs(fromMedia)
+		fromMedia, err = InternalTBlobs(fromMedia)
 		if err != nil {
 			return nil, err
 		}
@@ -669,12 +669,12 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"mediaChunks"}, fromMedia)
+		InternalSetValueByPath(toObject, []string{"mediaChunks"}, fromMedia)
 	}
 
-	fromAudio := getValueByPath(fromObject, []string{"audio"})
+	fromAudio := InternalGetValueByPath(fromObject, []string{"audio"})
 	if fromAudio != nil {
-		fromAudio, err = tAudioBlob(fromAudio)
+		fromAudio, err = InternalTAudioBlob(fromAudio)
 		if err != nil {
 			return nil, err
 		}
@@ -684,17 +684,17 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"audio"}, fromAudio)
+		InternalSetValueByPath(toObject, []string{"audio"}, fromAudio)
 	}
 
-	fromAudioStreamEnd := getValueByPath(fromObject, []string{"audioStreamEnd"})
+	fromAudioStreamEnd := InternalGetValueByPath(fromObject, []string{"audioStreamEnd"})
 	if fromAudioStreamEnd != nil {
-		setValueByPath(toObject, []string{"audioStreamEnd"}, fromAudioStreamEnd)
+		InternalSetValueByPath(toObject, []string{"audioStreamEnd"}, fromAudioStreamEnd)
 	}
 
-	fromVideo := getValueByPath(fromObject, []string{"video"})
+	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
-		fromVideo, err = tImageBlob(fromVideo)
+		fromVideo, err = InternalTImageBlob(fromVideo)
 		if err != nil {
 			return nil, err
 		}
@@ -704,22 +704,22 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"video"}, fromVideo)
+		InternalSetValueByPath(toObject, []string{"video"}, fromVideo)
 	}
 
-	fromText := getValueByPath(fromObject, []string{"text"})
+	fromText := InternalGetValueByPath(fromObject, []string{"text"})
 	if fromText != nil {
-		setValueByPath(toObject, []string{"text"}, fromText)
+		InternalSetValueByPath(toObject, []string{"text"}, fromText)
 	}
 
-	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
+	fromActivityStart := InternalGetValueByPath(fromObject, []string{"activityStart"})
 	if fromActivityStart != nil {
-		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
+		InternalSetValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
 	}
 
-	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
+	fromActivityEnd := InternalGetValueByPath(fromObject, []string{"activityEnd"})
 	if fromActivityEnd != nil {
-		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
+		InternalSetValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
 	}
 
 	return toObject, nil
@@ -728,54 +728,54 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 func liveSendRealtimeInputParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMedia := getValueByPath(fromObject, []string{"media"})
+	fromMedia := InternalGetValueByPath(fromObject, []string{"media"})
 	if fromMedia != nil {
-		fromMedia, err = tBlobs(fromMedia)
+		fromMedia, err = InternalTBlobs(fromMedia)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"mediaChunks"}, fromMedia)
+		InternalSetValueByPath(toObject, []string{"mediaChunks"}, fromMedia)
 	}
 
-	fromAudio := getValueByPath(fromObject, []string{"audio"})
+	fromAudio := InternalGetValueByPath(fromObject, []string{"audio"})
 	if fromAudio != nil {
-		fromAudio, err = tAudioBlob(fromAudio)
+		fromAudio, err = InternalTAudioBlob(fromAudio)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"audio"}, fromAudio)
+		InternalSetValueByPath(toObject, []string{"audio"}, fromAudio)
 	}
 
-	fromAudioStreamEnd := getValueByPath(fromObject, []string{"audioStreamEnd"})
+	fromAudioStreamEnd := InternalGetValueByPath(fromObject, []string{"audioStreamEnd"})
 	if fromAudioStreamEnd != nil {
-		setValueByPath(toObject, []string{"audioStreamEnd"}, fromAudioStreamEnd)
+		InternalSetValueByPath(toObject, []string{"audioStreamEnd"}, fromAudioStreamEnd)
 	}
 
-	fromVideo := getValueByPath(fromObject, []string{"video"})
+	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
-		fromVideo, err = tImageBlob(fromVideo)
+		fromVideo, err = InternalTImageBlob(fromVideo)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"video"}, fromVideo)
+		InternalSetValueByPath(toObject, []string{"video"}, fromVideo)
 	}
 
-	fromText := getValueByPath(fromObject, []string{"text"})
+	fromText := InternalGetValueByPath(fromObject, []string{"text"})
 	if fromText != nil {
-		setValueByPath(toObject, []string{"text"}, fromText)
+		InternalSetValueByPath(toObject, []string{"text"}, fromText)
 	}
 
-	fromActivityStart := getValueByPath(fromObject, []string{"activityStart"})
+	fromActivityStart := InternalGetValueByPath(fromObject, []string{"activityStart"})
 	if fromActivityStart != nil {
-		setValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
+		InternalSetValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
 	}
 
-	fromActivityEnd := getValueByPath(fromObject, []string{"activityEnd"})
+	fromActivityEnd := InternalGetValueByPath(fromObject, []string{"activityEnd"})
 	if fromActivityEnd != nil {
-		setValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
+		InternalSetValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
 	}
 
 	return toObject, nil
@@ -784,54 +784,54 @@ func liveSendRealtimeInputParametersToVertex(fromObject map[string]any, parentOb
 func liveServerMessageFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSetupComplete := getValueByPath(fromObject, []string{"setupComplete"})
+	fromSetupComplete := InternalGetValueByPath(fromObject, []string{"setupComplete"})
 	if fromSetupComplete != nil {
-		setValueByPath(toObject, []string{"setupComplete"}, fromSetupComplete)
+		InternalSetValueByPath(toObject, []string{"setupComplete"}, fromSetupComplete)
 	}
 
-	fromServerContent := getValueByPath(fromObject, []string{"serverContent"})
+	fromServerContent := InternalGetValueByPath(fromObject, []string{"serverContent"})
 	if fromServerContent != nil {
-		setValueByPath(toObject, []string{"serverContent"}, fromServerContent)
+		InternalSetValueByPath(toObject, []string{"serverContent"}, fromServerContent)
 	}
 
-	fromToolCall := getValueByPath(fromObject, []string{"toolCall"})
+	fromToolCall := InternalGetValueByPath(fromObject, []string{"toolCall"})
 	if fromToolCall != nil {
-		setValueByPath(toObject, []string{"toolCall"}, fromToolCall)
+		InternalSetValueByPath(toObject, []string{"toolCall"}, fromToolCall)
 	}
 
-	fromToolCallCancellation := getValueByPath(fromObject, []string{"toolCallCancellation"})
+	fromToolCallCancellation := InternalGetValueByPath(fromObject, []string{"toolCallCancellation"})
 	if fromToolCallCancellation != nil {
-		setValueByPath(toObject, []string{"toolCallCancellation"}, fromToolCallCancellation)
+		InternalSetValueByPath(toObject, []string{"toolCallCancellation"}, fromToolCallCancellation)
 	}
 
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
+	fromUsageMetadata := InternalGetValueByPath(fromObject, []string{"usageMetadata"})
 	if fromUsageMetadata != nil {
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
+		InternalSetValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
 	}
 
-	fromGoAway := getValueByPath(fromObject, []string{"goAway"})
+	fromGoAway := InternalGetValueByPath(fromObject, []string{"goAway"})
 	if fromGoAway != nil {
-		setValueByPath(toObject, []string{"goAway"}, fromGoAway)
+		InternalSetValueByPath(toObject, []string{"goAway"}, fromGoAway)
 	}
 
-	fromSessionResumptionUpdate := getValueByPath(fromObject, []string{"sessionResumptionUpdate"})
+	fromSessionResumptionUpdate := InternalGetValueByPath(fromObject, []string{"sessionResumptionUpdate"})
 	if fromSessionResumptionUpdate != nil {
-		setValueByPath(toObject, []string{"sessionResumptionUpdate"}, fromSessionResumptionUpdate)
+		InternalSetValueByPath(toObject, []string{"sessionResumptionUpdate"}, fromSessionResumptionUpdate)
 	}
 
-	fromVoiceActivityDetectionSignal := getValueByPath(fromObject, []string{"voiceActivityDetectionSignal"})
+	fromVoiceActivityDetectionSignal := InternalGetValueByPath(fromObject, []string{"voiceActivityDetectionSignal"})
 	if fromVoiceActivityDetectionSignal != nil {
-		setValueByPath(toObject, []string{"voiceActivityDetectionSignal"}, fromVoiceActivityDetectionSignal)
+		InternalSetValueByPath(toObject, []string{"voiceActivityDetectionSignal"}, fromVoiceActivityDetectionSignal)
 	}
 
-	fromVoiceActivity := getValueByPath(fromObject, []string{"voiceActivity"})
+	fromVoiceActivity := InternalGetValueByPath(fromObject, []string{"voiceActivity"})
 	if fromVoiceActivity != nil {
 		fromVoiceActivity, err = voiceActivityFromMldev(fromVoiceActivity.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"voiceActivity"}, fromVoiceActivity)
+		InternalSetValueByPath(toObject, []string{"voiceActivity"}, fromVoiceActivity)
 	}
 
 	return toObject, nil
@@ -840,59 +840,59 @@ func liveServerMessageFromMldev(fromObject map[string]any, parentObject map[stri
 func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromSetupComplete := getValueByPath(fromObject, []string{"setupComplete"})
+	fromSetupComplete := InternalGetValueByPath(fromObject, []string{"setupComplete"})
 	if fromSetupComplete != nil {
-		setValueByPath(toObject, []string{"setupComplete"}, fromSetupComplete)
+		InternalSetValueByPath(toObject, []string{"setupComplete"}, fromSetupComplete)
 	}
 
-	fromServerContent := getValueByPath(fromObject, []string{"serverContent"})
+	fromServerContent := InternalGetValueByPath(fromObject, []string{"serverContent"})
 	if fromServerContent != nil {
-		setValueByPath(toObject, []string{"serverContent"}, fromServerContent)
+		InternalSetValueByPath(toObject, []string{"serverContent"}, fromServerContent)
 	}
 
-	fromToolCall := getValueByPath(fromObject, []string{"toolCall"})
+	fromToolCall := InternalGetValueByPath(fromObject, []string{"toolCall"})
 	if fromToolCall != nil {
-		setValueByPath(toObject, []string{"toolCall"}, fromToolCall)
+		InternalSetValueByPath(toObject, []string{"toolCall"}, fromToolCall)
 	}
 
-	fromToolCallCancellation := getValueByPath(fromObject, []string{"toolCallCancellation"})
+	fromToolCallCancellation := InternalGetValueByPath(fromObject, []string{"toolCallCancellation"})
 	if fromToolCallCancellation != nil {
-		setValueByPath(toObject, []string{"toolCallCancellation"}, fromToolCallCancellation)
+		InternalSetValueByPath(toObject, []string{"toolCallCancellation"}, fromToolCallCancellation)
 	}
 
-	fromUsageMetadata := getValueByPath(fromObject, []string{"usageMetadata"})
+	fromUsageMetadata := InternalGetValueByPath(fromObject, []string{"usageMetadata"})
 	if fromUsageMetadata != nil {
 		fromUsageMetadata, err = usageMetadataFromVertex(fromUsageMetadata.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
+		InternalSetValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
 	}
 
-	fromGoAway := getValueByPath(fromObject, []string{"goAway"})
+	fromGoAway := InternalGetValueByPath(fromObject, []string{"goAway"})
 	if fromGoAway != nil {
-		setValueByPath(toObject, []string{"goAway"}, fromGoAway)
+		InternalSetValueByPath(toObject, []string{"goAway"}, fromGoAway)
 	}
 
-	fromSessionResumptionUpdate := getValueByPath(fromObject, []string{"sessionResumptionUpdate"})
+	fromSessionResumptionUpdate := InternalGetValueByPath(fromObject, []string{"sessionResumptionUpdate"})
 	if fromSessionResumptionUpdate != nil {
-		setValueByPath(toObject, []string{"sessionResumptionUpdate"}, fromSessionResumptionUpdate)
+		InternalSetValueByPath(toObject, []string{"sessionResumptionUpdate"}, fromSessionResumptionUpdate)
 	}
 
-	fromVoiceActivityDetectionSignal := getValueByPath(fromObject, []string{"voiceActivityDetectionSignal"})
+	fromVoiceActivityDetectionSignal := InternalGetValueByPath(fromObject, []string{"voiceActivityDetectionSignal"})
 	if fromVoiceActivityDetectionSignal != nil {
-		setValueByPath(toObject, []string{"voiceActivityDetectionSignal"}, fromVoiceActivityDetectionSignal)
+		InternalSetValueByPath(toObject, []string{"voiceActivityDetectionSignal"}, fromVoiceActivityDetectionSignal)
 	}
 
-	fromVoiceActivity := getValueByPath(fromObject, []string{"voiceActivity"})
+	fromVoiceActivity := InternalGetValueByPath(fromObject, []string{"voiceActivity"})
 	if fromVoiceActivity != nil {
 		fromVoiceActivity, err = voiceActivityFromVertex(fromVoiceActivity.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		setValueByPath(toObject, []string{"voiceActivity"}, fromVoiceActivity)
+		InternalSetValueByPath(toObject, []string{"voiceActivity"}, fromVoiceActivity)
 	}
 
 	return toObject, nil
@@ -901,12 +901,12 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromHandle := getValueByPath(fromObject, []string{"handle"})
+	fromHandle := InternalGetValueByPath(fromObject, []string{"handle"})
 	if fromHandle != nil {
-		setValueByPath(toObject, []string{"handle"}, fromHandle)
+		InternalSetValueByPath(toObject, []string{"handle"}, fromHandle)
 	}
 
-	if getValueByPath(fromObject, []string{"transparent"}) != nil {
+	if InternalGetValueByPath(fromObject, []string{"transparent"}) != nil {
 		return nil, fmt.Errorf("transparent parameter is not supported in Gemini API")
 	}
 
@@ -916,59 +916,59 @@ func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[
 func usageMetadataFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromPromptTokenCount := getValueByPath(fromObject, []string{"promptTokenCount"})
+	fromPromptTokenCount := InternalGetValueByPath(fromObject, []string{"promptTokenCount"})
 	if fromPromptTokenCount != nil {
-		setValueByPath(toObject, []string{"promptTokenCount"}, fromPromptTokenCount)
+		InternalSetValueByPath(toObject, []string{"promptTokenCount"}, fromPromptTokenCount)
 	}
 
-	fromCachedContentTokenCount := getValueByPath(fromObject, []string{"cachedContentTokenCount"})
+	fromCachedContentTokenCount := InternalGetValueByPath(fromObject, []string{"cachedContentTokenCount"})
 	if fromCachedContentTokenCount != nil {
-		setValueByPath(toObject, []string{"cachedContentTokenCount"}, fromCachedContentTokenCount)
+		InternalSetValueByPath(toObject, []string{"cachedContentTokenCount"}, fromCachedContentTokenCount)
 	}
 
-	fromResponseTokenCount := getValueByPath(fromObject, []string{"candidatesTokenCount"})
+	fromResponseTokenCount := InternalGetValueByPath(fromObject, []string{"candidatesTokenCount"})
 	if fromResponseTokenCount != nil {
-		setValueByPath(toObject, []string{"responseTokenCount"}, fromResponseTokenCount)
+		InternalSetValueByPath(toObject, []string{"responseTokenCount"}, fromResponseTokenCount)
 	}
 
-	fromToolUsePromptTokenCount := getValueByPath(fromObject, []string{"toolUsePromptTokenCount"})
+	fromToolUsePromptTokenCount := InternalGetValueByPath(fromObject, []string{"toolUsePromptTokenCount"})
 	if fromToolUsePromptTokenCount != nil {
-		setValueByPath(toObject, []string{"toolUsePromptTokenCount"}, fromToolUsePromptTokenCount)
+		InternalSetValueByPath(toObject, []string{"toolUsePromptTokenCount"}, fromToolUsePromptTokenCount)
 	}
 
-	fromThoughtsTokenCount := getValueByPath(fromObject, []string{"thoughtsTokenCount"})
+	fromThoughtsTokenCount := InternalGetValueByPath(fromObject, []string{"thoughtsTokenCount"})
 	if fromThoughtsTokenCount != nil {
-		setValueByPath(toObject, []string{"thoughtsTokenCount"}, fromThoughtsTokenCount)
+		InternalSetValueByPath(toObject, []string{"thoughtsTokenCount"}, fromThoughtsTokenCount)
 	}
 
-	fromTotalTokenCount := getValueByPath(fromObject, []string{"totalTokenCount"})
+	fromTotalTokenCount := InternalGetValueByPath(fromObject, []string{"totalTokenCount"})
 	if fromTotalTokenCount != nil {
-		setValueByPath(toObject, []string{"totalTokenCount"}, fromTotalTokenCount)
+		InternalSetValueByPath(toObject, []string{"totalTokenCount"}, fromTotalTokenCount)
 	}
 
-	fromPromptTokensDetails := getValueByPath(fromObject, []string{"promptTokensDetails"})
+	fromPromptTokensDetails := InternalGetValueByPath(fromObject, []string{"promptTokensDetails"})
 	if fromPromptTokensDetails != nil {
-		setValueByPath(toObject, []string{"promptTokensDetails"}, fromPromptTokensDetails)
+		InternalSetValueByPath(toObject, []string{"promptTokensDetails"}, fromPromptTokensDetails)
 	}
 
-	fromCacheTokensDetails := getValueByPath(fromObject, []string{"cacheTokensDetails"})
+	fromCacheTokensDetails := InternalGetValueByPath(fromObject, []string{"cacheTokensDetails"})
 	if fromCacheTokensDetails != nil {
-		setValueByPath(toObject, []string{"cacheTokensDetails"}, fromCacheTokensDetails)
+		InternalSetValueByPath(toObject, []string{"cacheTokensDetails"}, fromCacheTokensDetails)
 	}
 
-	fromResponseTokensDetails := getValueByPath(fromObject, []string{"candidatesTokensDetails"})
+	fromResponseTokensDetails := InternalGetValueByPath(fromObject, []string{"candidatesTokensDetails"})
 	if fromResponseTokensDetails != nil {
-		setValueByPath(toObject, []string{"responseTokensDetails"}, fromResponseTokensDetails)
+		InternalSetValueByPath(toObject, []string{"responseTokensDetails"}, fromResponseTokensDetails)
 	}
 
-	fromToolUsePromptTokensDetails := getValueByPath(fromObject, []string{"toolUsePromptTokensDetails"})
+	fromToolUsePromptTokensDetails := InternalGetValueByPath(fromObject, []string{"toolUsePromptTokensDetails"})
 	if fromToolUsePromptTokensDetails != nil {
-		setValueByPath(toObject, []string{"toolUsePromptTokensDetails"}, fromToolUsePromptTokensDetails)
+		InternalSetValueByPath(toObject, []string{"toolUsePromptTokensDetails"}, fromToolUsePromptTokensDetails)
 	}
 
-	fromTrafficType := getValueByPath(fromObject, []string{"trafficType"})
+	fromTrafficType := InternalGetValueByPath(fromObject, []string{"trafficType"})
 	if fromTrafficType != nil {
-		setValueByPath(toObject, []string{"trafficType"}, fromTrafficType)
+		InternalSetValueByPath(toObject, []string{"trafficType"}, fromTrafficType)
 	}
 
 	return toObject, nil
@@ -977,9 +977,9 @@ func usageMetadataFromVertex(fromObject map[string]any, parentObject map[string]
 func voiceActivityFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromVoiceActivityType := getValueByPath(fromObject, []string{"type"})
+	fromVoiceActivityType := InternalGetValueByPath(fromObject, []string{"type"})
 	if fromVoiceActivityType != nil {
-		setValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
+		InternalSetValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
 	}
 
 	return toObject, nil
@@ -988,9 +988,9 @@ func voiceActivityFromMldev(fromObject map[string]any, parentObject map[string]a
 func voiceActivityFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromVoiceActivityType := getValueByPath(fromObject, []string{"type"})
+	fromVoiceActivityType := InternalGetValueByPath(fromObject, []string{"type"})
 	if fromVoiceActivityType != nil {
-		setValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
+		InternalSetValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
 	}
 
 	return toObject, nil

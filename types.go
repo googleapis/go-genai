@@ -2056,8 +2056,8 @@ type StreamableHTTPTransport struct {
 func (s *StreamableHTTPTransport) UnmarshalJSON(data []byte) error {
 	type Alias StreamableHTTPTransport
 	aux := &struct {
-		SseReadTimeout *durationJSON `json:"sseReadTimeout,omitempty"`
-		Timeout        *durationJSON `json:"timeout,omitempty"`
+		SseReadTimeout *InternalDurationJSON `json:"sseReadTimeout,omitempty"`
+		Timeout        *InternalDurationJSON `json:"timeout,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(s),
@@ -2081,19 +2081,19 @@ func (s *StreamableHTTPTransport) UnmarshalJSON(data []byte) error {
 func (s *StreamableHTTPTransport) MarshalJSON() ([]byte, error) {
 	type Alias StreamableHTTPTransport
 	aux := &struct {
-		SseReadTimeout *durationJSON `json:"sseReadTimeout,omitempty"`
-		Timeout        *durationJSON `json:"timeout,omitempty"`
+		SseReadTimeout *InternalDurationJSON `json:"sseReadTimeout,omitempty"`
+		Timeout        *InternalDurationJSON `json:"timeout,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(s),
 	}
 
 	if !reflect.ValueOf(s.SseReadTimeout).IsZero() {
-		aux.SseReadTimeout = (*durationJSON)(&s.SseReadTimeout)
+		aux.SseReadTimeout = (*InternalDurationJSON)(&s.SseReadTimeout)
 	}
 
 	if !reflect.ValueOf(s.Timeout).IsZero() {
-		aux.Timeout = (*durationJSON)(&s.Timeout)
+		aux.Timeout = (*InternalDurationJSON)(&s.Timeout)
 	}
 
 	return json.Marshal(aux)
@@ -2539,7 +2539,7 @@ type Citation struct {
 func (c *Citation) UnmarshalJSON(data []byte) error {
 	type Alias Citation
 	aux := &struct {
-		PublicationDate *dateJSON `json:"publicationDate,omitempty"`
+		PublicationDate *InternalDateJSON `json:"publicationDate,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(c),
@@ -2559,14 +2559,14 @@ func (c *Citation) UnmarshalJSON(data []byte) error {
 func (c *Citation) MarshalJSON() ([]byte, error) {
 	type Alias Citation
 	aux := &struct {
-		PublicationDate *dateJSON `json:"publicationDate,omitempty"`
+		PublicationDate *InternalDateJSON `json:"publicationDate,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(c),
 	}
 
 	if !reflect.ValueOf(c.PublicationDate).IsZero() {
-		aux.PublicationDate = (*dateJSON)(&c.PublicationDate)
+		aux.PublicationDate = (*InternalDateJSON)(&c.PublicationDate)
 	}
 
 	return json.Marshal(aux)
@@ -4010,7 +4010,7 @@ type TokensInfo struct {
 func (t *TokensInfo) UnmarshalJSON(data []byte) error {
 	type Alias TokensInfo
 	aux := &struct {
-		TokenIDs int64SliceJSON `json:"tokenIds,omitempty"`
+		TokenIDs InternalInt64SliceJSON `json:"tokenIds,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(t),
@@ -4030,7 +4030,7 @@ func (t *TokensInfo) UnmarshalJSON(data []byte) error {
 func (t *TokensInfo) MarshalJSON() ([]byte, error) {
 	type Alias TokensInfo
 	aux := &struct {
-		TokenIDs int64SliceJSON `json:"tokenIds,omitempty"`
+		TokenIDs InternalInt64SliceJSON `json:"tokenIds,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(t),
@@ -4434,7 +4434,7 @@ type DatasetStats struct {
 func (d *DatasetStats) UnmarshalJSON(data []byte) error {
 	type Alias DatasetStats
 	aux := &struct {
-		DroppedExampleIndices int64SliceJSON `json:"droppedExampleIndices,omitempty"`
+		DroppedExampleIndices InternalInt64SliceJSON `json:"droppedExampleIndices,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(d),
@@ -4454,7 +4454,7 @@ func (d *DatasetStats) UnmarshalJSON(data []byte) error {
 func (d *DatasetStats) MarshalJSON() ([]byte, error) {
 	type Alias DatasetStats
 	aux := &struct {
-		DroppedExampleIndices int64SliceJSON `json:"droppedExampleIndices,omitempty"`
+		DroppedExampleIndices InternalInt64SliceJSON `json:"droppedExampleIndices,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(d),
@@ -4520,7 +4520,7 @@ type PreferenceOptimizationDataStats struct {
 func (p *PreferenceOptimizationDataStats) UnmarshalJSON(data []byte) error {
 	type Alias PreferenceOptimizationDataStats
 	aux := &struct {
-		DroppedExampleIndices int64SliceJSON `json:"droppedExampleIndices,omitempty"`
+		DroppedExampleIndices InternalInt64SliceJSON `json:"droppedExampleIndices,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(p),
@@ -4540,7 +4540,7 @@ func (p *PreferenceOptimizationDataStats) UnmarshalJSON(data []byte) error {
 func (p *PreferenceOptimizationDataStats) MarshalJSON() ([]byte, error) {
 	type Alias PreferenceOptimizationDataStats
 	aux := &struct {
-		DroppedExampleIndices int64SliceJSON `json:"droppedExampleIndices,omitempty"`
+		DroppedExampleIndices InternalInt64SliceJSON `json:"droppedExampleIndices,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(p),
@@ -4622,7 +4622,7 @@ type SupervisedTuningDataStats struct {
 func (s *SupervisedTuningDataStats) UnmarshalJSON(data []byte) error {
 	type Alias SupervisedTuningDataStats
 	aux := &struct {
-		TruncatedExampleIndices int64SliceJSON `json:"truncatedExampleIndices,omitempty"`
+		TruncatedExampleIndices InternalInt64SliceJSON `json:"truncatedExampleIndices,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(s),
@@ -4642,7 +4642,7 @@ func (s *SupervisedTuningDataStats) UnmarshalJSON(data []byte) error {
 func (s *SupervisedTuningDataStats) MarshalJSON() ([]byte, error) {
 	type Alias SupervisedTuningDataStats
 	aux := &struct {
-		TruncatedExampleIndices int64SliceJSON `json:"truncatedExampleIndices,omitempty"`
+		TruncatedExampleIndices InternalInt64SliceJSON `json:"truncatedExampleIndices,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(s),
@@ -5206,8 +5206,8 @@ type CreateCachedContentConfig struct {
 func (c *CreateCachedContentConfig) UnmarshalJSON(data []byte) error {
 	type Alias CreateCachedContentConfig
 	aux := &struct {
-		TTL        *durationJSON `json:"ttl,omitempty"`
-		ExpireTime *time.Time    `json:"expireTime,omitempty"`
+		TTL        *InternalDurationJSON `json:"ttl,omitempty"`
+		ExpireTime *time.Time            `json:"expireTime,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(c),
@@ -5231,15 +5231,15 @@ func (c *CreateCachedContentConfig) UnmarshalJSON(data []byte) error {
 func (c *CreateCachedContentConfig) MarshalJSON() ([]byte, error) {
 	type Alias CreateCachedContentConfig
 	aux := &struct {
-		TTL        *durationJSON `json:"ttl,omitempty"`
-		ExpireTime *time.Time    `json:"expireTime,omitempty"`
+		TTL        *InternalDurationJSON `json:"ttl,omitempty"`
+		ExpireTime *time.Time            `json:"expireTime,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(c),
 	}
 
 	if !reflect.ValueOf(c.TTL).IsZero() {
-		aux.TTL = (*durationJSON)(&c.TTL)
+		aux.TTL = (*InternalDurationJSON)(&c.TTL)
 	}
 
 	if !reflect.ValueOf(c.ExpireTime).IsZero() {
@@ -5368,8 +5368,8 @@ type UpdateCachedContentConfig struct {
 func (u *UpdateCachedContentConfig) UnmarshalJSON(data []byte) error {
 	type Alias UpdateCachedContentConfig
 	aux := &struct {
-		TTL        *durationJSON `json:"ttl,omitempty"`
-		ExpireTime *time.Time    `json:"expireTime,omitempty"`
+		TTL        *InternalDurationJSON `json:"ttl,omitempty"`
+		ExpireTime *time.Time            `json:"expireTime,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(u),
@@ -5393,15 +5393,15 @@ func (u *UpdateCachedContentConfig) UnmarshalJSON(data []byte) error {
 func (u *UpdateCachedContentConfig) MarshalJSON() ([]byte, error) {
 	type Alias UpdateCachedContentConfig
 	aux := &struct {
-		TTL        *durationJSON `json:"ttl,omitempty"`
-		ExpireTime *time.Time    `json:"expireTime,omitempty"`
+		TTL        *InternalDurationJSON `json:"ttl,omitempty"`
+		ExpireTime *time.Time            `json:"expireTime,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(u),
 	}
 
 	if !reflect.ValueOf(u.TTL).IsZero() {
-		aux.TTL = (*durationJSON)(&u.TTL)
+		aux.TTL = (*InternalDurationJSON)(&u.TTL)
 	}
 
 	if !reflect.ValueOf(u.ExpireTime).IsZero() {
@@ -6698,7 +6698,7 @@ type LiveServerGoAway struct {
 func (l *LiveServerGoAway) UnmarshalJSON(data []byte) error {
 	type Alias LiveServerGoAway
 	aux := &struct {
-		TimeLeft *durationJSON `json:"timeLeft,omitempty"`
+		TimeLeft *InternalDurationJSON `json:"timeLeft,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(l),
@@ -6718,14 +6718,14 @@ func (l *LiveServerGoAway) UnmarshalJSON(data []byte) error {
 func (l *LiveServerGoAway) MarshalJSON() ([]byte, error) {
 	type Alias LiveServerGoAway
 	aux := &struct {
-		TimeLeft *durationJSON `json:"timeLeft,omitempty"`
+		TimeLeft *InternalDurationJSON `json:"timeLeft,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(l),
 	}
 
 	if !reflect.ValueOf(l.TimeLeft).IsZero() {
-		aux.TimeLeft = (*durationJSON)(&l.TimeLeft)
+		aux.TimeLeft = (*InternalDurationJSON)(&l.TimeLeft)
 	}
 
 	return json.Marshal(aux)

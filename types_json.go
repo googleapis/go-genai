@@ -25,6 +25,11 @@ import (
 
 type int64SliceJSON []int64
 
+// InternalInt64SliceJSON is an internal type used for unmarshalling int64 slices.
+// This type is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+type InternalInt64SliceJSON = int64SliceJSON
+
 func (s *int64SliceJSON) UnmarshalJSON(data []byte) error {
 	var stringSlice []string
 	if err := json.Unmarshal(data, &stringSlice); err != nil {
@@ -60,6 +65,11 @@ func (s *int64SliceJSON) MarshalJSON() ([]byte, error) {
 
 type durationJSON time.Duration
 
+// InternalDurationJSON is an internal type used for unmarshalling duration.
+// This type is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+type InternalDurationJSON = durationJSON
+
 func (d *durationJSON) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -81,6 +91,11 @@ func (d *durationJSON) MarshalJSON() ([]byte, error) {
 }
 
 type dateJSON civil.Date
+
+// InternalDateJSON is an internal type used for unmarshalling date.
+// This type is public only for internal purposes and its support is not guaranteed in future
+// versions. External consumers must not use it.
+type InternalDateJSON = dateJSON
 
 func (d *dateJSON) UnmarshalJSON(data []byte) error {
 	m := make(map[string]int)

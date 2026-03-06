@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.50.0](https://github.com/googleapis/go-genai/compare/v1.49.0...v1.50.0) (2026-03-06)
+
+
+### Features
+
+* Add inference_generation_config to EvaluationConfig for Tuning ([21b360f](https://github.com/googleapis/go-genai/commit/21b360fd8db6e14185262b5ed2b693c609fd10a0))
+* Add register_files ([43a12bf](https://github.com/googleapis/go-genai/commit/43a12bf26fa5a3ea30f5da6e5cf0c3b84bb47aa2))
+
 ## [1.49.0](https://github.com/googleapis/go-genai/compare/v1.48.0...v1.49.0) (2026-02-28)
 
 

@@ -18,6 +18,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -992,4 +993,211 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestClientInitialization(t *testing.T) {
+	ctx := context.Background()
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "testdata/credentials.json")
+	t.Cleanup(func() { os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS") })
+
+	t.Run("Vertex AI Implicit Auth", func(t *testing.T) {
+		t.Setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
+		t.Setenv("GOOGLE_CLOUD_PROJECT", "test-project")
+		t.Setenv("GOOGLE_CLOUD_LOCATION", "test-location")
+		t.Setenv("GOOGLE_API_KEY", "")
+
+		client, err := NewClient(ctx, nil)
+		if err != nil {
+			t.Fatalf("NewClient failed: %v", err)
+		}
+		if client.clientConfig.Backend != BackendVertexAI {
+			t.Errorf("expected BackendVertexAI, got %v", client.clientConfig.Backend)
+		}
+		if client.clientConfig.Project != "test-project" {
+			t.Errorf("expected project test-project, got %s", client.clientConfig.Project)
+		}
+		if client.clientConfig.Location != "test-location" {
+			t.Errorf("expected location test-location, got %s", client.clientConfig.Location)
+		}
+		expectedURL := "https://test-location-aiplatform.googleapis.com/"
+		if client.clientConfig.HTTPOptions.BaseURL != expectedURL {
+			t.Errorf("expected BaseURL %s, got %s", expectedURL, client.clientConfig.HTTPOptions.BaseURL)
+		}
+	})
+
+	t.Run("Vertex AI Express Mode", func(t *testing.T) {
+		t.Setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
+		t.Setenv("GOOGLE_API_KEY", "test-api-key")
+		// Project/Location should be ignored/cleared
+		t.Setenv("GOOGLE_CLOUD_PROJECT", "")
+		t.Setenv("GOOGLE_CLOUD_LOCATION", "")
+
+		client, err := NewClient(ctx, nil)
+		if err != nil {
+			t.Fatalf("NewClient failed: %v", err)
+		}
+		if client.clientConfig.Backend != BackendVertexAI {
+			t.Errorf("expected BackendVertexAI, got %v", client.clientConfig.Backend)
+		}
+		// API Key takes precedence, so project/location should be empty
+		if client.clientConfig.Project != "" {
+			t.Errorf("expected empty project, got %s", client.clientConfig.Project)
+		}
+		if client.clientConfig.Location != "" {
+			t.Errorf("expected location empty, got %s", client.clientConfig.Location)
+		}
+		if client.clientConfig.APIKey == "" {
+			t.Errorf("expected API Key to be set")
+		}
+		expectedURL := "https://aiplatform.googleapis.com/"
+		if client.clientConfig.HTTPOptions.BaseURL != expectedURL {
+			t.Errorf("expected BaseURL %s, got %s", expectedURL, client.clientConfig.HTTPOptions.BaseURL)
+		}
+	})
+
+	t.Run("Vertex AI Custom Base URL No Auth", func(t *testing.T) {
+		t.Setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
+		t.Setenv("GOOGLE_API_KEY", "")
+		t.Setenv("GOOGLE_CLOUD_PROJECT", "")
+		t.Setenv("GOOGLE_CLOUD_LOCATION", "")
+
+		client, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{
+				BaseURL: "https://custom-gateway.com",
+			},
+		})
+		if err != nil {
+			t.Fatalf("NewClient failed: %v", err)
+		}
+		if client.clientConfig.Backend != BackendVertexAI {
+			t.Errorf("expected BackendVertexAI, got %v", client.clientConfig.Backend)
+		}
+		if client.clientConfig.Project != "" {
+			t.Errorf("expected empty project, got %s", client.clientConfig.Project)
+		}
+		if client.clientConfig.Location != "" { // Should be empty as we cleared it
+			t.Errorf("expected empty location, got %s", client.clientConfig.Location)
+		}
+		if client.clientConfig.HTTPOptions.BaseURL != "https://custom-gateway.com" {
+			t.Errorf("expected BaseURL https://custom-gateway.com, got %s", client.clientConfig.HTTPOptions.BaseURL)
+		}
+	})
+
+	t.Run("Gemini API Default", func(t *testing.T) {
+		t.Setenv("GOOGLE_GENAI_USE_VERTEXAI", "false") // or unset
+		t.Setenv("GOOGLE_API_KEY", "test-api-key")
+
+		client, err := NewClient(ctx, nil)
+		if err != nil {
+			t.Fatalf("NewClient failed: %v", err)
+		}
+		if client.clientConfig.Backend != BackendGeminiAPI {
+			t.Errorf("expected BackendGeminiAPI, got %v", client.clientConfig.Backend)
+		}
+		expectedURL := "https://generativelanguage.googleapis.com/"
+		if client.clientConfig.HTTPOptions.BaseURL != expectedURL {
+			t.Errorf("expected BaseURL %s, got %s", expectedURL, client.clientConfig.HTTPOptions.BaseURL)
+		}
+	})
+
+	t.Run("Gemini API Custom Base URL", func(t *testing.T) {
+		t.Setenv("GOOGLE_GENAI_USE_VERTEXAI", "false")
+		t.Setenv("GOOGLE_API_KEY", "test-api-key")
+
+		client, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{
+				BaseURL: "https://custom-gemini.com",
+			},
+		})
+		if err != nil {
+			t.Fatalf("NewClient failed: %v", err)
+		}
+		if client.clientConfig.HTTPOptions.BaseURL != "https://custom-gemini.com" {
+			t.Errorf("expected BaseURL https://custom-gemini.com, got %s", client.clientConfig.HTTPOptions.BaseURL)
+		}
+	})
+
+	t.Run("Env Param Precedence", func(t *testing.T) {
+		t.Setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
+		t.Setenv("GOOGLE_CLOUD_PROJECT", "env-project")
+		t.Setenv("GOOGLE_CLOUD_LOCATION", "env-data")
+
+		// Explicit config should override env
+		client, err := NewClient(ctx, &ClientConfig{
+			Project:  "explicit-project",
+			Location: "explicit-location",
+		})
+		if err != nil {
+			t.Fatalf("NewClient failed: %v", err)
+		}
+		if client.clientConfig.Project != "explicit-project" {
+			t.Errorf("expected explicit-project, got %s", client.clientConfig.Project)
+		}
+		if client.clientConfig.Location != "explicit-location" {
+			t.Errorf("expected explicit-location, got %s", client.clientConfig.Location)
+		}
+	})
+
+	t.Run("ResourceScopeCollection Path Construction", func(t *testing.T) {
+		// This tests logic in api_client.go via buildRequest/createAPIURL
+		// We can't easily access the internal createAPIURL directly without exporting it or using reflection/internal test package
+		// So we will verify behavior via what's observable or assume logic correctness if buildRequest doesn't error and uses correct URL
+		// For a black-box test, we'd need to mock the HTTP transport and check the requested URL.
+
+		// Setup a custom client with ResourceScopeCollection
+		client, err := NewClient(ctx, &ClientConfig{
+			Backend:  BackendVertexAI,
+			Project:  "test-project",
+			Location: "test-location",
+			HTTPOptions: HTTPOptions{
+				BaseURL:              "https://custom-gateway.com",
+				BaseURLResourceScope: ResourceScopeCollection,
+				APIVersion:           "v1beta1",
+			},
+			HTTPClient: &http.Client{}, // Default client
+		})
+		if err != nil {
+			t.Fatalf("NewClient failed: %v", err)
+		}
+
+		// We need to access the internal apiClient to test createAPIURL or mock the transport.
+		// Since we are in package genai, we CAN see private members if this test is in package genai.
+
+		ac := client.Models.apiClient
+		// Method is GET, path starts with publishers/google/models to trigger one branch, or something else.
+		// Let's test a standard model path
+		path := "models/gemini-pro"
+		method := "POST"
+
+		url, err := ac.createAPIURL(path, method, &client.clientConfig.HTTPOptions)
+		if err != nil {
+			t.Fatalf("createAPIURL failed: %v", err)
+		}
+
+		// With ResourceScopeCollection, we expect NO project/location prefix
+		// URL should be BaseURL + APIVersion + path
+		expectedPath := "v1beta1/models/gemini-pro"
+		if !strings.HasSuffix(url.Path, expectedPath) {
+			t.Errorf("ResourceScopeCollection: expected path suffix %s, got %s", expectedPath, url.Path)
+		}
+
+		// Verify standard behavior (NO ResourceScopeCollection)
+		clientStandard, _ := NewClient(ctx, &ClientConfig{
+			Backend:  BackendVertexAI,
+			Project:  "test-project",
+			Location: "test-location",
+			HTTPOptions: HTTPOptions{
+				BaseURL:    "https://custom-gateway.com",
+				APIVersion: "v1beta1",
+			},
+			HTTPClient: &http.Client{},
+		})
+		acStandard := clientStandard.Models.apiClient
+		urlStandard, _ := acStandard.createAPIURL(path, method, &clientStandard.clientConfig.HTTPOptions)
+
+		// Standard behavior should include project/location
+		if !strings.Contains(urlStandard.Path, "projects/test-project/locations/test-location") {
+			t.Errorf("Standard Scope: expected project/location in path %s, but not found", urlStandard.Path)
+		}
+	})
 }

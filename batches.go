@@ -744,6 +744,11 @@ func inlinedRequestToMldev(ac *apiClient, fromObject map[string]any, parentObjec
 func inlinedResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
+	fromMetadata := getValueByPath(fromObject, []string{"metadata"})
+	if fromMetadata != nil {
+		setValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+		
 	fromResponse := getValueByPath(fromObject, []string{"response"})
 	if fromResponse != nil {
 		fromResponse, err = generateContentResponseFromMldev(fromResponse.(map[string]any), toObject, rootObject)

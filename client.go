@@ -358,6 +358,7 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 			cc.HTTPClient = &http.Client{}
 		}
 	}
+
 	return &apiClient{clientConfig: cc}, nil
 }
 

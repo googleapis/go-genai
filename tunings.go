@@ -299,6 +299,11 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 		if fromTuningMode != nil {
 			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "tuningMode"}, fromTuningMode)
 		}
+	} else if discriminatorTuningMode.(string) == "DISTILLATION" {
+		fromTuningMode := InternalGetValueByPath(fromObject, []string{"tuningMode"})
+		if fromTuningMode != nil {
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "tuningMode"}, fromTuningMode)
+		}
 	}
 
 	fromCustomBaseModel := InternalGetValueByPath(fromObject, []string{"customBaseModel"})
@@ -315,6 +320,11 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 		if fromBatchSize != nil {
 			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "batchSize"}, fromBatchSize)
 		}
+	} else if discriminatorBatchSize.(string) == "DISTILLATION" {
+		fromBatchSize := InternalGetValueByPath(fromObject, []string{"batchSize"})
+		if fromBatchSize != nil {
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "batchSize"}, fromBatchSize)
+		}
 	}
 
 	var discriminatorLearningRate any = InternalGetValueByPath(rootObject, []string{"config", "method"})
@@ -325,6 +335,11 @@ func createTuningJobConfigToVertex(fromObject map[string]any, parentObject map[s
 		fromLearningRate := InternalGetValueByPath(fromObject, []string{"learningRate"})
 		if fromLearningRate != nil {
 			InternalSetValueByPath(parentObject, []string{"supervisedTuningSpec", "hyperParameters", "learningRate"}, fromLearningRate)
+		}
+	} else if discriminatorLearningRate.(string) == "DISTILLATION" {
+		fromLearningRate := InternalGetValueByPath(fromObject, []string{"learningRate"})
+		if fromLearningRate != nil {
+			InternalSetValueByPath(parentObject, []string{"distillationSpec", "hyperParameters", "learningRate"}, fromLearningRate)
 		}
 	}
 

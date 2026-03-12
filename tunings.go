@@ -1080,6 +1080,7 @@ func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfi
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1151,6 +1152,7 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1223,6 +1225,7 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1295,6 +1298,7 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1367,6 +1371,7 @@ func (m Tunings) tuneMldev(ctx context.Context, baseModel *string, preTunedModel
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {

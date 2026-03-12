@@ -926,6 +926,7 @@ func (m Batches) create(ctx context.Context, model *string, src *BatchJobSource,
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1008,6 +1009,7 @@ func (m Batches) createEmbeddings(ctx context.Context, model *string, src *Embed
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1090,6 +1092,7 @@ func (m Batches) Get(ctx context.Context, name string, config *GetBatchJobConfig
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1169,6 +1172,7 @@ func (m Batches) Cancel(ctx context.Context, name string, config *CancelBatchJob
 	if err != nil {
 		return err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1230,6 +1234,7 @@ func (m Batches) list(ctx context.Context, config *ListBatchJobsConfig) (*ListBa
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -1302,6 +1307,7 @@ func (m Batches) Delete(ctx context.Context, name string, config *DeleteBatchJob
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {

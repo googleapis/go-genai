@@ -4263,6 +4263,7 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -4399,6 +4400,7 @@ func (m Models) embedContent(ctx context.Context, model string, contents []*Cont
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -4475,6 +4477,7 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -4548,6 +4551,7 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -4621,6 +4625,7 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -4698,6 +4703,7 @@ func (m Models) RecontextImage(ctx context.Context, model string, source *Recont
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -4781,6 +4787,7 @@ func (m Models) SegmentImage(ctx context.Context, model string, source *SegmentI
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -4863,6 +4870,7 @@ func (m Models) Get(ctx context.Context, model string, config *GetModelConfig) (
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -4944,6 +4952,7 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -5029,6 +5038,7 @@ func (m Models) Update(ctx context.Context, model string, config *UpdateModelCon
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -5111,6 +5121,7 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -5183,6 +5194,7 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -5256,6 +5268,7 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -5328,6 +5341,7 @@ func (m Models) generateVideos(ctx context.Context, model string, prompt *string
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {

@@ -335,6 +335,7 @@ func (m FileSearchStores) Create(ctx context.Context, config *CreateFileSearchSt
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -410,6 +411,7 @@ func (m FileSearchStores) Get(ctx context.Context, name string, config *GetFileS
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -483,6 +485,7 @@ func (m FileSearchStores) Delete(ctx context.Context, name string, config *Delet
 	if err != nil {
 		return err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -545,6 +548,7 @@ func (m FileSearchStores) list(ctx context.Context, config *ListFileSearchStores
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -627,6 +631,7 @@ func (m FileSearchStores) uploadToFileSearchStore(ctx context.Context, fileSearc
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -699,6 +704,7 @@ func (m FileSearchStores) ImportFile(ctx context.Context, fileSearchStoreName st
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {

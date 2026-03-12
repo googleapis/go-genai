@@ -514,6 +514,7 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -589,6 +590,7 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -665,6 +667,7 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -736,6 +739,7 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -811,6 +815,7 @@ func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*Li
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {

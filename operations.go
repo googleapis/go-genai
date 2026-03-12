@@ -157,6 +157,7 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -239,6 +240,7 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -320,6 +322,7 @@ func (m Operations) getUploadToFileSearchStoreOperation(ctx context.Context, ope
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -401,6 +404,7 @@ func (m Operations) getImportFileOperation(ctx context.Context, operationName st
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {

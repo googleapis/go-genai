@@ -2420,7 +2420,6 @@ type GenerateContentConfig struct {
 	//   - `application/json`: JSON response in the candidates.
 	// The model needs to be prompted to output the appropriate response type,
 	// otherwise the behavior is undefined.
-	// This is a preview feature.
 	ResponseMIMEType string `json:"responseMimeType,omitempty"`
 	// Optional. The `Schema` object allows the definition of input and output data types.
 	// These types can be objects, but also primitives and arrays.

@@ -209,6 +209,7 @@ func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesRes
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -281,6 +282,7 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -352,6 +354,7 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -418,6 +421,7 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -490,6 +494,7 @@ func (m Files) registerFiles(ctx context.Context, uris []string, config *Registe
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {

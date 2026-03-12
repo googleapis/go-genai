@@ -156,6 +156,7 @@ func (m Documents) Get(ctx context.Context, name string, config *GetDocumentConf
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -229,6 +230,7 @@ func (m Documents) Delete(ctx context.Context, name string, config *DeleteDocume
 	if err != nil {
 		return err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {
@@ -291,6 +293,7 @@ func (m Documents) list(ctx context.Context, parent string, config *ListDocument
 	if err != nil {
 		return nil, err
 	}
+
 	var path string
 	var urlParams map[string]any
 	if _, ok := body["_url"]; ok {

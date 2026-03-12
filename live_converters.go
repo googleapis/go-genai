@@ -267,6 +267,11 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 		InternalSetValueByPath(toObject, []string{"proactivity"}, fromProactivity)
 	}
 
+	fromHistoryConfig := InternalGetValueByPath(fromObject, []string{"historyConfig"})
+	if fromHistoryConfig != nil {
+		InternalSetValueByPath(toObject, []string{"historyConfig"}, fromHistoryConfig)
+	}
+
 	if InternalGetValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
 		return nil, fmt.Errorf("explicitVadSignal parameter is not supported in Gemini API")
 	}
@@ -350,6 +355,10 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 	fromProactivity := InternalGetValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
 		InternalSetValueByPath(toObject, []string{"proactivity"}, fromProactivity)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"historyConfig"}) != nil {
+		return nil, fmt.Errorf("historyConfig parameter is not supported in Vertex AI")
 	}
 
 	fromExplicitVadSignal := InternalGetValueByPath(fromObject, []string{"explicitVadSignal"})
@@ -498,6 +507,11 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 		InternalSetValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
 	}
 
+	fromHistoryConfig := InternalGetValueByPath(fromObject, []string{"historyConfig"})
+	if fromHistoryConfig != nil {
+		InternalSetValueByPath(parentObject, []string{"setup", "historyConfig"}, fromHistoryConfig)
+	}
+
 	if InternalGetValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
 		return nil, fmt.Errorf("explicitVadSignal parameter is not supported in Gemini API")
 	}
@@ -621,6 +635,10 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromProactivity := InternalGetValueByPath(fromObject, []string{"proactivity"})
 	if fromProactivity != nil {
 		InternalSetValueByPath(parentObject, []string{"setup", "proactivity"}, fromProactivity)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"historyConfig"}) != nil {
+		return nil, fmt.Errorf("historyConfig parameter is not supported in Vertex AI")
 	}
 
 	fromExplicitVadSignal := InternalGetValueByPath(fromObject, []string{"explicitVadSignal"})

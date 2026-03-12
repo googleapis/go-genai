@@ -6890,6 +6890,16 @@ type ProactivityConfig struct {
 	ProactiveAudio *bool `json:"proactiveAudio,omitempty"`
 }
 
+// Configuration for history exchange between client and server.
+type HistoryConfig struct {
+	// Optional. If true, after sending `setup_complete`, the server will wait
+	// and at first process `client_content` messages until `turn_complete` is
+	// `true`. This initial history will not trigger a model call and
+	// may end with role `MODEL`. After `turn_complete` is `true`, the client
+	// can start the realtime conversation via `realtime_input`.
+	InitialHistoryInClientContent *bool `json:"initialHistoryInClientContent,omitempty"`
+}
+
 // Message contains configuration that will apply for the duration of the streaming
 // session.
 type LiveClientSetup struct {
@@ -6925,6 +6935,8 @@ type LiveClientSetup struct {
 	// proactively to
 	// the input and to ignore irrelevant input.
 	Proactivity *ProactivityConfig `json:"proactivity,omitempty"`
+	// Optional. Configures the exchange of history between the client and the server.
+	HistoryConfig *HistoryConfig `json:"historyConfig,omitempty"`
 	// Optional. Configures the explicit VAD signal. If enabled, the client will send
 	// vad_signal to indicate the start and end of speech. This allows the server
 	// to process the audio more efficiently.
@@ -7093,6 +7105,8 @@ type LiveConnectConfig struct {
 	// proactively to
 	// the input and to ignore irrelevant input.
 	Proactivity *ProactivityConfig `json:"proactivity,omitempty"`
+	// Optional. Configures the exchange of history between the client and the server.
+	HistoryConfig *HistoryConfig `json:"historyConfig,omitempty"`
 	// Optional. Configures the explicit VAD signal. If enabled, the client will send
 	// vad_signal to indicate the start and end of speech. This allows the server
 	// to process the audio more efficiently.

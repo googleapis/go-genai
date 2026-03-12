@@ -4319,8 +4319,13 @@ type PreferenceOptimizationSpec struct {
 	ValidationDatasetURI string `json:"validationDatasetUri,omitempty"`
 }
 
-// Hyperparameters for Distillation. This data type is not supported in Gemini API.
+// Hyperparameters for distillation.
 type DistillationHyperParameters struct {
+	// Optional. The batch size hyperparameter for tuning.
+	// This is only supported for OSS models in Vertex.
+	BatchSize int32 `json:"batchSize,omitempty"`
+	// Optional. The learning rate for tuning. OSS models only.
+	LearningRate float32 `json:"learningRate,omitempty"`
 	// Optional. Adapter size for distillation.
 	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
 	// Optional. Number of complete passes the model makes over the entire training dataset
@@ -4334,10 +4339,12 @@ type DistillationHyperParameters struct {
 type DistillationSpec struct {
 	// Optional. The GCS URI of the prompt dataset to use during distillation.
 	PromptDatasetURI string `json:"promptDatasetUri,omitempty"`
-	// The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).
-	BaseTeacherModel string `json:"baseTeacherModel,omitempty"`
+	// Optional. Tuning mode for tuning.
+	TuningMode TuningMode `json:"tuningMode,omitempty"`
 	// Optional. Hyperparameters for Distillation.
 	HyperParameters *DistillationHyperParameters `json:"hyperParameters,omitempty"`
+	// The base teacher model that is being distilled. See [Supported models](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#supported_models).
+	BaseTeacherModel string `json:"baseTeacherModel,omitempty"`
 	// Deprecated. A path in a Cloud Storage bucket, which will be treated as the root output
 	// directory of the distillation pipeline. It is used by the system to generate the
 	// paths of output artifacts.
@@ -5135,7 +5142,7 @@ type CreateTuningJobConfig struct {
 	PreTunedModelCheckpointID string `json:"preTunedModelCheckpointId,omitempty"`
 	// Optional. Adapter size for tuning.
 	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
-	// Optional. Tuning mode for SFT tuning.
+	// Optional. Tuning mode for tuning.
 	TuningMode TuningMode `json:"tuningMode,omitempty"`
 	// Optional. Custom base model for tuning. This is only supported for OSS models in
 	// Vertex.

@@ -171,6 +171,11 @@ func computeTokensParametersToVertex(ac *InternalAPIClient, fromObject map[strin
 			return nil, err
 		}
 
+		fromContents, err = applyConverterToSliceWithRoot(fromContents.([]any), contentToVertex, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"contents"}, fromContents)
 	}
 
@@ -251,6 +256,27 @@ func contentToMldev(fromObject map[string]any, parentObject map[string]any, root
 	return toObject, nil
 }
 
+func contentToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromParts := InternalGetValueByPath(fromObject, []string{"parts"})
+	if fromParts != nil {
+		fromParts, err = applyConverterToSliceWithRoot(fromParts.([]any), partToVertex, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"parts"}, fromParts)
+	}
+
+	fromRole := InternalGetValueByPath(fromObject, []string{"role"})
+	if fromRole != nil {
+		InternalSetValueByPath(toObject, []string{"role"}, fromRole)
+	}
+
+	return toObject, nil
+}
+
 func controlReferenceConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -291,6 +317,11 @@ func countTokensConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
 	if fromSystemInstruction != nil {
 		fromSystemInstruction, err = InternalTContent(fromSystemInstruction)
+		if err != nil {
+			return nil, err
+		}
+
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -376,6 +407,11 @@ func countTokensParametersToVertex(ac *InternalAPIClient, fromObject map[string]
 	fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
 		fromContents, err = InternalTContents(fromContents)
+		if err != nil {
+			return nil, err
+		}
+
+		fromContents, err = applyConverterToSliceWithRoot(fromContents.([]any), contentToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -836,6 +872,11 @@ func embedContentParametersPrivateToVertex(ac *InternalAPIClient, fromObject map
 				return nil, err
 			}
 
+			fromContent, err = contentToVertex(fromContent.(map[string]any), toObject, rootObject)
+			if err != nil {
+				return nil, err
+			}
+
 			InternalSetValueByPath(toObject, []string{"content"}, fromContent)
 		}
 	}
@@ -1257,6 +1298,11 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 			return nil, err
 		}
 
+		fromSystemInstruction, err = contentToVertex(fromSystemInstruction.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(parentObject, []string{"systemInstruction"}, fromSystemInstruction)
 	}
 
@@ -1372,6 +1418,11 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 
 	fromToolConfig := InternalGetValueByPath(fromObject, []string{"toolConfig"})
 	if fromToolConfig != nil {
+		fromToolConfig, err = toolConfigToVertex(fromToolConfig.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
@@ -1499,6 +1550,11 @@ func generateContentParametersToVertex(ac *InternalAPIClient, fromObject map[str
 	fromContents := InternalGetValueByPath(fromObject, []string{"contents"})
 	if fromContents != nil {
 		fromContents, err = InternalTContents(fromContents)
+		if err != nil {
+			return nil, err
+		}
+
+		fromContents, err = applyConverterToSliceWithRoot(fromContents.([]any), contentToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -3186,9 +3242,9 @@ func modelFromVertex(fromObject map[string]any, parentObject map[string]any, roo
 func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
-	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
-	if fromMediaResolution != nil {
-		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+	fromExecutableCode := InternalGetValueByPath(fromObject, []string{"executableCode"})
+	if fromExecutableCode != nil {
+		InternalSetValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
 	}
 
 	fromCodeExecutionResult := InternalGetValueByPath(fromObject, []string{"codeExecutionResult"})
@@ -3196,9 +3252,19 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 		InternalSetValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
 	}
 
-	fromExecutableCode := InternalGetValueByPath(fromObject, []string{"executableCode"})
-	if fromExecutableCode != nil {
-		InternalSetValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+	}
+
+	fromToolCall := InternalGetValueByPath(fromObject, []string{"toolCall"})
+	if fromToolCall != nil {
+		InternalSetValueByPath(toObject, []string{"toolCall"}, fromToolCall)
+	}
+
+	fromToolResponse := InternalGetValueByPath(fromObject, []string{"toolResponse"})
+	if fromToolResponse != nil {
+		InternalSetValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
 	}
 
 	fromFileData := InternalGetValueByPath(fromObject, []string{"fileData"})
@@ -3233,6 +3299,75 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 			return nil, err
 		}
 
+		InternalSetValueByPath(toObject, []string{"inlineData"}, fromInlineData)
+	}
+
+	fromText := InternalGetValueByPath(fromObject, []string{"text"})
+	if fromText != nil {
+		InternalSetValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	fromThought := InternalGetValueByPath(fromObject, []string{"thought"})
+	if fromThought != nil {
+		InternalSetValueByPath(toObject, []string{"thought"}, fromThought)
+	}
+
+	fromThoughtSignature := InternalGetValueByPath(fromObject, []string{"thoughtSignature"})
+	if fromThoughtSignature != nil {
+		InternalSetValueByPath(toObject, []string{"thoughtSignature"}, fromThoughtSignature)
+	}
+
+	fromVideoMetadata := InternalGetValueByPath(fromObject, []string{"videoMetadata"})
+	if fromVideoMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
+	}
+
+	return toObject, nil
+}
+
+func partToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromExecutableCode := InternalGetValueByPath(fromObject, []string{"executableCode"})
+	if fromExecutableCode != nil {
+		InternalSetValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
+	}
+
+	fromCodeExecutionResult := InternalGetValueByPath(fromObject, []string{"codeExecutionResult"})
+	if fromCodeExecutionResult != nil {
+		InternalSetValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
+	}
+
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"toolCall"}) != nil {
+		return nil, fmt.Errorf("toolCall parameter is not supported in Vertex AI")
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"toolResponse"}) != nil {
+		return nil, fmt.Errorf("toolResponse parameter is not supported in Vertex AI")
+	}
+
+	fromFileData := InternalGetValueByPath(fromObject, []string{"fileData"})
+	if fromFileData != nil {
+		InternalSetValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	fromFunctionCall := InternalGetValueByPath(fromObject, []string{"functionCall"})
+	if fromFunctionCall != nil {
+		InternalSetValueByPath(toObject, []string{"functionCall"}, fromFunctionCall)
+	}
+
+	fromFunctionResponse := InternalGetValueByPath(fromObject, []string{"functionResponse"})
+	if fromFunctionResponse != nil {
+		InternalSetValueByPath(toObject, []string{"functionResponse"}, fromFunctionResponse)
+	}
+
+	fromInlineData := InternalGetValueByPath(fromObject, []string{"inlineData"})
+	if fromInlineData != nil {
 		InternalSetValueByPath(toObject, []string{"inlineData"}, fromInlineData)
 	}
 
@@ -3672,6 +3807,11 @@ func toolConfigToMldev(fromObject map[string]any, parentObject map[string]any, r
 		InternalSetValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
 	}
 
+	fromIncludeServerSideToolInvocations := InternalGetValueByPath(fromObject, []string{"includeServerSideToolInvocations"})
+	if fromIncludeServerSideToolInvocations != nil {
+		InternalSetValueByPath(toObject, []string{"includeServerSideToolInvocations"}, fromIncludeServerSideToolInvocations)
+	}
+
 	fromFunctionCallingConfig := InternalGetValueByPath(fromObject, []string{"functionCallingConfig"})
 	if fromFunctionCallingConfig != nil {
 		fromFunctionCallingConfig, err = functionCallingConfigToMldev(fromFunctionCallingConfig.(map[string]any), toObject, rootObject)
@@ -3679,6 +3819,26 @@ func toolConfigToMldev(fromObject map[string]any, parentObject map[string]any, r
 			return nil, err
 		}
 
+		InternalSetValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
+	}
+
+	return toObject, nil
+}
+
+func toolConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromRetrievalConfig := InternalGetValueByPath(fromObject, []string{"retrievalConfig"})
+	if fromRetrievalConfig != nil {
+		InternalSetValueByPath(toObject, []string{"retrievalConfig"}, fromRetrievalConfig)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"includeServerSideToolInvocations"}) != nil {
+		return nil, fmt.Errorf("includeServerSideToolInvocations parameter is not supported in Vertex AI")
+	}
+
+	fromFunctionCallingConfig := InternalGetValueByPath(fromObject, []string{"functionCallingConfig"})
+	if fromFunctionCallingConfig != nil {
 		InternalSetValueByPath(toObject, []string{"functionCallingConfig"}, fromFunctionCallingConfig)
 	}
 

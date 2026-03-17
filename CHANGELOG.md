@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.51.0](https://github.com/googleapis/go-genai/compare/v1.50.0...v1.51.0) (2026-03-17)
+
+
+### Features
+
+* Support include_server_side_tool_invocations for genai. ([cec4bfd](https://github.com/googleapis/go-genai/commit/cec4bfd51223b19740526a44a610a8c06de737d4))
+
 ## [1.50.0](https://github.com/googleapis/go-genai/compare/v1.49.0...v1.50.0) (2026-03-12)
 
 

@@ -595,6 +595,11 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 			return nil, err
 		}
 
+		fromSpeechConfig, err = speechConfigToVertex(fromSpeechConfig.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "speechConfig"}, fromSpeechConfig)
 	}
 

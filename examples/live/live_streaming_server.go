@@ -34,6 +34,13 @@ import (
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
+var voiceSample = flag.String("voice-sample", "", "Path to voice sample file")
+var voiceConsent = flag.String("voice-consent", "", "Path to voice consent file")
+var voiceSignature = flag.String("voice-signature", "", "Voice consent signature")
+var modelFlag = flag.String("model", "", "Model name")
+
+var voiceSampleAudio []byte
+var consentAudio []byte
 
 var upgrader = websocket.Upgrader{} // use default options
 
@@ -66,17 +73,60 @@ func live(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var model string
-	if client.ClientConfig().Backend == genai.BackendVertexAI {
+	if *modelFlag != "" {
+		model = *modelFlag
+	} else if client.ClientConfig().Backend == genai.BackendVertexAI {
 		model = "gemini-2.0-flash-live-preview-04-09"
 	} else {
 		model = "gemini-live-2.5-flash-preview"
 	}
 
+	config := &genai.LiveConnectConfig{}
+	config.ResponseModalities = []genai.Modality{genai.ModalityAudio}
+	if len(voiceSampleAudio) > 0 {
+		replicatedConfig := &genai.ReplicatedVoiceConfig{
+			MIMEType:         "audio/wav",
+			VoiceSampleAudio: voiceSampleAudio,
+		}
+		if len(consentAudio) > 0 {
+			replicatedConfig.ConsentAudio = consentAudio
+		}
+		if *voiceSignature != "" {
+			replicatedConfig.VoiceConsentSignature = &genai.VoiceConsentSignature{
+				Signature: *voiceSignature,
+			}
+		}
+		config.SpeechConfig = &genai.SpeechConfig{
+			VoiceConfig: &genai.VoiceConfig{
+				ReplicatedVoiceConfig: replicatedConfig,
+			},
+		}
+	}
+
 	// Establish the live WebSocket connection with the specified GenAI model.
-	session, err := client.Live.Connect(ctx, model, &genai.LiveConnectConfig{})
+	session, err := client.Live.Connect(ctx, model, config)
 	if err != nil {
 		// Log fatal error if connecting to the model fails (e.g., network issues, invalid model name).
 		log.Fatal("connect to model error: ", err)
+	}
+
+	// Read the first message which should be SetupComplete
+	setupMsg, err := session.Receive()
+	if err != nil {
+		log.Fatal("receive setup complete error: ", err)
+	}
+	if setupMsg.SetupComplete != nil && setupMsg.SetupComplete.VoiceConsentSignature != nil {
+		log.Printf("\n=== Voice Consent Signature Received ===\n%s\n========================================\n", setupMsg.SetupComplete.VoiceConsentSignature.Signature)
+	}
+
+	// Forward SetupComplete to client
+	setupBytes, err := json.Marshal(setupMsg)
+	if err != nil {
+		log.Fatal("marshal setup complete error: ", err)
+	}
+	err = c.WriteMessage(websocket.TextMessage, setupBytes)
+	if err != nil {
+		log.Println("write setup complete error: ", err)
 	}
 	defer session.Close() // Ensure session is closed when the handler exits
 
@@ -176,6 +226,24 @@ func proxyVideo(w http.ResponseWriter, r *http.Request) {
 func main() {
 	flag.Parse()
 	log.SetFlags(0)
+
+	if *voiceSample != "" {
+		var err error
+		voiceSampleAudio, err = os.ReadFile(*voiceSample)
+		if err != nil {
+			log.Fatal("read voice sample error: ", err)
+		}
+		if *voiceConsent != "" {
+			consentAudio, err = os.ReadFile(*voiceConsent)
+			if err != nil {
+				log.Fatal("read voice consent error: ", err)
+			}
+		}
+		if len(consentAudio) == 0 && *voiceSignature == "" {
+			log.Fatal("Either --voice-consent or --voice-signature must be provided when --voice-sample is used.")
+		}
+	}
+
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/live", live)
 	http.HandleFunc("/proxyVideo", proxyVideo)
@@ -194,3 +262,4 @@ func main() {
 		log.Fatal(err)
 	}
 }
+

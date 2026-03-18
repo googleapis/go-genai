@@ -157,6 +157,7 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 	if err != nil {
 		return nil, fmt.Errorf("failed to write LiveClientSetup: %w", err)
 	}
+
 	return s, nil
 }
 

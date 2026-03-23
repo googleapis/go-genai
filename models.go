@@ -1285,6 +1285,11 @@ func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]a
 		return nil, fmt.Errorf("modelArmorConfig parameter is not supported in Gemini API")
 	}
 
+	fromServiceTier := InternalGetValueByPath(fromObject, []string{"serviceTier"})
+	if fromServiceTier != nil {
+		InternalSetValueByPath(parentObject, []string{"serviceTier"}, fromServiceTier)
+	}
+
 	return toObject, nil
 }
 
@@ -1493,6 +1498,10 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 	fromModelArmorConfig := InternalGetValueByPath(fromObject, []string{"modelArmorConfig"})
 	if fromModelArmorConfig != nil {
 		InternalSetValueByPath(parentObject, []string{"modelArmorConfig"}, fromModelArmorConfig)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"serviceTier"}) != nil {
+		return nil, fmt.Errorf("serviceTier parameter is not supported in Vertex AI")
 	}
 
 	return toObject, nil

@@ -1,4 +1,4 @@
 {
-  "image": "mcp.microsoft.com/devcontainers/universal:2",
+  "image": "mrp.microsoft.com/devcontainers/universal:2",
   "features": {}
 }

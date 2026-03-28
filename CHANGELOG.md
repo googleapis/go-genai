@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.52.0](https://github.com/googleapis/go-genai/compare/v1.51.0...v1.52.0) (2026-03-28)
+
+
+### Features
+
+* [Python] Add consent_audio and voice_consent_signature and AsyncSession.setup_complete ([bec456d](https://github.com/googleapis/go-genai/commit/bec456de6c2fdb54acf04b5a07397238d6603ccc))
+* Add labels field to Veo configs ([3fab63a](https://github.com/googleapis/go-genai/commit/3fab63a5f628b8ffe35fe75c325108a75e5c5add))
+* Add model_status to GenerateContentResponse (Gemini API only) ([8c040e3](https://github.com/googleapis/go-genai/commit/8c040e35aaab4089303fbd0fcacdf80ae85cc9df))
+* Add part_metadata in Part (Gemini API only) ([8c040e3](https://github.com/googleapis/go-genai/commit/8c040e35aaab4089303fbd0fcacdf80ae85cc9df))
+* Add service tier to GenerateContent. ([c07b6a0](https://github.com/googleapis/go-genai/commit/c07b6a0b47408e038264a4b0d85183e4240cb30a))
+* **genai:** add TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO to TurnCoverage ([ea49f9a](https://github.com/googleapis/go-genai/commit/ea49f9a7d885d7d0fb2016c7621b1d22eee06b26))
+* support hyperparameters in distillation tuning ([b8873ea](https://github.com/googleapis/go-genai/commit/b8873ea18126d825b841794414c05c66cb2bc094))
+* Support rendered_parts in GroundingSupport ([8c040e3](https://github.com/googleapis/go-genai/commit/8c040e35aaab4089303fbd0fcacdf80ae85cc9df))
+
+
+### Bug Fixes
+
+* Fix empty InlinedEmbedContentResponses for inline batch embeddings in Go GenAI SDK ([e70c9d1](https://github.com/googleapis/go-genai/commit/e70c9d111e5f70e684537ae3ebb3fcaaf839d642)), closes [#712](https://github.com/googleapis/go-genai/issues/712)
+* support us region routing ([09d5be3](https://github.com/googleapis/go-genai/commit/09d5be32d28541debeb2fbfae13be29e51d0b42d))
+
 ## [1.51.0](https://github.com/googleapis/go-genai/compare/v1.50.0...v1.51.0) (2026-03-17)
 
 

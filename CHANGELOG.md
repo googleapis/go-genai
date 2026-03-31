@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.52.1](https://github.com/googleapis/go-genai/compare/v1.52.0...v1.52.1) (2026-03-31)
+
+
+### Bug Fixes
+
+* Fix service_tier enums. ([5518442](https://github.com/googleapis/go-genai/commit/5518442a2a8dac4a00ad4248470ec995604974f6))
+
 ## [1.52.0](https://github.com/googleapis/go-genai/compare/v1.51.0...v1.52.0) (2026-03-27)
 
 

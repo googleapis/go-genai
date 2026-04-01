@@ -38,7 +38,6 @@ import (
 const maxChunkSize = 8 * 1024 * 1024 // 8 MB chunk size
 const maxRetryCount = 3
 const initialRetryDelay = time.Second
-const delayMultiplier = 2
 
 type apiClient struct {
 	clientConfig *ClientConfig
@@ -650,7 +649,7 @@ func (ac *apiClient) upload(ctx context.Context, r io.Reader, uploadURL string, 
 			select {
 			case <-ctx.Done():
 				return nil, fmt.Errorf("upload aborted while waiting to retry (attempt %d, offset %d): %w", attempt+1, offset, ctx.Err())
-			case <-time.After(initialRetryDelay * time.Duration(delayMultiplier^attempt)):
+			case <-time.After(initialRetryDelay * time.Duration(1<<attempt)):
 				// Sleep completed, continue to the next attempt.
 			}
 		}

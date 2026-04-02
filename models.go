@@ -3678,6 +3678,14 @@ func replicatedVoiceConfigToVertex(fromObject map[string]any, parentObject map[s
 		InternalSetValueByPath(toObject, []string{"voiceSampleAudio"}, fromVoiceSampleAudio)
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"consentAudio"}) != nil {
+		return nil, fmt.Errorf("consentAudio parameter is not supported in Vertex AI")
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"voiceConsentSignature"}) != nil {
+		return nil, fmt.Errorf("voiceConsentSignature parameter is not supported in Vertex AI")
+	}
+
 	return toObject, nil
 }
 

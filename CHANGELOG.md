@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.53.0](https://github.com/googleapis/go-genai/compare/v1.52.1...v1.53.0) (2026-04-08)
+
+
+### Miscellaneous Chores
+
+* release 1.53.0 ([07f38c9](https://github.com/googleapis/go-genai/commit/07f38c926798eb5f4d9ef3af531ee3f4d91c6fd6))
+
 ## [1.52.1](https://github.com/googleapis/go-genai/compare/v1.52.0...v1.52.1) (2026-03-31)
 
 

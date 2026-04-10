@@ -2088,6 +2088,10 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		return nil, fmt.Errorf("labels parameter is not supported in Gemini API")
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"resizeMode"}) != nil {
+		return nil, fmt.Errorf("resizeMode parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -2192,6 +2196,11 @@ func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[st
 	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
 	if fromLabels != nil {
 		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
+	}
+
+	fromResizeMode := InternalGetValueByPath(fromObject, []string{"resizeMode"})
+	if fromResizeMode != nil {
+		InternalSetValueByPath(parentObject, []string{"parameters", "resizeMode"}, fromResizeMode)
 	}
 
 	return toObject, nil

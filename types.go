@@ -6486,6 +6486,12 @@ type CreateBatchJobConfig struct {
 	WebhookConfig *WebhookConfig `json:"webhookConfig,omitempty"`
 }
 
+// Represents the `output_info` field in batch jobs.
+type BatchJobOutputInfo struct {
+	// The Vertex AI dataset name containing the output data.
+	VertexMultimodalDatasetName string `json:"vertexMultimodalDatasetName,omitempty"`
+}
+
 // Success and error statistics of processing multiple entities (for example, DataItems
 // or structured data rows) in batch. This data type is not supported in Gemini API.
 type CompletionStats struct {
@@ -6532,6 +6538,8 @@ type BatchJob struct {
 	// Statistics on completed and failed prediction instances. This field is for Vertex
 	// AI only.
 	CompletionStats *CompletionStats `json:"completionStats,omitempty"`
+	// Configuration for the output data.
+	OutputInfo *BatchJobOutputInfo `json:"outputInfo,omitempty"`
 }
 
 func (b *BatchJob) UnmarshalJSON(data []byte) error {

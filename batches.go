@@ -70,6 +70,16 @@ func batchJobDestinationFromVertex(fromObject map[string]any, parentObject map[s
 		InternalSetValueByPath(toObject, []string{"bigqueryUri"}, fromBigqueryUri)
 	}
 
+	fromVertexDataset := InternalGetValueByPath(fromObject, []string{"vertexMultimodalDatasetDestination"})
+	if fromVertexDataset != nil {
+		fromVertexDataset, err = vertexMultimodalDatasetDestinationFromVertex(fromVertexDataset.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"vertexDataset"}, fromVertexDataset)
+	}
+
 	return toObject, nil
 }
 
@@ -101,6 +111,16 @@ func batchJobDestinationToVertex(fromObject map[string]any, parentObject map[str
 
 	if InternalGetValueByPath(fromObject, []string{"inlinedEmbedContentResponses"}) != nil {
 		return nil, fmt.Errorf("inlinedEmbedContentResponses parameter is not supported in Vertex AI")
+	}
+
+	fromVertexDataset := InternalGetValueByPath(fromObject, []string{"vertexDataset"})
+	if fromVertexDataset != nil {
+		fromVertexDataset, err = vertexMultimodalDatasetDestinationToVertex(fromVertexDataset.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"vertexMultimodalDatasetDestination"}, fromVertexDataset)
 	}
 
 	return toObject, nil
@@ -271,6 +291,11 @@ func batchJobSourceFromVertex(fromObject map[string]any, parentObject map[string
 		InternalSetValueByPath(toObject, []string{"bigqueryUri"}, fromBigqueryUri)
 	}
 
+	fromVertexDatasetName := InternalGetValueByPath(fromObject, []string{"vertexMultimodalDatasetSource", "datasetName"})
+	if fromVertexDatasetName != nil {
+		InternalSetValueByPath(toObject, []string{"vertexDatasetName"}, fromVertexDatasetName)
+	}
+
 	return toObject, nil
 }
 
@@ -303,6 +328,10 @@ func batchJobSourceToMldev(ac *InternalAPIClient, fromObject map[string]any, par
 		InternalSetValueByPath(toObject, []string{"requests", "requests"}, fromInlinedRequests)
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"vertexDatasetName"}) != nil {
+		return nil, fmt.Errorf("vertexDatasetName parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -330,6 +359,11 @@ func batchJobSourceToVertex(fromObject map[string]any, parentObject map[string]a
 
 	if InternalGetValueByPath(fromObject, []string{"inlinedRequests"}) != nil {
 		return nil, fmt.Errorf("inlinedRequests parameter is not supported in Vertex AI")
+	}
+
+	fromVertexDatasetName := InternalGetValueByPath(fromObject, []string{"vertexDatasetName"})
+	if fromVertexDatasetName != nil {
+		InternalSetValueByPath(toObject, []string{"vertexMultimodalDatasetSource", "datasetName"}, fromVertexDatasetName)
 	}
 
 	return toObject, nil
@@ -897,6 +931,38 @@ func listBatchJobsResponseFromVertex(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
+func vertexMultimodalDatasetDestinationFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromBigqueryDestination := InternalGetValueByPath(fromObject, []string{"bigqueryDestination", "outputUri"})
+	if fromBigqueryDestination != nil {
+		InternalSetValueByPath(toObject, []string{"bigqueryDestination"}, fromBigqueryDestination)
+	}
+
+	fromDisplayName := InternalGetValueByPath(fromObject, []string{"displayName"})
+	if fromDisplayName != nil {
+		InternalSetValueByPath(toObject, []string{"displayName"}, fromDisplayName)
+	}
+
+	return toObject, nil
+}
+
+func vertexMultimodalDatasetDestinationToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromBigqueryDestination := InternalGetValueByPath(fromObject, []string{"bigqueryDestination"})
+	if fromBigqueryDestination != nil {
+		InternalSetValueByPath(toObject, []string{"bigqueryDestination", "outputUri"}, fromBigqueryDestination)
+	}
+
+	fromDisplayName := InternalGetValueByPath(fromObject, []string{"displayName"})
+	if fromDisplayName != nil {
+		InternalSetValueByPath(toObject, []string{"displayName"}, fromDisplayName)
+	}
+
+	return toObject, nil
+}
+
 // Batches provides methods for managing the batch jobs.
 // You don't need to initiate this struct. Create a client instance via NewClient, and
 // then access Batches through client.Batches field.
@@ -1409,11 +1475,21 @@ func (b Batches) Create(ctx context.Context, model string, src *BatchJobSource, 
 		if src.FileName != "" {
 			return nil, fmt.Errorf("fileName parameter is not supported in Vertex AI")
 		}
-		if len(src.GCSURI) != 0 && src.BigqueryURI != "" {
-			return nil, fmt.Errorf("Only one of GCSURI ([]string) and BigqueryURI (string) can be set.")
+		count := 0
+		if len(src.GCSURI) > 0 {
+			count++
 		}
-		if len(src.GCSURI) == 0 && src.BigqueryURI == "" {
-			return nil, fmt.Errorf("One of GCSURI ([]string) and BigqueryURI (string) must be set.")
+		if src.BigqueryURI != "" {
+			count++
+		}
+		if src.VertexDatasetName != "" {
+			count++
+		}
+		if count > 1 {
+			return nil, fmt.Errorf("Only one of GCSURI ([]string), BigqueryURI (string), and VertexDatasetName (string) can be set.")
+		}
+		if count == 0 {
+			return nil, fmt.Errorf("One of GCSURI ([]string), BigqueryURI (string), or VertexDatasetName (string) must be set.")
 		}
 	} else {
 		if src.FileName != "" && len(src.InlinedRequests) > 0 {

@@ -6379,7 +6379,7 @@ type InlinedRequest struct {
 // Config for `src` parameter.
 type BatchJobSource struct {
 	// Storage format of the input files. Must be one of:
-	// 'jsonl', 'bigquery'.
+	// 'jsonl', 'bigquery', 'vertex-dataset'.
 	Format string `json:"format,omitempty"`
 	// Optional. The Google Cloud Storage URIs to input files.
 	GCSURI []string `json:"gcsUri,omitempty"`
@@ -6390,6 +6390,18 @@ type BatchJobSource struct {
 	FileName string `json:"fileName,omitempty"`
 	// Optional. The Gemini Developer API's inlined input data to run batch job.
 	InlinedRequests []*InlinedRequest `json:"inlinedRequests,omitempty"`
+	// Optional. This field is experimental and may change in future versions. The Vertex
+	// AI dataset resource name to use as input. Must be of type multimodal.
+	VertexDatasetName string `json:"vertexDatasetName,omitempty"`
+}
+
+// This class is experimental and may change in future versions.
+// The specification for an output Vertex AI multimodal dataset.
+type VertexMultimodalDatasetDestination struct {
+	// Optional. The BigQuery destination for the multimodal dataset.
+	BigqueryDestination string `json:"bigqueryDestination,omitempty"`
+	// Optional. The display name of the multimodal dataset.
+	DisplayName string `json:"displayName,omitempty"`
 }
 
 // Job error.
@@ -6435,7 +6447,7 @@ type InlinedEmbedContentResponse struct {
 // Config for `des` parameter.
 type BatchJobDestination struct {
 	// Storage format of the output files. Must be one of:
-	// 'jsonl', 'bigquery'.
+	// 'jsonl', 'bigquery', 'vertex-dataset'.
 	Format string `json:"format,omitempty"`
 	// Optional. The Google Cloud Storage URI to the output file.
 	GCSURI string `json:"gcsUri,omitempty"`
@@ -6455,6 +6467,9 @@ type BatchJobDestination struct {
 	// built using inlined requests. The responses will be in the same order as
 	// the input requests.
 	InlinedEmbedContentResponses []*InlinedEmbedContentResponse `json:"inlinedEmbedContentResponses,omitempty"`
+	// Optional. This field is experimental and may change in future versions. The Vertex
+	// AI dataset destination.
+	VertexDataset *VertexMultimodalDatasetDestination `json:"vertexDataset,omitempty"`
 }
 
 // Config for optional parameters.

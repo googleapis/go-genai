@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.55.0](https://github.com/googleapis/go-genai/compare/v1.54.0...v1.55.0) (2026-04-20)
+
+
+### Features
+
+* Add InternalApplyConverterToSliceWithRoot to the common utilities. ([7aaf1eb](https://github.com/googleapis/go-genai/commit/7aaf1eb1eab03698454be3f9398945d2365debeb))
+* Add Vertex Dataset input and output options for batch jobs ([73ee07c](https://github.com/googleapis/go-genai/commit/73ee07cbdae9873271c90e66bb491178587f8495))
+
 ## [1.54.0](https://github.com/googleapis/go-genai/compare/v1.53.0...v1.54.0) (2026-04-13)
 
 

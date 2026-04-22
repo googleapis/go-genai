@@ -16,6 +16,7 @@ package genai
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -1238,4 +1239,206 @@ func TestClientInitialization(t *testing.T) {
 			t.Errorf("Standard Scope: expected project/location in path %s, but not found", urlStandard.Path)
 		}
 	})
+}
+
+func TestNewInternalAPIClient_BackendSelection(t *testing.T) {
+	ctx := context.Background()
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "testdata/credentials.json")
+	t.Cleanup(func() { os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS") })
+
+	tests := []struct {
+		name              string
+		config            ClientConfig
+		env               map[string]string
+		wantBackend       Backend
+		wantWarning       bool
+		expectErr         bool
+		satisfyVertexReqs bool
+		satisfyGeminiReqs bool
+	}{
+		{
+			name: "Explicit BackendEnterprise in config",
+			config: ClientConfig{
+				Backend: BackendEnterprise,
+			},
+			env:               map[string]string{},
+			wantBackend:       BackendVertexAI,
+			satisfyVertexReqs: true,
+		},
+		{
+			name: "Explicit BackendVertexAI in config",
+			config: ClientConfig{
+				Backend: BackendVertexAI,
+			},
+			env:               map[string]string{},
+			wantBackend:       BackendVertexAI,
+			satisfyVertexReqs: true,
+		},
+		{
+			name: "Explicit BackendGeminiAPI in config",
+			config: ClientConfig{
+				Backend: BackendGeminiAPI,
+			},
+			env:               map[string]string{},
+			wantBackend:       BackendGeminiAPI,
+			satisfyGeminiReqs: true,
+		},
+		{
+			name:              "ENTERPRISE=1 uses VertexAI",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "1"},
+			wantBackend:       BackendVertexAI,
+			satisfyVertexReqs: true,
+		},
+		{
+			name:              "ENTERPRISE=true uses VertexAI",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "true"},
+			wantBackend:       BackendVertexAI,
+			satisfyVertexReqs: true,
+		},
+		{
+			name:              "ENTERPRISE=0 uses GeminiAPI",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "0"},
+			wantBackend:       BackendGeminiAPI,
+			satisfyGeminiReqs: true,
+		},
+		{
+			name:              "ENTERPRISE=false uses GeminiAPI",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "false"},
+			wantBackend:       BackendGeminiAPI,
+			satisfyGeminiReqs: true,
+		},
+		{
+			name:              "ENTERPRISE=0 uses GeminiAPI",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "0"},
+			wantBackend:       BackendGeminiAPI,
+			satisfyGeminiReqs: true,
+		},
+		{
+			name:              "VERTEXAI=1 uses VertexAI when ENTERPRISE is not set",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_VERTEXAI": "1"},
+			wantBackend:       BackendVertexAI,
+			satisfyVertexReqs: true,
+		},
+		{
+			name:              "VERTEXAI=true uses VertexAI when ENTERPRISE is not set",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_VERTEXAI": "true"},
+			wantBackend:       BackendVertexAI,
+			satisfyVertexReqs: true,
+		},
+		{
+			name:              "VERTEXAI=0 uses GeminiAPI when ENTERPRISE is not set",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_VERTEXAI": "0"},
+			wantBackend:       BackendGeminiAPI,
+			satisfyGeminiReqs: true,
+		},
+		{
+			name:              "No env vars and unspecified backend defaults to GeminiAPI",
+			config:            ClientConfig{},
+			env:               map[string]string{},
+			wantBackend:       BackendGeminiAPI,
+			satisfyGeminiReqs: true,
+		},
+		{
+			name:              "Conflicting env vars (ENTERPRISE=1, VERTEXAI=0), ENTERPRISE wins with warning",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "1", "GOOGLE_GENAI_USE_VERTEXAI": "0"},
+			wantBackend:       BackendVertexAI,
+			wantWarning:       true,
+			satisfyVertexReqs: true,
+		},
+		{
+			name:              "Conflicting env vars (ENTERPRISE=false, VERTEXAI=true), ENTERPRISE wins with warning",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "false", "GOOGLE_GENAI_USE_VERTEXAI": "true"},
+			wantBackend:       BackendGeminiAPI,
+			wantWarning:       true,
+			satisfyGeminiReqs: true,
+		},
+		{
+			name:              "Non-conflicting env vars (ENTERPRISE=1, VERTEXAI=1), no warning",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "1", "GOOGLE_GENAI_USE_VERTEXAI": "1"},
+			wantBackend:       BackendVertexAI,
+			wantWarning:       false,
+			satisfyVertexReqs: true,
+		},
+		{
+			name:              "Non-conflicting env vars (ENTERPRISE=true, VERTEXAI=true), no warning",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "true", "GOOGLE_GENAI_USE_VERTEXAI": "true"},
+			wantBackend:       BackendVertexAI,
+			wantWarning:       false,
+			satisfyVertexReqs: true,
+		},
+		{
+			name:              "Non-conflicting env vars (ENTERPRISE=false, VERTEXAI=false), no warning",
+			config:            ClientConfig{},
+			env:               map[string]string{"GOOGLE_GENAI_USE_ENTERPRISE": "false", "GOOGLE_GENAI_USE_VERTEXAI": "false"},
+			wantBackend:       BackendGeminiAPI,
+			wantWarning:       false,
+			satisfyGeminiReqs: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var logBuf strings.Builder
+			log.SetOutput(&logBuf)
+			t.Cleanup(func() {
+				log.SetOutput(os.Stderr)
+			})
+
+			conf := tt.config
+			conf.envVarProvider = func() map[string]string {
+				return tt.env
+			}
+
+			if tt.satisfyVertexReqs {
+				if conf.Project == "" {
+					conf.Project = "test-project"
+				}
+				if conf.Location == "" {
+					conf.Location = "test-location"
+				}
+			}
+			if tt.satisfyGeminiReqs {
+				if conf.APIKey == "" {
+					conf.APIKey = "test-api-key"
+				}
+			}
+
+			client, err := NewInternalAPIClient(ctx, &conf)
+
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("NewInternalAPIClient() expected an error, but got none")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("NewInternalAPIClient() failed: %v", err)
+			}
+
+			if client.clientConfig.Backend != tt.wantBackend {
+				t.Errorf("Backend mismatch: got %v, want %v", client.clientConfig.Backend, tt.wantBackend)
+			}
+
+			logOutput := logBuf.String()
+			hasWarning := strings.Contains(logOutput, "Warning: Both GOOGLE_GENAI_USE_ENTERPRISE and GOOGLE_GENAI_USE_VERTEXAI are set with conflicting values.")
+			if tt.wantWarning && !hasWarning {
+				t.Errorf("Expected a warning for conflicting env vars, but got none. Log output:\n%s", logOutput)
+			}
+			if !tt.wantWarning && hasWarning {
+				t.Errorf("Expected no warning, but got one. Log output:\n%s", logOutput)
+			}
+		})
+	}
 }

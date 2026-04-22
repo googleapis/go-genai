@@ -232,7 +232,7 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 		fromConverter = generateVideosOperationFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method FetchPredictVideosOperation is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method FetchPredictVideosOperation is only supported in the Gemini Enterprise Agent Platform (previously known as Vertex AI) client. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 

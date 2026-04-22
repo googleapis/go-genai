@@ -102,15 +102,15 @@ func batchJobDestinationToVertex(fromObject map[string]any, parentObject map[str
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"fileName"}) != nil {
-		return nil, fmt.Errorf("fileName parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("fileName parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"inlinedResponses"}) != nil {
-		return nil, fmt.Errorf("inlinedResponses parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("inlinedResponses parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"inlinedEmbedContentResponses"}) != nil {
-		return nil, fmt.Errorf("inlinedEmbedContentResponses parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("inlinedEmbedContentResponses parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	fromVertexDataset := InternalGetValueByPath(fromObject, []string{"vertexDataset"})
@@ -354,11 +354,11 @@ func batchJobSourceToVertex(fromObject map[string]any, parentObject map[string]a
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"fileName"}) != nil {
-		return nil, fmt.Errorf("fileName parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("fileName parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"inlinedRequests"}) != nil {
-		return nil, fmt.Errorf("inlinedRequests parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("inlinedRequests parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	fromVertexDatasetName := InternalGetValueByPath(fromObject, []string{"vertexDatasetName"})
@@ -445,7 +445,7 @@ func createBatchJobConfigToVertex(fromObject map[string]any, parentObject map[st
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"webhookConfig"}) != nil {
-		return nil, fmt.Errorf("webhookConfig parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("webhookConfig parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil
@@ -1470,10 +1470,10 @@ func (m Batches) All(ctx context.Context) iter.Seq2[*BatchJob, error] {
 func (b Batches) Create(ctx context.Context, model string, src *BatchJobSource, config *CreateBatchJobConfig) (*BatchJob, error) {
 	if b.apiClient.clientConfig.Backend == BackendVertexAI {
 		if len(src.InlinedRequests) > 0 {
-			return nil, fmt.Errorf("inlinedRequests parameter is not supported in Vertex AI")
+			return nil, fmt.Errorf("inlinedRequests parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 		}
 		if src.FileName != "" {
-			return nil, fmt.Errorf("fileName parameter is not supported in Vertex AI")
+			return nil, fmt.Errorf("fileName parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 		}
 		count := 0
 		if len(src.GCSURI) > 0 {
@@ -1510,7 +1510,7 @@ func (b Batches) CreateEmbeddings(ctx context.Context, model *string, src *Embed
 		log.Println("The SDK's CreateEmbeddings implementation is experimental, and may change in future versions.")
 	})
 	if b.apiClient.clientConfig.Backend == BackendVertexAI {
-		return nil, fmt.Errorf("Vertex AI does not support batches.createEmbeddings.")
+		return nil, fmt.Errorf("Gemini Enterprise Agent Platform (previously known as Vertex AI) does not support batches.createEmbeddings.")
 	}
 	return b.createEmbeddings(ctx, model, src, config)
 }

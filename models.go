@@ -1106,7 +1106,7 @@ func functionDeclarationToVertex(fromObject map[string]any, parentObject map[str
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"behavior"}) != nil {
-		return nil, fmt.Errorf("behavior parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("behavior parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil
@@ -1517,7 +1517,7 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
-		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	fromModelArmorConfig := InternalGetValueByPath(fromObject, []string{"modelArmorConfig"})
@@ -2200,7 +2200,7 @@ func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[st
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"webhookConfig"}) != nil {
-		return nil, fmt.Errorf("webhookConfig parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("webhookConfig parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil
@@ -2740,7 +2740,7 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"}) != nil {
-		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil
@@ -3452,15 +3452,15 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"toolCall"}) != nil {
-		return nil, fmt.Errorf("toolCall parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("toolCall parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"toolResponse"}) != nil {
-		return nil, fmt.Errorf("toolResponse parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("toolResponse parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"partMetadata"}) != nil {
-		return nil, fmt.Errorf("partMetadata parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("partMetadata parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil
@@ -3911,7 +3911,7 @@ func toolConfigToVertex(fromObject map[string]any, parentObject map[string]any, 
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"includeServerSideToolInvocations"}) != nil {
-		return nil, fmt.Errorf("includeServerSideToolInvocations parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("includeServerSideToolInvocations parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil
@@ -4003,7 +4003,7 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"fileSearch"}) != nil {
-		return nil, fmt.Errorf("fileSearch parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("fileSearch parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	fromGoogleSearch := InternalGetValueByPath(fromObject, []string{"googleSearch"})
@@ -4052,7 +4052,7 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"mcpServers"}) != nil {
-		return nil, fmt.Errorf("mcpServers parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("mcpServers parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil
@@ -4775,7 +4775,7 @@ func (m Models) editImage(ctx context.Context, model string, prompt string, refe
 		fromConverter = editImageResponseFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method EditImage is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method EditImage is only supported in the Gemini Enterprise Agent Platform (previously known as Vertex AI) client. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 
@@ -4849,7 +4849,7 @@ func (m Models) upscaleImage(ctx context.Context, model string, image *Image, up
 		fromConverter = upscaleImageResponseFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method UpscaleImage is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method UpscaleImage is only supported in the Gemini Enterprise Agent Platform (previously known as Vertex AI) client. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 
@@ -4925,7 +4925,7 @@ func (m Models) RecontextImage(ctx context.Context, model string, source *Recont
 		fromConverter = recontextImageResponseFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method RecontextImage is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method RecontextImage is only supported in the Gemini Enterprise Agent Platform (previously known as Vertex AI) client. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 
@@ -5009,7 +5009,7 @@ func (m Models) SegmentImage(ctx context.Context, model string, source *SegmentI
 		fromConverter = segmentImageResponseFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method SegmentImage is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method SegmentImage is only supported in the Gemini Enterprise Agent Platform (previously known as Vertex AI) client. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 
@@ -5490,7 +5490,7 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 		fromConverter = computeTokensResponseFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method ComputeTokens is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method ComputeTokens is only supported in the Gemini Enterprise Agent Platform (previously known as Vertex AI) client. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 

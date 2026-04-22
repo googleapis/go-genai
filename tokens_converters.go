@@ -75,7 +75,7 @@ func createAuthTokenParametersToMldev(ac *InternalAPIClient, fromObject map[stri
 func createAuthTokenParametersToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 	if InternalGetValueByPath(fromObject, []string{"config"}) != nil {
-		return nil, fmt.Errorf("config parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("config parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil

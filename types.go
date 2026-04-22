@@ -738,7 +738,7 @@ const (
 	FeatureSelectionPreferencePrioritizeCost    FeatureSelectionPreference = "PRIORITIZE_COST"
 )
 
-// Enum representing the Vertex embedding API to use.
+// Enum representing the Gemini Enterprise Agent Platform embedding API to use.
 type EmbeddingAPIType string
 
 const (
@@ -1614,14 +1614,14 @@ func NewContentFromCodeExecutionResult(outcome Outcome, output string, role Role
 type HTTPOptions struct {
 	// Optional. BaseURL specifies the base URL for the API endpoint. If empty, defaults
 	// to "https://generativelanguage.googleapis.com/" for the Gemini API backend, and location-specific
-	// Vertex AI endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/
+	// Gemini Enterprise Agent Platform endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/
 	BaseURL string `json:"baseUrl,omitempty"`
 	// Optional. BaseURL specifies the base URL for the API endpoint. If empty, defaults
 	// to "https://generativelanguage.googleapis.com/" for the Gemini API backend, and location-specific
-	// Vertex AI endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/
+	// Gemini Enterprise Agent Platform endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/
 	BaseURLResourceScope ResourceScope `json:"baseUrlResourceScope,omitempty"`
 	// Optional. APIVersion specifies the version of the API to use. If empty, defaults
-	// to "v1beta" for Gemini API and "v1beta1" for Vertex AI.
+	// to "v1beta" for Gemini API and "v1beta1" for Gemini Enterprise Agent Platform.
 	APIVersion string `json:"apiVersion,omitempty"`
 	// Optional. Additional HTTP headers to be sent with the request.
 	Headers http.Header `json:"headers,omitempty"`
@@ -1629,7 +1629,7 @@ type HTTPOptions struct {
 	Timeout *time.Duration `json:"timeout,omitempty"`
 	// Optional. Extra parameters to add to the request body.
 	// The structure must match the backend API's request structure.
-	//   - VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+	//   - Gemini Enterprise Agent Platform backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
 	//   - GeminiAPI backend API docs: https://ai.google.dev/api/rest
 	ExtraBody map[string]any `json:"extraBody,omitempty"`
 	// Optional. A function that allows for request body customization.
@@ -2656,7 +2656,7 @@ type GenerateContentConfig struct {
 	// Optional. The image generation configuration.
 	ImageConfig *ImageConfig `json:"imageConfig,omitempty"`
 	// Optional. Enables enhanced civic answers. It may not be available for all
-	// models. This field is not supported in Vertex AI.
+	// models. This field is not supported in Gemini Enterprise Agent Platform.
 	EnableEnhancedCivicAnswers *bool `json:"enableEnhancedCivicAnswers,omitempty"`
 	// Optional. Settings for prompt and response sanitization using the Model Armor
 	// service. If supplied, safety_settings must not be supplied.
@@ -3504,26 +3504,27 @@ type EmbedContentConfig struct {
 	// Supported by newer models since 2024 only. You cannot set this value if
 	// using the earlier model (`models/embedding-001`).
 	OutputDimensionality *int32 `json:"outputDimensionality,omitempty"`
-	// Vertex API only. The MIME type of the input.
+	// Gemini Enterprise Agent Platform only. The MIME type of the input.
 	MIMEType string `json:"mimeType,omitempty"`
-	// Vertex API only. Whether to silently truncate inputs longer than
+	// Gemini Enterprise Agent Platform only. Whether to silently truncate inputs longer
+	// than
 	// the max sequence length. If this option is set to false, oversized inputs
 	// will lead to an INVALID_ARGUMENT error, similar to other text APIs.
 	AutoTruncate bool `json:"autoTruncate,omitempty"`
-	// Vertex API only. Whether to enable OCR for document content.
+	// Gemini Enterprise Agent Platform only. Whether to enable OCR for document content.
 	// Only applicable to Gemini Embedding 2 models.
 	DocumentOcr *bool `json:"documentOcr,omitempty"`
-	// Vertex API only. Whether to extract audio from video content.
+	// Gemini Enterprise Agent Platform only. Whether to extract audio from video content.
 	// Only applicable to Gemini Embedding 2 models.
 	AudioTrackExtraction *bool `json:"audioTrackExtraction,omitempty"`
 }
 
 // Statistics of the input text associated with the result of content embedding.
 type ContentEmbeddingStatistics struct {
-	// Vertex API only. If the input text was truncated due to having
+	// Gemini Enterprise Agent Platform only. If the input text was truncated due to having
 	// a length longer than the allowed maximum input.
 	Truncated bool `json:"truncated,omitempty"`
-	// Vertex API only. Number of tokens of the input text.
+	// Gemini Enterprise Agent Platform only. Number of tokens of the input text.
 	TokenCount float32 `json:"tokenCount,omitempty"`
 }
 
@@ -3531,14 +3532,15 @@ type ContentEmbeddingStatistics struct {
 type ContentEmbedding struct {
 	// A list of floats representing an embedding.
 	Values []float32 `json:"values,omitempty"`
-	// Vertex API only. Statistics of the input text associated with this
+	// Gemini Enterprise Agent Platform only. Statistics of the input text associated with
+	// this
 	// embedding.
 	Statistics *ContentEmbeddingStatistics `json:"statistics,omitempty"`
 }
 
-// Request-level metadata for the Vertex Embed Content API.
+// Request-level metadata for the Gemini Enterprise Agent Platform Embed Content API.
 type EmbedContentMetadata struct {
-	// Vertex API only. The total number of billable characters included
+	// Gemini Enterprise Agent Platform only. The total number of billable characters included
 	// in the request.
 	BillableCharacterCount int32 `json:"billableCharacterCount,omitempty"`
 }
@@ -3550,12 +3552,12 @@ type EmbedContentResponse struct {
 	// The embeddings for each request, in the same order as provided in
 	// the batch request.
 	Embeddings []*ContentEmbedding `json:"embeddings,omitempty"`
-	// Vertex API only. Metadata about the request.
+	// Gemini Enterprise Agent Platform only. Metadata about the request.
 	Metadata *EmbedContentMetadata `json:"metadata,omitempty"`
 }
 
 // The configuration for generating images. You can find API default values and more
-// details at VertexAI: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api.
+// details at Gemini Enterprise Agent Platform: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api.
 // GeminiAPI: https://ai.google.dev/gemini-api/docs/imagen#imagen-model
 type GenerateImagesConfig struct {
 	// Optional. Used to override HTTP request options.
@@ -4447,7 +4449,8 @@ type WebhookConfig struct {
 	UserMetadata map[string]any `json:"userMetadata,omitempty"`
 }
 
-// You can find API default values and more details at VertexAI: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation.
+// You can find API default values and more details at Gemini Enterprise Agent Platform:
+// https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation.
 type GenerateVideosConfig struct {
 	// Optional. Used to override HTTP request options.
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
@@ -4662,7 +4665,7 @@ type DistillationHyperParameters struct {
 	// Optional. Multiplier for adjusting the default learning rate.
 	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
 	// Optional. The batch size hyperparameter for tuning.
-	// This is only supported for OSS models in Vertex.
+	// This is only supported for OSS models in Gemini Enterprise Agent Platform.
 	BatchSize int32 `json:"batchSize,omitempty"`
 	// Optional. The learning rate for tuning. OSS models only.
 	LearningRate float32 `json:"learningRate,omitempty"`
@@ -5455,8 +5458,8 @@ type TuningExample struct {
 type TuningDataset struct {
 	// Optional. GCS URI of the file containing training dataset in JSONL format.
 	GCSURI string `json:"gcsUri,omitempty"`
-	// Optional. The resource name of the Vertex Multimodal Dataset that is used as training
-	// dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.
+	// Optional. The resource name of the Gemini Enterprise Agent Platform (previously known
+	// as Vertex AI) Multimodal Dataset that is used as training dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.
 	VertexDatasetResource string `json:"vertexDatasetResource,omitempty"`
 	// Optional. Inline examples with simple input/output text.
 	Examples []*TuningExample `json:"examples,omitempty"`
@@ -5465,8 +5468,8 @@ type TuningDataset struct {
 type TuningValidationDataset struct {
 	// Optional. GCS URI of the file containing validation dataset in JSONL format.
 	GCSURI string `json:"gcsUri,omitempty"`
-	// Optional. The resource name of the Vertex Multimodal Dataset that is used as validation
-	// dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.
+	// Optional. The resource name of the Gemini Enterprise Agent Platform (previously known
+	// as Vertex AI) Multimodal Dataset that is used as validation dataset. Example: 'projects/my-project-id-or-number/locations/my-location/datasets/my-dataset-id'.
 	VertexDatasetResource string `json:"vertexDatasetResource,omitempty"`
 }
 
@@ -5502,10 +5505,10 @@ type CreateTuningJobConfig struct {
 	// Optional. Tuning mode for tuning.
 	TuningMode TuningMode `json:"tuningMode,omitempty"`
 	// Optional. Custom base model for tuning. This is only supported for OSS models in
-	// Vertex.
+	// Gemini Enterprise Agent Platform.
 	CustomBaseModel string `json:"customBaseModel,omitempty"`
 	// Optional. The batch size hyperparameter for tuning. This is only supported for OSS
-	// models in Vertex.
+	// models in Gemini Enterprise Agent Platform.
 	BatchSize *int32 `json:"batchSize,omitempty"`
 	// Optional. The learning rate for tuning. OSS models only. Mutually exclusive with
 	// learning_rate_multiplier.
@@ -6519,18 +6522,20 @@ type BatchJob struct {
 	// Output only. Time when the Job for the first time entered the `JOB_STATE_RUNNING`
 	// state.
 	StartTime time.Time `json:"startTime,omitempty"`
-	// The time when the BatchJob was completed. This field is for Vertex AI only.
+	// The time when the BatchJob was completed. This field is for Gemini Enterprise Agent
+	// Platform only.
 	EndTime time.Time `json:"endTime,omitempty"`
 	// The time when the BatchJob was last updated.
 	UpdateTime time.Time `json:"updateTime,omitempty"`
 	// The name of the model that produces the predictions via the BatchJob.
 	Model string `json:"model,omitempty"`
-	// Configuration for the input data. This field is for Vertex AI only.
+	// Configuration for the input data. This field is for Gemini Enterprise Agent Platform
+	// only.
 	Src *BatchJobSource `json:"src,omitempty"`
 	// Configuration for the output data.
 	Dest *BatchJobDestination `json:"dest,omitempty"`
-	// Statistics on completed and failed prediction instances. This field is for Vertex
-	// AI only.
+	// Statistics on completed and failed prediction instances. This field is for Gemini
+	// Enterprise Agent Platform only.
 	CompletionStats *CompletionStats `json:"completionStats,omitempty"`
 }
 

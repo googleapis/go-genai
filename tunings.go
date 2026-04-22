@@ -608,7 +608,7 @@ func tuningDatasetToVertex(fromObject map[string]any, parentObject map[string]an
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"examples"}) != nil {
-		return nil, fmt.Errorf("examples parameter is not supported in Vertex AI")
+		return nil, fmt.Errorf("examples parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
 	}
 
 	return toObject, nil
@@ -993,7 +993,7 @@ func (m Tunings) list(ctx context.Context, config *ListTuningJobsConfig) (*ListT
 		fromConverter = listTuningJobsResponseFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method List is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method List is only supported in the Gemini Enterprise Agent Platform (previously known as Vertex AI) client. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 
@@ -1139,7 +1139,7 @@ func (m Tunings) tune(ctx context.Context, baseModel *string, preTunedModel *Pre
 		fromConverter = tuningJobFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method Tune is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method Tune is only supported in the Gemini Enterprise Agent Platform (previously known as Vertex AI) client. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 

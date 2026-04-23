@@ -20,7 +20,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	"strings"
+	"sync"
+
+	"google.golang.org/genai/gaos"
+	"google.golang.org/genai/gaos/models/components"
 
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/auth/credentials"
@@ -50,6 +55,11 @@ type Client struct {
 	Tunings *Tunings
 	// Tokens provides access to the Tokens service.
 	AuthTokens *Tokens
+
+	// Interactions provides access to the Interactions service.
+	//
+	// Experimental: This field is experimental and may change in future versions.
+	Interactions *gaos.Interactions
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -387,6 +397,46 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 	}
 	return &apiClient{clientConfig: cc}, nil
 }
+var experimentalWarningInteractions sync.Once
+
+func newGaosClient(apiClient *InternalAPIClient) *gaos.GenAI {
+	experimentalWarningInteractions.Do(func() {
+		log.Println("Warning: The Interactions service is experimental and may change in future versions.")
+	})
+	cc := apiClient.clientConfig
+
+	var opts []gaos.SDKOption
+	sec := components.Security{}
+	if cc.APIKey != "" {
+		sec.APIKey = &cc.APIKey
+	}
+	if cc.HTTPOptions.Headers != nil {
+		sec.DefaultHeaders = make(map[string]string)
+		for key, values := range cc.HTTPOptions.Headers {
+			if len(values) > 0 {
+				sec.DefaultHeaders[key] = values[0]
+			}
+		}
+	}
+	if sec.APIKey != nil || len(sec.DefaultHeaders) > 0 {
+		opts = append(opts, gaos.WithSecurity(sec))
+	}
+
+	if cc.HTTPClient != nil {
+		opts = append(opts, gaos.WithClient(cc.HTTPClient))
+	}
+	if cc.HTTPOptions.BaseURL != "" {
+		opts = append(opts, gaos.WithServerURL(cc.HTTPOptions.BaseURL))
+	}
+	if cc.HTTPOptions.APIVersion != "" {
+		opts = append(opts, gaos.WithAPIVersion(cc.HTTPOptions.APIVersion))
+	}
+	if cc.HTTPOptions.Timeout != nil {
+		opts = append(opts, gaos.WithTimeout(*cc.HTTPOptions.Timeout))
+	}
+
+	return gaos.New(opts...)
+}
 
 // NewClient creates a new GenAI client.
 //
@@ -422,6 +472,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	gaosClient := newGaosClient(ac)
 	c := &Client{
 		clientConfig:     *cc,
 		Models:           &Models{apiClient: ac},
@@ -434,6 +485,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		Batches:          &Batches{apiClient: ac},
 		Tunings:          &Tunings{apiClient: ac},
 		AuthTokens:       &Tokens{apiClient: ac},
+		Interactions:     gaosClient.Interactions,
 	}
 	return c, nil
 }

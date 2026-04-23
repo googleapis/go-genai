@@ -20,7 +20,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	"strings"
+	"sync"
+
+	"google.golang.org/genai/interactions"
+	interactionsopt "google.golang.org/genai/interactions/option"
 
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/auth/credentials"
@@ -50,6 +55,11 @@ type Client struct {
 	Tunings *Tunings
 	// Tokens provides access to the Tokens service.
 	AuthTokens *Tokens
+
+	// Interactions provides access to the Interactions service.
+	//
+	// Experimental: This field is experimental and may change in future versions.
+	Interactions *interactions.InteractionService
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -387,6 +397,41 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 	}
 	return &apiClient{clientConfig: cc}, nil
 }
+var experimentalWarningInteractions sync.Once
+
+func newInteractionsClient(apiClient *InternalAPIClient) interactions.Client {
+	experimentalWarningInteractions.Do(func() {
+		log.Println("Warning: The Interactions service is experimental and may change in future versions.")
+	})
+	cc := apiClient.clientConfig
+
+	var opts []interactionsopt.RequestOption
+	if cc.APIKey != "" {
+		opts = append(opts, interactionsopt.WithAPIKey(cc.APIKey))
+	}
+	if cc.HTTPClient != nil {
+		opts = append(opts, interactionsopt.WithHTTPClient(cc.HTTPClient))
+	}
+	if cc.HTTPOptions.BaseURL != "" {
+		opts = append(opts, interactionsopt.WithBaseURL(cc.HTTPOptions.BaseURL))
+	}
+	if cc.HTTPOptions.APIVersion != "" {
+		opts = append(opts, interactionsopt.WithAPIVersion(cc.HTTPOptions.APIVersion))
+	}
+	if cc.HTTPOptions.Headers != nil {
+		for key, values := range cc.HTTPOptions.Headers {
+			for _, value := range values {
+				opts = append(opts, interactionsopt.WithHeaderAdd(key, value))
+			}
+		}
+	}
+	if cc.HTTPOptions.Timeout != nil {
+		opts = append(opts, interactionsopt.WithRequestTimeout(*cc.HTTPOptions.Timeout))
+	}
+
+	return interactions.NewClient(opts...)
+
+}
 
 // NewClient creates a new GenAI client.
 //
@@ -422,6 +467,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	interactionsClient := newInteractionsClient(ac)
 	c := &Client{
 		clientConfig:     *cc,
 		Models:           &Models{apiClient: ac},
@@ -434,6 +480,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		Batches:          &Batches{apiClient: ac},
 		Tunings:          &Tunings{apiClient: ac},
 		AuthTokens:       &Tokens{apiClient: ac},
+		Interactions:     &interactionsClient.Interactions,
 	}
 	return c, nil
 }

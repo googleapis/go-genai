@@ -2093,6 +2093,10 @@ func generateVideosConfigToMldev(fromObject map[string]any, parentObject map[str
 		InternalSetValueByPath(parentObject, []string{"webhookConfig"}, fromWebhookConfig)
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"resizeMode"}) != nil {
+		return nil, fmt.Errorf("resizeMode parameter is not supported in Gemini API")
+	}
+
 	return toObject, nil
 }
 
@@ -2201,6 +2205,11 @@ func generateVideosConfigToVertex(fromObject map[string]any, parentObject map[st
 
 	if InternalGetValueByPath(fromObject, []string{"webhookConfig"}) != nil {
 		return nil, fmt.Errorf("webhookConfig parameter is not supported in Gemini Enterprise Agent Platform (previously known as Vertex AI)")
+	}
+
+	fromResizeMode := InternalGetValueByPath(fromObject, []string{"resizeMode"})
+	if fromResizeMode != nil {
+		InternalSetValueByPath(parentObject, []string{"parameters", "resizeMode"}, fromResizeMode)
 	}
 
 	return toObject, nil

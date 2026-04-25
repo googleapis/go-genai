@@ -311,6 +311,7 @@ func TestLiveConnect(t *testing.T) {
 				t.Errorf("Connect() error message = %v, wantErrMessage %v", err.Error(), tt.wantErrMessage)
 				return
 			}
+
 			defer session.Close()
 		})
 	}

@@ -2973,6 +2973,9 @@ type GroundingChunkRetrievedContext struct {
 	// Optional. Name of the `FileSearchStore` containing the document. Example: `fileSearchStores/123`.
 	// This field is not supported in Vertex AI.
 	FileSearchStore string `json:"fileSearchStore,omitempty"`
+	// Optional. Page number of the retrieved context. This field is not supported in Vertex
+	// AI.
+	PageNumber *int32 `json:"pageNumber,omitempty"`
 }
 
 // A `Web` chunk is a piece of evidence that comes from a web page. It contains the

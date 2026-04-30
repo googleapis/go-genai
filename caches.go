@@ -536,11 +536,7 @@ func (m Caches) Create(ctx context.Context, model string, config *CreateCachedCo
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("cachedContents", urlParams)
-	} else {
-		path, err = InternalFormatMap("cachedContents", urlParams)
-	}
+	path, err = InternalFormatMap("cachedContents", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -612,11 +608,7 @@ func (m Caches) Get(ctx context.Context, name string, config *GetCachedContentCo
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{name}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{name}", urlParams)
-	}
+	path, err = InternalFormatMap("{name}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -689,11 +681,7 @@ func (m Caches) Delete(ctx context.Context, name string, config *DeleteCachedCon
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{name}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{name}", urlParams)
-	}
+	path, err = InternalFormatMap("{name}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -761,11 +749,7 @@ func (m Caches) Update(ctx context.Context, name string, config *UpdateCachedCon
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{name}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{name}", urlParams)
-	}
+	path, err = InternalFormatMap("{name}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -837,11 +821,7 @@ func (m Caches) list(ctx context.Context, config *ListCachedContentsConfig) (*Li
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("cachedContents", urlParams)
-	} else {
-		path, err = InternalFormatMap("cachedContents", urlParams)
-	}
+	path, err = InternalFormatMap("cachedContents", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}

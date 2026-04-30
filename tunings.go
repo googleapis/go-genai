@@ -935,11 +935,7 @@ func (m Tunings) get(ctx context.Context, name string, config *GetTuningJobConfi
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{name}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{name}", urlParams)
-	}
+	path, err = InternalFormatMap("{name}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -1081,11 +1077,7 @@ func (m Tunings) Cancel(ctx context.Context, name string, config *CancelTuningJo
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{name}:cancel", urlParams)
-	} else {
-		path, err = InternalFormatMap("{name}:cancel", urlParams)
-	}
+	path, err = InternalFormatMap("{name}:cancel", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}

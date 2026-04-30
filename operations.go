@@ -164,11 +164,7 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	}
+	path, err = InternalFormatMap("{operationName}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -329,11 +325,7 @@ func (m Operations) getUploadToFileSearchStoreOperation(ctx context.Context, ope
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	}
+	path, err = InternalFormatMap("{operationName}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -411,11 +403,7 @@ func (m Operations) getImportFileOperation(ctx context.Context, operationName st
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	}
+	path, err = InternalFormatMap("{operationName}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}

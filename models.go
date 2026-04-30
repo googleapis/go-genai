@@ -4511,11 +4511,7 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{model}:generateContent", urlParams)
-	} else {
-		path, err = InternalFormatMap("{model}:generateContent", urlParams)
-	}
+	path, err = InternalFormatMap("{model}:generateContent", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -4581,11 +4577,7 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{model}:streamGenerateContent?alt=sse", urlParams)
-	} else {
-		path, err = InternalFormatMap("{model}:streamGenerateContent?alt=sse", urlParams)
-	}
+	path, err = InternalFormatMap("{model}:streamGenerateContent?alt=sse", urlParams)
 	if err != nil {
 		return yieldErrorAndEndIterator[GenerateContentResponse](fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err))
 	}
@@ -4725,11 +4717,7 @@ func (m Models) generateImages(ctx context.Context, model string, prompt string,
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{model}:predict", urlParams)
-	} else {
-		path, err = InternalFormatMap("{model}:predict", urlParams)
-	}
+	path, err = InternalFormatMap("{model}:predict", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -5116,11 +5104,7 @@ func (m Models) Get(ctx context.Context, model string, config *GetModelConfig) (
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{name}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{name}", urlParams)
-	}
+	path, err = InternalFormatMap("{name}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -5198,11 +5182,7 @@ func (m Models) list(ctx context.Context, config *ListModelsConfig) (*ListModels
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{models_url}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{models_url}", urlParams)
-	}
+	path, err = InternalFormatMap("{models_url}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -5367,11 +5347,7 @@ func (m Models) Delete(ctx context.Context, model string, config *DeleteModelCon
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{name}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{name}", urlParams)
-	}
+	path, err = InternalFormatMap("{name}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -5440,11 +5416,7 @@ func (m Models) CountTokens(ctx context.Context, model string, contents []*Conte
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{model}:countTokens", urlParams)
-	} else {
-		path, err = InternalFormatMap("{model}:countTokens", urlParams)
-	}
+	path, err = InternalFormatMap("{model}:countTokens", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -5587,11 +5559,7 @@ func (m Models) generateVideos(ctx context.Context, model string, prompt *string
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{model}:predictLongRunning", urlParams)
-	} else {
-		path, err = InternalFormatMap("{model}:predictLongRunning", urlParams)
-	}
+	path, err = InternalFormatMap("{model}:predictLongRunning", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}

@@ -382,7 +382,18 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 			}
 			cc.HTTPClient = client
 		} else {
-			cc.HTTPClient = &http.Client{}
+			// If credentials are provided for Gemini API, create an authenticated HTTP client
+			if cc.Credentials != nil {
+				client, err := httptransport.NewClient(&httptransport.Options{
+					Credentials: cc.Credentials,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("failed to create HTTP client: %w", err)
+				}
+				cc.HTTPClient = client
+			} else {
+				cc.HTTPClient = &http.Client{}
+			}
 		}
 	}
 	return &apiClient{clientConfig: cc}, nil

@@ -23,13 +23,15 @@ import (
 	"iter"
 	"mime"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
-func createFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func createFileSearchStoreConfigToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromDisplayName := InternalGetValueByPath(fromObject, []string{"displayName"})
@@ -37,15 +39,25 @@ func createFileSearchStoreConfigToMldev(fromObject map[string]any, parentObject 
 		InternalSetValueByPath(parentObject, []string{"displayName"}, fromDisplayName)
 	}
 
+	fromEmbeddingModel := InternalGetValueByPath(fromObject, []string{"embeddingModel"})
+	if fromEmbeddingModel != nil {
+		fromEmbeddingModel, err = InternalTModel(ac, fromEmbeddingModel)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(parentObject, []string{"embeddingModel"}, fromEmbeddingModel)
+	}
+
 	return toObject, nil
 }
 
-func createFileSearchStoreParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+func createFileSearchStoreParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
 	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
 	if fromConfig != nil {
-		_, err = createFileSearchStoreConfigToMldev(fromConfig.(map[string]any), toObject, rootObject)
+		_, err = createFileSearchStoreConfigToMldev(ac, fromConfig.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -321,7 +333,7 @@ func (m FileSearchStores) Create(ctx context.Context, config *CreateFileSearchSt
 	}
 	var response = new(FileSearchStore)
 	var responseMap map[string]any
-	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	var toConverter func(*InternalAPIClient, map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
 		return nil, fmt.Errorf("method Create is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
@@ -331,7 +343,7 @@ func (m FileSearchStores) Create(ctx context.Context, config *CreateFileSearchSt
 
 	}
 
-	body, err := toConverter(parameterMap, nil, parameterMap)
+	body, err := toConverter(m.apiClient, parameterMap, nil, parameterMap)
 	if err != nil {
 		return nil, err
 	}
@@ -880,4 +892,36 @@ func (m FileSearchStores) UploadToFileSearchStoreFromPath(ctx context.Context, p
 	copiedCfg.HTTPOptions.Headers.Add("X-Goog-Upload-File-Name", fileName)
 
 	return m.UploadToFileSearchStore(ctx, osf, FileSearchStoreName, &copiedCfg)
+}
+
+// DownloadMedia downloads media using a Media ID or URI.
+func (m FileSearchStores) DownloadMedia(ctx context.Context, uri string, config *DownloadMediaConfig) ([]byte, error) {
+	if m.apiClient.clientConfig.Backend == BackendVertexAI {
+		return nil, fmt.Errorf("method DownloadMedia is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+	}
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse uri: %w", err)
+	}
+	path := u.Path
+	if strings.HasPrefix(path, "/") {
+		path = strings.TrimPrefix(path, "/")
+	}
+
+	if !strings.Contains(path, "/media/") {
+		return nil, fmt.Errorf("invalid uri format: %s, expected to contain /media/", uri)
+	}
+
+	q := u.Query()
+	q.Set("alt", "media")
+	path = fmt.Sprintf("%s?%s", path, q.Encode())
+
+	var configHTTPOptions *HTTPOptions
+	if config != nil {
+		configHTTPOptions = config.HTTPOptions
+	}
+	httpOptions := mergeHTTPOptions(m.apiClient.clientConfig, configHTTPOptions)
+
+	return downloadFile(ctx, m.apiClient, path, httpOptions)
 }

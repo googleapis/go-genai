@@ -5974,6 +5974,9 @@ type CreateFileSearchStoreConfig struct {
 	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 	// Optional. The human-readable display name for the file search store.
 	DisplayName string `json:"displayName,omitempty"`
+	// Optional. The embedding model to use for the FileSearchStore.
+	// Format: `models/{model}`. If not specified, the default embedding model will be used.
+	EmbeddingModel string `json:"embeddingModel,omitempty"`
 }
 
 // A collection of Documents.
@@ -5995,6 +5998,8 @@ type FileSearchStore struct {
 	// The size of raw bytes ingested into the FileSearchStore. This is the
 	// total size of all the documents in the FileSearchStore.
 	SizeBytes int64 `json:"sizeBytes,omitempty,string"`
+	// Optional. The embedding model used by the FileSearchStore.
+	EmbeddingModel string `json:"embeddingModel,omitempty"`
 }
 
 func (f *FileSearchStore) UnmarshalJSON(data []byte) error {
@@ -7687,4 +7692,10 @@ type CountTokensResult struct {
 type ComputeTokensResult struct {
 	// Optional. Lists of tokens info from the input.
 	TokensInfo []*TokensInfo `json:"tokensInfo,omitempty"`
+}
+
+// Used to override the default configuration.
+type DownloadMediaConfig struct {
+	// Optional. Used to override HTTP request options.
+	HTTPOptions *HTTPOptions `json:"httpOptions,omitempty"`
 }

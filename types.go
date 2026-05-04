@@ -2976,6 +2976,8 @@ type GroundingChunkRetrievedContext struct {
 	// Optional. Page number of the retrieved context. This field is not supported in Vertex
 	// AI.
 	PageNumber *int32 `json:"pageNumber,omitempty"`
+	// Optional. Media ID. This field is not supported in Vertex AI.
+	MediaID string `json:"mediaId,omitempty"`
 }
 
 // A `Web` chunk is a piece of evidence that comes from a web page. It contains the

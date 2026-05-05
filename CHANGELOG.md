@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.56.0](https://github.com/googleapis/go-genai/compare/v1.55.0...v1.56.0) (2026-05-04)
+
+
+### Features
+
+* [Python] Multimodal file search ([c32ae6e](https://github.com/googleapis/go-genai/commit/c32ae6e6a1708942b96216f51750523091f2304b))
+* Multimodal file search ([989d064](https://github.com/googleapis/go-genai/commit/989d0645da796e10c02ab2359512f600edc741d2))
+
+
+### Bug Fixes
+
+* Simplify generated Go URL path formatting when VertexAI and MLDev URLs are identical. ([d90a592](https://github.com/googleapis/go-genai/commit/d90a59223923bb95b58a79a6c080e953a966ae1d)), closes [#761](https://github.com/googleapis/go-genai/issues/761)
+
 ## [1.55.0](https://github.com/googleapis/go-genai/compare/v1.54.0...v1.55.0) (2026-04-29)
 
 

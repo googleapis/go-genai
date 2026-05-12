@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.57.0](https://github.com/googleapis/go-genai/compare/v1.56.0...v1.57.0) (2026-05-12)
+
+
+### Features
+
+* Expose Test and Server of the Replay API Client for the cross module usage in the AgentPlatform module. ([27b142d](https://github.com/googleapis/go-genai/commit/27b142d7c2aea6794c4b9d88d6e3f68f69fb17a3))
+* support Blocking FunctionCall in Live API in AgentPlatform (Vertex) ([e5e653c](https://github.com/googleapis/go-genai/commit/e5e653c939fb25dba1d54726dba6735b51002267))
+* support speech to speech translation in Gemini Live ([621b55d](https://github.com/googleapis/go-genai/commit/621b55d07426e706991c7c9f2602658cf1068cbc))
+
+
+### Bug Fixes
+
+* Fix version redaction logic in the replay API client. ([af4c931](https://github.com/googleapis/go-genai/commit/af4c93111f6a266674370a45f3fb15e1742d064e))
+
 ## [1.56.0](https://github.com/googleapis/go-genai/compare/v1.55.0...v1.56.0) (2026-05-04)
 
 

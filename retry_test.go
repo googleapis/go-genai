@@ -132,6 +132,20 @@ func TestBackoffDelay(t *testing.T) {
 	}
 }
 
+func TestBackoffDelay_CapsJitter(t *testing.T) {
+	opts := &HTTPRetryOptions{
+		InitialDelay: time.Second,
+		MaxDelay:     time.Second,
+		ExpBase:      2,
+		Jitter:       5 * time.Second,
+	}
+	for i := 0; i < 50; i++ {
+		if got := backoffDelay(opts, 1); got > time.Second {
+			t.Fatalf("backoffDelay() = %v, want <= MaxDelay (1s)", got)
+		}
+	}
+}
+
 func TestDoRequestWithRetry(t *testing.T) {
 	tests := []struct {
 		desc          string

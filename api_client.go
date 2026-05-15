@@ -470,10 +470,10 @@ func resolvedRetryOptions(opts *HTTPRetryOptions) *HTTPRetryOptions {
 
 func backoffDelay(opts *HTTPRetryOptions, retryNum int) time.Duration {
 	delay := float64(opts.InitialDelay) * math.Pow(opts.ExpBase, float64(retryNum-1))
+	delay += rand.Float64() * float64(opts.Jitter)
 	if maxD := float64(opts.MaxDelay); delay > maxD {
 		delay = maxD
 	}
-	delay += rand.Float64() * float64(opts.Jitter)
 	return time.Duration(delay)
 }
 

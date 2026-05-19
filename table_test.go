@@ -38,17 +38,6 @@ func snakeToPascal(s string) string {
 	return strings.Join(parts, "")
 }
 
-func snakeToCamel(s string) string {
-	parts := strings.Split(s, "_")
-	for i, part := range parts {
-		if i == 0 {
-			continue
-		}
-		parts[i] = strings.ToUpper(part[:1]) + part[1:]
-	}
-	return strings.Join(parts, "")
-}
-
 // methodParamType is extra mapping of method param name to its param type because reflect module cannot process private struct.
 var methodParamType = map[string]map[string]reflect.Type{
 	"editImage": map[string]reflect.Type{

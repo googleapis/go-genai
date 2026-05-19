@@ -609,3 +609,33 @@ func moveValueRecursive(data any, sourceKeys []string, destKeys []string, keyIdx
 		}
 	}
 }
+
+func snakeToCamel(s string) string {
+	parts := strings.Split(s, "_")
+	for i := 1; i < len(parts); i++ {
+		if len(parts[i]) > 0 {
+			parts[i] = strings.ToUpper(parts[i][:1]) + parts[i][1:]
+		}
+	}
+	return strings.Join(parts, "")
+}
+
+//nolint:unused
+func convertKeysSnakeToCamel(val any) any {
+	switch v := val.(type) {
+	case map[string]any:
+		res := make(map[string]any)
+		for k, val := range v {
+			camelK := snakeToCamel(k)
+			res[camelK] = convertKeysSnakeToCamel(val)
+		}
+		return res
+	case []any:
+		for i, val := range v {
+			v[i] = convertKeysSnakeToCamel(val)
+		}
+		return v
+	default:
+		return val
+	}
+}

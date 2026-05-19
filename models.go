@@ -1560,6 +1560,11 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 
 func generateContentParametersToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+	if fromConfig, ok := InternalGetValueByPath(fromObject, []string{"config"}).(map[string]any); ok {
+		if ttl, ok := fromConfig["requestTtl"]; ok && ttl != "" {
+			toObject["requestTtl"] = ttl
+		}
+	}
 
 	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
@@ -1601,6 +1606,11 @@ func generateContentParametersToMldev(ac *InternalAPIClient, fromObject map[stri
 
 func generateContentParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
+	if fromConfig, ok := InternalGetValueByPath(fromObject, []string{"config"}).(map[string]any); ok {
+		if ttl, ok := fromConfig["requestTtl"]; ok && ttl != "" {
+			toObject["requestTtl"] = ttl
+		}
+	}
 
 	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {

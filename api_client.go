@@ -25,6 +25,8 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"sync"
+	"sync/atomic"
 	"net/textproto"
 	"net/url"
 	"reflect"
@@ -42,6 +44,8 @@ const vertexPrefix = "vertex-genai-modules/"
 
 type apiClient struct {
 	clientConfig *ClientConfig
+	piClients    sync.Map
+	hasPI        int32
 }
 
 // InternalAPIClient is an internal type that exposes the apiClient struct.
@@ -402,8 +406,16 @@ func inferTimeout(ctx context.Context, ac *apiClient, requestTimeout *time.Durat
 }
 
 func doRequest(ac *apiClient, req *http.Request) (*http.Response, error) {
-	// Create a new HTTP client and send the request
 	client := ac.clientConfig.HTTPClient
+	if atomic.LoadInt32(&ac.hasPI) == 1 {
+		if modelName := extractModelFromPath(req.URL.Path); modelName != "" {
+			if piVal, ok := ac.piClients.Load(modelName); ok {
+				if piClient, ok := piVal.(*http.Client); ok {
+					client = piClient
+				}
+			}
+		}
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("doRequest: error sending request: %w", err)

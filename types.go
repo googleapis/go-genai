@@ -2783,6 +2783,9 @@ type GenerateContentConfig struct {
 	ModelArmorConfig *ModelArmorConfig `json:"modelArmorConfig,omitempty"`
 	// Optional. The service tier to use for the request. For example, ServiceTier.FLEX.
 	ServiceTier ServiceTier `json:"serviceTier,omitempty"`
+	// Optional. The timeout for the private inference request. e.g. '120s'. If not
+	// set, the default timeout of the corresponding `request` is used.
+	RequestTTL string `json:"requestTtl,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {

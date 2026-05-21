@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.58.0](https://github.com/googleapis/go-genai/compare/v1.57.0...v1.58.0) (2026-05-21)
+
+
+### Features
+
+* add `enable_prompt_injection_detection` for Computer Use feature for the Gemini API. ([19c2566](https://github.com/googleapis/go-genai/commit/19c2566dcfdbfdbc5821ab8ffb71f6155f084dab))
+* add new fields ([1608e80](https://github.com/googleapis/go-genai/commit/1608e807c1aa9d80dfc484db6cc37f49ee4e69a1))
+
 ## [1.57.0](https://github.com/googleapis/go-genai/compare/v1.56.0...v1.57.0) (2026-05-12)
 
 

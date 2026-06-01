@@ -1777,6 +1777,17 @@ type Schema struct {
 	Title string `json:"title,omitempty"`
 	// Optional. Data type of the schema field.
 	Type Type `json:"type,omitempty"`
+	// Optional. Can either be a boolean or an object; controls the presence of additional
+	// properties.
+	AdditionalProperties any `json:"additionalProperties,omitempty"`
+	// Optional. A map of definitions for use by `ref` Only allowed at the root of the schema.
+	Defs map[string]*Schema `json:"defs,omitempty"`
+	// Optional. Allows indirect references between schema nodes. The value should be a
+	// valid reference to a child of the root `defs`. For example, the following schema
+	// defines a reference to a schema node named "Pet": type: object properties: pet: ref:
+	// #/defs/Pet defs: Pet: type: object properties: name: type: string The value of the
+	// "pet" property is a reference to the schema node named "Pet". See details in https://json-schema.org/understanding-json-schema/structuring
+	Ref string `json:"ref,omitempty"`
 }
 
 // Config for model selection.

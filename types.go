@@ -7626,7 +7626,7 @@ type LiveClientMessage struct {
 }
 
 // Config for stream translation.
-type StreamTranslationConfig struct {
+type StreamingTranslationConfig struct {
 	// Optional. If true, the model will generate audio when the target language is
 	// spoken, essentially it will parrot the input. If false, we will not produce
 	// audio for the target language.
@@ -7710,8 +7710,8 @@ type LiveConnectConfig struct {
 	// Optional. Safety settings in the request to block unsafe content in the
 	// response.
 	SafetySettings []*SafetySetting `json:"safetySettings,omitempty"`
-	// Optional. Config for stream translation.
-	StreamTranslationConfig *StreamTranslationConfig `json:"streamTranslationConfig,omitempty"`
+	// Optional. Config for streaming translation.
+	StreamingTranslationConfig *StreamingTranslationConfig `json:"streamingTranslationConfig,omitempty"`
 }
 
 // Parameters for sending client content to the live API.

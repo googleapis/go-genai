@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.59.0](https://github.com/googleapis/go-genai/compare/v1.58.0...v1.59.0) (2026-06-03)
+
+
+### Features
+
+* Add Agent Platform MCP support to async generate_content ([4b138c2](https://github.com/googleapis/go-genai/commit/4b138c23dba7df1d76626fbc4565d4838469ce96))
+* Add transcription language code. ([cc4dd9c](https://github.com/googleapis/go-genai/commit/cc4dd9cdd6e3c09044493c439c89cb67254539de))
+* Add TranslationConfig for live translation. ([76f4126](https://github.com/googleapis/go-genai/commit/76f4126a18dbb6c4606f649e1f8400003364f785))
+* additional computer_use field support for vertex. ([8831eb3](https://github.com/googleapis/go-genai/commit/8831eb39c99879b30695b3c1262d70a0b2b25450))
+* Support 'additionalProperties', 'defs' and 'ref' in the GenerateContent.Schema type. ([996b831](https://github.com/googleapis/go-genai/commit/996b8316fdc4dfe1bb5d70e3af45542a4a55bf9e))
+* Support Reinforcement Tuning in GenAI SDK ([fecb49e](https://github.com/googleapis/go-genai/commit/fecb49e3d7870921be23054457b7b5163b8bba4f))
+* Support ReinforcementTuning in GenAI SDK including ValidateReward API method. ([c95d115](https://github.com/googleapis/go-genai/commit/c95d115482daa0e69a02b25c239bd232bf62f054))
+
 ## [1.58.0](https://github.com/googleapis/go-genai/compare/v1.57.0...v1.58.0) (2026-05-21)
 
 

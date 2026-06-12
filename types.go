@@ -3708,7 +3708,7 @@ type GenerateImagesConfig struct {
 	// only).
 	OutputCompressionQuality *int32 `json:"outputCompressionQuality,omitempty"`
 	// Optional. Whether to add a watermark to the generated images.
-	AddWatermark bool `json:"addWatermark,omitempty"`
+	AddWatermark *bool `json:"addWatermark,omitempty"`
 	// Optional. User specified labels to track billing usage.
 	Labels map[string]string `json:"labels,omitempty"`
 	// Optional. The size of the largest dimension of the generated image.

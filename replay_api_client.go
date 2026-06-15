@@ -369,7 +369,7 @@ func convertKeysToCamelCase(v any, parentKey string) any {
 				newMap[key] = value
 				continue
 			}
-			camelCaseKey := toCamelCase(key)
+			camelCaseKey := snakeToCamel(key)
 			if parentKey == "response" && key == "body_segments" {
 				newMap[camelCaseKey] = value
 			} else if parentKey == "tool_response" && key == "response" {
@@ -388,27 +388,6 @@ func convertKeysToCamelCase(v any, parentKey string) any {
 	default:
 		return v
 	}
-}
-
-// toCamelCase converts a string from snake case to camel case.
-// Examples:
-//
-//	"foo" -> "foo"
-//	"fooBar" -> "fooBar"
-//	"foo_bar" -> "fooBar"
-//	"foo_bar_baz" -> "fooBarBaz"
-func toCamelCase(s string) string {
-	parts := strings.Split(s, "_")
-	if len(parts) == 1 {
-		// There is no underscore, so no need to modify the string.
-		return s
-	}
-	// Skip the first word and convert the first letter of the remaining words to uppercase.
-	for i, part := range parts[1:] {
-		parts[i+1] = strings.ToUpper(part[:1]) + part[1:]
-	}
-	// Concat the parts back together to mak a camelCase string.
-	return strings.Join(parts, "")
 }
 
 var stringComparator = cmp.Comparer(func(x, y string) bool {

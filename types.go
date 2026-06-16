@@ -7437,7 +7437,7 @@ type LiveServerSetupComplete struct {
 	SessionID string `json:"sessionId,omitempty"`
 }
 
-// Audio transcription in Server Conent.
+// Audio transcription in Server Content.
 type Transcription struct {
 	// Optional. Transcription text.
 	Text string `json:"text,omitempty"`
@@ -7489,6 +7489,8 @@ type LiveServerContent struct {
 	// it is waiting for more input from the user, e.g. because it expects the
 	// user to continue talking.
 	WaitingForInput bool `json:"waitingForInput,omitempty"`
+	// Optional. Low latency transcription updated while the user is speaking.
+	InterimInputTranscription *Transcription `json:"interimInputTranscription,omitempty"`
 }
 
 // Request for the client to execute the `function_calls` and return the responses with
@@ -7621,6 +7623,45 @@ type VoiceActivityDetectionSignal struct {
 type VoiceActivity struct {
 	// Optional. The type of the voice activity signal.
 	VoiceActivityType VoiceActivityType `json:"voiceActivityType,omitempty"`
+	// Optional. The time voice activity detected in audio time, relative to the start of
+	// the audio stream.
+	AudioOffset time.Duration `json:"audioOffset,omitempty"`
+}
+
+func (v *VoiceActivity) UnmarshalJSON(data []byte) error {
+	type Alias VoiceActivity
+	aux := &struct {
+		AudioOffset *InternalDurationJSON `json:"audioOffset,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(v),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if !reflect.ValueOf(aux.AudioOffset).IsZero() {
+		v.AudioOffset = time.Duration(*aux.AudioOffset)
+	}
+
+	return nil
+}
+
+func (v *VoiceActivity) MarshalJSON() ([]byte, error) {
+	type Alias VoiceActivity
+	aux := &struct {
+		AudioOffset *InternalDurationJSON `json:"audioOffset,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(v),
+	}
+
+	if !reflect.ValueOf(v.AudioOffset).IsZero() {
+		aux.AudioOffset = (*InternalDurationJSON)(&v.AudioOffset)
+	}
+
+	return json.Marshal(aux)
 }
 
 // Response message for API call.
@@ -7714,13 +7755,29 @@ type ContextWindowCompressionConfig struct {
 	SlidingWindow *SlidingWindow `json:"slidingWindow,omitempty"`
 }
 
+// Indicates the language of the audio should be automatically detected.
+type LanguageAuto struct {
+}
+
+// Provides hints to the model about possible languages present in the audio.
+type LanguageHints struct {
+	// Optional. BCP-47 language codes. At least one must be specified.
+	LanguageCodes []string `json:"languageCodes,omitempty"`
+}
+
 // The audio transcription configuration in Setup.
 type AudioTranscriptionConfig struct {
-	// Optional. The language codes of the audio. BCP-47 language code. If not set, the
-	// transcription will be in the language detected by the model. If set, the server will
-	// use the language code specified in the model config as a hint for the language of
-	// the audio
+	// Optional. Deprecated: use LanguageAuto or LanguageHints instead.
 	LanguageCodes []string `json:"languageCodes,omitempty"`
+	// Optional. The model will detect the language automatically. Do not use together with
+	// LanguageHints.
+	LanguageAuto *LanguageAuto `json:"languageAuto,omitempty"`
+	// Optional. Specifies one or more languages in the audio. Do not use together with
+	// LanguageAuto.
+	LanguageHints *LanguageHints `json:"languageHints,omitempty"`
+	// Optional. A list of phrases used for speech adaptation, which biases the ASR model
+	// to improve recognition of these specific terms.
+	AdaptationPhrases []string `json:"adaptationPhrases,omitempty"`
 }
 
 // Config for proactivity features.

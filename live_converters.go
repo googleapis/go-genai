@@ -26,6 +26,21 @@ func audioTranscriptionConfigToMldev(fromObject map[string]any, parentObject map
 		return nil, fmt.Errorf("languageCodes parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
 	}
 
+	fromLanguageAuto := InternalGetValueByPath(fromObject, []string{"languageAuto"})
+	if fromLanguageAuto != nil {
+		InternalSetValueByPath(toObject, []string{"languageAuto"}, fromLanguageAuto)
+	}
+
+	fromLanguageHints := InternalGetValueByPath(fromObject, []string{"languageHints"})
+	if fromLanguageHints != nil {
+		InternalSetValueByPath(toObject, []string{"languageHints"}, fromLanguageHints)
+	}
+
+	fromAdaptationPhrases := InternalGetValueByPath(fromObject, []string{"adaptationPhrases"})
+	if fromAdaptationPhrases != nil {
+		InternalSetValueByPath(toObject, []string{"adaptationPhrases"}, fromAdaptationPhrases)
+	}
+
 	return toObject, nil
 }
 
@@ -1080,6 +1095,11 @@ func voiceActivityFromMldev(fromObject map[string]any, parentObject map[string]a
 		InternalSetValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
 	}
 
+	fromAudioOffset := InternalGetValueByPath(fromObject, []string{"audioOffset"})
+	if fromAudioOffset != nil {
+		InternalSetValueByPath(toObject, []string{"audioOffset"}, fromAudioOffset)
+	}
+
 	return toObject, nil
 }
 
@@ -1089,6 +1109,11 @@ func voiceActivityFromVertex(fromObject map[string]any, parentObject map[string]
 	fromVoiceActivityType := InternalGetValueByPath(fromObject, []string{"type"})
 	if fromVoiceActivityType != nil {
 		InternalSetValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
+	}
+
+	fromAudioOffset := InternalGetValueByPath(fromObject, []string{"audioOffset"})
+	if fromAudioOffset != nil {
+		InternalSetValueByPath(toObject, []string{"audioOffset"}, fromAudioOffset)
 	}
 
 	return toObject, nil

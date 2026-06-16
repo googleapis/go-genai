@@ -80,7 +80,7 @@ func TestModelsGenerateContentStream(t *testing.T) {
 							}
 							module := reflect.ValueOf(*client).FieldByName("Models")
 							method := module.MethodByName("GenerateContentStream")
-							args := extractArgs(ctx, t, method, &testTableFile, testTableItem)
+							args := extractArgs(ctx, t, method, &testTableFile, testTableItem, backend.Backend == BackendVertexAI)
 							method.Call(args)
 							model := args[1].Interface().(string)
 							contents := args[2].Interface().([]*Content)

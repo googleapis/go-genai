@@ -207,11 +207,25 @@ func redactProjectLocationPath(path string) string {
 	return projectLocationRegexp.ReplaceAllString(path, "{PROJECT_AND_LOCATION_PATH}")
 }
 
-func redactRequestBody(body map[string]any) map[string]any {
-	for key, value := range body {
-		if _, ok := value.(string); ok {
-			body[key] = redactProjectLocationPath(value.(string))
+func redactRequestBody(body any) any {
+	if m, ok := body.(map[string]any); ok {
+		for key, value := range m {
+			if s, ok := value.(string); ok {
+				m[key] = redactProjectLocationPath(s)
+			} else {
+				m[key] = redactRequestBody(value)
+			}
 		}
+		return m
+	} else if l, ok := body.([]any); ok {
+		for i, value := range l {
+			if s, ok := value.(string); ok {
+				l[i] = redactProjectLocationPath(s)
+			} else {
+				l[i] = redactRequestBody(value)
+			}
+		}
+		return l
 	}
 	return body
 }
@@ -266,7 +280,7 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 			rac.t.Fatalf("Error unmarshalling body, err: %+v", err)
 		}
 	}
-	bodySegment = redactRequestBody(bodySegment)
+	bodySegment = redactRequestBody(bodySegment).(map[string]any)
 	bodySegment = convertKeysToCamelCase(bodySegment, "").(map[string]any)
 	omitEmptyValues(bodySegment)
 
@@ -283,6 +297,10 @@ func (rac *replayAPIClient) assertRequest(sdkRequest *http.Request, replayReques
 	replayHeaders := make(map[string]string)
 	for k, v := range replayRequest.Headers {
 		replayHeaders[strings.ToLower(k)] = v
+	}
+
+	for i, segment := range replayRequest.BodySegments {
+		replayRequest.BodySegments[i] = redactRequestBody(segment).(map[string]any)
 	}
 
 	got := map[string]any{

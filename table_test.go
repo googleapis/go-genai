@@ -97,7 +97,7 @@ func sanitizeGotSDKResponses(t *testing.T, responses []map[string]any) {
 	}
 }
 
-func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTableFile *testTableFile, testTableItem *testTableItem) []reflect.Value {
+func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTableFile *testTableFile, testTableItem *testTableItem, isVertex bool) []reflect.Value {
 	t.Helper()
 	args := []reflect.Value{
 		reflect.ValueOf(ctx),
@@ -107,6 +107,13 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 		parameterName := snakeToCamel(testTableFile.ParameterNames[i-1])
 		parameterValue, ok := testTableItem.Parameters[parameterName]
 		if ok {
+			if parameterName == "model" {
+				if isVertex && testTableItem.VertexModel != "" {
+					parameterValue = testTableItem.VertexModel
+				} else if !isVertex && testTableItem.MLDevModel != "" {
+					parameterValue = testTableItem.MLDevModel
+				}
+			}
 			// converts string contents to []*Content, required for some streaming tests.
 			if parameterName == "contents" {
 				if s, ok := parameterValue.(string); ok {
@@ -340,7 +347,7 @@ func TestTable(t *testing.T) {
 									}
 								}
 
-								args := extractArgs(ctx, t, method, &testTableFile, testTableItem)
+								args := extractArgs(ctx, t, method, &testTableFile, testTableItem, backend.Backend == BackendVertexAI)
 
 								// Inject unknown fields to the replay file to simulate the case where the SDK adds
 								// unknown fields to the response.

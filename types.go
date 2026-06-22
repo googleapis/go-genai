@@ -6871,7 +6871,7 @@ type InlinedEmbedContentResponse struct {
 	Metadata map[string]any `json:"metadata,omitempty"`
 }
 
-// Config for `des` parameter.
+// Config for `dest` parameter.
 type BatchJobDestination struct {
 	// Storage format of the output files. Must be one of:
 	// 'jsonl', 'bigquery', 'vertex-dataset'.
@@ -7607,10 +7607,10 @@ type LiveServerSessionResumptionUpdate struct {
 	// Presence of this index allows users to transparently reconnect and avoid issue of
 	// losing some part of realtime audio input/video. If client wishes to temporarily disconnect
 	// (for example as result of receiving GoAway) they can do it without losing state by
-	// buffering messages sent since last `SessionResmumptionTokenUpdate`. This field will
+	// buffering messages sent since last `SessionResumptionTokenUpdate`. This field will
 	// enable them to limit buffering (avoid keeping all requests in RAM).
 	// Note: This should not be used for when resuming a session at some time later -- in
-	// those cases partial audio and video frames arelikely not needed.
+	// those cases partial audio and video frames are likely not needed.
 	LastConsumedClientMessageIndex int64 `json:"lastConsumedClientMessageIndex,omitempty,string"`
 }
 

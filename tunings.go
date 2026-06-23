@@ -793,6 +793,11 @@ func generationConfigFromVertex(fromObject map[string]any, parentObject map[stri
 		InternalSetValueByPath(toObject, []string{"topP"}, fromTopP)
 	}
 
+	fromResponseFormat := InternalGetValueByPath(fromObject, []string{"responseFormat"})
+	if fromResponseFormat != nil {
+		InternalSetValueByPath(toObject, []string{"responseFormat"}, fromResponseFormat)
+	}
+
 	return toObject, nil
 }
 

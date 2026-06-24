@@ -7212,6 +7212,10 @@ type testTableItem struct {
 	// Optional. Keys to ignore when comparing the request and response. This is useful
 	// for tests that are not deterministic.
 	IgnoreKeys []string `json:"ignoreKeys,omitempty"`
+	// Optional. Model to use when running against Vertex.
+	VertexModel string `json:"vertexModel,omitempty"`
+	// Optional. Model to use when running against MLDev.
+	MLDevModel string `json:"mldevModel,omitempty"`
 }
 
 type testTableFile struct {

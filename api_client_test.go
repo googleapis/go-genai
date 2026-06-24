@@ -647,6 +647,49 @@ func TestSendStreamRequest(t *testing.T) {
 	}
 }
 
+func TestSendStreamRequestTimeoutNotCancelledEarly(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		flusher := w.(http.Flusher)
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		for i := 1; i <= 4; i++ {
+			fmt.Fprintf(w, "data:{\"chunk\":%d}\n\n", i)
+			flusher.Flush()
+			time.Sleep(10 * time.Millisecond)
+		}
+	}))
+	defer ts.Close()
+
+	ac := &apiClient{clientConfig: &ClientConfig{
+		Backend: BackendGeminiAPI,
+		HTTPOptions: HTTPOptions{
+			BaseURL:    ts.URL,
+			APIVersion: "v0",
+			Headers:    http.Header{"User-Agent": {"test-user-agent"}, "X-Goog-Api-Key": {"test-api-key"}},
+		},
+		HTTPClient: ts.Client(),
+	}}
+
+	requestTimeout := 5 * time.Second
+	var output responseStream[map[string]any]
+	if err := sendStreamRequest(context.Background(), ac, "test", "POST", map[string]any{"key": "value"}, &HTTPOptions{Timeout: &requestTimeout, BaseURL: ac.clientConfig.HTTPOptions.BaseURL}, &output); err != nil {
+		t.Fatalf("sendStreamRequest() error = %v", err)
+	}
+
+	var got []map[string]any
+	for resp, err := range iterateResponseStream(&output, func(m map[string]any) (*map[string]any, error) { return &m, nil }) {
+		if err != nil {
+			t.Fatalf("iterateResponseStream() error = %v", err)
+		}
+		got = append(got, *resp)
+	}
+
+	want := []map[string]any{{"chunk": float64(1)}, {"chunk": float64(2)}, {"chunk": float64(3)}, {"chunk": float64(4)}}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("stream response mismatch (-want +got):\n%s", diff)
+	}
+}
+
 func TestMapToStruct(t *testing.T) {
 	testCases := []struct {
 		name      string

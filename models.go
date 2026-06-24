@@ -218,6 +218,31 @@ func computeTokensResponseFromVertex(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
+func computerUseToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromEnvironment := InternalGetValueByPath(fromObject, []string{"environment"})
+	if fromEnvironment != nil {
+		InternalSetValueByPath(toObject, []string{"environment"}, fromEnvironment)
+	}
+
+	fromExcludedPredefinedFunctions := InternalGetValueByPath(fromObject, []string{"excludedPredefinedFunctions"})
+	if fromExcludedPredefinedFunctions != nil {
+		InternalSetValueByPath(toObject, []string{"excludedPredefinedFunctions"}, fromExcludedPredefinedFunctions)
+	}
+
+	fromEnablePromptInjectionDetection := InternalGetValueByPath(fromObject, []string{"enablePromptInjectionDetection"})
+	if fromEnablePromptInjectionDetection != nil {
+		InternalSetValueByPath(toObject, []string{"enablePromptInjectionDetection"}, fromEnablePromptInjectionDetection)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"disabledSafetyPolicies"}) != nil {
+		return nil, fmt.Errorf("disabledSafetyPolicies parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
 func contentEmbeddingFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -4031,6 +4056,11 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 
 	fromComputerUse := InternalGetValueByPath(fromObject, []string{"computerUse"})
 	if fromComputerUse != nil {
+		fromComputerUse, err = computerUseToVertex(fromComputerUse.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"computerUse"}, fromComputerUse)
 	}
 

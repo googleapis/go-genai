@@ -91,20 +91,6 @@ const (
 	TypeNULL Type = "NULL"
 )
 
-// The environment being operated.
-type Environment string
-
-const (
-	// Defaults to browser.
-	EnvironmentUnspecified Environment = "ENVIRONMENT_UNSPECIFIED"
-	// Operates in a web browser.
-	EnvironmentBrowser Environment = "ENVIRONMENT_BROWSER"
-	// Operates in a mobile environment.
-	EnvironmentMobile Environment = "ENVIRONMENT_MOBILE"
-	// Operates in a desktop environment.
-	EnvironmentDesktop Environment = "ENVIRONMENT_DESKTOP"
-)
-
 // Type of auth scheme. This enum is not supported in Gemini API.
 type AuthType string
 
@@ -152,6 +138,42 @@ const (
 	APISpecSimpleSearch APISpec = "SIMPLE_SEARCH"
 	// Elastic search API spec.
 	APISpecElasticSearch APISpec = "ELASTIC_SEARCH"
+)
+
+// The environment being operated.
+type Environment string
+
+const (
+	// Defaults to browser.
+	EnvironmentUnspecified Environment = "ENVIRONMENT_UNSPECIFIED"
+	// Operates in a web browser.
+	EnvironmentBrowser Environment = "ENVIRONMENT_BROWSER"
+	// Operates in a mobile environment.
+	EnvironmentMobile Environment = "ENVIRONMENT_MOBILE"
+	// Operates in a desktop environment.
+	EnvironmentDesktop Environment = "ENVIRONMENT_DESKTOP"
+)
+
+// SafetyPolicy
+type SafetyPolicy string
+
+const (
+	// Unspecified safety policy.
+	SafetyPolicyUnspecified SafetyPolicy = "SAFETY_POLICY_UNSPECIFIED"
+	// Safety policy for financial transactions.
+	SafetyPolicyFinancialTransactions SafetyPolicy = "FINANCIAL_TRANSACTIONS"
+	// Safety policy for sensitive data modification.
+	SafetyPolicySensitiveDataModification SafetyPolicy = "SENSITIVE_DATA_MODIFICATION"
+	// Safety policy for communication tools (e.g. Gmail, Chat, Meet).
+	SafetyPolicyCommunicationTool SafetyPolicy = "COMMUNICATION_TOOL"
+	// Safety policy for account creation.
+	SafetyPolicyAccountCreation SafetyPolicy = "ACCOUNT_CREATION"
+	// Safety policy for data modification.
+	SafetyPolicyDataModification SafetyPolicy = "DATA_MODIFICATION"
+	// Safety policy for user consent management.
+	SafetyPolicyUserConsentManagement SafetyPolicy = "USER_CONSENT_MANAGEMENT"
+	// Safety policy for legal terms and agreements.
+	SafetyPolicyLegalTermsAndAgreements SafetyPolicy = "LEGAL_TERMS_AND_AGREEMENTS"
 )
 
 // Sites with confidence level chosen & above this value will be blocked from the search
@@ -786,28 +808,6 @@ const (
 	FeatureSelectionPreferencePrioritizeQuality FeatureSelectionPreference = "PRIORITIZE_QUALITY"
 	FeatureSelectionPreferenceBalanced          FeatureSelectionPreference = "BALANCED"
 	FeatureSelectionPreferencePrioritizeCost    FeatureSelectionPreference = "PRIORITIZE_COST"
-)
-
-// Disabled safety policies for computer use.
-type SafetyPolicy string
-
-const (
-	// Unspecified safety policy. This value should not be used.
-	SafetyPolicyUnspecified SafetyPolicy = "SAFETY_POLICY_UNSPECIFIED"
-	// Financial transactions safety policy.
-	SafetyPolicyFinancialTransactions SafetyPolicy = "FINANCIAL_TRANSACTIONS"
-	// Sensitive data modification safety policy.
-	SafetyPolicySensitiveDataModification SafetyPolicy = "SENSITIVE_DATA_MODIFICATION"
-	// Communication tool safety policy.
-	SafetyPolicyCommunicationTool SafetyPolicy = "COMMUNICATION_TOOL"
-	// Account creation safety policy.
-	SafetyPolicyAccountCreation SafetyPolicy = "ACCOUNT_CREATION"
-	// Data modification safety policy.
-	SafetyPolicyDataModification SafetyPolicy = "DATA_MODIFICATION"
-	// User consent management safety policy.
-	SafetyPolicyUserConsentManagement SafetyPolicy = "USER_CONSENT_MANAGEMENT"
-	// Legal terms and agreements safety policy.
-	SafetyPolicyLegalTermsAndAgreements SafetyPolicy = "LEGAL_TERMS_AND_AGREEMENTS"
 )
 
 // Enum representing the Gemini Enterprise Agent Platform embedding API to use.
@@ -1847,22 +1847,6 @@ type ModelSelectionConfig struct {
 	FeatureSelectionPreference FeatureSelectionPreference `json:"featureSelectionPreference,omitempty"`
 }
 
-// Tool to support computer use.
-type ComputerUse struct {
-	// Optional. Required. The environment being operated.
-	Environment Environment `json:"environment,omitempty"`
-	// Optional. By default, predefined functions are included in the final model call.
-	// Some of them can be explicitly excluded from being automatically included.
-	// This can serve two purposes:
-	// 1. Using a more restricted / different action space.
-	// 2. Improving the definitions / instructions of predefined functions.
-	ExcludedPredefinedFunctions []string `json:"excludedPredefinedFunctions,omitempty"`
-	// Optional. Whether enable the prompt injection detection check on computer-use request.
-	EnablePromptInjectionDetection *bool `json:"enablePromptInjectionDetection,omitempty"`
-	// Optional. Disabled safety policies for computer use.
-	DisabledSafetyPolicies []SafetyPolicy `json:"disabledSafetyPolicies,omitempty"`
-}
-
 // Config for authentication with API key. This data type is not supported in Gemini
 // API.
 type APIKeyConfig struct {
@@ -2136,6 +2120,23 @@ type Retrieval struct {
 	// Set to use data source powered by Vertex RAG store. User data is uploaded via the
 	// VertexRAGDataService.
 	VertexRAGStore *VertexRAGStore `json:"vertexRagStore,omitempty"`
+}
+
+// Tool to support computer use.
+type ComputerUse struct {
+	// Required. The environment being operated.
+	Environment Environment `json:"environment,omitempty"`
+	// Optional. By default, [predefined functions](https://cloud.google.com/vertex-ai/generative-ai/docs/computer-use#supported-actions)
+	// are included in the final model call. Some of them can be explicitly excluded from
+	// being automatically included. This can serve two purposes: 1. Using a more restricted
+	// / different action space. 2. Improving the definitions / instructions of predefined
+	// functions.
+	ExcludedPredefinedFunctions []string `json:"excludedPredefinedFunctions,omitempty"`
+	// Optional. Enables the prompt injection detection check on computer-use request.
+	EnablePromptInjectionDetection *bool `json:"enablePromptInjectionDetection,omitempty"`
+	// Optional. Disabled safety policies for computer use. This field is not supported
+	// in Vertex AI.
+	DisabledSafetyPolicies []SafetyPolicy `json:"disabledSafetyPolicies,omitempty"`
 }
 
 // The FileSearch tool that retrieves knowledge from Semantic Retrieval corpora. Files
@@ -2418,9 +2419,8 @@ type Tool struct {
 	// tool(s) to get external knowledge to answer the prompt. Retrieval results are presented
 	// to the model for generation. This field is not supported in Gemini API.
 	Retrieval *Retrieval `json:"retrieval,omitempty"`
-	// Optional. Tool to support the model interacting directly with the
-	// computer. If enabled, it automatically populates computer-use specific
-	// Function Declarations.
+	// Optional. Tool to support the model interacting directly with the computer. If enabled,
+	// it automatically populates computer-use specific Function Declarations.
 	ComputerUse *ComputerUse `json:"computerUse,omitempty"`
 	// Optional. FileSearch tool type. Tool to retrieve knowledge from Semantic Retrieval
 	// corpora. This field is not supported in Vertex AI.

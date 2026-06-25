@@ -1751,6 +1751,27 @@ type HTTPOptions struct {
 	// It is executed after ExtraBody has been merged, offering more advanced
 	// control over the request body than the static ExtraBody.
 	ExtrasRequestProvider ExtrasRequestProvider `json:"-"`
+	// Optional. RetryOptions configures automatic retries on transient HTTP
+	// failures. If nil, no retry is performed.
+	RetryOptions *HTTPRetryOptions `json:"retryOptions,omitempty"`
+}
+
+// HTTP retry options to be used in each of the requests.
+type HTTPRetryOptions struct {
+	// Optional. Maximum number of attempts, including the original request.
+	// If 0 or 1, no retries are performed. If not specified, defaults to 5.
+	Attempts int `json:"attempts,omitempty"`
+	// Optional. Initial delay before the first retry. If not specified, defaults to 1 second.
+	InitialDelay time.Duration `json:"initialDelay,omitempty"`
+	// Optional. Maximum delay between retries. If not specified, defaults to 60 seconds.
+	MaxDelay time.Duration `json:"maxDelay,omitempty"`
+	// Optional. Multiplier by which the delay grows after each attempt. If not specified, defaults to 2.
+	ExpBase float64 `json:"expBase,omitempty"`
+	// Optional. Maximum random jitter added to each delay. If not specified, defaults to 1 second.
+	Jitter time.Duration `json:"jitter,omitempty"`
+	// Optional. HTTP status codes that should trigger a retry. If not specified,
+	// defaults to 408, 429, 500, 502, 503, 504.
+	HTTPStatusCodes []int `json:"httpStatusCodes,omitempty"`
 }
 
 // ExtrasRequestProvider provides a way to dynamically modify the request body

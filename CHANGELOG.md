@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.62.1](https://github.com/googleapis/go-genai/compare/v1.62.0...v1.62.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* Fix exponential backoff bug in Go GenAI SDK. ([55b57b9](https://github.com/googleapis/go-genai/commit/55b57b95b75ffcc2413c76cea94c32002cc48e1d))
+
 ## [1.62.0](https://github.com/googleapis/go-genai/compare/v1.61.0...v1.62.0) (2026-06-24)
 
 

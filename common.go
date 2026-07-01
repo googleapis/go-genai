@@ -333,6 +333,13 @@ func applyConverterToSliceWithClientWithRoot(ac *apiClient, inputs []any, conver
 	return outputs, nil
 }
 
+// InternalApplyConverterToSliceWithRoot calls converter function to each element of the slice.
+//
+//nolint:unused
+func InternalApplyConverterToSliceWithRoot(inputs []any, converter converterFuncWithRoot, rootObject map[string]any) ([]map[string]any, error) {
+	return applyConverterToSliceWithRoot(inputs, converter, rootObject)
+}
+
 // applyConverterToSlice calls converter function to each element of the slice.
 //
 //nolint:unused

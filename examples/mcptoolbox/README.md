@@ -1,7 +1,7 @@
 # 🧰 MCP Toolbox for Databases Example
 
-[MCP Toolbox for Databases](https://github.com/googleapis/genai-toolbox) is an open source MCP server for databases. It was designed with enterprise-grade and production-quality in mind. It enables you to develop tools easier, faster, and more securely by handling the complexities such as connection pooling, authentication, and more.
-For more information on how to get started, see the [documentation](https://googleapis.github.io/genai-toolbox/getting-started/).
+[MCP Toolbox for Databases](https://github.com/googleapis/mcp-toolbox) is an open source MCP server for databases. It was designed with enterprise-grade and production-quality in mind. It enables you to develop tools easier, faster, and more securely by handling the complexities such as connection pooling, authentication, and more.
+For more information on how to get started, see the [documentation](https://mcp-toolbox.dev/documentation/getting-started/).
 This example demonstrates how to use  Toolbox Tools seamlessly with Go GenAI.
 
 ## What does this example do?
@@ -17,10 +17,10 @@ The `mcp_toolbox.go` file showcases how to:
 ## Before you get started:
 
 1. Install the MCP Toolbox Server:
-  Follow the detailed instructions in the [official documentation](https://googleapis.github.io/genai-toolbox/getting-started/introduction/#installing-the-server).
+  Follow the detailed instructions in the [official documentation](https://mcp-toolbox.dev/documentation/introduction/#install-toolbox).
 
 2. Configure Your Toolbox:
-  Refer to the [configuration guide](https://googleapis.github.io/genai-toolbox/getting-started/configure/) to set up your toolbox.
+  Refer to the [configuration guide](https://mcp-toolbox.dev/documentation/configuration/) to set up your toolbox.
 
 3. Set Your Google API Key:
   ```shell
@@ -37,6 +37,6 @@ The `mcp_toolbox.go` file showcases how to:
 Toolbox has a variety of features to make developing Gen AI tools for databases.
 For more information, read more about the following:
 
-* [Authenticated Parameters](https://googleapis.github.io/genai-toolbox/resources/tools/#authenticated-parameters): bind tool inputs to values from OIDC tokens automatically, making it easy to run sensitive queries without potentially leaking data
-* [Authorized Invocations:](https://googleapis.github.io/genai-toolbox/resources/tools/#authorized-invocations) restrict access to use a tool based on the users Auth token
-* [OpenTelemetry](https://googleapis.github.io/genai-toolbox/how-to/export_telemetry/): get metrics and tracing from Toolbox with OpenTelemetry
+* [Authenticated Parameters](https://mcp-toolbox.dev/documentation/configuration/tools/#authenticated-parameters): bind tool inputs to values from OIDC tokens automatically, making it easy to run sensitive queries without potentially leaking data
+* [Authorized Invocations:](https://mcp-toolbox.dev/documentation/configuration/tools/#authorized-invocations) restrict access to use a tool based on the users Auth token
+* [OpenTelemetry](https://mcp-toolbox.dev/documentation/monitoring/export_telemetry/): get metrics and tracing from Toolbox with OpenTelemetry

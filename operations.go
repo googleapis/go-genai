@@ -164,11 +164,7 @@ func (m Operations) getVideosOperation(ctx context.Context, operationName string
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	}
+	path, err = InternalFormatMap("{operationName}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -232,7 +228,7 @@ func (m Operations) fetchPredictVideosOperation(ctx context.Context, operationNa
 		fromConverter = generateVideosOperationFromVertex
 	} else {
 
-		return nil, fmt.Errorf("method FetchPredictVideosOperation is only supported in the Vertex AI client. You can choose to use Vertex AI by setting ClientConfig.Backend to BackendVertexAI.")
+		return nil, fmt.Errorf("method FetchPredictVideosOperation is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode. You can choose to use Gemini Enterprise Agent Platform by setting ClientConfig.Backend to BackendEnterprise.")
 
 	}
 
@@ -329,11 +325,7 @@ func (m Operations) getUploadToFileSearchStoreOperation(ctx context.Context, ope
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	}
+	path, err = InternalFormatMap("{operationName}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -411,11 +403,7 @@ func (m Operations) getImportFileOperation(ctx context.Context, operationName st
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	} else {
-		path, err = InternalFormatMap("{operationName}", urlParams)
-	}
+	path, err = InternalFormatMap("{operationName}", urlParams)
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
 	}
@@ -494,7 +482,7 @@ func (m Operations) GetUploadToFileSearchStoreOperation(ctx context.Context, ope
 		return nil, fmt.Errorf("Operation name is empty")
 	}
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		return nil, fmt.Errorf("method GetUploadToFileSearchStoreOperation is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method GetUploadToFileSearchStoreOperation is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 	}
 	return m.getUploadToFileSearchStoreOperation(ctx, operationName, config)
 }
@@ -511,7 +499,7 @@ func (m Operations) GetImportFileOperation(ctx context.Context, operation *Impor
 		return nil, fmt.Errorf("Operation name is empty")
 	}
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		return nil, fmt.Errorf("method GetUploadToFileSearchStoreOperation is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method GetUploadToFileSearchStoreOperation is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 	}
 	return m.getImportFileOperation(ctx, operationName, config)
 }

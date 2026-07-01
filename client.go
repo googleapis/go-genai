@@ -66,6 +66,8 @@ const (
 	BackendGeminiAPI
 	// BackendVertexAI is the Vertex AI backend.
 	BackendVertexAI
+	// BackendEnterprise is the Gemini Enterprise Agent Platform backend.
+	BackendEnterprise
 )
 
 // The Stringer interface for Backend.
@@ -78,6 +80,11 @@ func (t Backend) String() string {
 	default:
 		return "BackendUnspecified"
 	}
+}
+
+var multiRegionalLocations = map[string]bool{
+	"us": true,
+	"eu": true,
 }
 
 // ClientConfig is the configuration for the GenAI client.
@@ -120,6 +127,9 @@ type ClientConfig struct {
 
 func defaultEnvVarProvider() map[string]string {
 	vars := make(map[string]string)
+	if v, ok := os.LookupEnv("GOOGLE_GENAI_USE_ENTERPRISE"); ok {
+		vars["GOOGLE_GENAI_USE_ENTERPRISE"] = v
+	}
 	if v, ok := os.LookupEnv("GOOGLE_GENAI_USE_VERTEXAI"); ok {
 		vars["GOOGLE_GENAI_USE_VERTEXAI"] = v
 	}
@@ -205,10 +215,32 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 		return nil, fmt.Errorf("credentials and API key are mutually exclusive in the client initializer. ClientConfig: %#v", cc)
 	}
 
+	if cc.Backend == BackendEnterprise {
+		cc.Backend = BackendVertexAI
+	}
+
 	if cc.Backend == BackendUnspecified {
-		if v, ok := envVars["GOOGLE_GENAI_USE_VERTEXAI"]; ok {
-			v = strings.ToLower(v)
-			if v == "1" || v == "true" {
+		vEnterprise, enterpriseOK := envVars["GOOGLE_GENAI_USE_ENTERPRISE"]
+		vVertex, vertexOK := envVars["GOOGLE_GENAI_USE_VERTEXAI"]
+
+		isEnterprise := enterpriseOK && (strings.ToLower(vEnterprise) == "1" || strings.ToLower(vEnterprise) == "true")
+
+		isVertexAI := vertexOK && (strings.ToLower(vVertex) == "1" || strings.ToLower(vVertex) == "true")
+
+		if enterpriseOK && vertexOK {
+			if isEnterprise != isVertexAI {
+				log.Println("Warning: Both GOOGLE_GENAI_USE_ENTERPRISE and GOOGLE_GENAI_USE_VERTEXAI are set with conflicting values. The value of GOOGLE_GENAI_USE_ENTERPRISE will be used.")
+			}
+		}
+
+		if enterpriseOK {
+			if isEnterprise {
+				cc.Backend = BackendVertexAI
+			} else {
+				cc.Backend = BackendGeminiAPI
+			}
+		} else if vertexOK {
+			if isVertexAI {
 				cc.Backend = BackendVertexAI
 			} else {
 				cc.Backend = BackendGeminiAPI
@@ -293,6 +325,8 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 		if cc.HTTPOptions.BaseURL == "" {
 			if cc.Location == "global" || cc.APIKey != "" {
 				cc.HTTPOptions.BaseURL = "https://aiplatform.googleapis.com/"
+			} else if multiRegionalLocations[cc.Location] {
+				cc.HTTPOptions.BaseURL = fmt.Sprintf("https://aiplatform.%s.rep.googleapis.com/", cc.Location)
 			} else {
 				cc.HTTPOptions.BaseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", cc.Location)
 			}

@@ -23,7 +23,22 @@ import (
 func audioTranscriptionConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 	if InternalGetValueByPath(fromObject, []string{"languageCodes"}) != nil {
-		return nil, fmt.Errorf("languageCodes parameter is not supported in Gemini API")
+		return nil, fmt.Errorf("languageCodes parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
+	fromLanguageAuto := InternalGetValueByPath(fromObject, []string{"languageAuto"})
+	if fromLanguageAuto != nil {
+		InternalSetValueByPath(toObject, []string{"languageAuto"}, fromLanguageAuto)
+	}
+
+	fromLanguageHints := InternalGetValueByPath(fromObject, []string{"languageHints"})
+	if fromLanguageHints != nil {
+		InternalSetValueByPath(toObject, []string{"languageHints"}, fromLanguageHints)
+	}
+
+	fromAdaptationPhrases := InternalGetValueByPath(fromObject, []string{"adaptationPhrases"})
+	if fromAdaptationPhrases != nil {
+		InternalSetValueByPath(toObject, []string{"adaptationPhrases"}, fromAdaptationPhrases)
 	}
 
 	return toObject, nil
@@ -34,7 +49,7 @@ func liveClientContentToMldev(fromObject map[string]any, parentObject map[string
 
 	fromTurns := InternalGetValueByPath(fromObject, []string{"turns"})
 	if fromTurns != nil {
-		fromTurns, err = applyConverterToSliceWithRoot(fromTurns.([]any), contentToMldev, rootObject)
+		fromTurns, err = InternalApplyConverterToSliceWithRoot(fromTurns.([]any), contentToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +70,7 @@ func liveClientContentToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromTurns := InternalGetValueByPath(fromObject, []string{"turns"})
 	if fromTurns != nil {
-		fromTurns, err = applyConverterToSliceWithRoot(fromTurns.([]any), contentToVertex, rootObject)
+		fromTurns, err = InternalApplyConverterToSliceWithRoot(fromTurns.([]any), contentToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -137,11 +152,6 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromRealtimeInput := InternalGetValueByPath(fromObject, []string{"realtimeInput"})
 	if fromRealtimeInput != nil {
-		fromRealtimeInput, err = liveClientRealtimeInputToVertex(fromRealtimeInput.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"realtimeInput"}, fromRealtimeInput)
 	}
 
@@ -158,32 +168,11 @@ func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[
 
 	fromMediaChunks := InternalGetValueByPath(fromObject, []string{"mediaChunks"})
 	if fromMediaChunks != nil {
-		fromMediaChunks, err = applyConverterToSliceWithRoot(fromMediaChunks.([]any), blobToMldev, rootObject)
+		fromMediaChunks, err = InternalApplyConverterToSliceWithRoot(fromMediaChunks.([]any), blobToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
 
-		InternalSetValueByPath(toObject, []string{"mediaChunks"}, fromMediaChunks)
-	}
-
-	fromActivityStart := InternalGetValueByPath(fromObject, []string{"activityStart"})
-	if fromActivityStart != nil {
-		InternalSetValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
-	}
-
-	fromActivityEnd := InternalGetValueByPath(fromObject, []string{"activityEnd"})
-	if fromActivityEnd != nil {
-		InternalSetValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
-	}
-
-	return toObject, nil
-}
-
-func liveClientRealtimeInputToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromMediaChunks := InternalGetValueByPath(fromObject, []string{"mediaChunks"})
-	if fromMediaChunks != nil {
 		InternalSetValueByPath(toObject, []string{"mediaChunks"}, fromMediaChunks)
 	}
 
@@ -240,7 +229,7 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 			return nil, err
 		}
 
-		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToMldev, rootObject)
+		fromTools, err = InternalApplyConverterToSliceWithRoot(fromTools.([]any), toolToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -294,7 +283,22 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
-		return nil, fmt.Errorf("explicitVadSignal parameter is not supported in Gemini API")
+		return nil, fmt.Errorf("explicitVadSignal parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
+	fromAvatarConfig := InternalGetValueByPath(fromObject, []string{"avatarConfig"})
+	if fromAvatarConfig != nil {
+		InternalSetValueByPath(toObject, []string{"avatarConfig"}, fromAvatarConfig)
+	}
+
+	fromSafetySettings := InternalGetValueByPath(fromObject, []string{"safetySettings"})
+	if fromSafetySettings != nil {
+		fromSafetySettings, err = InternalApplyConverterToSliceWithRoot(fromSafetySettings.([]any), safetySettingToMldev, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"safetySettings"}, fromSafetySettings)
 	}
 
 	return toObject, nil
@@ -345,7 +349,7 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 			return nil, err
 		}
 
-		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
+		fromTools, err = InternalApplyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -386,6 +390,16 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 	fromExplicitVadSignal := InternalGetValueByPath(fromObject, []string{"explicitVadSignal"})
 	if fromExplicitVadSignal != nil {
 		InternalSetValueByPath(toObject, []string{"explicitVadSignal"}, fromExplicitVadSignal)
+	}
+
+	fromAvatarConfig := InternalGetValueByPath(fromObject, []string{"avatarConfig"})
+	if fromAvatarConfig != nil {
+		InternalSetValueByPath(toObject, []string{"avatarConfig"}, fromAvatarConfig)
+	}
+
+	fromSafetySettings := InternalGetValueByPath(fromObject, []string{"safetySettings"})
+	if fromSafetySettings != nil {
+		InternalSetValueByPath(toObject, []string{"safetySettings"}, fromSafetySettings)
 	}
 
 	return toObject, nil
@@ -476,7 +490,7 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 			return nil, err
 		}
 
-		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToMldev, rootObject)
+		fromTools, err = InternalApplyConverterToSliceWithRoot(fromTools.([]any), toolToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -530,7 +544,27 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"explicitVadSignal"}) != nil {
-		return nil, fmt.Errorf("explicitVadSignal parameter is not supported in Gemini API")
+		return nil, fmt.Errorf("explicitVadSignal parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
+	fromAvatarConfig := InternalGetValueByPath(fromObject, []string{"avatarConfig"})
+	if fromAvatarConfig != nil {
+		InternalSetValueByPath(parentObject, []string{"setup", "avatarConfig"}, fromAvatarConfig)
+	}
+
+	fromSafetySettings := InternalGetValueByPath(fromObject, []string{"safetySettings"})
+	if fromSafetySettings != nil {
+		fromSafetySettings, err = InternalApplyConverterToSliceWithRoot(fromSafetySettings.([]any), safetySettingToMldev, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(parentObject, []string{"setup", "safetySettings"}, fromSafetySettings)
+	}
+
+	fromTranslationConfig := InternalGetValueByPath(fromObject, []string{"translationConfig"})
+	if fromTranslationConfig != nil {
+		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "translationConfig"}, fromTranslationConfig)
 	}
 
 	return toObject, nil
@@ -621,7 +655,7 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 			return nil, err
 		}
 
-		fromTools, err = applyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
+		fromTools, err = InternalApplyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -662,6 +696,20 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromExplicitVadSignal := InternalGetValueByPath(fromObject, []string{"explicitVadSignal"})
 	if fromExplicitVadSignal != nil {
 		InternalSetValueByPath(parentObject, []string{"setup", "explicitVadSignal"}, fromExplicitVadSignal)
+	}
+
+	fromAvatarConfig := InternalGetValueByPath(fromObject, []string{"avatarConfig"})
+	if fromAvatarConfig != nil {
+		InternalSetValueByPath(parentObject, []string{"setup", "avatarConfig"}, fromAvatarConfig)
+	}
+
+	fromSafetySettings := InternalGetValueByPath(fromObject, []string{"safetySettings"})
+	if fromSafetySettings != nil {
+		InternalSetValueByPath(parentObject, []string{"setup", "safetySettings"}, fromSafetySettings)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"translationConfig"}) != nil {
+		return nil, fmt.Errorf("translationConfig parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
 	}
 
 	return toObject, nil
@@ -729,7 +777,7 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		fromMedia, err = applyConverterToSliceWithRoot(fromMedia.([]any), blobToMldev, rootObject)
+		fromMedia, err = InternalApplyConverterToSliceWithRoot(fromMedia.([]any), blobToMldev, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -972,7 +1020,7 @@ func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[
 	}
 
 	if InternalGetValueByPath(fromObject, []string{"transparent"}) != nil {
-		return nil, fmt.Errorf("transparent parameter is not supported in Gemini API")
+		return nil, fmt.Errorf("transparent parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
 	}
 
 	return toObject, nil
@@ -1047,6 +1095,11 @@ func voiceActivityFromMldev(fromObject map[string]any, parentObject map[string]a
 		InternalSetValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
 	}
 
+	fromAudioOffset := InternalGetValueByPath(fromObject, []string{"audioOffset"})
+	if fromAudioOffset != nil {
+		InternalSetValueByPath(toObject, []string{"audioOffset"}, fromAudioOffset)
+	}
+
 	return toObject, nil
 }
 
@@ -1056,6 +1109,11 @@ func voiceActivityFromVertex(fromObject map[string]any, parentObject map[string]
 	fromVoiceActivityType := InternalGetValueByPath(fromObject, []string{"type"})
 	if fromVoiceActivityType != nil {
 		InternalSetValueByPath(toObject, []string{"voiceActivityType"}, fromVoiceActivityType)
+	}
+
+	fromAudioOffset := InternalGetValueByPath(fromObject, []string{"audioOffset"})
+	if fromAudioOffset != nil {
+		InternalSetValueByPath(toObject, []string{"audioOffset"}, fromAudioOffset)
 	}
 
 	return toObject, nil

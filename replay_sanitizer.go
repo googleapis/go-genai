@@ -67,6 +67,36 @@ func sanitizeMapWithSourceType(t *testing.T, sourceType reflect.Type, m any) {
 			sanitizeMapByPath(m.(map[string]any), path, stdBase64Handler, false)
 		}
 	}
+
+	int32Paths := make([]string, 0)
+	visitedTypesInt32 := make(map[string]bool)
+	if err := getFieldPath(st, reflect.TypeOf(int32(0)), &int32Paths, "", visitedTypesInt32, false); err != nil {
+		t.Fatal(err)
+	}
+
+	numericStringHandler := func(data any, path string) any {
+		s, ok := data.(string)
+		if !ok {
+			return data
+		}
+		f, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			t.Errorf("invalid numeric string %s at path %s", s, path)
+			return data
+		}
+		return f
+	}
+
+	for _, path := range int32Paths {
+		if sourceType.Kind() == reflect.Slice {
+			data := m.([]any)
+			for i := 0; i < len(data); i++ {
+				sanitizeMapByPath(data[i], path, numericStringHandler, false)
+			}
+		} else {
+			sanitizeMapByPath(m.(map[string]any), path, numericStringHandler, false)
+		}
+	}
 }
 
 // sanitizeMapByPath sanitizes a value within a nested map structure based on the given path.

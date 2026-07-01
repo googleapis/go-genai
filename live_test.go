@@ -225,7 +225,7 @@ func TestLiveConnect(t *testing.T) {
 				},
 			},
 			wantErr:        true,
-			wantErrMessage: "transparent parameter is not supported in Gemini API",
+			wantErrMessage: "transparent parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.",
 		},
 		{
 			desc:   "successful connection when set transparent using vertex client",

@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"google.golang.org/genai"
 )
@@ -108,6 +109,50 @@ func run(ctx context.Context) {
 	}
 
 	fmt.Printf("Created batch job: %s\n", inlineBatchJob.Name)
+
+	model := "models/gemini-embedding-2-preview"
+	embedBatchJob, err := client.Batches.CreateEmbeddings(
+		ctx,
+		&model,
+		&genai.EmbeddingsBatchJobSource{
+			InlinedRequests: &genai.EmbedContentBatch{
+				Contents: []*genai.Content{
+					{Parts: []*genai.Part{{Text: "first text to embed"}}},
+					{Parts: []*genai.Part{{Text: "second text to embed"}}},
+				},
+			},
+		},
+		&genai.CreateEmbeddingsBatchJobConfig{
+			DisplayName: "gemini-embed-2-job",
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Created embedding batch job: %s\n", embedBatchJob.Name)
+	fmt.Println("Polling for completion...")
+
+	// Poll until the job finishes
+	for {
+		job, err := client.Batches.Get(ctx, embedBatchJob.Name, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("Status: %s\n", job.State)
+		if job.State == genai.JobStateSucceeded {
+			fmt.Println("Job Succeeded! Responses:")
+			print(job.Dest.InlinedEmbedContentResponses)
+			break
+		}
+		if job.State == genai.JobStateFailed || job.State == genai.JobStateCancelled {
+			fmt.Println("Job failed or was cancelled.")
+			break
+		}
+
+		time.Sleep(10 * time.Second)
+	}
 }
 
 func main() {

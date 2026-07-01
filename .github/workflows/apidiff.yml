@@ -92,6 +92,7 @@ jobs:
         sed -i '/: old is comparable, new is not/d' ./diff.txt
         sed -i '/VideoGenerationMask.MaskMode: changed from string to VideoGenerationMaskMode/d' ./diff.txt
         sed -i '/ToolComputerUse: removed/d' ./diff.txt
+        sed -i '/DistillationHyperParameters.LearningRateMultiplier: changed from float64 to float32/d' ./diff.txt
         cat diff.txt && ! [ -s diff.txt ]
     # TODO(b/425394445): figure out how to solve permission issue.
     # - name: Add breaking change label

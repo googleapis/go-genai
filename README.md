@@ -6,7 +6,7 @@
 The Google Gen AI Go SDK provides an interface for developers to integrate
 Google's generative models into their Go applications. It supports the
 [Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
-[Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)
+[Gemini Enterprise Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
 APIs.
 
 The Google Gen AI Go SDK enables developers to use Google's state-of-the-art
@@ -46,12 +46,12 @@ client, err := genai.NewClient(ctx, &genai.ClientConfig{
 })
 ```
 
-### Vertex AI Client:
+### Gemini Enterprise Agent Platform Client:
 ```go
 client, err := genai.NewClient(ctx, &genai.ClientConfig{
 	Project:  project,
 	Location: location,
-	Backend:  genai.BackendVertexAI,
+	Backend:  genai.BackendEnterprise,
 })
 ```
 
@@ -59,7 +59,7 @@ client, err := genai.NewClient(ctx, &genai.ClientConfig{
 
 You can create a client by configuring the necessary environment variables.
 Configuration setup instructions depends on whether you're using the Gemini
-Developer API or the Gemini API in Vertex AI.
+Developer API or the Gemini API in Gemini Enterprise Agent Platform.
 
 **Gemini Developer API:** Set `GOOGLE_API_KEY` as shown below:
 
@@ -67,11 +67,11 @@ Developer API or the Gemini API in Vertex AI.
 export GOOGLE_API_KEY='your-api-key'
 ```
 
-**Gemini API on Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`,
+**Gemini API on Gemini Enterprise Agent Platform:** Set `GOOGLE_GENAI_USE_ENTERPRISE`,
 `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 ```bash
-export GOOGLE_GENAI_USE_VERTEXAI=true
+export GOOGLE_GENAI_USE_ENTERPRISE=true
 export GOOGLE_CLOUD_PROJECT='your-project-id'
 export GOOGLE_CLOUD_LOCATION='us-central1'
 ```

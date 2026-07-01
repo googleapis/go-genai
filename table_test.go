@@ -330,6 +330,16 @@ func TestTable(t *testing.T) {
 								}
 							} else {
 								method := extractMethod(t, &testTableFile, client)
+
+								// Sanitize replay response body segments based on the method's return type.
+								// This is needed because some numeric fields in the replay files might be
+								// represented as strings, which causes unmarshalling errors in the Go SDK.
+								for _, interaction := range replayClient.ReplayFile.Interactions {
+									for _, bodySegment := range interaction.Response.BodySegments {
+										sanitizeMapWithSourceType(t, method.Type().Out(0), bodySegment)
+									}
+								}
+
 								args := extractArgs(ctx, t, method, &testTableFile, testTableItem)
 
 								// Inject unknown fields to the replay file to simulate the case where the SDK adds

@@ -158,8 +158,8 @@ func TestFilesDownload(t *testing.T) {
 		if err == nil {
 			t.Errorf("Files.Download() succeeded, want error")
 		}
-		if !strings.Contains(err.Error(), "method Download is only supported in the Gemini Developer client") {
-			t.Errorf("Files.Download() error = %v, want error containing 'method Upload is only supported in the Gemini Developer client'", err)
+		if !strings.Contains(err.Error(), "method Download is only supported in Gemini Developer API mode") {
+			t.Errorf("Files.Download() error = %v, want error containing 'method Download is only supported in Gemini Developer API mode'", err)
 		}
 	})
 }
@@ -911,7 +911,7 @@ func TestFilesRegisterFilesVertex(t *testing.T) {
 	if err == nil {
 		t.Errorf("RegisterFiles should fail on Vertex AI")
 	}
-	if !strings.Contains(err.Error(), "only supported in the Gemini Developer client") {
+	if !strings.Contains(err.Error(), "is only supported in Gemini Developer API mode") {
 		t.Errorf("Unexpected error: %v", err)
 	}
 }

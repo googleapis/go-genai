@@ -1153,6 +1153,40 @@ func TestBuildRequest(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "vertex genai modules header",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendVertexAI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "models/test-model:generateContent",
+			body:   map[string]any{"key": "value"},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				Headers: http.Header{
+					"User-Agent": []string{"vertex-genai-modules/0.20.0"},
+				},
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "generativelanguage.googleapis.com",
+					Path:   "/v1beta/models/test-model:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s+vertex-genai-modules/0.20.0 gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s+vertex-genai-modules/0.20.0 gl-go/%s", version, runtime.Version())},
+				},
+				Body: io.NopCloser(strings.NewReader("{\"key\":\"value\"}\n")),
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1296,6 +1330,24 @@ func TestPatchHTTPOptions(t *testing.T) {
 			want: &HTTPOptions{
 				Timeout: Ptr(0 * time.Second),
 				Headers: http.Header{"User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())}},
+			},
+		},
+		{
+			name: "vertex genai modules header",
+			options: HTTPOptions{
+				Headers: http.Header{"User-Agent": []string{"vertex-genai-modules/0.20.0"}},
+			},
+			want: &HTTPOptions{
+				Headers: http.Header{"User-Agent": []string{fmt.Sprintf("google-genai-sdk/%s+vertex-genai-modules/0.20.0 gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s+vertex-genai-modules/0.20.0 gl-go/%s", version, runtime.Version())}},
+			},
+		},
+		{
+			name: "with existing user agent",
+			options: HTTPOptions{
+				Headers: http.Header{"User-Agent": []string{"vertex-genai-modules/0.20.0", "existing-agent/1.0"}},
+			},
+			want: &HTTPOptions{
+				Headers: http.Header{"User-Agent": []string{"existing-agent/1.0", fmt.Sprintf("google-genai-sdk/%s+vertex-genai-modules/0.20.0 gl-go/%s", version, runtime.Version())}, "X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s+vertex-genai-modules/0.20.0 gl-go/%s", version, runtime.Version())}},
 			},
 		},
 	}

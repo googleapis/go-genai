@@ -198,7 +198,7 @@ func (m Files) list(ctx context.Context, config *ListFilesConfig) (*ListFilesRes
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
-		return nil, fmt.Errorf("method List is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method List is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
 	} else {
 		toConverter = listFilesParametersToMldev
@@ -271,7 +271,7 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
-		return nil, fmt.Errorf("method Create is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method Create is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
 	} else {
 		toConverter = createFileParametersToMldev
@@ -343,7 +343,7 @@ func (m Files) Get(ctx context.Context, name string, config *GetFileConfig) (*Fi
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
-		return nil, fmt.Errorf("method Get is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method Get is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
 	} else {
 		toConverter = getFileParametersToMldev
@@ -410,7 +410,7 @@ func (m Files) Delete(ctx context.Context, name string, config *DeleteFileConfig
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
-		return nil, fmt.Errorf("method Delete is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method Delete is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
 	} else {
 		toConverter = deleteFileParametersToMldev
@@ -483,7 +483,7 @@ func (m Files) registerFiles(ctx context.Context, uris []string, config *Registe
 	var toConverter func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 
-		return nil, fmt.Errorf("method RegisterFiles is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method RegisterFiles is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 
 	} else {
 		toConverter = internalRegisterFilesParametersToMldev
@@ -582,7 +582,7 @@ func (m Files) All(ctx context.Context) iter.Seq2[*File, error] {
 // If the URI refers to a video([Video], [GeneratedVideo]), the video bytes will be populated to the video's VideoBytes field.
 func (m Files) Download(ctx context.Context, uri DownloadURI, config *DownloadFileConfig) ([]byte, error) {
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		return nil, fmt.Errorf("method Download is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method Download is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 	}
 	if uri.uri() == "" {
 		return nil, fmt.Errorf("the resource doesn't support download")
@@ -611,7 +611,7 @@ func (m Files) Download(ctx context.Context, uri DownloadURI, config *DownloadFi
 // with the service, and returns information about the resulting file.
 func (m Files) Upload(ctx context.Context, r io.Reader, config *UploadFileConfig) (*File, error) {
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		return nil, fmt.Errorf("This method is only supported in the Gemini Developer client.")
+		return nil, fmt.Errorf("This method is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
 	}
 
 	var fileToUpload File
@@ -704,7 +704,7 @@ func (m Files) UploadFromPath(ctx context.Context, path string, config *UploadFi
 // This method is only supported in the Gemini Developer client.
 func (m Files) RegisterFiles(ctx context.Context, uris []string, creds *auth.Credentials, config *RegisterFilesConfig) (*RegisterFilesResponse, error) {
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		return nil, fmt.Errorf("method RegisterFiles is only supported in the Gemini Developer client. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
+		return nil, fmt.Errorf("method RegisterFiles is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode. You can choose to use Gemini Developer client by setting ClientConfig.Backend to BackendGeminiAPI.")
 	}
 
 	if creds == nil {

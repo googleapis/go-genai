@@ -17,9 +17,11 @@ package genai
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -33,6 +35,7 @@ var customTestMethods = map[string]func(ctx context.Context, client *Client, ite
 	"shared/files/upload_get_delete":        uploadGetDelete,
 	"shared/models/generate_content_stream": generateContentStream,
 	"shared/tunings/create_get_cancel":      createGetCancelTunings,
+	"file_search_stores/multimodal_flow":    multimodalSearchFlow,
 }
 
 func wrapResults(resp any, err error) []reflect.Value {
@@ -302,4 +305,123 @@ func generateContentStream(ctx context.Context, client *Client, item *testTableI
 		lastResp = resp
 	}
 	return wrapResults(lastResp, nil)
+}
+
+func multimodalSearchFlow(ctx context.Context, client *Client, item *testTableItem) []reflect.Value {
+	params := struct {
+		DisplayName       string `json:"displayName"`
+		Query             string `json:"query"`
+		TextContent       string `json:"textContent"`
+		ImageRelativePath string `json:"imageRelativePath"`
+	}{}
+	paramsJSON, _ := json.Marshal(item.Parameters)
+	if err := json.Unmarshal(paramsJSON, &params); err != nil {
+		return wrapResults(nil, err)
+	}
+
+	store, err := client.FileSearchStores.Create(ctx, &CreateFileSearchStoreConfig{
+		DisplayName:    params.DisplayName,
+	})
+	if err != nil {
+		return wrapResults(nil, err)
+	}
+
+	defer func() {
+		trueVar := true
+		client.FileSearchStores.Delete(ctx, store.Name, &DeleteFileSearchStoreConfig{Force: &trueVar}) // nolint:errcheck
+	}()
+
+	// Upload Text
+	textFilePath := "tests/data/test_file.txt"
+	if err := os.MkdirAll(filepath.Dir(textFilePath), 0755); err != nil {
+		return wrapResults(nil, err)
+	}
+	if err := os.WriteFile(textFilePath, []byte(params.TextContent), 0644); err != nil {
+		return wrapResults(nil, err)
+	}
+	defer os.Remove(textFilePath)
+
+	opText, err := client.FileSearchStores.UploadToFileSearchStoreFromPath(ctx, textFilePath, store.Name, &UploadToFileSearchStoreConfig{
+		MIMEType: "text/plain",
+	})
+	if err != nil {
+		return wrapResults(nil, err)
+	}
+
+	// Upload Image
+	// Resolve path relative to google3
+	currentDir, _ := os.Getwd()
+	google3Path := ""
+	lastIndex := strings.LastIndex(currentDir, "google3/")
+	if lastIndex != -1 {
+		google3Path = currentDir[:lastIndex+len("google3/")]
+	}
+	resolvedImagePath := filepath.Join(google3Path, "third_party/py/google/genai/tests/data/dog.jpg")
+
+	opImage, err := client.FileSearchStores.UploadToFileSearchStoreFromPath(ctx, resolvedImagePath, store.Name, &UploadToFileSearchStoreConfig{
+		MIMEType: "image/png",
+	})
+	if err != nil {
+		return wrapResults(nil, err)
+	}
+
+	// Wait for operations
+	for !opText.Done {
+		time.Sleep(1 * time.Second)
+		opText, err = client.Operations.GetUploadToFileSearchStoreOperation(ctx, opText, nil)
+		if err != nil {
+			return wrapResults(nil, err)
+		}
+	}
+
+	for !opImage.Done {
+		time.Sleep(1 * time.Second)
+		opImage, err = client.Operations.GetUploadToFileSearchStoreOperation(ctx, opImage, nil)
+		if err != nil {
+			return wrapResults(nil, err)
+		}
+	}
+
+	// Search
+	response, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", Text(params.Query), &GenerateContentConfig{
+		Tools: []*Tool{
+			{
+				FileSearch: &FileSearch{
+					FileSearchStoreNames: []string{store.Name},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return wrapResults(nil, err)
+	}
+
+	// Verify response has grounding metadata
+	if len(response.Candidates) == 0 || response.Candidates[0].GroundingMetadata == nil {
+		return wrapResults(nil, fmt.Errorf("no grounding metadata in response"))
+	}
+
+	// Download Media
+	var blobMediaId string
+	for _, chunk := range response.Candidates[0].GroundingMetadata.GroundingChunks {
+		if chunk.RetrievedContext != nil && chunk.RetrievedContext.MediaID != "" {
+			blobMediaId = chunk.RetrievedContext.MediaID
+			break
+		}
+	}
+
+	if client.clientConfig.Backend != BackendVertexAI {
+		if blobMediaId == "" {
+			return wrapResults(nil, fmt.Errorf("no mediaId found in grounding metadata to test download"))
+		}
+		content, err := client.FileSearchStores.DownloadMedia(ctx, blobMediaId, nil)
+		if err != nil {
+			return wrapResults(nil, err)
+		}
+		if content == nil {
+			return wrapResults(nil, fmt.Errorf("downloaded content is null"))
+		}
+	}
+
+	return wrapResults(response, nil)
 }

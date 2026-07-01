@@ -47,17 +47,17 @@ func run(ctx context.Context) {
 		fmt.Println("Calling GeminiAPI Backend...")
 	}
 
-	fmt.Println("Product recontext example. Only supported in BackendVertexAI.")
-	productImage := &genai.ProductImage{
-		ProductImage: &genai.Image{GCSURI: "gs://genai-sdk-tests/inputs/images/backpack1.png"},
+	fmt.Println("Virtual try-on example. Only supported in BackendVertexAI.")
+	productImagePants := &genai.ProductImage{
+		ProductImage: &genai.Image{GCSURI: "gs://genai-sdk-tests/inputs/images/pants.jpg"},
 	}
-	productImages := []*genai.ProductImage{productImage}
-	prompt := "On a school desk."
-	response1, err := client.Models.RecontextImage(
-		ctx, "imagen-product-recontext-preview-06-30",
+	personImage := &genai.Image{GCSURI: "gs://genai-sdk-tests/inputs/images/man.jpg"}
+	productImages := []*genai.ProductImage{productImagePants}
+	response, err := client.Models.RecontextImage(
+		ctx, "virtual-try-on-exp-05-31",
 		&genai.RecontextImageSource{
-			Prompt:        prompt,
-			PersonImage:   nil,
+			Prompt:        "",
+			PersonImage:   personImage,
 			ProductImages: productImages},
 		&genai.RecontextImageConfig{
 			OutputMIMEType: "image/jpeg",
@@ -66,28 +66,7 @@ func run(ctx context.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	print(response1)
-
-	fmt.Println("Virtual try-on example. Only supported in BackendVertexAI.")
-	productImagePants := &genai.ProductImage{
-		ProductImage: &genai.Image{GCSURI: "gs://genai-sdk-tests/inputs/images/pants.jpg"},
-	}
-	personImage := &genai.Image{GCSURI: "gs://genai-sdk-tests/inputs/images/man.jpg"}
-	productImages2 := []*genai.ProductImage{productImagePants}
-	response2, err := client.Models.RecontextImage(
-		ctx, "virtual-try-on-exp-05-31",
-		&genai.RecontextImageSource{
-			Prompt:        "",
-			PersonImage:   personImage,
-			ProductImages: productImages2},
-		&genai.RecontextImageConfig{
-			OutputMIMEType: "image/jpeg",
-		},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	print(response2)
+	print(response)
 }
 
 func main() {

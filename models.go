@@ -5565,7 +5565,26 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 	if config != nil {
 		config.setDefaults()
 	}
-	return m.generateContentStream(ctx, model, contents, config)
+	accumulator := newStreamedFunctionCallAccumulator()
+	return func(yield func(*GenerateContentResponse, error) bool) {
+		for response, err := range m.generateContentStream(ctx, model, contents, config) {
+			if err != nil {
+				if !yield(response, err) {
+					return
+				}
+				continue
+			}
+			if err := accumulator.applyGenerateContentResponse(response); err != nil {
+				if !yield(nil, err) {
+					return
+				}
+				continue
+			}
+			if !yield(response, nil) {
+				return
+			}
+		}
+	}
 }
 
 // List retrieves a paginated list of models resources.

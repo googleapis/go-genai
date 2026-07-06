@@ -2777,6 +2777,15 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 		return nil, fmt.Errorf("enableEnhancedCivicAnswers parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
 	}
 
+	fromResponseFormat := InternalGetValueByPath(fromObject, []string{"responseFormat"})
+	if fromResponseFormat != nil {
+		InternalSetValueByPath(toObject, []string{"responseFormat"}, fromResponseFormat)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"translationConfig"}) != nil {
+		return nil, fmt.Errorf("translationConfig parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
 	return toObject, nil
 }
 
@@ -4043,6 +4052,10 @@ func toolToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 		InternalSetValueByPath(toObject, []string{"mcpServers"}, fromMcpServers)
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"exaAiSearch"}) != nil {
+		return nil, fmt.Errorf("exaAiSearch parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
 	return toObject, nil
 }
 
@@ -4116,6 +4129,11 @@ func toolToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 		}
 
 		InternalSetValueByPath(toObject, []string{"mcpServers"}, fromMcpServers)
+	}
+
+	fromExaAiSearch := InternalGetValueByPath(fromObject, []string{"exaAiSearch"})
+	if fromExaAiSearch != nil {
+		InternalSetValueByPath(toObject, []string{"exaAiSearch"}, fromExaAiSearch)
 	}
 
 	return toObject, nil

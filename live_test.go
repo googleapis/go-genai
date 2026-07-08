@@ -311,6 +311,7 @@ func TestLiveConnect(t *testing.T) {
 				t.Errorf("Connect() error message = %v, wantErrMessage %v", err.Error(), tt.wantErrMessage)
 				return
 			}
+
 			defer session.Close()
 		})
 	}
@@ -357,6 +358,10 @@ func TestLiveConnect(t *testing.T) {
 					t.Fatalf("Connect failed: %v", err)
 				}
 				defer session.Close()
+
+				if session.SetupComplete == nil {
+					t.Errorf("SetupComplete is nil after Connect")
+				}
 
 				// Test sending the message
 				err = session.SendClientContent(LiveClientContentInput{Turns: Text("client test message")})
@@ -453,6 +458,10 @@ func TestLiveConnect(t *testing.T) {
 				}
 				defer session.Close()
 
+				if session.SetupComplete == nil {
+					t.Errorf("SetupComplete is nil after Connect")
+				}
+
 				// Test sending the message
 				err = session.SendRealtimeInput(tt.realtimeInput)
 				if err != nil {
@@ -522,6 +531,10 @@ func TestLiveConnect(t *testing.T) {
 					t.Fatalf("Connect failed: %v", err)
 				}
 				defer session.Close()
+
+				if session.SetupComplete == nil {
+					t.Errorf("SetupComplete is nil after Connect")
+				}
 
 				// Test sending the message
 				err = session.SendToolResponse(LiveToolResponseInput{FunctionResponses: []*FunctionResponse{{Name: "test-function"}}})

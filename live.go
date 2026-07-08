@@ -44,8 +44,10 @@ type Live struct {
 // Generative AI API. It provides methods for sending client messages and
 // receiving server messages over the established connection.
 type Session struct {
-	conn      *websocket.Conn
-	apiClient *apiClient
+	conn            *websocket.Conn
+	apiClient       *apiClient
+	SetupComplete   *LiveServerSetupComplete
+	bufferedMessage *LiveServerMessage
 }
 
 // Preview. Connect establishes a WebSocket connection to the specified
@@ -157,6 +159,19 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 	if err != nil {
 		return nil, fmt.Errorf("failed to write LiveClientSetup: %w", err)
 	}
+
+	setupMessage, err := s.Receive()
+	if err != nil {
+		s.Close()
+		return nil, fmt.Errorf("failed to receive setup complete: %w", err)
+	}
+	if setupMessage.SetupComplete == nil {
+		s.Close()
+		return nil, fmt.Errorf("expected SetupComplete message, got: %v", setupMessage)
+	}
+	s.SetupComplete = setupMessage.SetupComplete
+	s.bufferedMessage = setupMessage
+
 	return s, nil
 }
 
@@ -292,6 +307,11 @@ func (s *Session) send(input *LiveClientMessage) error {
 // If the received message is a [LiveServerToolCall], the user must call
 // [SendToolResponse] to provide the function execution result and continue the turn.
 func (s *Session) Receive() (*LiveServerMessage, error) {
+	if s.bufferedMessage != nil {
+		msg := s.bufferedMessage
+		s.bufferedMessage = nil
+		return msg, nil
+	}
 	messageType, msgBytes, err := s.conn.ReadMessage()
 	if err != nil {
 		return nil, err

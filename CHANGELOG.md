@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.63.0](https://github.com/googleapis/go-genai/compare/v1.62.0...v1.63.0) (2026-07-08)
+
+
+### Features
+
+* Add response_format and Translation_config in GenerationConfig ([caf2595](https://github.com/googleapis/go-genai/commit/caf25953db65011cd903d2b08631ea78e37c0a32))
+* Add Tool.exa_ai_search for Gemini Enterprise API ([caf2595](https://github.com/googleapis/go-genai/commit/caf25953db65011cd903d2b08631ea78e37c0a32))
+* voice consent signature types across all SDK languages. ([ff4e260](https://github.com/googleapis/go-genai/commit/ff4e26052344e10a1364f9f5d45c52615c90ed26))
+
+
+### Bug Fixes
+
+* Fix exponential backoff bug in Go GenAI SDK. ([55b57b9](https://github.com/googleapis/go-genai/commit/55b57b95b75ffcc2413c76cea94c32002cc48e1d))
+
 ## [1.62.0](https://github.com/googleapis/go-genai/compare/v1.61.0...v1.62.0) (2026-06-24)
 
 

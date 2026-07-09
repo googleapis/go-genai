@@ -798,6 +798,11 @@ func generationConfigFromVertex(fromObject map[string]any, parentObject map[stri
 		InternalSetValueByPath(toObject, []string{"responseFormat"}, fromResponseFormat)
 	}
 
+	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
+	if fromAudioTranscriptionConfig != nil {
+		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)
+	}
+
 	return toObject, nil
 }
 

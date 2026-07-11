@@ -3761,6 +3761,9 @@ type ContentEmbeddingStatistics struct {
 	Truncated bool `json:"truncated,omitempty"`
 	// Gemini Enterprise Agent Platform only. Number of tokens of the input text.
 	TokenCount float32 `json:"tokenCount,omitempty"`
+	// Optional. Gemini Enterprise Agent Platform only. List of modalities and their token
+	// count for the input content.
+	TokensDetails []*ModalityTokenCount `json:"tokensDetails,omitempty"`
 }
 
 // The embedding generated from an input content.

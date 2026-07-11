@@ -277,6 +277,11 @@ func contentEmbeddingStatisticsFromVertex(fromObject map[string]any, parentObjec
 		InternalSetValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)
 	}
 
+	fromTokensDetails := InternalGetValueByPath(fromObject, []string{"tokensDetails"})
+	if fromTokensDetails != nil {
+		InternalSetValueByPath(toObject, []string{"tokensDetails"}, fromTokensDetails)
+	}
+
 	return toObject, nil
 }
 
@@ -1020,6 +1025,10 @@ func embedContentResponseFromVertex(fromObject map[string]any, parentObject map[
 			if um, ok := usageMetadata.(map[string]any); ok {
 				if ptc, ok := um["promptTokenCount"]; ok && ptc != nil {
 					stats["tokenCount"] = ptc
+					stats["token_count"] = ptc
+				}
+				if ptd, ok := um["promptTokensDetails"]; ok && ptd != nil {
+					stats["tokensDetails"] = ptd
 				}
 			}
 			if truncated != nil {

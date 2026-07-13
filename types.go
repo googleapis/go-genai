@@ -4417,6 +4417,8 @@ type UpdateModelConfig struct {
 	Description string `json:"description,omitempty"`
 	// Optional.
 	DefaultCheckpointID string `json:"defaultCheckpointId,omitempty"`
+	// Optional.
+	UpdateMask string `json:"updateMask,omitempty"`
 }
 
 // Configuration for deleting a tuned model.

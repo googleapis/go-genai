@@ -24,6 +24,40 @@ import (
 	"reflect"
 )
 
+func audioTranscriptionConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if InternalGetValueByPath(fromObject, []string{"languageCodes"}) != nil {
+		return nil, fmt.Errorf("languageCodes parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
+	fromLanguageAuto := InternalGetValueByPath(fromObject, []string{"languageAuto"})
+	if fromLanguageAuto != nil {
+		InternalSetValueByPath(toObject, []string{"languageAuto"}, fromLanguageAuto)
+	}
+
+	fromLanguageHints := InternalGetValueByPath(fromObject, []string{"languageHints"})
+	if fromLanguageHints != nil {
+		InternalSetValueByPath(toObject, []string{"languageHints"}, fromLanguageHints)
+	}
+
+	fromAdaptationPhrases := InternalGetValueByPath(fromObject, []string{"adaptationPhrases"})
+	if fromAdaptationPhrases != nil {
+		InternalSetValueByPath(toObject, []string{"adaptationPhrases"}, fromAdaptationPhrases)
+	}
+
+	fromWordTimestamp := InternalGetValueByPath(fromObject, []string{"wordTimestamp"})
+	if fromWordTimestamp != nil {
+		InternalSetValueByPath(toObject, []string{"wordTimestamp"}, fromWordTimestamp)
+	}
+
+	fromDiarization := InternalGetValueByPath(fromObject, []string{"diarization"})
+	if fromDiarization != nil {
+		InternalSetValueByPath(toObject, []string{"diarization"}, fromDiarization)
+	}
+
+	return toObject, nil
+}
+
 func authConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1354,6 +1388,16 @@ func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]a
 		InternalSetValueByPath(parentObject, []string{"serviceTier"}, fromServiceTier)
 	}
 
+	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
+	if fromAudioTranscriptionConfig != nil {
+		fromAudioTranscriptionConfig, err = audioTranscriptionConfigToMldev(fromAudioTranscriptionConfig.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)
+	}
+
 	return toObject, nil
 }
 
@@ -1567,6 +1611,11 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 	fromServiceTier := InternalGetValueByPath(fromObject, []string{"serviceTier"})
 	if fromServiceTier != nil {
 		InternalSetValueByPath(parentObject, []string{"serviceTier"}, fromServiceTier)
+	}
+
+	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
+	if fromAudioTranscriptionConfig != nil {
+		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)
 	}
 
 	return toObject, nil
@@ -2805,6 +2854,11 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 		return nil, fmt.Errorf("translationConfig parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
 	}
 
+	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
+	if fromAudioTranscriptionConfig != nil {
+		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)
+	}
+
 	return toObject, nil
 }
 
@@ -3481,6 +3535,11 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 		InternalSetValueByPath(toObject, []string{"partMetadata"}, fromPartMetadata)
 	}
 
+	fromAudioTranscription := InternalGetValueByPath(fromObject, []string{"audioTranscription"})
+	if fromAudioTranscription != nil {
+		InternalSetValueByPath(toObject, []string{"audioTranscription"}, fromAudioTranscription)
+	}
+
 	return toObject, nil
 }
 
@@ -3562,6 +3621,11 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 
 	if InternalGetValueByPath(fromObject, []string{"partMetadata"}) != nil {
 		return nil, fmt.Errorf("partMetadata parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	fromAudioTranscription := InternalGetValueByPath(fromObject, []string{"audioTranscription"})
+	if fromAudioTranscription != nil {
+		InternalSetValueByPath(toObject, []string{"audioTranscription"}, fromAudioTranscription)
 	}
 
 	return toObject, nil

@@ -301,6 +301,11 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 		InternalSetValueByPath(toObject, []string{"safetySettings"}, fromSafetySettings)
 	}
 
+	fromHistoryConfig := InternalGetValueByPath(fromObject, []string{"historyConfig"})
+	if fromHistoryConfig != nil {
+		InternalSetValueByPath(toObject, []string{"historyConfig"}, fromHistoryConfig)
+	}
+
 	return toObject, nil
 }
 
@@ -400,6 +405,11 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 	fromSafetySettings := InternalGetValueByPath(fromObject, []string{"safetySettings"})
 	if fromSafetySettings != nil {
 		InternalSetValueByPath(toObject, []string{"safetySettings"}, fromSafetySettings)
+	}
+
+	fromHistoryConfig := InternalGetValueByPath(fromObject, []string{"historyConfig"})
+	if fromHistoryConfig != nil {
+		InternalSetValueByPath(toObject, []string{"historyConfig"}, fromHistoryConfig)
 	}
 
 	return toObject, nil

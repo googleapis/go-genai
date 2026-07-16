@@ -1545,6 +1545,30 @@ func (c *VideoMetadata) MarshalJSON() ([]byte, error) {
 	return json.Marshal(aux)
 }
 
+// Information about a single recognized word.
+type WordInfo struct {
+	// Transcript of the word.
+	Word string `json:"word,omitempty"`
+	// Optional. Start offset in time of the word relative to the start of the audio.
+	StartOffset string `json:"startOffset,omitempty"`
+	// Optional. End offset in time of the word relative to the start of the audio.
+	EndOffset string `json:"endOffset,omitempty"`
+}
+
+// Audio transcription in Server Content.
+type Transcription struct {
+	// Optional. Transcription text.
+	Text string `json:"text,omitempty"`
+	// Optional. The bool indicates the end of the transcription.
+	Finished bool `json:"finished,omitempty"`
+	// The BCP-47 language code of the transcription.
+	LanguageCode string `json:"languageCode,omitempty"`
+	// Optional. A label identifying the speaker of this audio segment (e.g. "spk_1", "spk_2").
+	SpeakerLabel string `json:"speakerLabel,omitempty"`
+	// Optional. Detailed word-level transcriptions and timing details.
+	Words []*WordInfo `json:"words,omitempty"`
+}
+
 // A datatype containing media content.
 // Exactly one field within a Part should be set, representing the specific type
 // of content being conveyed. Using multiple fields within the same `Part`
@@ -1594,6 +1618,8 @@ type Part struct {
 	// of a file/source from which the Part originates or a way to multiplex multiple Part
 	// streams. This field is not supported in Vertex AI.
 	PartMetadata map[string]any `json:"partMetadata,omitempty"`
+	// Optional. Output only. The transcription of the audio part.
+	AudioTranscription *Transcription `json:"audioTranscription,omitempty"`
 }
 
 // NewPartFromURI builds a Part from a given file URI and mime type.
@@ -2758,6 +2784,38 @@ type ModelArmorConfig struct {
 	ResponseTemplateName string `json:"responseTemplateName,omitempty"`
 }
 
+// Indicates the language of the audio should be automatically detected.
+type LanguageAuto struct {
+}
+
+// Provides hints to the model about possible languages present in the audio.
+type LanguageHints struct {
+	// Optional. BCP-47 language codes. At least one must be specified.
+	LanguageCodes []string `json:"languageCodes,omitempty"`
+}
+
+// The audio transcription configuration in Setup.
+type AudioTranscriptionConfig struct {
+	// Optional. Deprecated: use LanguageAuto or LanguageHints instead.
+	LanguageCodes []string `json:"languageCodes,omitempty"`
+	// Optional. The model will detect the language automatically. Do not use together with
+	// LanguageHints.
+	LanguageAuto *LanguageAuto `json:"languageAuto,omitempty"`
+	// Optional. Specifies one or more languages in the audio. Do not use together with
+	// LanguageAuto.
+	LanguageHints *LanguageHints `json:"languageHints,omitempty"`
+	// Optional. A list of custom vocabulary phrases, which biases the ASR model to improve
+	// recognition of these specific terms.
+	CustomVocabulary []string `json:"customVocabulary,omitempty"`
+	// Optional. Deprecated. A list of phrases used for speech adaptation, which biases
+	// the ASR model to improve recognition of these specific terms.
+	AdaptationPhrases []string `json:"adaptationPhrases,omitempty"`
+	// Optional. Configures word-level timestamp generation.
+	WordTimestamp *bool `json:"wordTimestamp,omitempty"`
+	// Optional. Configures speaker diarization.
+	Diarization *bool `json:"diarization,omitempty"`
+}
+
 // Optional model configuration parameters.
 // For more information, see `Content generation parameters
 // <https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters>`_.
@@ -2881,6 +2939,8 @@ type GenerateContentConfig struct {
 	ModelArmorConfig *ModelArmorConfig `json:"modelArmorConfig,omitempty"`
 	// Optional. The service tier to use for the request. For example, ServiceTier.FLEX.
 	ServiceTier ServiceTier `json:"serviceTier,omitempty"`
+	// Optional. Configuration for audio transcription (speech recognition).
+	AudioTranscriptionConfig *AudioTranscriptionConfig `json:"audioTranscriptionConfig,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {
@@ -4649,6 +4709,8 @@ type GenerationConfig struct {
 	ResponseFormat []*ResponseFormat `json:"responseFormat,omitempty"`
 	// Optional. Config for translation. This field is not supported in Vertex AI.
 	TranslationConfig *TranslationConfig `json:"translationConfig,omitempty"`
+	// Optional. Configuration for audio transcription (speech recognition).
+	AudioTranscriptionConfig *AudioTranscriptionConfig `json:"audioTranscriptionConfig,omitempty"`
 }
 
 // Config for the count_tokens method.
@@ -7796,16 +7858,6 @@ type LiveServerSetupComplete struct {
 	VoiceConsentSignature *VoiceConsentSignature `json:"voiceConsentSignature,omitempty"`
 }
 
-// Audio transcription in Server Content.
-type Transcription struct {
-	// Optional. Transcription text.
-	Text string `json:"text,omitempty"`
-	// Optional. The bool indicates the end of the transcription.
-	Finished bool `json:"finished,omitempty"`
-	// The BCP-47 language code of the transcription.
-	LanguageCode string `json:"languageCode,omitempty"`
-}
-
 // Incremental server update generated by the model in response to client messages.
 // Content is generated as quickly as possible, and not in real time. Clients
 // may choose to buffer and play it out in real time.
@@ -8112,34 +8164,6 @@ type ContextWindowCompressionConfig struct {
 	TriggerTokens *int64 `json:"triggerTokens,omitempty,string"`
 	// Optional. Sliding window compression mechanism.
 	SlidingWindow *SlidingWindow `json:"slidingWindow,omitempty"`
-}
-
-// Indicates the language of the audio should be automatically detected.
-type LanguageAuto struct {
-}
-
-// Provides hints to the model about possible languages present in the audio.
-type LanguageHints struct {
-	// Optional. BCP-47 language codes. At least one must be specified.
-	LanguageCodes []string `json:"languageCodes,omitempty"`
-}
-
-// The audio transcription configuration in Setup.
-type AudioTranscriptionConfig struct {
-	// Optional. Deprecated: use LanguageAuto or LanguageHints instead.
-	LanguageCodes []string `json:"languageCodes,omitempty"`
-	// Optional. The model will detect the language automatically. Do not use together with
-	// LanguageHints.
-	LanguageAuto *LanguageAuto `json:"languageAuto,omitempty"`
-	// Optional. Specifies one or more languages in the audio. Do not use together with
-	// LanguageAuto.
-	LanguageHints *LanguageHints `json:"languageHints,omitempty"`
-	// Optional. A list of custom vocabulary phrases, which biases the ASR model to improve
-	// recognition of these specific terms.
-	CustomVocabulary []string `json:"customVocabulary,omitempty"`
-	// Optional. Deprecated. A list of phrases used for speech adaptation, which biases
-	// the ASR model to improve recognition of these specific terms.
-	AdaptationPhrases []string `json:"adaptationPhrases,omitempty"`
 }
 
 // Config for proactivity features.

@@ -36,6 +36,11 @@ func audioTranscriptionConfigToMldev(fromObject map[string]any, parentObject map
 		InternalSetValueByPath(toObject, []string{"languageHints"}, fromLanguageHints)
 	}
 
+	fromCustomVocabulary := InternalGetValueByPath(fromObject, []string{"customVocabulary"})
+	if fromCustomVocabulary != nil {
+		InternalSetValueByPath(toObject, []string{"customVocabulary"}, fromCustomVocabulary)
+	}
+
 	fromAdaptationPhrases := InternalGetValueByPath(fromObject, []string{"adaptationPhrases"})
 	if fromAdaptationPhrases != nil {
 		InternalSetValueByPath(toObject, []string{"adaptationPhrases"}, fromAdaptationPhrases)

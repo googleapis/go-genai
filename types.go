@@ -8134,8 +8134,11 @@ type AudioTranscriptionConfig struct {
 	// Optional. Specifies one or more languages in the audio. Do not use together with
 	// LanguageAuto.
 	LanguageHints *LanguageHints `json:"languageHints,omitempty"`
-	// Optional. A list of phrases used for speech adaptation, which biases the ASR model
-	// to improve recognition of these specific terms.
+	// Optional. A list of custom vocabulary phrases, which biases the ASR model to improve
+	// recognition of these specific terms.
+	CustomVocabulary []string `json:"customVocabulary,omitempty"`
+	// Optional. Deprecated. A list of phrases used for speech adaptation, which biases
+	// the ASR model to improve recognition of these specific terms.
 	AdaptationPhrases []string `json:"adaptationPhrases,omitempty"`
 }
 

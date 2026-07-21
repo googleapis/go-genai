@@ -20,8 +20,10 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"log"
 	"net/http"
 	"reflect"
+	"sync"
 )
 
 func authConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
@@ -5803,6 +5805,11 @@ func (m Models) generateVideos(ctx context.Context, model string, prompt *string
 	return response, nil
 }
 
+var deprecationWarningEditImage sync.Once
+var deprecationWarningGenerateImages sync.Once
+var breakingChangeWarningGenerateVideosNotSource sync.Once
+var deprecationWarningGenerateVideosFromSource sync.Once
+
 // GenerateContent generates content based on the provided model, contents, and configuration.
 func (m Models) GenerateContent(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) (*GenerateContentResponse, error) {
 	if config != nil {
@@ -5877,6 +5884,9 @@ func (m Models) All(ctx context.Context) iter.Seq2[*Model, error] {
 
 // GenerateImages generates images based on the provided model, prompt, and configuration.
 func (m Models) GenerateImages(ctx context.Context, model string, prompt string, config *GenerateImagesConfig) (*GenerateImagesResponse, error) {
+	deprecationWarningGenerateImages.Do(func() {
+		log.Println("The GenerateImages method is deprecated and will be removed in the next major release (not before Jan. 1 2027). Please use the GenerateContent method with image models instead. See https://ai.google.dev/gemini-api/docs/deprecations#imagen-models and https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images")
+	})
 	apiResponse, err := m.generateImages(ctx, model, prompt, config)
 	if err != nil {
 		return nil, err
@@ -5926,6 +5936,9 @@ func (m Models) UpscaleImage(ctx context.Context, model string, image *Image, up
 
 // EditImage edits an image based on the provided model, prompt, reference images, and configuration.
 func (m Models) EditImage(ctx context.Context, model, prompt string, referenceImages []ReferenceImage, config *EditImageConfig) (*EditImageResponse, error) {
+	deprecationWarningEditImage.Do(func() {
+		log.Println("The EditImage method is deprecated and will be removed in the next major release (not before Jan. 1 2027). Please use the GenerateContent method with image models instead. See https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/gemini-edit-images#edit-an-image")
+	})
 	refImages := make([]*referenceImageAPI, len(referenceImages))
 	for i, img := range referenceImages {
 		refImages[i] = img.referenceImageAPI()
@@ -5937,11 +5950,17 @@ func (m Models) EditImage(ctx context.Context, model, prompt string, referenceIm
 // This method is kept for backward compatibility. Use GenerateVideosFromSource instead.
 func (m Models) GenerateVideos(ctx context.Context, model string, prompt string, image *Image, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
 	// Does not support Video or GenerateVideosSource.
+	breakingChangeWarningGenerateVideosNotSource.Do(func() {
+		log.Println("The GenerateVideos method with prompt/image is deprecated and will be replaced with source parameter in the next major release (not before 2026-07-31).")
+	})
 	return m.generateVideos(ctx, model, &prompt, image, nil, nil, config)
 }
 
 // GenerateVideos creates a long-running video generation operation.
 func (m Models) GenerateVideosFromSource(ctx context.Context, model string, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+	deprecationWarningGenerateVideosFromSource.Do(func() {
+		log.Println("The GenerateVideosFromSource method will be renamed to GenerateVideos() in the next major release (not before 2026-07-31).")
+	})
 	if source == nil {
 		return nil, fmt.Errorf("source is required")
 	}

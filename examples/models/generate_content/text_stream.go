@@ -21,11 +21,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"google.golang.org/genai"
 )
 
-var model = flag.String("model", "gemini-2.5-flash", "the model name, e.g. gemini-2.5-flash")
+var model = flag.String("model", "gemini-3.5-flash", "the model name, e.g. gemini-3.5-flash")
 
 func run(ctx context.Context) {
 	client, err := genai.NewClient(ctx, nil)
@@ -37,8 +38,11 @@ func run(ctx context.Context) {
 	} else {
 		fmt.Println("Calling GeminiAI.GenerateContentStream API...")
 	}
-	var config *genai.GenerateContentConfig = &genai.GenerateContentConfig{SystemInstruction: &genai.Content{Parts: []*genai.Part{&genai.Part{Text: "You are a story writer."}}}}
-	// Call the GenerateContent method.
+	timeout := 30 * time.Second
+	var config *genai.GenerateContentConfig = &genai.GenerateContentConfig{
+		SystemInstruction: &genai.Content{Parts: []*genai.Part{&genai.Part{Text: "You are a story writer."}}},
+		HTTPOptions:       &genai.HTTPOptions{Timeout: &timeout},
+	}
 	for result, err := range client.Models.GenerateContentStream(ctx, *model, genai.Text("Tell me a story in 300 words."), config) {
 		if err != nil {
 			log.Fatal(err)

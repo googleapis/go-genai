@@ -66,17 +66,25 @@ func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiC
 	var cancel context.CancelFunc
 	if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
 		requestContext, cancel = context.WithTimeout(ctx, *timeout)
-		defer cancel()
 	}
 	req = req.WithContext(requestContext)
 
 	resp, err := doRequest(ac, req)
 	if err != nil {
+		if cancel != nil {
+			cancel()
+		}
 		return err
 	}
 
+	output.cancel = cancel
+
 	// resp.Body will be closed by the iterator
-	return deserializeStreamResponse(resp, output)
+	err = deserializeStreamResponse(resp, output)
+	if err != nil && cancel != nil {
+		cancel()
+	}
+	return err
 }
 
 // SendRequest issues an API request and returns a map of the response contents.
@@ -436,9 +444,10 @@ func deserializeUnaryResponse(resp *http.Response) (map[string]any, error) {
 }
 
 type responseStream[R any] struct {
-	r  *bufio.Scanner
-	rc io.ReadCloser
-	h  http.Header
+	r      *bufio.Scanner
+	rc     io.ReadCloser
+	h      http.Header
+	cancel context.CancelFunc
 }
 
 func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(responseMap map[string]any) (*R, error)) iter.Seq2[*R, error] {
@@ -447,6 +456,9 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 			// Close the response body range over function is done.
 			if err := rs.rc.Close(); err != nil {
 				log.Printf("Error closing response body: %v", err)
+			}
+			if rs.cancel != nil {
+				rs.cancel()
 			}
 		}()
 		for rs.r.Scan() {
@@ -519,6 +531,7 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 				log.Printf("The response is too large to process in streaming mode. Please use a non-streaming method.")
 			}
 			log.Printf("Error %v", rs.r.Err())
+			yield(nil, rs.r.Err())
 		}
 	}
 }

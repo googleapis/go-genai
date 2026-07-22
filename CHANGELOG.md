@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.65.0](https://github.com/googleapis/go-genai/compare/v1.64.0...v1.65.0) (2026-07-21)
+
+
+### Features
+
+* A new field `custom_vocabulary` is added to message `.google.cloud.aiplatform.v1beta1.BidiGenerateContentSetup` ([7d5b833](https://github.com/googleapis/go-genai/commit/7d5b83362d9304343ea33eb0eac6462bcaeb589e))
+
+
+### Bug Fixes
+
+* add deprecation warnings to Imagen generate_images, edit_images, generate_videos (if using prompt/text/image args), LiveConnectConfig.GenerationConfig which will be removed in the next major version ([d77df44](https://github.com/googleapis/go-genai/commit/d77df44a722d1748666910bef14fa0c8852e12f7))
+* Fix streaming truncation when HTTPOptions.Timeout is set. ([3417576](https://github.com/googleapis/go-genai/commit/3417576059b7e8c3ad058bcbc5ebf12611d1f4a9)), closes [#816](https://github.com/googleapis/go-genai/issues/816)
+
 ## [1.64.0](https://github.com/googleapis/go-genai/compare/v1.63.0...v1.64.0) (2026-07-15)
 
 

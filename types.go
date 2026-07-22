@@ -286,6 +286,8 @@ const (
 	HarmCategoryDangerousContent HarmCategory = "HARM_CATEGORY_DANGEROUS_CONTENT"
 	// Deprecated: Election filter is not longer supported. The harm category is civic integrity.
 	HarmCategoryCivicIntegrity HarmCategory = "HARM_CATEGORY_CIVIC_INTEGRITY"
+	// Prompts designed to bypass safety filters.
+	HarmCategoryJailbreak HarmCategory = "HARM_CATEGORY_JAILBREAK"
 	// Images that contain hate speech. This enum value is not supported in Gemini API.
 	HarmCategoryImageHate HarmCategory = "HARM_CATEGORY_IMAGE_HATE"
 	// Images that contain dangerous content. This enum value is not supported in Gemini
@@ -296,9 +298,6 @@ const (
 	// Images that contain sexually explicit content. This enum value is not supported in
 	// Gemini API.
 	HarmCategoryImageSexuallyExplicit HarmCategory = "HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT"
-	// Prompts designed to bypass safety filters. This enum value is not supported in Gemini
-	// API.
-	HarmCategoryJailbreak HarmCategory = "HARM_CATEGORY_JAILBREAK"
 )
 
 // The method for blocking content. If not specified, the default behavior is to use
@@ -861,6 +860,66 @@ const (
 	ServiceTierPriority ServiceTier = "priority"
 )
 
+// Defines what effect activity has. This enum is not supported in Vertex AI.
+type ActivityHandling string
+
+const (
+	// If unspecified, the default behavior is `START_OF_ACTIVITY_INTERRUPTS`.
+	ActivityHandlingUnspecified ActivityHandling = "ACTIVITY_HANDLING_UNSPECIFIED"
+	// If true, start of activity will interrupt the model's response (also called "barge
+	// in"). The model's current response will be cut-off in the moment of the interruption.
+	// This is the default behavior.
+	ActivityHandlingStartOfActivityInterrupts ActivityHandling = "START_OF_ACTIVITY_INTERRUPTS"
+	// The model's response will not be interrupted.
+	ActivityHandlingNoInterruption ActivityHandling = "NO_INTERRUPTION"
+)
+
+// Defines which input is included in the user's turn. This enum is not supported in
+// Vertex AI.
+type TurnCoverage string
+
+const (
+	// If unspecified, a default behavior is selected based on the model. E.g., for Gemini
+	// 2.5, the default is `TURN_INCLUDES_ONLY_ACTIVITY`, while for Gemini 3.1 and onwards,
+	// it's `TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO`.
+	TurnCoverageUnspecified TurnCoverage = "TURN_COVERAGE_UNSPECIFIED"
+	// Includes activity since the last turn, excluding inactivity (e.g. silence on the
+	// audio stream).
+	TurnCoverageTurnIncludesOnlyActivity TurnCoverage = "TURN_INCLUDES_ONLY_ACTIVITY"
+	// Includes all realtime input since the last turn, including inactivity (e.g. silence
+	// on the audio stream).
+	TurnCoverageTurnIncludesAllInput TurnCoverage = "TURN_INCLUDES_ALL_INPUT"
+	// Includes audio activity and all video since the last turn. With automatic activity
+	// detection, audio activity means speech and excludes silence.
+	TurnCoverageTurnIncludesAudioActivityAndAllVideo TurnCoverage = "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO"
+)
+
+// Determines how likely detected speech is ended. This enum is not supported in Vertex
+// AI.
+type EndSensitivity string
+
+const (
+	// The default is END_SENSITIVITY_HIGH.
+	EndSensitivityUnspecified EndSensitivity = "END_SENSITIVITY_UNSPECIFIED"
+	// Automatic detection ends speech more often.
+	EndSensitivityHigh EndSensitivity = "END_SENSITIVITY_HIGH"
+	// Automatic detection ends speech less often.
+	EndSensitivityLow EndSensitivity = "END_SENSITIVITY_LOW"
+)
+
+// Determines how likely speech is to be detected. This enum is not supported in Vertex
+// AI.
+type StartSensitivity string
+
+const (
+	// The default is START_SENSITIVITY_HIGH.
+	StartSensitivityUnspecified StartSensitivity = "START_SENSITIVITY_UNSPECIFIED"
+	// Automatic detection will detect the start of speech more often.
+	StartSensitivityHigh StartSensitivity = "START_SENSITIVITY_HIGH"
+	// Automatic detection will detect the start of speech less often.
+	StartSensitivityLow StartSensitivity = "START_SENSITIVITY_LOW"
+)
+
 // The tokenization quality used for given media.
 type PartMediaResolutionLevel string
 
@@ -1191,63 +1250,6 @@ const (
 	VoiceActivityTypeActivityStart VoiceActivityType = "ACTIVITY_START"
 	// End of sentence signal.
 	VoiceActivityTypeActivityEnd VoiceActivityType = "ACTIVITY_END"
-)
-
-// Start of speech sensitivity.
-type StartSensitivity string
-
-const (
-	// The default is START_SENSITIVITY_LOW for Gemini Enterprise Agent Platform and START_SENSITIVITY_HIGH
-	// for Gemini Live.
-	StartSensitivityUnspecified StartSensitivity = "START_SENSITIVITY_UNSPECIFIED"
-	// Automatic detection will detect the start of speech more often.
-	StartSensitivityHigh StartSensitivity = "START_SENSITIVITY_HIGH"
-	// Automatic detection will detect the start of speech less often.
-	StartSensitivityLow StartSensitivity = "START_SENSITIVITY_LOW"
-)
-
-// End of speech sensitivity.
-type EndSensitivity string
-
-const (
-	// The default is END_SENSITIVITY_LOW for Gemini Enterprise Agent Platform and END_SENSITIVITY_HIGH
-	// for Gemini Live.
-	EndSensitivityUnspecified EndSensitivity = "END_SENSITIVITY_UNSPECIFIED"
-	// Automatic detection ends speech more often.
-	EndSensitivityHigh EndSensitivity = "END_SENSITIVITY_HIGH"
-	// Automatic detection ends speech less often.
-	EndSensitivityLow EndSensitivity = "END_SENSITIVITY_LOW"
-)
-
-// The different ways of handling user activity.
-type ActivityHandling string
-
-const (
-	// If unspecified, the default behavior is `START_OF_ACTIVITY_INTERRUPTS`.
-	ActivityHandlingUnspecified ActivityHandling = "ACTIVITY_HANDLING_UNSPECIFIED"
-	// If true, start of activity will interrupt the model's response (also called "barge
-	// in"). The model's current response will be cut-off in the moment of the interruption.
-	// This is the default behavior.
-	ActivityHandlingStartOfActivityInterrupts ActivityHandling = "START_OF_ACTIVITY_INTERRUPTS"
-	// The model's response will not be interrupted.
-	ActivityHandlingNoInterruption ActivityHandling = "NO_INTERRUPTION"
-)
-
-// Options about which input is included in the user's turn.
-type TurnCoverage string
-
-const (
-	// If unspecified, the default behavior is `TURN_INCLUDES_ONLY_ACTIVITY`.
-	TurnCoverageUnspecified TurnCoverage = "TURN_COVERAGE_UNSPECIFIED"
-	// The users turn only includes activity since the last turn, excluding inactivity (e.g.
-	// silence on the audio stream). This is the default behavior.
-	TurnCoverageTurnIncludesOnlyActivity TurnCoverage = "TURN_INCLUDES_ONLY_ACTIVITY"
-	// The users turn includes all realtime input since the last turn, including inactivity
-	// (e.g. silence on the audio stream).
-	TurnCoverageTurnIncludesAllInput TurnCoverage = "TURN_INCLUDES_ALL_INPUT"
-	// Includes audio activity and all video since the last turn. With automatic activity
-	// detection, audio activity means speech and excludes silence.
-	TurnCoverageTurnIncludesAudioActivityAndAllVideo TurnCoverage = "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO"
 )
 
 // Media resolution for the input media.
@@ -2405,6 +2407,17 @@ type ToolParallelAISearch struct {
 	// "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds":
 	// 3600 } }
 	CustomConfigs map[string]any `json:"customConfigs,omitempty"`
+	// Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex
+	// Grounding to use Parallel's Zero Data Retention Marketplace product. If this value
+	// is "false" or omitted, the Parallel Web Search for Grounding standard subscription
+	// will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR
+	// subscription will be used.
+	EnableDataRetention *bool `json:"enableDataRetention,omitempty"`
+	// Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace
+	// product. If this value is "false" or omitted, the Parallel Web Search for Grounding
+	// standard subscription will be used. If this value is "true", the Parallel Web Search
+	// for Grounding - ZDR subscription will be used.
+	EnableZeroDataRetention *bool `json:"enableZeroDataRetention,omitempty"`
 }
 
 // Tool to support URL context.
@@ -4557,7 +4570,7 @@ type GenerationConfig struct {
 	CandidateCount int32 `json:"candidateCount,omitempty"`
 	// Optional. If enabled, the model will detect emotions and adapt its responses accordingly.
 	// For example, if the model detects that the user is frustrated, it may provide a more
-	// empathetic response. This field is not supported in Gemini API.
+	// empathetic response.
 	EnableAffectiveDialog *bool `json:"enableAffectiveDialog,omitempty"`
 	// Optional. Penalizes tokens based on their frequency in the generated text. A positive
 	// value helps to reduce the repetition of words and phrases. Valid values can range
@@ -5346,6 +5359,8 @@ type ReinforcementTuningHyperParameters struct {
 	// * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in
 	// tokens If not set, default to -1 (dynamic thinking).
 	ThinkingBudget int32 `json:"thinkingBudget,omitempty"`
+	// Optional. Number of steps for the tuning job (mutually exclusive with epoch_count).
+	StepCount int64 `json:"stepCount,omitempty,string"`
 }
 
 // Reinforcement tuning spec for tuning.
@@ -8047,80 +8062,27 @@ type LiveServerMessage struct {
 	VoiceActivity *VoiceActivity `json:"voiceActivity,omitempty"`
 }
 
-// Configures automatic detection of activity.
-type AutomaticActivityDetection struct {
-	// Optional. If enabled, detected voice and text input count as activity. If disabled,
-	// the client must send activity signals.
-	Disabled bool `json:"disabled,omitempty"`
-	// Optional. Determines how likely speech is to be detected.
-	StartOfSpeechSensitivity StartSensitivity `json:"startOfSpeechSensitivity,omitempty"`
-	// Optional. Determines how likely detected speech is ended.
-	EndOfSpeechSensitivity EndSensitivity `json:"endOfSpeechSensitivity,omitempty"`
-	// Optional. The required duration of detected speech before start-of-speech is committed.
-	// The lower this value the more sensitive the start-of-speech detection is and the
-	// shorter speech can be recognized. However, this also increases the probability of
-	// false positives.
-	PrefixPaddingMs *int32 `json:"prefixPaddingMs,omitempty"`
-	// Optional. The required duration of detected non-speech (e.g. silence) before end-of-speech
-	// is committed. The larger this value, the longer speech gaps can be without interrupting
-	// the user's activity but this will increase the model's latency.
-	SilenceDurationMs *int32 `json:"silenceDurationMs,omitempty"`
-}
-
-// Marks the end of user activity.
-// This can only be sent if automatic (i.e. server-side) activity detection is
-// disabled.
-type RealtimeInputConfig struct {
-	// Optional. If not set, automatic activity detection is enabled by default. If automatic
-	// voice detection is disabled, the client must send activity signals.
-	AutomaticActivityDetection *AutomaticActivityDetection `json:"automaticActivityDetection,omitempty"`
-	// Optional. Defines what effect activity has.
-	ActivityHandling ActivityHandling `json:"activityHandling,omitempty"`
-	// Optional. Defines which input is included in the user's turn.
-	TurnCoverage TurnCoverage `json:"turnCoverage,omitempty"`
-}
-
 // Configuration of session resumption mechanism.
 // Included in `LiveConnectConfig.session_resumption`. If included server
 // will send `LiveServerSessionResumptionUpdate` messages.
 type SessionResumptionConfig struct {
-	// Optional. Session resumption handle of previous session (session to restore).
-	// If not present new session will be started.
+	// The handle of a previous session. If not present then a new session is created. Session
+	// handles come from `SessionResumptionUpdate.token` values in previous connections.
 	Handle string `json:"handle,omitempty"`
 	// Optional. If set the server will send `last_consumed_client_message_index` in the
 	// `session_resumption_update` messages to allow for transparent reconnections.
 	Transparent bool `json:"transparent,omitempty"`
 }
 
-// Context window will be truncated by keeping only suffix of it.
-// Context window will always be cut at start of USER role turn. System
-// instructions and `BidiGenerateContentSetup.prefix_turns` will not be
-// subject to the sliding window mechanism, they will always stay at the
-// beginning of context window.
-type SlidingWindow struct {
-	// Optional. Session reduction target -- how many tokens we should keep. Window shortening
-	// operation has some latency costs, so we should avoid running it on every turn. Should
-	// be < trigger_tokens. If not set, trigger_tokens/2 is assumed.
-	TargetTokens *int64 `json:"targetTokens,omitempty,string"`
-}
-
-// Enables context window compression -- mechanism managing model context window so
-// it does not exceed given length.
-type ContextWindowCompressionConfig struct {
-	// Optional. Number of tokens (before running turn) that triggers context window compression
-	// mechanism.
-	TriggerTokens *int64 `json:"triggerTokens,omitempty,string"`
-	// Optional. Sliding window compression mechanism.
-	SlidingWindow *SlidingWindow `json:"slidingWindow,omitempty"`
-}
-
-// Indicates the language of the audio should be automatically detected.
+// Indicates the language of the audio should be automatically detected. This data type
+// is not supported in Vertex AI.
 type LanguageAuto struct {
 }
 
-// Provides hints to the model about possible languages present in the audio.
+// Provides hints to the model about possible languages present in the audio. This data
+// type is not supported in Vertex AI.
 type LanguageHints struct {
-	// Optional. BCP-47 language codes. At least one must be specified.
+	// Required. BCP-47 language codes.
 	LanguageCodes []string `json:"languageCodes,omitempty"`
 }
 
@@ -8150,16 +8112,6 @@ type ProactivityConfig struct {
 	ProactiveAudio *bool `json:"proactiveAudio,omitempty"`
 }
 
-// Configuration for history exchange between client and server.
-type HistoryConfig struct {
-	// Optional. If true, after sending `setup_complete`, the server will wait
-	// and at first process `client_content` messages until `turn_complete` is
-	// `true`. This initial history will not trigger a model call and
-	// may end with model content. After `turn_complete` is `true`, the client
-	// can start the realtime conversation via `realtime_input`.
-	InitialHistoryInClientContent bool `json:"initialHistoryInClientContent,omitempty"`
-}
-
 // Configures the customized avatar to be used in the session.
 type CustomizedAvatar struct {
 	// Optional. The MIME type of the reference image, e.g., "image/jpeg".
@@ -8179,6 +8131,75 @@ type AvatarConfig struct {
 	AudioBitrateBps *int32 `json:"audioBitrateBps,omitempty"`
 	// Optional. The bitrate of compressed video output.
 	VideoBitrateBps *int32 `json:"videoBitrateBps,omitempty"`
+}
+
+// Configures automatic detection of activity. This data type is not supported in Vertex
+// AI.
+type AutomaticActivityDetection struct {
+	// Optional. If enabled (the default), detected voice and text input count as activity.
+	// If disabled, the client must send activity signals.
+	Disabled bool `json:"disabled,omitempty"`
+	// Optional. Determines how likely speech is to be detected.
+	StartOfSpeechSensitivity StartSensitivity `json:"startOfSpeechSensitivity,omitempty"`
+	// Optional. Determines how likely detected speech is ended.
+	EndOfSpeechSensitivity EndSensitivity `json:"endOfSpeechSensitivity,omitempty"`
+	// Optional. The required duration of detected speech before start-of-speech is committed.
+	// The lower this value, the more sensitive the start-of-speech detection is and shorter
+	// speech can be recognized. However, this also increases the probability of false positives.
+	PrefixPaddingMs *int32 `json:"prefixPaddingMs,omitempty"`
+	// Optional. The required duration of detected non-speech (e.g. silence) before end-of-speech
+	// is committed. The larger this value, the longer speech gaps can be without interrupting
+	// the user's activity but this will increase the model's latency.
+	SilenceDurationMs *int32 `json:"silenceDurationMs,omitempty"`
+}
+
+// Configures the realtime input behavior in `BidiGenerateContent`. This data type is
+// not supported in Vertex AI.
+type RealtimeInputConfig struct {
+	// Optional. If not set, automatic activity detection is enabled by default. If automatic
+	// voice detection is disabled, the client must send activity signals.
+	AutomaticActivityDetection *AutomaticActivityDetection `json:"automaticActivityDetection,omitempty"`
+	// Optional. Defines what effect activity has.
+	ActivityHandling ActivityHandling `json:"activityHandling,omitempty"`
+	// Optional. Defines which input is included in the user's turn.
+	TurnCoverage TurnCoverage `json:"turnCoverage,omitempty"`
+}
+
+// The SlidingWindow method operates by discarding content at the beginning of the context
+// window. The resulting context will always begin at the start of a USER role turn.
+// System instructions and any `BidiGenerateContentSetup.prefix_turns` will always remain
+// at the beginning of the result. This data type is not supported in Vertex AI.
+type SlidingWindow struct {
+	// The target number of tokens to keep. The default value is trigger_tokens/2. Discarding
+	// parts of the context window causes a temporary latency increase so this value should
+	// be calibrated to avoid frequent compression operations.
+	TargetTokens *int64 `json:"targetTokens,omitempty,string"`
+}
+
+// Enables context window compression — a mechanism for managing the model's context
+// window so that it does not exceed a given length. This data type is not supported
+// in Vertex AI.
+type ContextWindowCompressionConfig struct {
+	// The number of tokens (before running a turn) required to trigger a context window
+	// compression. This can be used to balance quality against latency as shorter context
+	// windows may result in faster model responses. However, any compression operation
+	// will cause a temporary latency increase, so they should not be triggered frequently.
+	// If not set, the default is 80% of the model's context window limit. This leaves 20%
+	// for the next user request/model response.
+	TriggerTokens *int64 `json:"triggerTokens,omitempty,string"`
+	// A sliding-window mechanism.
+	SlidingWindow *SlidingWindow `json:"slidingWindow,omitempty"`
+}
+
+// History configuration. This message is included in the session configuration as `BidiGenerateContentSetup.history_config`.
+// Configures the exchange of history messages. This data type is not supported in Vertex
+// AI.
+type HistoryConfig struct {
+	// Optional. If true, after sending `setup_complete`, the server will wait and at first
+	// process `client_content` messages until `turn_complete` is `true`. This initial history
+	// will not trigger a model call and may end with role `MODEL`. After `turn_complete`
+	// is `true`, the client can start the realtime conversation via `realtime_input`.
+	InitialHistoryInClientContent bool `json:"initialHistoryInClientContent,omitempty"`
 }
 
 // Message contains configuration that will apply for the duration of the streaming
@@ -8436,10 +8457,119 @@ func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage
 	}
 }
 
+// Message to be sent in the first (and only in the first) `BidiGenerateContentClientMessage`.
+// Contains configuration that will apply for the duration of the streaming RPC. Clients
+// should wait for a `BidiGenerateContentSetupComplete` message before sending any additional
+// messages. This data type is not supported in Vertex AI.
+type BidiGenerateContentSetup struct {
+	// Optional. Configures a context window compression mechanism. If included, the server
+	// will automatically reduce the size of the context when it exceeds the configured
+	// length.
+	ContextWindowCompression *ContextWindowCompressionConfig `json:"contextWindowCompression,omitempty"`
+	// Optional. Generation config. The following fields are not supported: - `response_logprobs`
+	// - `response_mime_type` - `logprobs` - `response_schema` - `response_json_schema`
+	// - `stop_sequence` - `skip_response_cache` - `routing_config` - `audio_timestamp`
+	GenerationConfig *GenerationConfig `json:"generationConfig,omitempty"`
+	// Optional. Configures the exchange of history between the client and the server.
+	HistoryConfig *HistoryConfig `json:"historyConfig,omitempty"`
+	// Optional. If set, enables transcription of voice input. The transcription aligns
+	// with the input audio language, if configured.
+	InputAudioTranscription *AudioTranscriptionConfig `json:"inputAudioTranscription,omitempty"`
+	// Required. The model's resource name. This serves as an ID for the Model to use. Format:
+	// `models/{model}`
+	Model string `json:"model,omitempty"`
+	// Optional. If set, enables transcription of the model's audio output. The transcription
+	// aligns with the language code specified for the output audio, if configured.
+	OutputAudioTranscription *AudioTranscriptionConfig `json:"outputAudioTranscription,omitempty"`
+	// Optional. Configures the handling of realtime input.
+	RealtimeInputConfig *RealtimeInputConfig `json:"realtimeInputConfig,omitempty"`
+	// Optional. Configures session resumption mechanism. If included, the server will send
+	// `SessionResumptionUpdate` messages.
+	SessionResumption *SessionResumptionConfig `json:"sessionResumption,omitempty"`
+	// Optional. The user provided system instructions for the model. Note: Only text should
+	// be used in parts and content in each part will be in a separate paragraph.
+	SystemInstruction *Content `json:"systemInstruction,omitempty"`
+	// Optional. A list of `Tools` the model may use to generate the next response. A `Tool`
+	// is a piece of code that enables the system to interact with external systems to perform
+	// an action, or set of actions, outside of knowledge and scope of the model.
+	Tools []*Tool `json:"tools,omitempty"`
+}
+
 // Config for auth_tokens.create parameters.
 type AuthToken struct {
-	// Optional. The name of the auth token.
+	// Output only. Identifier. The token itself.
 	Name string `json:"name,omitempty"`
+	// Optional. Input only. Immutable. Configuration specific to `BidiGenerateContent`.
+	BidiGenerateContentSetup *BidiGenerateContentSetup `json:"bidiGenerateContentSetup,omitempty"`
+	// Optional. Input only. Immutable. An optional time after which, when using the resulting
+	// token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively
+	// close the session after this time.) If not set then this defaults to 30 minutes in
+	// the future. If set, this value must be less than 20 hours in the future.
+	ExpireTime time.Time `json:"expireTime,omitempty"`
+	// Optional. Input only. Immutable. If field_mask is empty, and `bidi_generate_content_setup`
+	// is not present, then the effective `BidiGenerateContentSetup` message is taken from
+	// the Live API connection. If field_mask is empty, and `bidi_generate_content_setup`
+	// _is_ present, then the effective `BidiGenerateContentSetup` message is taken entirely
+	// from `bidi_generate_content_setup` in this request. The setup message from the Live
+	// API connection is ignored. If field_mask is not empty, then the corresponding fields
+	// from `bidi_generate_content_setup` will overwrite the fields from the setup message
+	// in the Live API connection.
+	FieldMask string `json:"fieldMask,omitempty"`
+	// Optional. Input only. Immutable. The time after which new Live API sessions using
+	// the token resulting from this request will be rejected. If not set this defaults
+	// to 60 seconds in the future. If set, this value must be less than 20 hours in the
+	// future.
+	NewSessionExpireTime time.Time `json:"newSessionExpireTime,omitempty"`
+	// Optional. Input only. Immutable. The number of times the token can be used. If this
+	// value is zero then no limit is applied. Resuming a Live API session does not count
+	// as a use. If unspecified, the default is 1.
+	Uses int32 `json:"uses,omitempty"`
+}
+
+func (a *AuthToken) UnmarshalJSON(data []byte) error {
+	type Alias AuthToken
+	aux := &struct {
+		ExpireTime           *time.Time `json:"expireTime,omitempty"`
+		NewSessionExpireTime *time.Time `json:"newSessionExpireTime,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(a),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if !reflect.ValueOf(aux.ExpireTime).IsZero() {
+		a.ExpireTime = time.Time(*aux.ExpireTime)
+	}
+
+	if !reflect.ValueOf(aux.NewSessionExpireTime).IsZero() {
+		a.NewSessionExpireTime = time.Time(*aux.NewSessionExpireTime)
+	}
+
+	return nil
+}
+
+func (a *AuthToken) MarshalJSON() ([]byte, error) {
+	type Alias AuthToken
+	aux := &struct {
+		ExpireTime           *time.Time `json:"expireTime,omitempty"`
+		NewSessionExpireTime *time.Time `json:"newSessionExpireTime,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(a),
+	}
+
+	if !reflect.ValueOf(a.ExpireTime).IsZero() {
+		aux.ExpireTime = (*time.Time)(&a.ExpireTime)
+	}
+
+	if !reflect.ValueOf(a.NewSessionExpireTime).IsZero() {
+		aux.NewSessionExpireTime = (*time.Time)(&a.NewSessionExpireTime)
+	}
+
+	return json.Marshal(aux)
 }
 
 // Config for LiveConnectConstraints for Auth Token creation.

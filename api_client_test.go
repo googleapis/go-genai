@@ -907,6 +907,39 @@ func TestBuildRequest(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "Vertex AI express mode with Project, Location, and API key",
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Project:    "my-project",
+				Location:   "us-central1",
+				Backend:    BackendVertexAI,
+				HTTPClient: &http.Client{},
+			},
+			path:   "publishers/google/models/model-name:generateContent",
+			body:   map[string]any{},
+			method: "POST",
+			httpOptions: &HTTPOptions{
+				BaseURL:    "https://us-central1-aiplatform.googleapis.com",
+				APIVersion: "v1beta1",
+			},
+			want: &http.Request{
+				Method: "POST",
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "us-central1-aiplatform.googleapis.com",
+					Path:   "/v1beta1/projects/my-project/locations/us-central1/publishers/google/models/model-name:generateContent",
+				},
+				Header: http.Header{
+					"Content-Type":      []string{"application/json"},
+					"User-Agent":        []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Client": []string{fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())},
+					"X-Goog-Api-Key":    []string{"test-api-key"},
+				},
+				Body: io.NopCloser(strings.NewReader(``)),
+			},
+			wantErr: false,
+		},
+		{
 			name: "MLDev with empty body",
 			clientConfig: &ClientConfig{
 				APIKey:     "test-api-key",

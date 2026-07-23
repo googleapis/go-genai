@@ -9,6 +9,10 @@ Google's generative models into their Go applications. It supports the
 [Gemini Enterprise Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
 APIs.
 
+> [!NOTE]
+> The GenAI SDK now supports the [Interactions API](#interactions) (Experimental).
+
+
 The Google Gen AI Go SDK enables developers to use Google's state-of-the-art
 generative AI models (like Gemini) to build AI-powered features and applications.
 This SDK supports use cases like:
@@ -78,6 +82,57 @@ export GOOGLE_CLOUD_LOCATION='us-central1'
 
 ```go
 client, err := genai.NewClient(ctx, &genai.ClientConfig{})
+```
+
+## Interactions
+
+The Interactions API allows you to interact with agents and models in a multi-turn conversation.
+
+Here is a simple example of creating a new interaction with a model:
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+
+	"google.golang.org/genai"
+	gaos_interactions "google.golang.org/genai/gaos/models/interactions"
+	"google.golang.org/genai/gaos/models/operations"
+)
+
+func main() {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	modelInput := gaos_interactions.CreateInteractionsInputArrayOfContent([]gaos_interactions.Content{{
+		TextContent: &gaos_interactions.TextContent{
+			Text: "Tell me a short joke about programming.",
+		},
+	}})
+
+	body := operations.CreateCreateInteractionRequestBodyCreateModelInteraction(gaos_interactions.CreateModelInteraction{
+		Model: gaos_interactions.Model("gemini-2.5-flash"),
+		Input: modelInput,
+	})
+
+	res, err := client.Interactions.Create(ctx, body, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if res.Interaction != nil {
+		for _, output := range res.Interaction.Outputs {
+			if output.TextContent != nil {
+				println(output.TextContent.Text)
+			}
+		}
+	}
+}
 ```
 
 ## License

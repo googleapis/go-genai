@@ -49,6 +49,73 @@ func audioTranscriptionConfigToMldev(fromObject map[string]any, parentObject map
 	return toObject, nil
 }
 
+func audioTranscriptionConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromLanguageCodes := InternalGetValueByPath(fromObject, []string{"languageCodes"})
+	if fromLanguageCodes != nil {
+		InternalSetValueByPath(toObject, []string{"languageCodes"}, fromLanguageCodes)
+	}
+
+	fromLanguageAuto := InternalGetValueByPath(fromObject, []string{"languageAuto"})
+	if fromLanguageAuto != nil {
+		InternalSetValueByPath(toObject, []string{"languageAuto"}, fromLanguageAuto)
+	}
+
+	fromLanguageHints := InternalGetValueByPath(fromObject, []string{"languageHints"})
+	if fromLanguageHints != nil {
+		fromLanguageHints, err = languageHintsToVertex(fromLanguageHints.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"languageHints"}, fromLanguageHints)
+	}
+
+	fromCustomVocabulary := InternalGetValueByPath(fromObject, []string{"customVocabulary"})
+	if fromCustomVocabulary != nil {
+		InternalSetValueByPath(toObject, []string{"customVocabulary"}, fromCustomVocabulary)
+	}
+
+	fromAdaptationPhrases := InternalGetValueByPath(fromObject, []string{"adaptationPhrases"})
+	if fromAdaptationPhrases != nil {
+		InternalSetValueByPath(toObject, []string{"adaptationPhrases"}, fromAdaptationPhrases)
+	}
+
+	return toObject, nil
+}
+
+func contextWindowCompressionConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if InternalGetValueByPath(fromObject, []string{"triggerTokens"}) != nil {
+		return nil, fmt.Errorf("triggerTokens parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"slidingWindow"}) != nil {
+		return nil, fmt.Errorf("slidingWindow parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
+func historyConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if InternalGetValueByPath(fromObject, []string{"initialHistoryInClientContent"}) != nil {
+		return nil, fmt.Errorf("initialHistoryInClientContent parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
+func languageHintsToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if InternalGetValueByPath(fromObject, []string{"languageCodes"}) != nil {
+		return nil, fmt.Errorf("languageCodes parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
 func liveClientContentToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -369,26 +436,51 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 
 	fromRealtimeInputConfig := InternalGetValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
+		fromRealtimeInputConfig, err = realtimeInputConfigToVertex(fromRealtimeInputConfig.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
 	fromSessionResumption := InternalGetValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
+		fromSessionResumption, err = sessionResumptionConfigToVertex(fromSessionResumption.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"sessionResumption"}, fromSessionResumption)
 	}
 
 	fromContextWindowCompression := InternalGetValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
+		fromContextWindowCompression, err = contextWindowCompressionConfigToVertex(fromContextWindowCompression.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"contextWindowCompression"}, fromContextWindowCompression)
 	}
 
 	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
+		fromInputAudioTranscription, err = audioTranscriptionConfigToVertex(fromInputAudioTranscription.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
+		fromOutputAudioTranscription, err = audioTranscriptionConfigToVertex(fromOutputAudioTranscription.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
@@ -414,6 +506,11 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 
 	fromHistoryConfig := InternalGetValueByPath(fromObject, []string{"historyConfig"})
 	if fromHistoryConfig != nil {
+		fromHistoryConfig, err = historyConfigToVertex(fromHistoryConfig.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"historyConfig"}, fromHistoryConfig)
 	}
 
@@ -685,26 +782,51 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromSessionResumption := InternalGetValueByPath(fromObject, []string{"sessionResumption"})
 	if fromSessionResumption != nil {
+		fromSessionResumption, err = sessionResumptionConfigToVertex(fromSessionResumption.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(parentObject, []string{"setup", "sessionResumption"}, fromSessionResumption)
 	}
 
 	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
+		fromInputAudioTranscription, err = audioTranscriptionConfigToVertex(fromInputAudioTranscription.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
+		fromOutputAudioTranscription, err = audioTranscriptionConfigToVertex(fromOutputAudioTranscription.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
 	fromRealtimeInputConfig := InternalGetValueByPath(fromObject, []string{"realtimeInputConfig"})
 	if fromRealtimeInputConfig != nil {
+		fromRealtimeInputConfig, err = realtimeInputConfigToVertex(fromRealtimeInputConfig.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(parentObject, []string{"setup", "realtimeInputConfig"}, fromRealtimeInputConfig)
 	}
 
 	fromContextWindowCompression := InternalGetValueByPath(fromObject, []string{"contextWindowCompression"})
 	if fromContextWindowCompression != nil {
+		fromContextWindowCompression, err = contextWindowCompressionConfigToVertex(fromContextWindowCompression.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(parentObject, []string{"setup", "contextWindowCompression"}, fromContextWindowCompression)
 	}
 
@@ -1031,6 +1153,23 @@ func liveServerMessageFromVertex(fromObject map[string]any, parentObject map[str
 	return toObject, nil
 }
 
+func realtimeInputConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if InternalGetValueByPath(fromObject, []string{"automaticActivityDetection"}) != nil {
+		return nil, fmt.Errorf("automaticActivityDetection parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"activityHandling"}) != nil {
+		return nil, fmt.Errorf("activityHandling parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"turnCoverage"}) != nil {
+		return nil, fmt.Errorf("turnCoverage parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
 func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1041,6 +1180,20 @@ func sessionResumptionConfigToMldev(fromObject map[string]any, parentObject map[
 
 	if InternalGetValueByPath(fromObject, []string{"transparent"}) != nil {
 		return nil, fmt.Errorf("transparent parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
+	return toObject, nil
+}
+
+func sessionResumptionConfigToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if InternalGetValueByPath(fromObject, []string{"handle"}) != nil {
+		return nil, fmt.Errorf("handle parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	fromTransparent := InternalGetValueByPath(fromObject, []string{"transparent"})
+	if fromTransparent != nil {
+		InternalSetValueByPath(toObject, []string{"transparent"}, fromTransparent)
 	}
 
 	return toObject, nil

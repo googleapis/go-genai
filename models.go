@@ -4291,6 +4291,10 @@ func updateModelConfigToMldev(fromObject map[string]any, parentObject map[string
 		InternalSetValueByPath(parentObject, []string{"defaultCheckpointId"}, fromDefaultCheckpointId)
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"updateMask"}) != nil {
+		return nil, fmt.Errorf("updateMask parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
 	return toObject, nil
 }
 
@@ -4310,6 +4314,11 @@ func updateModelConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromDefaultCheckpointId := InternalGetValueByPath(fromObject, []string{"defaultCheckpointId"})
 	if fromDefaultCheckpointId != nil {
 		InternalSetValueByPath(parentObject, []string{"defaultCheckpointId"}, fromDefaultCheckpointId)
+	}
+
+	fromUpdateMask := InternalGetValueByPath(fromObject, []string{"updateMask"})
+	if fromUpdateMask != nil {
+		InternalSetValueByPath(parentObject, []string{"_query", "updateMask"}, fromUpdateMask)
 	}
 
 	return toObject, nil

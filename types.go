@@ -8114,25 +8114,26 @@ type ContextWindowCompressionConfig struct {
 	SlidingWindow *SlidingWindow `json:"slidingWindow,omitempty"`
 }
 
-// Indicates the language of the audio should be automatically detected.
+// Deprecated: Language auto-detection is now the default when language_codes is omitted.
 type LanguageAuto struct {
 }
 
-// Provides hints to the model about possible languages present in the audio.
+// Deprecated: Use AudioTranscriptionConfig.language_codes instead.
 type LanguageHints struct {
-	// Optional. BCP-47 language codes. At least one must be specified.
+	// Optional. Deprecated. BCP-47 language codes.
 	LanguageCodes []string `json:"languageCodes,omitempty"`
 }
 
 // The audio transcription configuration in Setup.
 type AudioTranscriptionConfig struct {
-	// Optional. Deprecated: use LanguageAuto or LanguageHints instead.
+	// Optional. BCP-47 language codes providing hints about the languages present in the
+	// audio. If omitted or empty, defaults to automatic language detection.
 	LanguageCodes []string `json:"languageCodes,omitempty"`
-	// Optional. The model will detect the language automatically. Do not use together with
-	// LanguageHints.
+	// Optional. Deprecated: Auto-detection is now the default when language_codes is omitted.
+	// This field will be removed in a future version.
 	LanguageAuto *LanguageAuto `json:"languageAuto,omitempty"`
-	// Optional. Specifies one or more languages in the audio. Do not use together with
-	// LanguageAuto.
+	// Optional. Deprecated: Use top-level language_codes instead. This field will be removed
+	// in a future version.
 	LanguageHints *LanguageHints `json:"languageHints,omitempty"`
 	// Optional. A list of custom vocabulary phrases, which biases the ASR model to improve
 	// recognition of these specific terms.

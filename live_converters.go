@@ -20,35 +20,6 @@ import (
 	"fmt"
 )
 
-func audioTranscriptionConfigToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if InternalGetValueByPath(fromObject, []string{"languageCodes"}) != nil {
-		return nil, fmt.Errorf("languageCodes parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
-	}
-
-	fromLanguageAuto := InternalGetValueByPath(fromObject, []string{"languageAuto"})
-	if fromLanguageAuto != nil {
-		InternalSetValueByPath(toObject, []string{"languageAuto"}, fromLanguageAuto)
-	}
-
-	fromLanguageHints := InternalGetValueByPath(fromObject, []string{"languageHints"})
-	if fromLanguageHints != nil {
-		InternalSetValueByPath(toObject, []string{"languageHints"}, fromLanguageHints)
-	}
-
-	fromCustomVocabulary := InternalGetValueByPath(fromObject, []string{"customVocabulary"})
-	if fromCustomVocabulary != nil {
-		InternalSetValueByPath(toObject, []string{"customVocabulary"}, fromCustomVocabulary)
-	}
-
-	fromAdaptationPhrases := InternalGetValueByPath(fromObject, []string{"adaptationPhrases"})
-	if fromAdaptationPhrases != nil {
-		InternalSetValueByPath(toObject, []string{"adaptationPhrases"}, fromAdaptationPhrases)
-	}
-
-	return toObject, nil
-}
-
 func liveClientContentToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -264,21 +235,11 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 
 	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		fromInputAudioTranscription, err = audioTranscriptionConfigToMldev(fromInputAudioTranscription.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		fromOutputAudioTranscription, err = audioTranscriptionConfigToMldev(fromOutputAudioTranscription.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
@@ -525,21 +486,11 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 
 	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		fromInputAudioTranscription, err = audioTranscriptionConfigToMldev(fromInputAudioTranscription.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		fromOutputAudioTranscription, err = audioTranscriptionConfigToMldev(fromOutputAudioTranscription.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 

@@ -205,12 +205,6 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 	}
 	envVars := cc.envVarProvider()
 
-	if cc.Project != "" && cc.APIKey != "" {
-		return nil, fmt.Errorf("project and API key are mutually exclusive in the client initializer. ClientConfig: %#v", cc)
-	}
-	if cc.Location != "" && cc.APIKey != "" {
-		return nil, fmt.Errorf("location and API key are mutually exclusive in the client initializer. ClientConfig: %#v", cc)
-	}
 	if cc.Credentials != nil && cc.APIKey != "" {
 		return nil, fmt.Errorf("credentials and API key are mutually exclusive in the client initializer. ClientConfig: %#v", cc)
 	}
@@ -278,16 +272,16 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 		if cc.Credentials != nil && envAPIKey != "" {
 			log.Println("Warning: The user provided Google Cloud credentials will take precedence over the API key from the environment variable.")
 			cc.APIKey = ""
-		} else if configAPIKey != "" && (envProject != "" || envLocation != "") {
+		} else if configAPIKey != "" && configProject == "" && configLocation == "" && (envProject != "" || envLocation != "") {
 			// Explicit API key takes precedence over implicit project/location.
 			log.Println("Warning: The user provided Vertex AI API key will take precedence over the project/location from the environment variables.")
 			cc.Project = ""
 			cc.Location = ""
-		} else if (configProject != "" || configLocation != "") && envAPIKey != "" {
+		} else if (configProject != "" || configLocation != "") && configAPIKey == "" && envAPIKey != "" {
 			// Explicit project/location takes precedence over implicit API key.
 			log.Println("Warning: The user provided project/location will take precedence over the API key from the environment variable.")
 			cc.APIKey = ""
-		} else if (envProject != "" || envLocation != "") && envAPIKey != "" {
+		} else if configProject == "" && configLocation == "" && configAPIKey == "" && (envProject != "" || envLocation != "") && envAPIKey != "" {
 			// Implicit project/location takes precedence over implicit API key.
 			log.Println("Warning: The project/location from the environment variables will take precedence over the API key from the environment variable.")
 			cc.APIKey = ""
@@ -344,6 +338,9 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 
 		if cc.APIKey == "" {
 			return nil, fmt.Errorf("api key is required for Google AI backend. ClientConfig: %#v.\nYou can get the API key from https://ai.google.dev/gemini-api/docs/api-key", cc)
+		}
+		if configProject != "" || configLocation != "" {
+			return nil, fmt.Errorf("project and location are not supported for Gemini API backend. ClientConfig: %#v", cc)
 		}
 	}
 

@@ -341,6 +341,12 @@ func TestTable(t *testing.T) {
 							}
 
 							if *mode == apiMode {
+								if len(response) > 1 && !response[1].IsNil() {
+									err := response[1].Interface().(error)
+									if strings.Contains(err.Error(), "429") {
+										t.Skipf("Resource Exhausted (429). Skipping test instead of failing: %v", err)
+									}
+								}
 								return
 							}
 							// TODO(b/399217361): Re-enable response checks after replay files record using extras.

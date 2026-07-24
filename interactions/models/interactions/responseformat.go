@@ -27,12 +27,11 @@ import (
 type ResponseFormatType string
 
 const (
-	ResponseFormatTypeAudioResponseFormat ResponseFormatType = "AudioResponseFormat"
-	ResponseFormatTypeImageResponseFormat ResponseFormatType = "ImageResponseFormat"
-	ResponseFormatTypeTextResponseFormat  ResponseFormatType = "TextResponseFormat"
-	ResponseFormatTypeVideoResponseFormat ResponseFormatType = "VideoResponseFormat"
-	ResponseFormatTypeMapOfAny            ResponseFormatType = "mapOfAny"
-	ResponseFormatTypeUnknown             ResponseFormatType = "Unknown"
+	ResponseFormatTypeAudio   ResponseFormatType = "audio"
+	ResponseFormatTypeImage   ResponseFormatType = "image"
+	ResponseFormatTypeText    ResponseFormatType = "text"
+	ResponseFormatTypeVideo   ResponseFormatType = "video"
+	ResponseFormatTypeUnknown ResponseFormatType = "UNKNOWN"
 )
 
 type ResponseFormat struct {
@@ -40,42 +39,40 @@ type ResponseFormat struct {
 	ImageResponseFormat *ImageResponseFormat `queryParam:"inline" union:"member"`
 	TextResponseFormat  *TextResponseFormat  `queryParam:"inline" union:"member"`
 	VideoResponseFormat *VideoResponseFormat `queryParam:"inline" union:"member"`
-	MapOfAny            map[string]any       `queryParam:"inline" union:"member"`
 	UnknownRaw          json.RawMessage      `json:"-" union:"unknown"`
 
 	Type ResponseFormatType
 }
 
 type ResponseFormatMember interface {
-	AudioResponseFormat | ImageResponseFormat | TextResponseFormat | VideoResponseFormat | map[string]any
+	AudioResponseFormat | ImageResponseFormat | TextResponseFormat | VideoResponseFormat
 }
 
 func NewResponseFormat[T ResponseFormatMember](val T) ResponseFormat {
 	switch v := any(val).(type) {
 	case AudioResponseFormat:
+		typ := ResponseFormatTypeAudio
 		return ResponseFormat{
 			AudioResponseFormat: &v,
-			Type:                ResponseFormatTypeAudioResponseFormat,
+			Type:                typ,
 		}
 	case ImageResponseFormat:
+		typ := ResponseFormatTypeImage
 		return ResponseFormat{
 			ImageResponseFormat: &v,
-			Type:                ResponseFormatTypeImageResponseFormat,
+			Type:                typ,
 		}
 	case TextResponseFormat:
+		typ := ResponseFormatTypeText
 		return ResponseFormat{
 			TextResponseFormat: &v,
-			Type:               ResponseFormatTypeTextResponseFormat,
+			Type:               typ,
 		}
 	case VideoResponseFormat:
+		typ := ResponseFormatTypeVideo
 		return ResponseFormat{
 			VideoResponseFormat: &v,
-			Type:                ResponseFormatTypeVideoResponseFormat,
-		}
-	case map[string]any:
-		return ResponseFormat{
-			MapOfAny: v,
-			Type:     ResponseFormatTypeMapOfAny,
+			Type:                typ,
 		}
 	}
 	panic(fmt.Sprintf("unreachable: %T is not a member of union ResponseFormat", val))
@@ -95,95 +92,78 @@ func (u ResponseFormat) IsUnknown() bool {
 	return u.Type == ResponseFormatTypeUnknown
 }
 
-func (u *ResponseFormat) UnmarshalJSON(data []byte) error {
+func (u *ResponseFormat) UnmarshalJSON(data []byte) (err error) {
+	previous := *u
 	*u = ResponseFormat{}
+	defer func() {
+		if err != nil {
+			*u = previous
+		}
+	}()
 
-	var candidates []utils.UnionCandidate
-
-	// Collect all valid candidates
-	var audioResponseFormat AudioResponseFormat = AudioResponseFormat{}
-	if err := utils.UnmarshalJSON(data, &audioResponseFormat, "", true, nil); err == nil {
-		candidates = append(candidates, utils.UnionCandidate{
-			Type:  ResponseFormatTypeAudioResponseFormat,
-			Value: &audioResponseFormat,
-		})
+	type discriminator struct {
+		Type string `json:"type"`
 	}
 
-	var imageResponseFormat ImageResponseFormat = ImageResponseFormat{}
-	if err := utils.UnmarshalJSON(data, &imageResponseFormat, "", true, nil); err == nil {
-		candidates = append(candidates, utils.UnionCandidate{
-			Type:  ResponseFormatTypeImageResponseFormat,
-			Value: &imageResponseFormat,
-		})
-	}
-
-	var textResponseFormat TextResponseFormat = TextResponseFormat{}
-	if err := utils.UnmarshalJSON(data, &textResponseFormat, "", true, nil); err == nil {
-		candidates = append(candidates, utils.UnionCandidate{
-			Type:  ResponseFormatTypeTextResponseFormat,
-			Value: &textResponseFormat,
-		})
-	}
-
-	var videoResponseFormat VideoResponseFormat = VideoResponseFormat{}
-	if err := utils.UnmarshalJSON(data, &videoResponseFormat, "", true, nil); err == nil {
-		candidates = append(candidates, utils.UnionCandidate{
-			Type:  ResponseFormatTypeVideoResponseFormat,
-			Value: &videoResponseFormat,
-		})
-	}
-
-	var mapOfAny map[string]any = map[string]any{}
-	if err := utils.UnmarshalJSON(data, &mapOfAny, "", true, nil); err == nil {
-		candidates = append(candidates, utils.UnionCandidate{
-			Type:  ResponseFormatTypeMapOfAny,
-			Value: mapOfAny,
-		})
-	}
-
-	if len(candidates) == 0 {
-		if !json.Valid(data) {
-			return fmt.Errorf("could not unmarshal `%s` into any supported union types for ResponseFormat", string(data))
+	dis := new(discriminator)
+	if err := json.Unmarshal(data, &dis); err != nil {
+		var syntaxErr *json.SyntaxError
+		if errors.As(err, &syntaxErr) {
+			return fmt.Errorf("could not unmarshal discriminator: %w", err)
 		}
 		u.UnknownRaw = json.RawMessage(data)
 		u.Type = ResponseFormatTypeUnknown
 		return nil
 	}
-
-	// Pick the best candidate using multi-stage filtering
-	best := utils.PickBestUnionCandidate(candidates, data)
-	if best == nil {
+	if dis == nil {
 		u.UnknownRaw = json.RawMessage(data)
 		u.Type = ResponseFormatTypeUnknown
 		return nil
 	}
 
-	// Set the union type and value based on the best candidate
-	u.Type = best.Type.(ResponseFormatType)
-	switch best.Type {
-	case ResponseFormatTypeAudioResponseFormat:
-		u.AudioResponseFormat = best.Value.(*AudioResponseFormat)
+	switch dis.Type {
+	case "audio":
+		audioResponseFormat := new(AudioResponseFormat)
+		if err := utils.UnmarshalJSON(data, &audioResponseFormat, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == audio) type AudioResponseFormat within ResponseFormat: %w", string(data), err)
+		}
+
+		u.AudioResponseFormat = audioResponseFormat
+		u.Type = ResponseFormatTypeAudio
 		return nil
-	case ResponseFormatTypeImageResponseFormat:
-		u.ImageResponseFormat = best.Value.(*ImageResponseFormat)
+	case "image":
+		imageResponseFormat := new(ImageResponseFormat)
+		if err := utils.UnmarshalJSON(data, &imageResponseFormat, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == image) type ImageResponseFormat within ResponseFormat: %w", string(data), err)
+		}
+
+		u.ImageResponseFormat = imageResponseFormat
+		u.Type = ResponseFormatTypeImage
 		return nil
-	case ResponseFormatTypeTextResponseFormat:
-		u.TextResponseFormat = best.Value.(*TextResponseFormat)
+	case "text":
+		textResponseFormat := new(TextResponseFormat)
+		if err := utils.UnmarshalJSON(data, &textResponseFormat, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == text) type TextResponseFormat within ResponseFormat: %w", string(data), err)
+		}
+
+		u.TextResponseFormat = textResponseFormat
+		u.Type = ResponseFormatTypeText
 		return nil
-	case ResponseFormatTypeVideoResponseFormat:
-		u.VideoResponseFormat = best.Value.(*VideoResponseFormat)
+	case "video":
+		videoResponseFormat := new(VideoResponseFormat)
+		if err := utils.UnmarshalJSON(data, &videoResponseFormat, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == video) type VideoResponseFormat within ResponseFormat: %w", string(data), err)
+		}
+
+		u.VideoResponseFormat = videoResponseFormat
+		u.Type = ResponseFormatTypeVideo
 		return nil
-	case ResponseFormatTypeMapOfAny:
-		u.MapOfAny = best.Value.(map[string]any)
+	default:
+		u.UnknownRaw = json.RawMessage(data)
+		u.Type = ResponseFormatTypeUnknown
 		return nil
 	}
 
-	if !json.Valid(data) {
-		return fmt.Errorf("could not unmarshal `%s` into any supported union types for ResponseFormat", string(data))
-	}
-	u.UnknownRaw = json.RawMessage(data)
-	u.Type = ResponseFormatTypeUnknown
-	return nil
 }
 
 func (u ResponseFormat) MarshalJSON() ([]byte, error) {
@@ -201,10 +181,6 @@ func (u ResponseFormat) MarshalJSON() ([]byte, error) {
 
 	if u.VideoResponseFormat != nil {
 		return utils.MarshalJSON(u.VideoResponseFormat, "", true)
-	}
-
-	if u.MapOfAny != nil {
-		return utils.MarshalJSON(u.MapOfAny, "", true)
 	}
 
 	if u.UnknownRaw != nil {

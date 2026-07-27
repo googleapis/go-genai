@@ -192,8 +192,8 @@ func TestLiveConnect(t *testing.T) {
 			wantPath:        "/my-custom-path",
 		},
 		{
-			desc:   "successful connection with config vertex",
-			client: vertexClient,
+			desc:   "successful connection with config mldev",
+			client: mldevClient,
 			config: &LiveConnectConfig{
 				Temperature:              Ptr[float32](0.5),
 				SystemInstruction:        &Content{Parts: []*Part{{Text: "test instruction"}}},
@@ -213,31 +213,29 @@ func TestLiveConnect(t *testing.T) {
 					},
 				},
 			},
-			wantRequestBody: `{"setup":{"contextWindowCompression":{"slidingWindow":{"targetTokens":"1024"},"triggerTokens":"1024"},"generationConfig":{"temperature":0.5},"model":"projects/test-project/locations/test-location/publishers/google/models/test-model","outputAudioTranscription":{},"realtimeInputConfig":{"automaticActivityDetection":{"disabled":true,"endOfSpeechSensitivity":"END_SENSITIVITY_LOW","prefixPaddingMs":1000,"silenceDurationMs":2000,"startOfSpeechSensitivity":"START_SENSITIVITY_LOW"}},"systemInstruction":{"parts":[{"text":"test instruction"}]},"tools":[{"googleSearch":{}}]}}`,
+			wantRequestBody: `{"setup":{"contextWindowCompression":{"slidingWindow":{"targetTokens":"1024"},"triggerTokens":"1024"},"generationConfig":{"temperature":0.5},"model":"models/test-model","outputAudioTranscription":{},"realtimeInputConfig":{"automaticActivityDetection":{"disabled":true,"endOfSpeechSensitivity":"END_SENSITIVITY_LOW","prefixPaddingMs":1000,"silenceDurationMs":2000,"startOfSpeechSensitivity":"START_SENSITIVITY_LOW"}},"systemInstruction":{"parts":[{"text":"test instruction"}]},"tools":[{"googleSearch":{}}]}}`,
 		},
 		{
-			desc:   "failed connection when set transparent using mldev client",
-			client: mldevClient,
+			desc:   "successful connection with config vertex",
+			client: vertexClient,
 			config: &LiveConnectConfig{
-				SessionResumption: &SessionResumptionConfig{
-					Handle:      "test_handle",
-					Transparent: true,
-				},
+				Temperature:              Ptr[float32](0.5),
+				SystemInstruction:        &Content{Parts: []*Part{{Text: "test instruction"}}},
+				Tools:                    []*Tool{{GoogleSearch: &GoogleSearch{}}},
+				OutputAudioTranscription: &AudioTranscriptionConfig{},
 			},
-			wantErr:        true,
-			wantErrMessage: "transparent parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.",
+			wantRequestBody: `{"setup":{"generationConfig":{"temperature":0.5},"model":"projects/test-project/locations/test-location/publishers/google/models/test-model","outputAudioTranscription":{},"systemInstruction":{"parts":[{"text":"test instruction"}]},"tools":[{"googleSearch":{}}]}}`,
 		},
 		{
 			desc:   "successful connection when set transparent using vertex client",
 			client: vertexClient,
 			config: &LiveConnectConfig{
 				SessionResumption: &SessionResumptionConfig{
-					Handle:      "test_handle",
 					Transparent: true,
 				},
 			},
-			fakeResponseBody: `{"sessionResumptionUpdate":{"newHandle":"test_handle","resumable":true,"lastConsumedClientMessageIndex":"123456789"}}`,
-			wantRequestBody:  `{"setup":{"model":"projects/test-project/locations/test-location/publishers/google/models/test-model","sessionResumption":{"handle":"test_handle","transparent":true}}}`,
+			fakeResponseBody: `{"sessionResumptionUpdate":{"resumable":true,"lastConsumedClientMessageIndex":"123456789"}}`,
+			wantRequestBody:  `{"setup":{"model":"projects/test-project/locations/test-location/publishers/google/models/test-model","sessionResumption":{"transparent":true}}}`,
 		},
 	}
 

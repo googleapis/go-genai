@@ -254,6 +254,9 @@ func TestTable(t *testing.T) {
 
 	for _, backend := range backends {
 		t.Run(backend.name, func(t *testing.T) {
+			if *mode == apiMode && backend.Backend == BackendVertexAI && os.Getenv("GOOGLE_GENAI_RUN_VERTEX_IN_API_MODE") == "" {
+				t.Skip("Skipping Vertex AI tests in API mode (no GCP credentials configured).")
+			}
 			err := filepath.Walk(walkPath, func(testFilePath string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err

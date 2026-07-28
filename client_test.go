@@ -79,6 +79,41 @@ func TestNewClient(t *testing.T) {
 			}
 		})
 
+		t.Run("Project and location are not supported for Gemini API backend", func(t *testing.T) {
+			_, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI, APIKey: "test-api-key", Project: "test-project"})
+			if err == nil {
+				t.Fatalf("Expected error, got nil")
+			}
+			_, err = NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI, APIKey: "test-api-key", Location: "us-central1"})
+			if err == nil {
+				t.Fatalf("Expected error, got nil")
+			}
+		})
+
+		t.Run("API key with explicit project and location when set VertexAI", func(t *testing.T) {
+			apiKey := "test-api-key"
+			project := "test-project"
+			location := "us-central1"
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend:  BackendVertexAI,
+				APIKey:   apiKey,
+				Project:  project,
+				Location: location,
+			})
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
+			if client.clientConfig.APIKey != apiKey {
+				t.Errorf("Expected API key %q, got %q", apiKey, client.clientConfig.APIKey)
+			}
+			if client.clientConfig.Project != project {
+				t.Errorf("Expected project %q, got %q", project, client.clientConfig.Project)
+			}
+			if client.clientConfig.Location != location {
+				t.Errorf("Expected location %q, got %q", location, client.clientConfig.Location)
+			}
+		})
+
 		t.Run("Explicit project and location takes precedence over project and location from environment when set VertexAI", func(t *testing.T) {
 			client, err := NewClient(ctx, &ClientConfig{Backend: BackendVertexAI, Project: "constructor-project", Location: "constructor-location",
 				envVarProvider: func() map[string]string {

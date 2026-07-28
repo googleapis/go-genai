@@ -167,8 +167,7 @@ func (ac *apiClient) createAPIURL(suffix, method string, httpOptions *HTTPOption
 	var finalURL *url.URL
 	if ac.clientConfig.Backend == BackendVertexAI {
 		queryVertexBaseModel := method == http.MethodGet && strings.HasPrefix(path, "publishers/google/models")
-		shouldPrepend := ac.clientConfig.APIKey == "" &&
-			ac.clientConfig.Project != "" &&
+		shouldPrepend := ac.clientConfig.Project != "" &&
 			ac.clientConfig.Location != "" &&
 			httpOptions.BaseURLResourceScope != ResourceScopeCollection &&
 			(!strings.HasPrefix(path, "projects/") && !queryVertexBaseModel)

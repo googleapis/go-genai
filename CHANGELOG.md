@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.66.0](https://github.com/googleapis/go-genai/compare/v1.65.0...v1.66.0) (2026-07-28)
+
+
+### Features
+
+* [GenerateContentConfig] Add GenerationConfig.audio_transcription_config and Part.audio_transcription. ([5d6dfc2](https://github.com/googleapis/go-genai/commit/5d6dfc276d582566522b43a30d13b65a15fb690c))
+* Add flat `language_codes` field to `AudioTranscriptionConfig`. ([3169529](https://github.com/googleapis/go-genai/commit/31695296338b0b960b6374da101fca7398462867))
+* Allow api key + proj/location for enterprise mode ([7357166](https://github.com/googleapis/go-genai/commit/7357166cc0623eefb548af9a11d4d85499d3a62a))
+
 ## [1.65.0](https://github.com/googleapis/go-genai/compare/v1.64.0...v1.65.0) (2026-07-21)
 
 

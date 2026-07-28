@@ -235,21 +235,11 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 
 	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		fromInputAudioTranscription, err = audioTranscriptionConfigToMldev(fromInputAudioTranscription.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		fromOutputAudioTranscription, err = audioTranscriptionConfigToMldev(fromOutputAudioTranscription.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 
@@ -496,21 +486,11 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 
 	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
 	if fromInputAudioTranscription != nil {
-		fromInputAudioTranscription, err = audioTranscriptionConfigToMldev(fromInputAudioTranscription.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(parentObject, []string{"setup", "inputAudioTranscription"}, fromInputAudioTranscription)
 	}
 
 	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
 	if fromOutputAudioTranscription != nil {
-		fromOutputAudioTranscription, err = audioTranscriptionConfigToMldev(fromOutputAudioTranscription.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(parentObject, []string{"setup", "outputAudioTranscription"}, fromOutputAudioTranscription)
 	}
 

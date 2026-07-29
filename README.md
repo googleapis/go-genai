@@ -9,6 +9,16 @@ Google's generative models into their Go applications. It supports the
 [Gemini Enterprise Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
 APIs.
 
+> [!WARNING]
+> **Updates to GenerateVideos in upcoming SDK version:**
+>
+> | Methods/fields to be removed | migration guide |
+> | --- | --- |
+> | `prompt`/`text`/`image` arguments in `Models.GenerateVideos` (and async variants) | Use `source` argument instead |
+>
+> To avoid unexpected updates, pin the SDK version to `< 2.0.0`.
+
+
 The Google Gen AI Go SDK enables developers to use Google's state-of-the-art
 generative AI models (like Gemini) to build AI-powered features and applications.
 This SDK supports use cases like:

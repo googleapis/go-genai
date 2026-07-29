@@ -2875,6 +2875,10 @@ func googleMapsToMldev(fromObject map[string]any, parentObject map[string]any, r
 		InternalSetValueByPath(toObject, []string{"enableWidget"}, fromEnableWidget)
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"groundingTypes"}) != nil {
+		return nil, fmt.Errorf("groundingTypes parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
 	return toObject, nil
 }
 

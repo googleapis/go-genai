@@ -2027,6 +2027,27 @@ type AuthConfig struct {
 	OidcConfig *AuthConfigOidcConfig `json:"oidcConfig,omitempty"`
 }
 
+// Grounding with Google Maps Places data (e.g. QueryPlaces). This is the default Google
+// Maps grounding type when no other type is specified. This data type is not supported
+// in Gemini API.
+type GoogleMapsPlaces struct {
+}
+
+// Grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute). This
+// data type is not supported in Gemini API.
+type GoogleMapsRouting struct {
+}
+
+// Defines the types of Google Maps grounding that can be enabled and their configurations.
+// This data type is not supported in Gemini API.
+type GoogleMapsGroundingTypes struct {
+	// Optional. Enables grounding with Google Maps Places. This is the default grounding
+	// type when no `GroundingTypes` are specified.
+	Places *GoogleMapsPlaces `json:"places,omitempty"`
+	// Optional. Enables grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute).
+	Routing *GoogleMapsRouting `json:"routing,omitempty"`
+}
+
 // Tool to retrieve knowledge from Google Maps.
 type GoogleMaps struct {
 	// Optional. The authentication config to access the API. Only API key is supported.
@@ -2037,6 +2058,9 @@ type GoogleMaps struct {
 	// has any effect once removed. Optional. Whether to return a widget context token in
 	// the GroundingMetadata of the response.
 	EnableWidget *bool `json:"enableWidget,omitempty"`
+	// Optional. Specifies the types of Google Maps grounding to enable. This field is not
+	// supported in Gemini API.
+	GroundingTypes *GoogleMapsGroundingTypes `json:"groundingTypes,omitempty"`
 }
 
 // The API secret. This data type is not supported in Gemini API.

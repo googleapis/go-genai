@@ -254,8 +254,15 @@ func TestTable(t *testing.T) {
 
 	for _, backend := range backends {
 		t.Run(backend.name, func(t *testing.T) {
-			if *mode == apiMode && backend.Backend == BackendVertexAI && os.Getenv("GOOGLE_GENAI_RUN_VERTEX_IN_API_MODE") == "" {
-				t.Skip("Skipping Vertex AI tests in API mode (no GCP credentials configured).")
+			if *mode == apiMode {
+				runVertexOnly := os.Getenv("GOOGLE_GENAI_RUN_VERTEX_ONLY_IN_API_MODE") != ""
+				runGeminiOnly := os.Getenv("GOOGLE_GENAI_RUN_GEMINI_ONLY_IN_API_MODE") != ""
+
+				if backend.Backend == BackendVertexAI && runGeminiOnly {
+					t.Skip("Skipping Vertex AI tests in API mode (GEMINI ONLY config enabled).")
+				} else if backend.Backend == BackendGeminiAPI && runVertexOnly {
+					t.Skip("Skipping Gemini API tests in API mode (VERTEX ONLY config enabled).")
+				}
 			}
 			err := filepath.Walk(walkPath, func(testFilePath string, info os.FileInfo, err error) error {
 				if err != nil {

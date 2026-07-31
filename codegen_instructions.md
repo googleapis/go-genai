@@ -298,12 +298,15 @@ for _, part := range result.Candidates[0].Content.Parts {
 ### Video Generation (Veo)
 
 ```go
-operation, err := client.Models.GenerateVideos(ctx, "veo-3.0-fast-generate-001", "Kitten playing", nil, nil, nil)
+source := &genai.GenerateVideosSource{
+	Prompt: "Kitten playing",
+}
+operation, err := client.Models.GenerateVideosFromSource(ctx, "veo-3.0-fast-generate-001", source, nil)
 
 // Poll for completion
 for !operation.Done {
 	time.Sleep(20 * time.Second)
-	operation, err = client.Operations.Get(ctx, operation.Name, nil)
+	operation, err = client.Operations.GetVideosOperation(ctx, operation, nil)
 }
 
 // Download result

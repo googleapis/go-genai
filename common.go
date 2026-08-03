@@ -21,12 +21,16 @@ import (
 	"fmt"
 	"iter"
 	"log"
+	"math"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Ptr returns a pointer to its argument.
@@ -442,6 +446,134 @@ func yieldErrorAndEndIterator[T any](err error) iter.Seq2[*T, error] {
 	}
 }
 
+// Default HTTP retry configuration. The values mirror the Python SDK, which is
+// the reference implementation for cross-language behavior.
+const (
+	defaultRetryAttempts     = 5 // Including the initial call.
+	defaultRetryInitialDelay = 1.0
+	defaultRetryMaxDelay     = 60.0
+	defaultRetryExpBase      = 2.0
+	defaultRetryJitter       = 1.0
+)
+
+// LINT.IfChange
+var defaultRetryHTTPStatusCodes = []int32{
+	408, // Request timeout.
+	429, // Too many requests.
+	500, // Internal server error.
+	502, // Bad gateway.
+	503, // Service unavailable.
+	504, // Gateway timeout.
+}
+
+// LINT.ThenChange(//depot/google3/third_party/py/google/genai/_api_client.py)
+
+// retryHTTPRequest sends req via do, retrying according to opts.
+//
+// A nil opts means a single attempt. Retries must be requested explicitly,
+// matching the Python and JavaScript SDKs.
+//
+// Unlike Python, an explicitly zero InitialDelay, MaxDelay, ExpBase or Jitter
+// is honored rather than falling back to the default, so that callers can
+// disable backoff entirely.
+func retryHTTPRequest(req *http.Request, opts *HTTPRetryOptions, do func(*http.Request) (*http.Response, error)) (*http.Response, error) {
+	if opts == nil {
+		return do(req)
+	}
+
+	attempts := defaultRetryAttempts
+	if opts.Attempts != nil {
+		attempts = int(*opts.Attempts)
+	}
+	if attempts < 1 {
+		// Python coerces 0 attempts to 1; treat negatives the same way.
+		attempts = 1
+	}
+	retryableCodes := defaultRetryHTTPStatusCodes
+	if len(opts.HTTPStatusCodes) > 0 {
+		retryableCodes = opts.HTTPStatusCodes
+	}
+
+	ctx := req.Context()
+	var resp *http.Response
+	var err error
+	for attempt := 1; ; attempt++ {
+		resp, err = do(req)
+		if attempt >= attempts || ctx.Err() != nil {
+			break
+		}
+		if !shouldRetryHTTPRequest(resp, err, retryableCodes) {
+			break
+		}
+		// The body of a discarded response must be closed, otherwise the
+		// underlying connection leaks.
+		if resp != nil {
+			resp.Body.Close()
+		}
+		if req.GetBody != nil {
+			body, bodyErr := req.GetBody()
+			if bodyErr != nil {
+				return nil, fmt.Errorf("retryHTTPRequest: error rewinding request body: %w", bodyErr)
+			}
+			req.Body = body
+		} else if req.Body != nil {
+			// The body cannot be replayed, so a retry would send an empty one.
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(retryDelay(attempt, opts)):
+		}
+	}
+	return resp, err
+}
+
+// shouldRetryHTTPRequest reports whether an attempt is worth repeating.
+func shouldRetryHTTPRequest(resp *http.Response, err error, retryableCodes []int32) bool {
+	if err != nil {
+		// Transport-level failure. Mirrors the Python SDK, which retries
+		// httpx.TimeoutException and httpx.ConnectError.
+		return true
+	}
+	if resp == nil {
+		return false
+	}
+	return slices.Contains(retryableCodes, int32(resp.StatusCode))
+}
+
+// retryDelay returns how long to wait before the attempt following attempt.
+//
+// It uses the same exponential-backoff-with-jitter formula as the Python SDK's
+// tenacity configuration:
+//
+//	min(initialDelay*expBase^(attempt-1) + U(0, jitter), maxDelay)
+func retryDelay(attempt int, opts *HTTPRetryOptions) time.Duration {
+	initialDelay := float64(defaultRetryInitialDelay)
+	if opts.InitialDelay != nil {
+		initialDelay = *opts.InitialDelay
+	}
+	maxDelay := float64(defaultRetryMaxDelay)
+	if opts.MaxDelay != nil {
+		maxDelay = *opts.MaxDelay
+	}
+	expBase := float64(defaultRetryExpBase)
+	if opts.ExpBase != nil {
+		expBase = *opts.ExpBase
+	}
+	jitter := float64(defaultRetryJitter)
+	if opts.Jitter != nil {
+		jitter = *opts.Jitter
+	}
+
+	seconds := initialDelay*math.Pow(expBase, float64(attempt-1)) + rand.Float64()*jitter
+	seconds = min(seconds, maxDelay)
+	if seconds < 0 {
+		seconds = 0
+	}
+	return time.Duration(seconds * float64(time.Second))
+}
+
 func mergeHTTPOptions(clientConfig *ClientConfig, configHTTPOptions *HTTPOptions) *HTTPOptions {
 	var clientHTTPOptions *HTTPOptions
 	if clientConfig != nil {
@@ -457,12 +589,14 @@ func mergeHTTPOptions(clientConfig *ClientConfig, configHTTPOptions *HTTPOptions
 			BaseURL:               configHTTPOptions.BaseURL,
 			APIVersion:            configHTTPOptions.APIVersion,
 			ExtrasRequestProvider: configHTTPOptions.ExtrasRequestProvider,
+			RetryOptions:          configHTTPOptions.RetryOptions,
 		}
 	} else {
 		result = HTTPOptions{
 			BaseURL:               clientHTTPOptions.BaseURL,
 			APIVersion:            clientHTTPOptions.APIVersion,
 			ExtrasRequestProvider: clientHTTPOptions.ExtrasRequestProvider,
+			RetryOptions:          clientHTTPOptions.RetryOptions,
 		}
 	}
 
@@ -475,6 +609,9 @@ func mergeHTTPOptions(clientConfig *ClientConfig, configHTTPOptions *HTTPOptions
 		}
 		if configHTTPOptions.ExtrasRequestProvider != nil {
 			result.ExtrasRequestProvider = configHTTPOptions.ExtrasRequestProvider
+		}
+		if configHTTPOptions.RetryOptions != nil {
+			result.RetryOptions = configHTTPOptions.RetryOptions
 		}
 	}
 	result.Headers = mergeHeaders(clientHTTPOptions, configHTTPOptions)

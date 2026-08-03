@@ -1820,6 +1820,27 @@ func NewContentFromCodeExecutionResult(outcome Outcome, output string, role Role
 	}
 }
 
+// HTTP retry options to be used in each of the requests.
+type HTTPRetryOptions struct {
+	// Optional. Maximum number of attempts, including the original request.
+	// If 0 or 1, it means no retries. If not specified, default to 5.
+	Attempts *int32 `json:"attempts,omitempty"`
+	// Optional. Initial delay before the first retry, in fractions of a second. If not
+	// specified, default to 1.0 second.
+	InitialDelay *float64 `json:"initialDelay,omitempty"`
+	// Optional. Maximum delay between retries, in fractions of a second. If not specified,
+	// default to 60.0 seconds.
+	MaxDelay *float64 `json:"maxDelay,omitempty"`
+	// Optional. Multiplier by which the delay increases after each attempt. If not specified,
+	// default to 2.0.
+	ExpBase *float64 `json:"expBase,omitempty"`
+	// Optional. Randomness factor for the delay. If not specified, default to 1.0.
+	Jitter *float64 `json:"jitter,omitempty"`
+	// Optional. List of HTTP status codes that should trigger a retry.
+	// If not specified, a default set of retryable codes (408, 429, and 5xx) may be used.
+	HTTPStatusCodes []int32 `json:"httpStatusCodes,omitempty"`
+}
+
 // HTTP options to be used in each of the requests.
 type HTTPOptions struct {
 	// Optional. BaseURL specifies the base URL for the API endpoint. If empty, defaults
@@ -1846,6 +1867,8 @@ type HTTPOptions struct {
 	// It is executed after ExtraBody has been merged, offering more advanced
 	// control over the request body than the static ExtraBody.
 	ExtrasRequestProvider ExtrasRequestProvider `json:"-"`
+	// Optional. HTTP retry options for the request.
+	RetryOptions *HTTPRetryOptions `json:"retryOptions,omitempty"`
 }
 
 // ExtrasRequestProvider provides a way to dynamically modify the request body

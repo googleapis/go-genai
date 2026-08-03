@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -1937,5 +1938,339 @@ func TestUploadToFileSearchStore_RewritesAbsoluteURL(t *testing.T) {
 	_, err := ac.uploadToFileSearchStore(ctx, reader, absoluteGoogleURL, httpOptions)
 	if err != nil {
 		t.Fatalf("uploadToFileSearchStore failed: %v", err)
+	}
+}
+
+// retryTestServer is a fake backend that returns a scripted sequence of status
+// codes, one per request, and records how many requests it received.
+type retryTestServer struct {
+	mu     sync.Mutex
+	codes  []int
+	served int
+}
+
+func (s *retryTestServer) handler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s.mu.Lock()
+		i := s.served
+		s.served++
+		s.mu.Unlock()
+
+		code := http.StatusOK
+		if i < len(s.codes) {
+			code = s.codes[i]
+		}
+		w.WriteHeader(code)
+		fmt.Fprintln(w, `{"response": "ok"}`)
+	}
+}
+
+func (s *retryTestServer) requestCount() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.served
+}
+
+// noBackoffRetryOptions returns opts with the delay fields zeroed, so that
+// tests do not actually sleep.
+func noBackoffRetryOptions(attempts int32, codes ...int32) *HTTPRetryOptions {
+	return &HTTPRetryOptions{
+		Attempts:        Ptr(attempts),
+		InitialDelay:    Ptr(0.0),
+		MaxDelay:        Ptr(0.0),
+		Jitter:          Ptr(0.0),
+		HTTPStatusCodes: codes,
+	}
+}
+
+func TestDoRequestRetries(t *testing.T) {
+	ctx := context.Background()
+	for _, tt := range []struct {
+		desc         string
+		codes        []int
+		retryOptions *HTTPRetryOptions
+		wantRequests int
+		wantErrCode  int
+	}{
+		{
+			desc:         "nil retry options makes a single attempt",
+			codes:        []int{503, 503, 200},
+			retryOptions: nil,
+			wantRequests: 1,
+			wantErrCode:  503,
+		},
+		{
+			desc:         "retries until success",
+			codes:        []int{503, 503, 200},
+			retryOptions: noBackoffRetryOptions(5),
+			wantRequests: 3,
+		},
+		{
+			desc:         "stops after the configured attempts",
+			codes:        []int{503, 503, 503, 503},
+			retryOptions: noBackoffRetryOptions(2),
+			wantRequests: 2,
+			wantErrCode:  503,
+		},
+		{
+			desc:         "attempts of 1 disables retries",
+			codes:        []int{503, 200},
+			retryOptions: noBackoffRetryOptions(1),
+			wantRequests: 1,
+			wantErrCode:  503,
+		},
+		{
+			desc:         "attempts of 0 is coerced to a single attempt",
+			codes:        []int{503, 200},
+			retryOptions: noBackoffRetryOptions(0),
+			wantRequests: 1,
+			wantErrCode:  503,
+		},
+		{
+			desc:         "does not retry a non-retryable status",
+			codes:        []int{400, 200},
+			retryOptions: noBackoffRetryOptions(5),
+			wantRequests: 1,
+			wantErrCode:  400,
+		},
+		{
+			desc:         "honors an explicit status code list",
+			codes:        []int{400, 400, 200},
+			retryOptions: noBackoffRetryOptions(5, 400),
+			wantRequests: 3,
+		},
+		{
+			desc: "a status excluded from the list is not retried",
+			// 503 is retryable by default but absent from the explicit list.
+			codes:        []int{503, 200},
+			retryOptions: noBackoffRetryOptions(5, 429),
+			wantRequests: 1,
+			wantErrCode:  503,
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			server := &retryTestServer{codes: tt.codes}
+			ts := httptest.NewServer(server.handler())
+			defer ts.Close()
+
+			ac := &apiClient{
+				clientConfig: &ClientConfig{
+					HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+					HTTPClient:  ts.Client(),
+				},
+			}
+
+			_, err := sendRequest(ctx, ac, "test-path", http.MethodPost, map[string]any{"key": "value"},
+				&HTTPOptions{BaseURL: ts.URL, RetryOptions: tt.retryOptions})
+
+			if got := server.requestCount(); got != tt.wantRequests {
+				t.Errorf("server received %d requests, want %d", got, tt.wantRequests)
+			}
+			if tt.wantErrCode == 0 {
+				if err != nil {
+					t.Errorf("sendRequest returned unexpected error: %v", err)
+				}
+				return
+			}
+			var apiErr APIError
+			if !errors.As(err, &apiErr) {
+				t.Fatalf("sendRequest error = %v, want APIError", err)
+			}
+			if apiErr.Code != tt.wantErrCode {
+				t.Errorf("APIError.Code = %d, want %d", apiErr.Code, tt.wantErrCode)
+			}
+		})
+	}
+}
+
+func TestDoRequestRetriesResendsBody(t *testing.T) {
+	ctx := context.Background()
+	var mu sync.Mutex
+	var bodies []string
+
+	server := &retryTestServer{codes: []int{503, 200}}
+	inner := server.handler()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		mu.Lock()
+		bodies = append(bodies, string(b))
+		mu.Unlock()
+		inner(w, r)
+	}))
+	defer ts.Close()
+
+	ac := &apiClient{
+		clientConfig: &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			HTTPClient:  ts.Client(),
+		},
+	}
+
+	if _, err := sendRequest(ctx, ac, "test-path", http.MethodPost, map[string]any{"key": "value"},
+		&HTTPOptions{BaseURL: ts.URL, RetryOptions: noBackoffRetryOptions(3)}); err != nil {
+		t.Fatalf("sendRequest returned unexpected error: %v", err)
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+	if len(bodies) != 2 {
+		t.Fatalf("server saw %d request bodies, want 2", len(bodies))
+	}
+	// The retried attempt must resend the payload rather than an empty body.
+	if bodies[0] != bodies[1] {
+		t.Errorf("retried body = %q, want it to match the first attempt %q", bodies[1], bodies[0])
+	}
+	if !strings.Contains(bodies[0], `"key"`) {
+		t.Errorf("request body = %q, want it to contain the payload", bodies[0])
+	}
+}
+
+func TestDoRequestRetriesRespectsContextCancellation(t *testing.T) {
+	server := &retryTestServer{codes: []int{503, 503, 503, 503, 503}}
+	ts := httptest.NewServer(server.handler())
+	defer ts.Close()
+
+	ac := &apiClient{
+		clientConfig: &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			HTTPClient:  ts.Client(),
+		},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	// Cancel while the retry loop is backing off.
+	go func() {
+		time.Sleep(20 * time.Millisecond)
+		cancel()
+	}()
+
+	_, err := sendRequest(ctx, ac, "test-path", http.MethodPost, map[string]any{"key": "value"},
+		&HTTPOptions{BaseURL: ts.URL, RetryOptions: &HTTPRetryOptions{
+			Attempts:     Ptr(int32(5)),
+			InitialDelay: Ptr(10.0),
+			MaxDelay:     Ptr(10.0),
+			Jitter:       Ptr(0.0),
+		}})
+	if err == nil {
+		t.Fatal("sendRequest returned nil error, want a context cancellation error")
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("sendRequest error = %v, want context.Canceled", err)
+	}
+	if got := server.requestCount(); got != 1 {
+		t.Errorf("server received %d requests, want 1 before cancellation", got)
+	}
+}
+
+func TestRetryDelay(t *testing.T) {
+	for _, tt := range []struct {
+		desc    string
+		attempt int
+		opts    *HTTPRetryOptions
+		wantMin time.Duration
+		wantMax time.Duration
+	}{
+		{
+			desc:    "defaults grow exponentially with additive jitter",
+			attempt: 1,
+			opts:    &HTTPRetryOptions{},
+			// 1.0 * 2^0 + U(0, 1)
+			wantMin: 1 * time.Second,
+			wantMax: 2 * time.Second,
+		},
+		{
+			desc:    "third attempt uses the exponential base",
+			attempt: 3,
+			opts:    &HTTPRetryOptions{},
+			// 1.0 * 2^2 + U(0, 1)
+			wantMin: 4 * time.Second,
+			wantMax: 5 * time.Second,
+		},
+		{
+			desc:    "maxDelay caps the result",
+			attempt: 10,
+			opts:    &HTTPRetryOptions{MaxDelay: Ptr(2.5)},
+			wantMin: 2500 * time.Millisecond,
+			wantMax: 2500 * time.Millisecond,
+		},
+		{
+			desc:    "zero jitter is deterministic",
+			attempt: 2,
+			opts:    &HTTPRetryOptions{InitialDelay: Ptr(0.5), ExpBase: Ptr(3.0), Jitter: Ptr(0.0)},
+			// 0.5 * 3^1
+			wantMin: 1500 * time.Millisecond,
+			wantMax: 1500 * time.Millisecond,
+		},
+		{
+			desc:    "explicit zero delay disables backoff",
+			attempt: 4,
+			opts:    &HTTPRetryOptions{InitialDelay: Ptr(0.0), MaxDelay: Ptr(0.0), Jitter: Ptr(0.0)},
+			wantMin: 0,
+			wantMax: 0,
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			// Sample repeatedly since the jitter is random.
+			for i := 0; i < 50; i++ {
+				got := retryDelay(tt.attempt, tt.opts)
+				if got < tt.wantMin || got > tt.wantMax {
+					t.Fatalf("retryDelay(%d) = %v, want within [%v, %v]", tt.attempt, got, tt.wantMin, tt.wantMax)
+				}
+			}
+		})
+	}
+}
+
+func TestDoRequestRetriesClientLevelOptions(t *testing.T) {
+	ctx := context.Background()
+	for _, tt := range []struct {
+		desc                string
+		clientRetryOptions  *HTTPRetryOptions
+		requestRetryOptions *HTTPRetryOptions
+		wantRequests        int
+	}{
+		{
+			desc:               "client level options apply when the request sets none",
+			clientRetryOptions: noBackoffRetryOptions(3),
+			wantRequests:       3,
+		},
+		{
+			desc:                "request level options override the client ones",
+			clientRetryOptions:  noBackoffRetryOptions(5),
+			requestRetryOptions: noBackoffRetryOptions(2),
+			wantRequests:        2,
+		},
+		{
+			desc:                "request level options apply when the client sets none",
+			requestRetryOptions: noBackoffRetryOptions(4),
+			wantRequests:        4,
+		},
+		{
+			desc:         "no retry options anywhere means a single attempt",
+			wantRequests: 1,
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			server := &retryTestServer{codes: []int{503, 503, 503, 503, 503, 503}}
+			ts := httptest.NewServer(server.handler())
+			defer ts.Close()
+
+			ac := &apiClient{
+				clientConfig: &ClientConfig{
+					HTTPOptions: HTTPOptions{
+						BaseURL:      ts.URL,
+						RetryOptions: tt.clientRetryOptions,
+					},
+					HTTPClient: ts.Client(),
+				},
+			}
+
+			_, _ = sendRequest(ctx, ac, "test-path", http.MethodPost, map[string]any{"key": "value"},
+				&HTTPOptions{BaseURL: ts.URL, RetryOptions: tt.requestRetryOptions})
+
+			if got := server.requestCount(); got != tt.wantRequests {
+				t.Errorf("server received %d requests, want %d", got, tt.wantRequests)
+			}
+		})
 	}
 }

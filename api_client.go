@@ -69,7 +69,7 @@ func sendStreamRequest[T responseStream[R], R any](ctx context.Context, ac *apiC
 	}
 	req = req.WithContext(requestContext)
 
-	resp, err := doRequest(ac, req)
+	resp, err := doRequest(ac, req, httpOptions.RetryOptions)
 	if err != nil {
 		if cancel != nil {
 			cancel()
@@ -109,7 +109,7 @@ func sendRequest(ctx context.Context, ac *apiClient, path string, method string,
 	}
 	req = req.WithContext(requestContext)
 
-	resp, err := doRequest(ac, req)
+	resp, err := doRequest(ac, req, httpOptions.RetryOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -122,13 +122,13 @@ func sendRequest(ctx context.Context, ac *apiClient, path string, method string,
 func downloadFile(ctx context.Context, ac *apiClient, path string, httpOptions *HTTPOptions) ([]byte, error) {
 	// The client and request timeout are not used for downloadFile.
 	// TODO(b/427540996): implement timeout.
-	req, _, err := buildRequest(ctx, ac, path, nil, http.MethodGet, httpOptions)
+	req, patchedHTTPOptions, err := buildRequest(ctx, ac, path, nil, http.MethodGet, httpOptions)
 	if err != nil {
 		return nil, err
 	}
 	req = req.WithContext(ctx)
 
-	resp, err := doRequest(ac, req)
+	resp, err := doRequest(ac, req, patchedHTTPOptions.RetryOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -229,6 +229,11 @@ func patchHTTPOptions(options, patchOptions HTTPOptions) (*HTTPOptions, error) {
 	// then it means no timeout regardless client timeout is non-zero.
 	if patchOptions.Timeout != nil {
 		copyOption.Timeout = patchOptions.Timeout
+	}
+	// Request retry config overrides client retry config wholesale, so that a
+	// request can opt out of the client's retries by setting its own options.
+	if patchOptions.RetryOptions != nil {
+		copyOption.RetryOptions = patchOptions.RetryOptions
 	}
 	appendSDKHeaders(copyOption.Headers)
 
@@ -408,10 +413,10 @@ func inferTimeout(ctx context.Context, ac *apiClient, requestTimeout *time.Durat
 	return effectiveTimeout
 }
 
-func doRequest(ac *apiClient, req *http.Request) (*http.Response, error) {
+func doRequest(ac *apiClient, req *http.Request, retryOptions *HTTPRetryOptions) (*http.Response, error) {
 	// Create a new HTTP client and send the request
 	client := ac.clientConfig.HTTPClient
-	resp, err := client.Do(req)
+	resp, err := retryHTTPRequest(req, retryOptions, client.Do)
 	if err != nil {
 		return nil, fmt.Errorf("doRequest: error sending request: %w", err)
 	}
@@ -687,7 +692,10 @@ func (ac *apiClient) upload(ctx context.Context, r io.Reader, uploadURL string, 
 			req.Header.Set("X-Goog-Upload-Command", uploadCommand)
 			req.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))
 			req.Header.Set("Content-Length", strconv.FormatInt(int64(bytesRead), 10))
-			resp, err = doRequest(ac, req)
+			// Retry options are deliberately not forwarded here: this loop
+			// already retries on a missing X-Goog-Upload-Status header, and
+			// nesting the two would multiply the backoff.
+			resp, err = doRequest(ac, req, nil)
 			if err != nil {
 				return nil, fmt.Errorf("upload request failed for chunk at offset %d: %w", offset, err)
 			}

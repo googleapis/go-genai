@@ -102,6 +102,39 @@ func TestMergeHTTPOptions(t *testing.T) {
 			},
 		},
 		{
+			name: "client retry options are inherited when the request sets none",
+			clientConfig: &ClientConfig{
+				HTTPOptions: HTTPOptions{
+					BaseURL:      "https://client.com",
+					RetryOptions: &HTTPRetryOptions{Attempts: Ptr(int32(4))},
+				},
+			},
+			requestHTTPOptions: &HTTPOptions{APIVersion: "v3"},
+			want: &HTTPOptions{
+				BaseURL:      "https://client.com",
+				APIVersion:   "v3",
+				RetryOptions: &HTTPRetryOptions{Attempts: Ptr(int32(4))},
+				Headers:      http.Header{},
+			},
+		},
+		{
+			name: "request retry options override the client ones",
+			clientConfig: &ClientConfig{
+				HTTPOptions: HTTPOptions{
+					BaseURL:      "https://client.com",
+					RetryOptions: &HTTPRetryOptions{Attempts: Ptr(int32(4))},
+				},
+			},
+			requestHTTPOptions: &HTTPOptions{
+				RetryOptions: &HTTPRetryOptions{Attempts: Ptr(int32(2))},
+			},
+			want: &HTTPOptions{
+				BaseURL:      "https://client.com",
+				RetryOptions: &HTTPRetryOptions{Attempts: Ptr(int32(2))},
+				Headers:      http.Header{},
+			},
+		},
+		{
 			name: "client config only",
 			clientConfig: &ClientConfig{
 				HTTPOptions: HTTPOptions{

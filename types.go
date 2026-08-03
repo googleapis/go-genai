@@ -286,6 +286,8 @@ const (
 	HarmCategoryDangerousContent HarmCategory = "HARM_CATEGORY_DANGEROUS_CONTENT"
 	// Deprecated: Election filter is not longer supported. The harm category is civic integrity.
 	HarmCategoryCivicIntegrity HarmCategory = "HARM_CATEGORY_CIVIC_INTEGRITY"
+	// Prompts designed to bypass safety filters.
+	HarmCategoryJailbreak HarmCategory = "HARM_CATEGORY_JAILBREAK"
 	// Images that contain hate speech. This enum value is not supported in Gemini API.
 	HarmCategoryImageHate HarmCategory = "HARM_CATEGORY_IMAGE_HATE"
 	// Images that contain dangerous content. This enum value is not supported in Gemini
@@ -296,9 +298,6 @@ const (
 	// Images that contain sexually explicit content. This enum value is not supported in
 	// Gemini API.
 	HarmCategoryImageSexuallyExplicit HarmCategory = "HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT"
-	// Prompts designed to bypass safety filters. This enum value is not supported in Gemini
-	// API.
-	HarmCategoryJailbreak HarmCategory = "HARM_CATEGORY_JAILBREAK"
 )
 
 // The method for blocking content. If not specified, the default behavior is to use
@@ -1299,8 +1298,7 @@ type CodeExecutionResult struct {
 	// otherwise.
 	Output string `json:"output,omitempty"`
 	// Optional. The identifier of the `ExecutableCode` part this result is for. Only populated
-	// if the corresponding `ExecutableCode` has an id. This field is not supported in Vertex
-	// AI.
+	// if the corresponding `ExecutableCode` has an id.
 	ID string `json:"id,omitempty"`
 }
 
@@ -1313,8 +1311,7 @@ type ExecutableCode struct {
 	// Required. Programming language of the `code`.
 	Language Language `json:"language,omitempty"`
 	// Optional. Unique identifier of the `ExecutableCode` part. The server returns the
-	// `CodeExecutionResult` with the matching `id`. This field is not supported in Vertex
-	// AI.
+	// `CodeExecutionResult` with the matching `id`.
 	ID string `json:"id,omitempty"`
 }
 
@@ -2083,8 +2080,8 @@ type GoogleMaps struct {
 	// has any effect once removed. Optional. Whether to return a widget context token in
 	// the GroundingMetadata of the response.
 	EnableWidget *bool `json:"enableWidget,omitempty"`
-	// Optional. Specifies the types of Google Maps grounding to enable. This field is not
-	// supported in Gemini API.
+	// Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places`
+	// when unset. This field is not supported in Gemini API.
 	GroundingTypes *GoogleMapsGroundingTypes `json:"groundingTypes,omitempty"`
 }
 
@@ -2480,6 +2477,17 @@ type ToolParallelAISearch struct {
 	// "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds":
 	// 3600 } }
 	CustomConfigs map[string]any `json:"customConfigs,omitempty"`
+	// Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex
+	// Grounding to use Parallel's Zero Data Retention Marketplace product. If this value
+	// is "false" or omitted, the Parallel Web Search for Grounding standard subscription
+	// will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR
+	// subscription will be used.
+	EnableDataRetention *bool `json:"enableDataRetention,omitempty"`
+	// Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace
+	// product. If this value is "false" or omitted, the Parallel Web Search for Grounding
+	// standard subscription will be used. If this value is "true", the Parallel Web Search
+	// for Grounding - ZDR subscription will be used.
+	EnableZeroDataRetention *bool `json:"enableZeroDataRetention,omitempty"`
 }
 
 // Tool to support URL context.
@@ -4667,7 +4675,7 @@ type GenerationConfig struct {
 	CandidateCount int32 `json:"candidateCount,omitempty"`
 	// Optional. If enabled, the model will detect emotions and adapt its responses accordingly.
 	// For example, if the model detects that the user is frustrated, it may provide a more
-	// empathetic response. This field is not supported in Gemini API.
+	// empathetic response.
 	EnableAffectiveDialog *bool `json:"enableAffectiveDialog,omitempty"`
 	// Optional. Penalizes tokens based on their frequency in the generated text. A positive
 	// value helps to reduce the repetition of words and phrases. Valid values can range
@@ -5458,6 +5466,8 @@ type ReinforcementTuningHyperParameters struct {
 	// * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in
 	// tokens If not set, default to -1 (dynamic thinking).
 	ThinkingBudget int32 `json:"thinkingBudget,omitempty"`
+	// Optional. Number of steps for the tuning job (mutually exclusive with epoch_count).
+	StepCount int64 `json:"stepCount,omitempty,string"`
 }
 
 // Reinforcement tuning spec for tuning.
@@ -8510,10 +8520,122 @@ func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage
 	}
 }
 
+// Message to be sent in the first (and only in the first) `BidiGenerateContentClientMessage`.
+// Contains configuration that will apply for the duration of the streaming RPC. Clients
+// should wait for a `BidiGenerateContentSetupComplete` message before sending any additional
+// messages. This data type is not supported in Vertex AI.
+type BidiGenerateContentSetup struct {
+	// Optional. Configures a context window compression mechanism. If included, the server
+	// will automatically reduce the size of the context when it exceeds the configured
+	// length.
+	ContextWindowCompression *ContextWindowCompressionConfig `json:"contextWindowCompression,omitempty"`
+	// Optional. Generation config. The following fields are not supported: - `response_logprobs`
+	// - `response_mime_type` - `logprobs` - `response_schema` - `response_json_schema`
+	// - `stop_sequence` - `skip_response_cache` - `routing_config` - `audio_timestamp`
+	GenerationConfig *GenerationConfig `json:"generationConfig,omitempty"`
+	// Optional. Configures the exchange of history between the client and the server.
+	HistoryConfig *HistoryConfig `json:"historyConfig,omitempty"`
+	// Optional. If set, enables transcription of voice input. The transcription aligns
+	// with the input audio language, if configured.
+	InputAudioTranscription *AudioTranscriptionConfig `json:"inputAudioTranscription,omitempty"`
+	// Required. The model's resource name. This serves as an ID for the Model to use. Format:
+	// `models/{model}`
+	Model string `json:"model,omitempty"`
+	// Optional. If set, enables transcription of the model's audio output. The transcription
+	// aligns with the language code specified for the output audio, if configured.
+	OutputAudioTranscription *AudioTranscriptionConfig `json:"outputAudioTranscription,omitempty"`
+	// Optional. Configures the handling of realtime input.
+	RealtimeInputConfig *RealtimeInputConfig `json:"realtimeInputConfig,omitempty"`
+	// Optional. Configures session resumption mechanism. If included, the server will send
+	// `SessionResumptionUpdate` messages.
+	SessionResumption *SessionResumptionConfig `json:"sessionResumption,omitempty"`
+	// Optional. The user provided system instructions for the model. Note: Only text should
+	// be used in parts and content in each part will be in a separate paragraph.
+	SystemInstruction *Content `json:"systemInstruction,omitempty"`
+	// Optional. A list of `Tools` the model may use to generate the next response. A `Tool`
+	// is a piece of code that enables the system to interact with external systems to perform
+	// an action, or set of actions, outside of knowledge and scope of the model.
+	Tools []*Tool `json:"tools,omitempty"`
+}
+
 // Config for auth_tokens.create parameters.
 type AuthToken struct {
-	// Optional. The name of the auth token.
+	// Output only. Identifier. The token itself.
 	Name string `json:"name,omitempty"`
+	// Optional. Input only. Immutable. Configuration specific to `BidiGenerateContent`.
+	BidiGenerateContentSetup *BidiGenerateContentSetup `json:"bidiGenerateContentSetup,omitempty"`
+	// Optional. Input only. Immutable. An optional time after which, when using the resulting
+	// token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively
+	// close the session after this time.) If not set then this defaults to 30 minutes in
+	// the future. If set, this value must be less than 20 hours in the future.
+	ExpireTime time.Time `json:"expireTime,omitempty"`
+	// Optional. Input only. Immutable. If field_mask is empty, and `bidi_generate_content_setup`
+	// is not present, then the effective `BidiGenerateContentSetup` message is taken from
+	// the Live API connection. If field_mask is empty, and `bidi_generate_content_setup`
+	// _is_ present, then the effective `BidiGenerateContentSetup` message is taken entirely
+	// from `bidi_generate_content_setup` in this request. The setup message from the Live
+	// API connection is ignored. If field_mask is not empty, then the corresponding fields
+	// from `bidi_generate_content_setup` will overwrite the fields from the setup message
+	// in the Live API connection.
+	FieldMask string `json:"fieldMask,omitempty"`
+	// Optional. Input only. Immutable. The interaction ID that this token is scoped to.
+	// Specific to the Live Interactions API.
+	InteractionID string `json:"interactionId,omitempty"`
+	// Optional. Input only. Immutable. The time after which new Live API sessions using
+	// the token resulting from this request will be rejected. If not set this defaults
+	// to 60 seconds in the future. If set, this value must be less than 20 hours in the
+	// future.
+	NewSessionExpireTime time.Time `json:"newSessionExpireTime,omitempty"`
+	// Optional. Input only. Immutable. The number of times the token can be used. If this
+	// value is zero then no limit is applied. Resuming a Live API session does not count
+	// as a use. If unspecified, the default is 1.
+	Uses int32 `json:"uses,omitempty"`
+}
+
+func (a *AuthToken) UnmarshalJSON(data []byte) error {
+	type Alias AuthToken
+	aux := &struct {
+		ExpireTime           *time.Time `json:"expireTime,omitempty"`
+		NewSessionExpireTime *time.Time `json:"newSessionExpireTime,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(a),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if !reflect.ValueOf(aux.ExpireTime).IsZero() {
+		a.ExpireTime = time.Time(*aux.ExpireTime)
+	}
+
+	if !reflect.ValueOf(aux.NewSessionExpireTime).IsZero() {
+		a.NewSessionExpireTime = time.Time(*aux.NewSessionExpireTime)
+	}
+
+	return nil
+}
+
+func (a *AuthToken) MarshalJSON() ([]byte, error) {
+	type Alias AuthToken
+	aux := &struct {
+		ExpireTime           *time.Time `json:"expireTime,omitempty"`
+		NewSessionExpireTime *time.Time `json:"newSessionExpireTime,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(a),
+	}
+
+	if !reflect.ValueOf(a.ExpireTime).IsZero() {
+		aux.ExpireTime = (*time.Time)(&a.ExpireTime)
+	}
+
+	if !reflect.ValueOf(a.NewSessionExpireTime).IsZero() {
+		aux.NewSessionExpireTime = (*time.Time)(&a.NewSessionExpireTime)
+	}
+
+	return json.Marshal(aux)
 }
 
 // Config for LiveConnectConstraints for Auth Token creation.

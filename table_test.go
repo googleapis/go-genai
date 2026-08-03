@@ -45,6 +45,31 @@ var methodParamType = map[string]map[string]reflect.Type{
 	},
 }
 
+// goParameterNames overrides a test table's parameterNames, keyed by test
+// method, for the methods whose Go signature does not take the same
+// parameters, in the same order, as the shared test table declares.
+var goParameterNames = map[string][]string{
+	"models.generate_videos": {"model", "prompt", "image", "config"},
+}
+
+// parameterNamesFor returns the test table parameter names to bind against the
+// Go method, applying any goParameterNames override.
+func parameterNamesFor(t *testing.T, testTableFile *testTableFile, method reflect.Value) []string {
+	t.Helper()
+	names := testTableFile.ParameterNames
+	if override, ok := goParameterNames[testTableFile.TestMethod]; ok {
+		names = override
+	}
+	// Guard against silently mis-binding parameters: this must hold for the
+	// positional mapping in extractArgs to be meaningful.
+	if got, want := method.Type().NumIn()-1, len(names); got != want {
+		t.Fatalf("Method %s takes %d parameters (excluding ctx) but the test table declares %d (%v). "+
+			"Add an entry to goParameterNames in table_test.go mapping the Go parameters, in order, "+
+			"to the test table keys.", testTableFile.TestMethod, got, want, names)
+	}
+	return names
+}
+
 type interfaceDeserialize func([]byte) (reflect.Value, error)
 
 // methodParamType is dedicated deserializer for each interface type because json string cannot be unmarshalled to
@@ -92,8 +117,9 @@ func extractArgs(ctx context.Context, t *testing.T, method reflect.Value, testTa
 		reflect.ValueOf(ctx),
 	}
 	fromParams := []any{ctx}
+	parameterNames := parameterNamesFor(t, testTableFile, method)
 	for i := 1; i < method.Type().NumIn(); i++ {
-		parameterName := snakeToCamel(testTableFile.ParameterNames[i-1])
+		parameterName := snakeToCamel(parameterNames[i-1])
 		parameterValue, ok := testTableItem.Parameters[parameterName]
 		if ok {
 			// converts string contents to []*Content, required for some streaming tests.

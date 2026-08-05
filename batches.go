@@ -1474,27 +1474,25 @@ func (m Batches) All(ctx context.Context) iter.Seq2[*BatchJob, error] {
 // Create a batch job.
 func (b Batches) Create(ctx context.Context, model string, src *BatchJobSource, config *CreateBatchJobConfig) (*BatchJob, error) {
 	if b.apiClient.clientConfig.Backend == BackendVertexAI {
+		mldevSources := 0
 		if len(src.InlinedRequests) > 0 {
-			return nil, fmt.Errorf("inlinedRequests parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+			mldevSources++
 		}
 		if src.FileName != "" {
-			return nil, fmt.Errorf("fileName parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+			mldevSources++
 		}
-		count := 0
+		vertexSources := 0
 		if len(src.GCSURI) > 0 {
-			count++
+			vertexSources++
 		}
 		if src.BigqueryURI != "" {
-			count++
+			vertexSources++
 		}
 		if src.VertexDatasetName != "" {
-			count++
+			vertexSources++
 		}
-		if count > 1 {
-			return nil, fmt.Errorf("Only one of GCSURI ([]string), BigqueryURI (string), and VertexDatasetName (string) can be set.")
-		}
-		if count == 0 {
-			return nil, fmt.Errorf("One of GCSURI ([]string), BigqueryURI (string), or VertexDatasetName (string) must be set.")
+		if mldevSources > 0 || vertexSources != 1 {
+			return nil, fmt.Errorf("Exactly one of `gcs_uri` or `bigquery_uri`, or `vertex_dataset_name` must be set, other sources are not supported in Gemini Enterprise Agent Platform.")
 		}
 	} else {
 		if src.FileName != "" && len(src.InlinedRequests) > 0 {

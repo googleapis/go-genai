@@ -611,7 +611,7 @@ func (m Files) Download(ctx context.Context, uri DownloadURI, config *DownloadFi
 // with the service, and returns information about the resulting file.
 func (m Files) Upload(ctx context.Context, r io.Reader, config *UploadFileConfig) (*File, error) {
 	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		return nil, fmt.Errorf("This method is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+		return nil, fmt.Errorf("This method is only supported in the Gemini Developer client.")
 	}
 
 	var fileToUpload File

@@ -50,18 +50,60 @@ func wrapResults(resp any, err error) []reflect.Value {
 	return []reflect.Value{vResp, vErr}
 }
 
+// batchParams mirrors the shared test table's batches parameters. src is raw
+// because the table may express it as a bare list of inlined requests.
+type batchParams struct {
+	Model  string                `json:"model"`
+	Src    json.RawMessage       `json:"src"`
+	Config *CreateBatchJobConfig `json:"config"`
+}
+
+// batchJobSourceFrom accepts either a BatchJobSource object or a bare list of
+// inlined requests.
+func batchJobSourceFrom(raw json.RawMessage) (*BatchJobSource, error) {
+	trimmed := strings.TrimSpace(string(raw))
+	if trimmed == "" || trimmed == "null" {
+		return nil, nil
+	}
+	if trimmed[0] == '[' {
+		var inlinedRequests []*InlinedRequest
+		if err := json.Unmarshal([]byte(trimmed), &inlinedRequests); err != nil {
+			return nil, err
+		}
+		return &BatchJobSource{InlinedRequests: inlinedRequests}, nil
+	}
+	src := &BatchJobSource{}
+	if err := json.Unmarshal([]byte(trimmed), src); err != nil {
+		return nil, err
+	}
+	return src, nil
+}
+
+// uploadCacheDocument uploads the document cached by the Gemini API half of
+// the cache lifecycle tests. It must be large enough to meet the caching
+// minimum token count.
+func uploadCacheDocument(ctx context.Context, client *Client) (*File, error) {
+	var document strings.Builder
+	for i := 0; i < 600; i++ {
+		document.WriteString("The quick brown fox jumps over the lazy dog. ")
+	}
+	return client.Files.Upload(ctx, strings.NewReader(document.String()), &UploadFileConfig{
+		MIMEType: "text/plain",
+	})
+}
+
 func createDelete(ctx context.Context, client *Client, item *testTableItem) []reflect.Value {
-	params := struct {
-		Model  string                `json:"model"`
-		Src    *BatchJobSource       `json:"src"`
-		Config *CreateBatchJobConfig `json:"config"`
-	}{}
+	params := batchParams{}
 	paramsJSON, _ := json.Marshal(item.Parameters)
 	if err := json.Unmarshal(paramsJSON, &params); err != nil {
 		return wrapResults(nil, err)
 	}
+	src, err := batchJobSourceFrom(params.Src)
+	if err != nil {
+		return wrapResults(nil, err)
+	}
 
-	batchJob, err := client.Batches.Create(ctx, params.Model, params.Src, params.Config)
+	batchJob, err := client.Batches.Create(ctx, params.Model, src, params.Config)
 	if err != nil {
 		return wrapResults(nil, err)
 	}
@@ -77,17 +119,17 @@ func createDelete(ctx context.Context, client *Client, item *testTableItem) []re
 }
 
 func createGetCancelBatches(ctx context.Context, client *Client, item *testTableItem) []reflect.Value {
-	params := struct {
-		Model  string                `json:"model"`
-		Src    *BatchJobSource       `json:"src"`
-		Config *CreateBatchJobConfig `json:"config"`
-	}{}
+	params := batchParams{}
 	paramsJSON, _ := json.Marshal(item.Parameters)
 	if err := json.Unmarshal(paramsJSON, &params); err != nil {
 		return wrapResults(nil, err)
 	}
+	src, err := batchJobSourceFrom(params.Src)
+	if err != nil {
+		return wrapResults(nil, err)
+	}
 
-	batchJob, err := client.Batches.Create(ctx, params.Model, params.Src, params.Config)
+	batchJob, err := client.Batches.Create(ctx, params.Model, src, params.Config)
 	if err != nil {
 		return wrapResults(nil, err)
 	}
@@ -122,6 +164,51 @@ func createGetCancelTunings(ctx context.Context, client *Client, item *testTable
 	return wrapResults(nil, err)
 }
 
+// cacheContentsFromParams reads config.contents from the test table, wrapping
+// entries written in Part shape into a Content.
+func cacheContentsFromParams(item *testTableItem) ([]*Content, error) {
+	config, ok := item.Parameters["config"].(map[string]any)
+	if !ok {
+		return nil, nil
+	}
+	rawContents, ok := config["contents"].([]any)
+	if !ok {
+		return nil, nil
+	}
+
+	var contents []*Content
+	var looseParts []*Part
+	for _, raw := range rawContents {
+		entry, ok := raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		entryJSON, err := json.Marshal(entry)
+		if err != nil {
+			return nil, err
+		}
+		_, hasParts := entry["parts"]
+		_, hasRole := entry["role"]
+		if hasParts || hasRole {
+			content := &Content{}
+			if err := json.Unmarshal(entryJSON, content); err != nil {
+				return nil, err
+			}
+			contents = append(contents, content)
+			continue
+		}
+		part := &Part{}
+		if err := json.Unmarshal(entryJSON, part); err != nil {
+			return nil, err
+		}
+		looseParts = append(looseParts, part)
+	}
+	if len(looseParts) > 0 {
+		contents = append(contents, NewContentFromParts(looseParts, RoleUser))
+	}
+	return contents, nil
+}
+
 func createGetDelete(ctx context.Context, client *Client, item *testTableItem) []reflect.Value {
 	params := struct {
 		Model  string                     `json:"model"`
@@ -135,16 +222,22 @@ func createGetDelete(ctx context.Context, client *Client, item *testTableItem) [
 	var cache *CachedContent
 	var err error
 	if client.clientConfig.Backend == BackendVertexAI {
-		cache, err = client.Caches.Create(ctx, params.Model, params.Config)
-	} else {
-		filePath := "tests/data/google.png"
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			os.MkdirAll(filepath.Dir(filePath), 0755)            // nolint:errcheck
-			os.WriteFile(filePath, []byte("fake content"), 0644) // nolint:errcheck
+		contents, convErr := cacheContentsFromParams(item)
+		if convErr != nil {
+			return wrapResults(nil, convErr)
 		}
-		file, err := client.Files.UploadFromPath(ctx, filePath, nil)
-		if err != nil {
-			return wrapResults(nil, err)
+		config := params.Config
+		if config == nil {
+			config = &CreateCachedContentConfig{}
+		}
+		if len(contents) > 0 {
+			config.Contents = contents
+		}
+		cache, err = client.Caches.Create(ctx, params.Model, config)
+	} else {
+		file, uploadErr := uploadCacheDocument(ctx, client)
+		if uploadErr != nil {
+			return wrapResults(nil, uploadErr)
 		}
 		parts := []*Part{}
 		for i := 0; i < 5; i++ {
@@ -153,10 +246,13 @@ func createGetDelete(ctx context.Context, client *Client, item *testTableItem) [
 		config := &CreateCachedContentConfig{
 			Contents: []*Content{NewContentFromParts(parts, RoleUser)},
 		}
-		cache, err = client.Caches.Create(ctx, params.Model, config) // nolint:ineffassign,staticcheck
+		cache, err = client.Caches.Create(ctx, params.Model, config)
 	}
 	if err != nil {
 		return wrapResults(cache, err)
+	}
+	if cache == nil {
+		return wrapResults(nil, fmt.Errorf("Caches.Create returned no cache and no error"))
 	}
 	gotCache, err := client.Caches.Get(ctx, cache.Name, nil)
 	if err != nil {
@@ -178,16 +274,22 @@ func createUpdateGet(ctx context.Context, client *Client, item *testTableItem) [
 	var cache *CachedContent
 	var err error
 	if client.clientConfig.Backend == BackendVertexAI {
-		cache, err = client.Caches.Create(ctx, params.Model, params.Config)
-	} else {
-		filePath := "tests/data/google.png"
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			os.MkdirAll(filepath.Dir(filePath), 0755)            // nolint:errcheck
-			os.WriteFile(filePath, []byte("fake content"), 0644) // nolint:errcheck
+		contents, convErr := cacheContentsFromParams(item)
+		if convErr != nil {
+			return wrapResults(nil, convErr)
 		}
-		file, err := client.Files.UploadFromPath(ctx, filePath, nil)
-		if err != nil {
-			return wrapResults(nil, err)
+		config := params.Config
+		if config == nil {
+			config = &CreateCachedContentConfig{}
+		}
+		if len(contents) > 0 {
+			config.Contents = contents
+		}
+		cache, err = client.Caches.Create(ctx, params.Model, config)
+	} else {
+		file, uploadErr := uploadCacheDocument(ctx, client)
+		if uploadErr != nil {
+			return wrapResults(nil, uploadErr)
 		}
 		parts := []*Part{}
 		for i := 0; i < 5; i++ {
@@ -196,10 +298,13 @@ func createUpdateGet(ctx context.Context, client *Client, item *testTableItem) [
 		config := &CreateCachedContentConfig{
 			Contents: []*Content{NewContentFromParts(parts, RoleUser)},
 		}
-		cache, err = client.Caches.Create(ctx, params.Model, config) // nolint:ineffassign,staticcheck
+		cache, err = client.Caches.Create(ctx, params.Model, config)
 	}
 	if err != nil {
 		return wrapResults(cache, err)
+	}
+	if cache == nil {
+		return wrapResults(nil, fmt.Errorf("Caches.Create returned no cache and no error"))
 	}
 	updatedCache, err := client.Caches.Update(ctx, cache.Name, &UpdateCachedContentConfig{TTL: 7200 * time.Second})
 	if err != nil {
@@ -320,7 +425,7 @@ func multimodalSearchFlow(ctx context.Context, client *Client, item *testTableIt
 	}
 
 	store, err := client.FileSearchStores.Create(ctx, &CreateFileSearchStoreConfig{
-		DisplayName:    params.DisplayName,
+		DisplayName: params.DisplayName,
 	})
 	if err != nil {
 		return wrapResults(nil, err)

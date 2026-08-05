@@ -17,6 +17,7 @@ package genai
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -68,6 +69,41 @@ func parameterNamesFor(t *testing.T, testTableFile *testTableFile, method reflec
 			"to the test table keys.", testTableFile.TestMethod, got, want, names)
 	}
 	return names
+}
+
+// errorFromResponse extracts the error return value of a reflected SDK call.
+// The check is kind-safe because the error's dynamic type can be a struct,
+// which reflect.Value.IsNil panics on.
+func errorFromResponse(response []reflect.Value) error {
+	if len(response) < 2 {
+		return nil
+	}
+	value := response[1]
+	if !value.IsValid() {
+		return nil
+	}
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		if value.IsNil() {
+			return nil
+		}
+	}
+	err, _ := value.Interface().(error)
+	return err
+}
+
+// errorMatchesWant reports whether err contains the test table's expected
+// exception. The table records Python's rendering, so an APIError is also
+// matched against that form.
+func errorMatchesWant(err error, want string) bool {
+	if strings.Contains(err.Error(), want) {
+		return true
+	}
+	var apiErr APIError
+	if errors.As(err, &apiErr) {
+		return strings.Contains(fmt.Sprintf("%d %s. %v", apiErr.Code, apiErr.Status, apiErr.Details), want)
+	}
+	return false
 }
 
 type interfaceDeserialize func([]byte) (reflect.Value, error)
@@ -319,14 +355,19 @@ func TestTable(t *testing.T) {
 								t.Skipf("Skipping because %s", testTableItem.SkipInAPIMode)
 							}
 
-							if !strings.Contains(testTableFile.TestMethod, ".") {
-								if *mode != apiMode { // replay mode
-									t.Skipf("Custom test method %s only supported in API mode in Go", testTableFile.TestMethod)
-								}
-								return
+							// Custom test methods (a testMethod with no ".") come from
+							// customTestMethods and only run in API mode.
+							if !strings.Contains(testTableFile.TestMethod, ".") && *mode != apiMode {
+								t.Skipf("Custom test method %s only supported in API mode in Go", testTableFile.TestMethod)
 							}
 
 							config := ClientConfig{Backend: backend.Backend}
+							if *mode == apiMode && backend.Backend == BackendVertexAI &&
+								strings.Contains(testName, "tunings") &&
+								os.Getenv("GOOGLE_CLOUD_LOCATION") == "global" {
+								// Fine-tuning is not offered on the global endpoint.
+								config.Location = "us-central1"
+							}
 							replayClient := createReplayAPIClient(t, testTableDirectory, testTableItem, backend.name)
 							if *mode == replayMode {
 								config.HTTPOptions.BaseURL = replayClient.GetBaseURL()
@@ -377,11 +418,23 @@ func TestTable(t *testing.T) {
 							}
 
 							if *mode == apiMode {
-								if len(response) > 1 && !response[1].IsNil() {
-									err := response[1].Interface().(error)
-									if strings.Contains(err.Error(), "429") {
-										t.Skipf("Resource Exhausted (429). Skipping test instead of failing: %v", err)
+								// Live responses are not deterministic, so assert only that the
+								// call behaved as the test table says.
+								wantException := extractWantException(testTableItem, backend.Backend)
+								gotErr := errorFromResponse(response)
+
+								if gotErr != nil && strings.Contains(gotErr.Error(), "429") {
+									t.Skipf("Resource Exhausted (429). Skipping test instead of failing: %v", gotErr)
+								}
+
+								if wantException != "" {
+									if gotErr == nil {
+										t.Errorf("Calling method expected to fail but it didn't, want err: %v", wantException)
+									} else if !errorMatchesWant(gotErr, wantException) {
+										t.Errorf("Exception mismatch, got: %v, want it to contain: %v", gotErr, wantException)
 									}
+								} else if gotErr != nil {
+									t.Errorf("Calling method failed unexpectedly, err: %v", gotErr)
 								}
 								return
 							}

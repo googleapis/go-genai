@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.67.0](https://github.com/googleapis/go-genai/compare/v1.66.0...v1.67.0) (2026-08-06)
+
+
+### Features
+
+* Add TOO_MANY_TOOL_CALLS to FinishReason enum. ([e5a3783](https://github.com/googleapis/go-genai/commit/e5a37838b1cc6ae9f342cfdbe4ed8431df75bcb4))
+* Support GoogleMaps Tool grounding_types places and routing ([d76fedf](https://github.com/googleapis/go-genai/commit/d76fedf5d327c331bcdcfaab36fda5073f28247a))
+* Support HTTP retries in the Go GenAI SDK. ([45c6782](https://github.com/googleapis/go-genai/commit/45c6782d25105748bd750004df921f067e527c80))
+
+
+### Bug Fixes
+
+* Add propertyOrdering auto-population for ResponseSchema and ResponseJsonSchema for Dotnet SDK ([1e113a5](https://github.com/googleapis/go-genai/commit/1e113a5572ddacb0794cbd10dcec828ae21052ec))
+
 ## [1.66.0](https://github.com/googleapis/go-genai/compare/v1.65.0...v1.66.0) (2026-07-28)
 
 

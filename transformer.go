@@ -193,6 +193,10 @@ func InternalTSchema(origin any) (any, error) {
 	return tSchema(origin)
 }
 
+func InternalTJsonSchema(origin any) (any, error) {
+	return origin, nil
+}
+
 func tSchema(origin any) (any, error) {
 	return origin, nil
 }

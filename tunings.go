@@ -690,6 +690,11 @@ func generationConfigFromVertex(fromObject map[string]any, parentObject map[stri
 
 	fromResponseJsonSchema := InternalGetValueByPath(fromObject, []string{"responseJsonSchema"})
 	if fromResponseJsonSchema != nil {
+		fromResponseJsonSchema, err = InternalTJsonSchema(fromResponseJsonSchema)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
 	}
 

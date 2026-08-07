@@ -1171,6 +1171,19 @@ const (
 	TurnCompleteReasonMaxRegenerationReached TurnCompleteReason = "MAX_REGENERATION_REACHED"
 )
 
+// The different activity states of the live session.
+type InteractionStatus string
+
+const (
+	// Unspecified interaction status.
+	InteractionStatusUnspecified InteractionStatus = "INTERACTION_STATUS_UNSPECIFIED"
+	// The server is still actively processing user input or running background reasoning.
+	// More model output may follow.
+	InteractionStatusInProgress InteractionStatus = "IN_PROGRESS"
+	// The server has completed all processing and background reasoning.
+	InteractionStatusRequiresAction InteractionStatus = "REQUIRES_ACTION"
+)
+
 // The type of the VAD signal.
 type VADSignalType string
 
@@ -7952,6 +7965,9 @@ type LiveServerContent struct {
 	WaitingForInput bool `json:"waitingForInput,omitempty"`
 	// Optional. Low latency transcription updated while the user is speaking.
 	InterimInputTranscription *Transcription `json:"interimInputTranscription,omitempty"`
+	// Optional. The current activity status of the live session. Always sent alongside
+	// `turn_complete`.
+	InteractionStatus InteractionStatus `json:"interactionStatus,omitempty"`
 }
 
 // Request for the client to execute the `function_calls` and return the responses with

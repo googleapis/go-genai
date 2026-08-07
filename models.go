@@ -153,26 +153,6 @@ func citationMetadataFromMldev(fromObject map[string]any, parentObject map[strin
 	return toObject, nil
 }
 
-func codeExecutionResultToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromOutcome := InternalGetValueByPath(fromObject, []string{"outcome"})
-	if fromOutcome != nil {
-		InternalSetValueByPath(toObject, []string{"outcome"}, fromOutcome)
-	}
-
-	fromOutput := InternalGetValueByPath(fromObject, []string{"output"})
-	if fromOutput != nil {
-		InternalSetValueByPath(toObject, []string{"output"}, fromOutput)
-	}
-
-	if InternalGetValueByPath(fromObject, []string{"id"}) != nil {
-		return nil, fmt.Errorf("id parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
-	}
-
-	return toObject, nil
-}
-
 func computeTokensParametersToVertex(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1055,26 +1035,6 @@ func endpointFromVertex(fromObject map[string]any, parentObject map[string]any, 
 	fromDeployedModelId := InternalGetValueByPath(fromObject, []string{"deployedModelId"})
 	if fromDeployedModelId != nil {
 		InternalSetValueByPath(toObject, []string{"deployedModelId"}, fromDeployedModelId)
-	}
-
-	return toObject, nil
-}
-
-func executableCodeToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromCode := InternalGetValueByPath(fromObject, []string{"code"})
-	if fromCode != nil {
-		InternalSetValueByPath(toObject, []string{"code"}, fromCode)
-	}
-
-	fromLanguage := InternalGetValueByPath(fromObject, []string{"language"})
-	if fromLanguage != nil {
-		InternalSetValueByPath(toObject, []string{"language"}, fromLanguage)
-	}
-
-	if InternalGetValueByPath(fromObject, []string{"id"}) != nil {
-		return nil, fmt.Errorf("id parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
 	}
 
 	return toObject, nil
@@ -3535,21 +3495,11 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 
 	fromCodeExecutionResult := InternalGetValueByPath(fromObject, []string{"codeExecutionResult"})
 	if fromCodeExecutionResult != nil {
-		fromCodeExecutionResult, err = codeExecutionResultToVertex(fromCodeExecutionResult.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"codeExecutionResult"}, fromCodeExecutionResult)
 	}
 
 	fromExecutableCode := InternalGetValueByPath(fromObject, []string{"executableCode"})
 	if fromExecutableCode != nil {
-		fromExecutableCode, err = executableCodeToVertex(fromExecutableCode.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"executableCode"}, fromExecutableCode)
 	}
 

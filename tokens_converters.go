@@ -20,6 +20,113 @@ import (
 	"fmt"
 )
 
+func authTokenFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	fromBidiGenerateContentSetup := InternalGetValueByPath(fromObject, []string{"bidiGenerateContentSetup"})
+	if fromBidiGenerateContentSetup != nil {
+		fromBidiGenerateContentSetup, err = bidiGenerateContentSetupFromMldev(fromBidiGenerateContentSetup.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"bidiGenerateContentSetup"}, fromBidiGenerateContentSetup)
+	}
+
+	fromExpireTime := InternalGetValueByPath(fromObject, []string{"expireTime"})
+	if fromExpireTime != nil {
+		InternalSetValueByPath(toObject, []string{"expireTime"}, fromExpireTime)
+	}
+
+	fromFieldMask := InternalGetValueByPath(fromObject, []string{"fieldMask"})
+	if fromFieldMask != nil {
+		InternalSetValueByPath(toObject, []string{"fieldMask"}, fromFieldMask)
+	}
+
+	fromInteractionId := InternalGetValueByPath(fromObject, []string{"interactionId"})
+	if fromInteractionId != nil {
+		InternalSetValueByPath(toObject, []string{"interactionId"}, fromInteractionId)
+	}
+
+	fromNewSessionExpireTime := InternalGetValueByPath(fromObject, []string{"newSessionExpireTime"})
+	if fromNewSessionExpireTime != nil {
+		InternalSetValueByPath(toObject, []string{"newSessionExpireTime"}, fromNewSessionExpireTime)
+	}
+
+	fromUses := InternalGetValueByPath(fromObject, []string{"uses"})
+	if fromUses != nil {
+		InternalSetValueByPath(toObject, []string{"uses"}, fromUses)
+	}
+
+	return toObject, nil
+}
+
+func bidiGenerateContentSetupFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromContextWindowCompression := InternalGetValueByPath(fromObject, []string{"contextWindowCompression"})
+	if fromContextWindowCompression != nil {
+		InternalSetValueByPath(toObject, []string{"contextWindowCompression"}, fromContextWindowCompression)
+	}
+
+	fromGenerationConfig := InternalGetValueByPath(fromObject, []string{"generationConfig"})
+	if fromGenerationConfig != nil {
+		fromGenerationConfig, err = generationConfigFromMldev(fromGenerationConfig.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"generationConfig"}, fromGenerationConfig)
+	}
+
+	fromHistoryConfig := InternalGetValueByPath(fromObject, []string{"historyConfig"})
+	if fromHistoryConfig != nil {
+		InternalSetValueByPath(toObject, []string{"historyConfig"}, fromHistoryConfig)
+	}
+
+	fromInputAudioTranscription := InternalGetValueByPath(fromObject, []string{"inputAudioTranscription"})
+	if fromInputAudioTranscription != nil {
+		InternalSetValueByPath(toObject, []string{"inputAudioTranscription"}, fromInputAudioTranscription)
+	}
+
+	fromModel := InternalGetValueByPath(fromObject, []string{"model"})
+	if fromModel != nil {
+		InternalSetValueByPath(toObject, []string{"model"}, fromModel)
+	}
+
+	fromOutputAudioTranscription := InternalGetValueByPath(fromObject, []string{"outputAudioTranscription"})
+	if fromOutputAudioTranscription != nil {
+		InternalSetValueByPath(toObject, []string{"outputAudioTranscription"}, fromOutputAudioTranscription)
+	}
+
+	fromRealtimeInputConfig := InternalGetValueByPath(fromObject, []string{"realtimeInputConfig"})
+	if fromRealtimeInputConfig != nil {
+		InternalSetValueByPath(toObject, []string{"realtimeInputConfig"}, fromRealtimeInputConfig)
+	}
+
+	fromSessionResumption := InternalGetValueByPath(fromObject, []string{"sessionResumption"})
+	if fromSessionResumption != nil {
+		InternalSetValueByPath(toObject, []string{"sessionResumption"}, fromSessionResumption)
+	}
+
+	fromSystemInstruction := InternalGetValueByPath(fromObject, []string{"systemInstruction"})
+	if fromSystemInstruction != nil {
+		InternalSetValueByPath(toObject, []string{"systemInstruction"}, fromSystemInstruction)
+	}
+
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
+	if fromTools != nil {
+		InternalSetValueByPath(toObject, []string{"tools"}, fromTools)
+	}
+
+	return toObject, nil
+}
+
 func createAuthTokenConfigToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -76,6 +183,132 @@ func createAuthTokenParametersToVertex(fromObject map[string]any, parentObject m
 	toObject = make(map[string]any)
 	if InternalGetValueByPath(fromObject, []string{"config"}) != nil {
 		return nil, fmt.Errorf("config parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
+func generationConfigFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromResponseJsonSchema := InternalGetValueByPath(fromObject, []string{"responseJsonSchema"})
+	if fromResponseJsonSchema != nil {
+		fromResponseJsonSchema, err = InternalTJsonSchema(fromResponseJsonSchema)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"responseJsonSchema"}, fromResponseJsonSchema)
+	}
+
+	fromCandidateCount := InternalGetValueByPath(fromObject, []string{"candidateCount"})
+	if fromCandidateCount != nil {
+		InternalSetValueByPath(toObject, []string{"candidateCount"}, fromCandidateCount)
+	}
+
+	fromEnableAffectiveDialog := InternalGetValueByPath(fromObject, []string{"enableAffectiveDialog"})
+	if fromEnableAffectiveDialog != nil {
+		InternalSetValueByPath(toObject, []string{"enableAffectiveDialog"}, fromEnableAffectiveDialog)
+	}
+
+	fromFrequencyPenalty := InternalGetValueByPath(fromObject, []string{"frequencyPenalty"})
+	if fromFrequencyPenalty != nil {
+		InternalSetValueByPath(toObject, []string{"frequencyPenalty"}, fromFrequencyPenalty)
+	}
+
+	fromLogprobs := InternalGetValueByPath(fromObject, []string{"logprobs"})
+	if fromLogprobs != nil {
+		InternalSetValueByPath(toObject, []string{"logprobs"}, fromLogprobs)
+	}
+
+	fromMaxOutputTokens := InternalGetValueByPath(fromObject, []string{"maxOutputTokens"})
+	if fromMaxOutputTokens != nil {
+		InternalSetValueByPath(toObject, []string{"maxOutputTokens"}, fromMaxOutputTokens)
+	}
+
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+	}
+
+	fromPresencePenalty := InternalGetValueByPath(fromObject, []string{"presencePenalty"})
+	if fromPresencePenalty != nil {
+		InternalSetValueByPath(toObject, []string{"presencePenalty"}, fromPresencePenalty)
+	}
+
+	fromResponseLogprobs := InternalGetValueByPath(fromObject, []string{"responseLogprobs"})
+	if fromResponseLogprobs != nil {
+		InternalSetValueByPath(toObject, []string{"responseLogprobs"}, fromResponseLogprobs)
+	}
+
+	fromResponseMimeType := InternalGetValueByPath(fromObject, []string{"responseMimeType"})
+	if fromResponseMimeType != nil {
+		InternalSetValueByPath(toObject, []string{"responseMimeType"}, fromResponseMimeType)
+	}
+
+	fromResponseModalities := InternalGetValueByPath(fromObject, []string{"responseModalities"})
+	if fromResponseModalities != nil {
+		InternalSetValueByPath(toObject, []string{"responseModalities"}, fromResponseModalities)
+	}
+
+	fromResponseSchema := InternalGetValueByPath(fromObject, []string{"responseSchema"})
+	if fromResponseSchema != nil {
+		InternalSetValueByPath(toObject, []string{"responseSchema"}, fromResponseSchema)
+	}
+
+	fromSeed := InternalGetValueByPath(fromObject, []string{"seed"})
+	if fromSeed != nil {
+		InternalSetValueByPath(toObject, []string{"seed"}, fromSeed)
+	}
+
+	fromSpeechConfig := InternalGetValueByPath(fromObject, []string{"speechConfig"})
+	if fromSpeechConfig != nil {
+		InternalSetValueByPath(toObject, []string{"speechConfig"}, fromSpeechConfig)
+	}
+
+	fromStopSequences := InternalGetValueByPath(fromObject, []string{"stopSequences"})
+	if fromStopSequences != nil {
+		InternalSetValueByPath(toObject, []string{"stopSequences"}, fromStopSequences)
+	}
+
+	fromTemperature := InternalGetValueByPath(fromObject, []string{"temperature"})
+	if fromTemperature != nil {
+		InternalSetValueByPath(toObject, []string{"temperature"}, fromTemperature)
+	}
+
+	fromThinkingConfig := InternalGetValueByPath(fromObject, []string{"thinkingConfig"})
+	if fromThinkingConfig != nil {
+		InternalSetValueByPath(toObject, []string{"thinkingConfig"}, fromThinkingConfig)
+	}
+
+	fromTopK := InternalGetValueByPath(fromObject, []string{"topK"})
+	if fromTopK != nil {
+		InternalSetValueByPath(toObject, []string{"topK"}, fromTopK)
+	}
+
+	fromTopP := InternalGetValueByPath(fromObject, []string{"topP"})
+	if fromTopP != nil {
+		InternalSetValueByPath(toObject, []string{"topP"}, fromTopP)
+	}
+
+	fromEnableEnhancedCivicAnswers := InternalGetValueByPath(fromObject, []string{"enableEnhancedCivicAnswers"})
+	if fromEnableEnhancedCivicAnswers != nil {
+		InternalSetValueByPath(toObject, []string{"enableEnhancedCivicAnswers"}, fromEnableEnhancedCivicAnswers)
+	}
+
+	fromResponseFormat := InternalGetValueByPath(fromObject, []string{"responseFormat"})
+	if fromResponseFormat != nil {
+		InternalSetValueByPath(toObject, []string{"responseFormat"}, fromResponseFormat)
+	}
+
+	fromTranslationConfig := InternalGetValueByPath(fromObject, []string{"translationConfig"})
+	if fromTranslationConfig != nil {
+		InternalSetValueByPath(toObject, []string{"translationConfig"}, fromTranslationConfig)
+	}
+
+	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
+	if fromAudioTranscriptionConfig != nil {
+		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)
 	}
 
 	return toObject, nil

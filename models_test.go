@@ -587,7 +587,8 @@ func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			operation, err := client.Models.GenerateVideos(ctx, "veo-2.0-generate-001", "A neon hologram of a cat driving at top speed", nil, nil)
+			source := &GenerateVideosSource{Prompt: "A neon hologram of a cat driving at top speed"}
+			operation, err := client.Models.GenerateVideos(ctx, "veo-2.0-generate-001", source, nil)
 			if err != nil {
 				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
 			}
@@ -609,7 +610,7 @@ func TestModelsGenerateVideosText2VideoPoll(t *testing.T) {
 	}
 }
 
-func TestModelsGenerateVideosFromSource(t *testing.T) {
+func TestModelsGenerateVideos(t *testing.T) {
 	if *mode != apiMode {
 		t.Skip("Skip. This test is only in the API mode")
 	}
@@ -642,7 +643,7 @@ func TestModelsGenerateVideosFromSource(t *testing.T) {
 				NumberOfVideos: 1,
 				OutputGCSURI:   outputGCSURI,
 			}
-			operation, err := client.Models.GenerateVideosFromSource(ctx, "veo-2.0-generate-001", generateVideosSource, config)
+			operation, err := client.Models.GenerateVideos(ctx, "veo-2.0-generate-001", generateVideosSource, config)
 			if err != nil {
 				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
 			}
@@ -682,7 +683,7 @@ func TestModelsGenerateVideosExtensionFromSource(t *testing.T) {
 			}
 
 			// Generate first video
-			operation1, err := client.Models.GenerateVideosFromSource(
+			operation1, err := client.Models.GenerateVideos(
 				ctx,
 				"veo-3-exp",
 				&GenerateVideosSource{
@@ -719,7 +720,7 @@ func TestModelsGenerateVideosExtensionFromSource(t *testing.T) {
 			}
 
 			// Extend the first video
-			operation2, err := client.Models.GenerateVideosFromSource(
+			operation2, err := client.Models.GenerateVideos(
 				ctx,
 				"veo-3-exp",
 				&GenerateVideosSource{
@@ -787,7 +788,7 @@ func TestModelsGenerateVideosEditOutpaint(t *testing.T) {
 					MaskMode: VideoGenerationMaskModeOutpaint,
 				},
 			}
-			operation, err := client.Models.GenerateVideosFromSource(ctx, "veo-2.0-generate-exp", generateVideosSource, config)
+			operation, err := client.Models.GenerateVideos(ctx, "veo-2.0-generate-exp", generateVideosSource, config)
 			if err != nil {
 				t.Errorf("GenerateVideos failed unexpectedly: %v", err)
 			}

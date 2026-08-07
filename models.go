@@ -2361,31 +2361,6 @@ func generateVideosParametersToMldev(ac *InternalAPIClient, fromObject map[strin
 		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
 	}
 
-	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
-	if fromPrompt != nil {
-		InternalSetValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
-	}
-
-	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
-	if fromImage != nil {
-		fromImage, err = imageToMldev(fromImage.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
-		InternalSetValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
-	}
-
-	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
-	if fromVideo != nil {
-		fromVideo, err = videoToMldev(fromVideo.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
-		InternalSetValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
-	}
-
 	fromSource := InternalGetValueByPath(fromObject, []string{"source"})
 	if fromSource != nil {
 		_, err = generateVideosSourceToMldev(fromSource.(map[string]any), toObject, rootObject)
@@ -2416,31 +2391,6 @@ func generateVideosParametersToVertex(ac *InternalAPIClient, fromObject map[stri
 		}
 
 		InternalSetValueByPath(toObject, []string{"_url", "model"}, fromModel)
-	}
-
-	fromPrompt := InternalGetValueByPath(fromObject, []string{"prompt"})
-	if fromPrompt != nil {
-		InternalSetValueByPath(toObject, []string{"instances[0]", "prompt"}, fromPrompt)
-	}
-
-	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
-	if fromImage != nil {
-		fromImage, err = imageToVertex(fromImage.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
-		InternalSetValueByPath(toObject, []string{"instances[0]", "image"}, fromImage)
-	}
-
-	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
-	if fromVideo != nil {
-		fromVideo, err = videoToVertex(fromVideo.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
-		InternalSetValueByPath(toObject, []string{"instances[0]", "video"}, fromVideo)
 	}
 
 	fromSource := InternalGetValueByPath(fromObject, []string{"source"})
@@ -5771,10 +5721,10 @@ func (m Models) ComputeTokens(ctx context.Context, model string, contents []*Con
 }
 
 // generateVideos private method for generating videos.
-func (m Models) generateVideos(ctx context.Context, model string, prompt *string, image *Image, video *Video, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+func (m Models) generateVideos(ctx context.Context, model string, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
 	parameterMap := make(map[string]any)
 
-	kwargs := map[string]any{"model": model, "prompt": prompt, "image": image, "video": video, "source": source, "config": config}
+	kwargs := map[string]any{"model": model, "source": source, "config": config}
 	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
@@ -5990,21 +5940,16 @@ func (m Models) EditImage(ctx context.Context, model, prompt string, referenceIm
 	return m.editImage(ctx, model, prompt, refImages, config)
 }
 
-// GenerateVideos creates a long-running video generation operation.
-// This method is kept for backward compatibility. Use GenerateVideosFromSource instead.
-func (m Models) GenerateVideos(ctx context.Context, model string, prompt string, image *Image, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
-	// Does not support Video or GenerateVideosSource.
-	breakingChangeWarningGenerateVideosNotSource.Do(func() {
-		log.Println("The GenerateVideos method with prompt/image is deprecated and will be replaced with source parameter in the next major release (not before 2026-07-31).")
+// GenerateVideosFromSource creates a long-running video generation operation.
+func (m Models) GenerateVideosFromSource(ctx context.Context, model string, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
+	deprecationWarningGenerateVideosFromSource.Do(func() {
+		log.Println("The GenerateVideosFromSource method is deprecated and will be removed in the next major release. Please use the GenerateVideos method instead.")
 	})
-	return m.generateVideos(ctx, model, &prompt, image, nil, nil, config)
+	return m.GenerateVideos(ctx, model, source, config)
 }
 
 // GenerateVideos creates a long-running video generation operation.
-func (m Models) GenerateVideosFromSource(ctx context.Context, model string, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
-	deprecationWarningGenerateVideosFromSource.Do(func() {
-		log.Println("The GenerateVideosFromSource method will be renamed to GenerateVideos() in the next major release (not before 2026-07-31).")
-	})
+func (m Models) GenerateVideos(ctx context.Context, model string, source *GenerateVideosSource, config *GenerateVideosConfig) (*GenerateVideosOperation, error) {
 	if source == nil {
 		return nil, fmt.Errorf("source is required")
 	}
@@ -6015,7 +5960,7 @@ func (m Models) GenerateVideosFromSource(ctx context.Context, model string, sour
 		}
 	}
 	// Rely on backend validation for combinations of prompt, image, and video.
-	return m.generateVideos(ctx, model, nil, nil, nil, source, config)
+	return m.generateVideos(ctx, model, source, config)
 }
 
 func (m Models) EmbedContent(ctx context.Context, model string, contents []*Content, config *EmbedContentConfig) (*EmbedContentResponse, error) {

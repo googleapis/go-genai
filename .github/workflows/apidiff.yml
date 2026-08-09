@@ -64,13 +64,16 @@ jobs:
         persist-credentials: false
     - name: Create baseline
       id: baseline
+      env:
+        CHANGED_DIR: ${{ fromJson(needs.scan_changes.outputs.changed_dirs).changed[0] }}
       run: |
-        export CHANGED=${{ fromJson(needs.scan_changes.outputs.changed_dirs).changed[0] }}
+        export CHANGED="$CHANGED_DIR"
         echo pkg="${CHANGED//\//_}_pkg.main" >> $GITHUB_OUTPUT
     - name: Create Go package baseline
-      run: cd ${{ fromJson(needs.scan_changes.outputs.changed_dirs).changed[0] }} && apidiff -m -w ${STEPS_BASELINE_OUTPUTS_PKG} .
+      run: cd "$CHANGED_DIR" && apidiff -m -w "$STEPS_BASELINE_OUTPUTS_PKG" .
       env:
         STEPS_BASELINE_OUTPUTS_PKG: ${{ steps.baseline.outputs.pkg }}
+        CHANGED_DIR: ${{ fromJson(needs.scan_changes.outputs.changed_dirs).changed[0] }}
     - name: Upload baseline package data
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
@@ -92,8 +95,9 @@ jobs:
       env:
         PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         STEPS_BASELINE_OUTPUTS_PKG: ${{ steps.baseline.outputs.pkg }}
+        CHANGED_DIR: ${{ fromJson(needs.scan_changes.outputs.changed_dirs).changed[0] }}
       run: |
-        cd ${{ fromJson(needs.scan_changes.outputs.changed_dirs).changed[0] }} && apidiff -m -incompatible ${STEPS_BASELINE_OUTPUTS_PKG} . > diff.txt
+        cd "$CHANGED_DIR" && apidiff -m -incompatible "$STEPS_BASELINE_OUTPUTS_PKG" . > diff.txt
         if [[ "$PR_HEAD_REF" == owl-bot-copy ]]; then
           sed -i '/: added/d' ./diff.txt
         fi

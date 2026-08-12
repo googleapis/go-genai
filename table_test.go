@@ -299,6 +299,23 @@ func createReplayAPIClient(t *testing.T, testTableDirectory string, testTableIte
 	return replayAPIClient
 }
 
+// sharedTestRetryOptions returns the retry options for the shared integration
+// tests, applied to every request the test client makes so that a transient 5xx
+// or 429 does not fail the nightly.
+//
+// Deliberately shorter than the SDK defaults: a multistep test retries per
+// request, so the backoff has to stay well inside the test timeout. Keep aligned with
+// conftest.py in the Python SDK tests.
+func sharedTestRetryOptions() *HTTPRetryOptions {
+	return &HTTPRetryOptions{
+		Attempts:        Ptr[int32](3),
+		InitialDelay:    Ptr[float64](1.0),
+		MaxDelay:        Ptr[float64](10.0),
+		ExpBase:         Ptr[float64](2.0),
+		HTTPStatusCodes: []int32{408, 429, 500, 502, 503, 504},
+	}
+}
+
 // TestTable only runs in apiMode or replayMode.
 func TestTable(t *testing.T) {
 	if *mode == unitMode {
@@ -362,6 +379,9 @@ func TestTable(t *testing.T) {
 							}
 
 							config := ClientConfig{Backend: backend.Backend}
+							if *mode == apiMode {
+								config.HTTPOptions.RetryOptions = sharedTestRetryOptions()
+							}
 							if *mode == apiMode && backend.Backend == BackendVertexAI &&
 								strings.Contains(testName, "tunings") &&
 								os.Getenv("GOOGLE_CLOUD_LOCATION") == "global" {

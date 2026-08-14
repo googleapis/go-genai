@@ -286,6 +286,8 @@ const (
 	HarmCategoryDangerousContent HarmCategory = "HARM_CATEGORY_DANGEROUS_CONTENT"
 	// Deprecated: Election filter is not longer supported. The harm category is civic integrity.
 	HarmCategoryCivicIntegrity HarmCategory = "HARM_CATEGORY_CIVIC_INTEGRITY"
+	// Prompts designed to bypass safety filters.
+	HarmCategoryJailbreak HarmCategory = "HARM_CATEGORY_JAILBREAK"
 	// Images that contain hate speech. This enum value is not supported in Gemini API.
 	HarmCategoryImageHate HarmCategory = "HARM_CATEGORY_IMAGE_HATE"
 	// Images that contain dangerous content. This enum value is not supported in Gemini
@@ -296,9 +298,6 @@ const (
 	// Images that contain sexually explicit content. This enum value is not supported in
 	// Gemini API.
 	HarmCategoryImageSexuallyExplicit HarmCategory = "HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT"
-	// Prompts designed to bypass safety filters. This enum value is not supported in Gemini
-	// API.
-	HarmCategoryJailbreak HarmCategory = "HARM_CATEGORY_JAILBREAK"
 )
 
 // The method for blocking content. If not specified, the default behavior is to use
@@ -1312,8 +1311,7 @@ type CodeExecutionResult struct {
 	// otherwise.
 	Output string `json:"output,omitempty"`
 	// Optional. The identifier of the `ExecutableCode` part this result is for. Only populated
-	// if the corresponding `ExecutableCode` has an id. This field is not supported in Vertex
-	// AI.
+	// if the corresponding `ExecutableCode` has an id.
 	ID string `json:"id,omitempty"`
 }
 
@@ -1326,8 +1324,7 @@ type ExecutableCode struct {
 	// Required. Programming language of the `code`.
 	Language Language `json:"language,omitempty"`
 	// Optional. Unique identifier of the `ExecutableCode` part. The server returns the
-	// `CodeExecutionResult` with the matching `id`. This field is not supported in Vertex
-	// AI.
+	// `CodeExecutionResult` with the matching `id`.
 	ID string `json:"id,omitempty"`
 }
 
@@ -2096,8 +2093,8 @@ type GoogleMaps struct {
 	// has any effect once removed. Optional. Whether to return a widget context token in
 	// the GroundingMetadata of the response.
 	EnableWidget *bool `json:"enableWidget,omitempty"`
-	// Optional. Specifies the types of Google Maps grounding to enable. This field is not
-	// supported in Gemini API.
+	// Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places`
+	// when unset. This field is not supported in Gemini API.
 	GroundingTypes *GoogleMapsGroundingTypes `json:"groundingTypes,omitempty"`
 }
 
@@ -2493,6 +2490,17 @@ type ToolParallelAISearch struct {
 	// "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds":
 	// 3600 } }
 	CustomConfigs map[string]any `json:"customConfigs,omitempty"`
+	// Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex
+	// Grounding to use Parallel's Zero Data Retention Marketplace product. If this value
+	// is "false" or omitted, the Parallel Web Search for Grounding standard subscription
+	// will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR
+	// subscription will be used.
+	EnableDataRetention *bool `json:"enableDataRetention,omitempty"`
+	// Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace
+	// product. If this value is "false" or omitted, the Parallel Web Search for Grounding
+	// standard subscription will be used. If this value is "true", the Parallel Web Search
+	// for Grounding - ZDR subscription will be used.
+	EnableZeroDataRetention *bool `json:"enableZeroDataRetention,omitempty"`
 }
 
 // Tool to support URL context.
@@ -4680,7 +4688,7 @@ type GenerationConfig struct {
 	CandidateCount int32 `json:"candidateCount,omitempty"`
 	// Optional. If enabled, the model will detect emotions and adapt its responses accordingly.
 	// For example, if the model detects that the user is frustrated, it may provide a more
-	// empathetic response. This field is not supported in Gemini API.
+	// empathetic response.
 	EnableAffectiveDialog *bool `json:"enableAffectiveDialog,omitempty"`
 	// Optional. Penalizes tokens based on their frequency in the generated text. A positive
 	// value helps to reduce the repetition of words and phrases. Valid values can range
@@ -5471,6 +5479,8 @@ type ReinforcementTuningHyperParameters struct {
 	// * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in
 	// tokens If not set, default to -1 (dynamic thinking).
 	ThinkingBudget int32 `json:"thinkingBudget,omitempty"`
+	// Optional. Number of steps for the tuning job (mutually exclusive with epoch_count).
+	StepCount int64 `json:"stepCount,omitempty,string"`
 }
 
 // Reinforcement tuning spec for tuning.
@@ -8530,6 +8540,20 @@ func (p LiveSendToolResponseParameters) toLiveClientMessage() *LiveClientMessage
 type AuthToken struct {
 	// Optional. The name of the auth token.
 	Name string `json:"name,omitempty"`
+	// Optional. Input only. Immutable. An optional time after which, when using the resulting
+	// token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively
+	// close the session after this time.) If not set then this defaults to 30 minutes in
+	// the future. If set, this value must be less than 20 hours in the future.
+	ExpireTime string `json:"expireTime,omitempty"`
+	// Optional. Input only. Immutable. The time after which new Live API sessions using
+	// the token resulting from this request will be rejected. If not set this defaults
+	// to 60 seconds in the future. If set, this value must be less than 20 hours in the
+	// future.
+	NewSessionExpireTime string `json:"newSessionExpireTime,omitempty"`
+	// Optional. Input only. Immutable. The number of times the token can be used. If this
+	// value is zero then no limit is applied. Resuming a Live API session does not count
+	// as a use. If unspecified, the default is 1.
+	Uses int32 `json:"uses,omitempty"`
 }
 
 // Config for LiveConnectConstraints for Auth Token creation.

@@ -1264,6 +1264,18 @@ const (
 	TurnCoverageTurnIncludesAudioActivityAndAllVideo TurnCoverage = "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO"
 )
 
+// Transcription mode.
+type AudioTranscriptionConfigMode string
+
+const (
+	// Unspecified transcription mode.
+	AudioTranscriptionConfigModeUnspecified AudioTranscriptionConfigMode = "MODE_UNSPECIFIED"
+	// Verbatim transcription mode.
+	AudioTranscriptionConfigModeVerbatim AudioTranscriptionConfigMode = "VERBATIM"
+	// Smart transcription mode.
+	AudioTranscriptionConfigModeSmart AudioTranscriptionConfigMode = "SMART"
+)
+
 // Media resolution for the input media.
 type PartMediaResolution struct {
 	// Optional. The tokenization quality used for given media.
@@ -2885,6 +2897,13 @@ type AudioTranscriptionConfig struct {
 	Diarization *bool `json:"diarization,omitempty"`
 	// Optional. Configures word-level timestamp generation.
 	WordTimestamp *bool `json:"wordTimestamp,omitempty"`
+	// Optional. Transcription mode.
+	// When set to `SMART`, the model performs disfluency removal (eliminating
+	// filler words, repetitions, and false starts), light grammatical cleanup,
+	// automatic formatting (paragraphs, bullet points, numbered lists), and
+	// minor user edits (inline self-corrections). Incompatible with
+	// `word_timestamp` and `diarization`.
+	Mode AudioTranscriptionConfigMode `json:"mode,omitempty"`
 }
 
 // Optional model configuration parameters.

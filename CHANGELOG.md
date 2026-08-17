@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.68.0](https://github.com/googleapis/go-genai/compare/v1.67.0...v1.68.0) (2026-08-12)
+
+
+### Features
+
+* Add interaction_status to LiveServerContent ([b701130](https://github.com/googleapis/go-genai/commit/b701130e4472242891c3a1109d99bae5faf69d6d))
+
 ## [1.67.0](https://github.com/googleapis/go-genai/compare/v1.66.0...v1.67.0) (2026-08-06)
 
 

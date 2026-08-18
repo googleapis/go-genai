@@ -1179,8 +1179,10 @@ const (
 	// The server is still actively processing user input or running background reasoning.
 	// More model output may follow.
 	InteractionStatusInProgress InteractionStatus = "IN_PROGRESS"
-	// The server has completed all processing and background reasoning.
+	// Deprecated: Use IDLE instead.
 	InteractionStatusRequiresAction InteractionStatus = "REQUIRES_ACTION"
+	// The server has completed all processing and background reasoning.
+	InteractionStatusIdle InteractionStatus = "IDLE"
 )
 
 // The type of the VAD signal.

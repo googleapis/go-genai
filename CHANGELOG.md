@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.69.0](https://github.com/googleapis/go-genai/compare/v1.68.0...v1.69.0) (2026-08-19)
+
+
+### Features
+
+* Add `mode` enum (`VERBATIM`, `SMART`) to `AudioTranscriptionConfig` and `TranscriptionConfig`. ([5ca93e0](https://github.com/googleapis/go-genai/commit/5ca93e08f43c1065f44ac9b69df4ed7ccc548113))
+* Add enable_data_retention to ToolParallelAiSearch, Add step_count to ReinforcementTuningHyperParameters, Add BidiGenerateContentSetup ([600a8cf](https://github.com/googleapis/go-genai/commit/600a8cfe12bf70aa40cf39dc0653d7a6603df1d9))
+* Add IDLE state to live connection status enum and mark REQUIRES_ACTION as deprecated. ([2bbd248](https://github.com/googleapis/go-genai/commit/2bbd2486c8d318048b30c7a515aa9b98e8f76313))
+
 ## [1.68.0](https://github.com/googleapis/go-genai/compare/v1.67.0...v1.68.0) (2026-08-12)
 
 

@@ -17,6 +17,7 @@
 package genai
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"iter"

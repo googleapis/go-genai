@@ -862,6 +862,18 @@ const (
 	ServiceTierPriority ServiceTier = "priority"
 )
 
+// How the model processes input media for understanding.
+type MediaProcessing string
+
+const (
+	// Default. Uses model-specific processing (3.5 Pro+ -> `AGENTIC`, older models -> `STATIC`).
+	MediaProcessingUnspecified MediaProcessing = "MEDIA_PROCESSING_UNSPECIFIED"
+	// Fixed-rate frame extraction. All frames placed in context.
+	MediaProcessingStatic MediaProcessing = "STATIC"
+	// Model-driven dynamic navigation. Recommended for most use cases.
+	MediaProcessingAgentic MediaProcessing = "AGENTIC"
+)
+
 // The tokenization quality used for given media.
 type PartMediaResolutionLevel string
 
@@ -1634,6 +1646,8 @@ type Part struct {
 	PartMetadata map[string]any `json:"partMetadata,omitempty"`
 	// Optional. Output only. The transcription of the audio part.
 	AudioTranscription *Transcription `json:"audioTranscription,omitempty"`
+	// Optional. How the model processes this part's media for understanding.
+	MediaProcessing MediaProcessing `json:"mediaProcessing,omitempty"`
 }
 
 // NewPartFromURI builds a Part from a given file URI and mime type.

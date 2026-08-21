@@ -41,12 +41,11 @@ func run(ctx context.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if client.ClientConfig().Backend == genai.BackendVertexAI {
-		fmt.Println("Calling VertexAI Backend...")
-	} else {
-		fmt.Println("Calling GeminiAPI Backend...")
+	if client.ClientConfig().Backend != genai.BackendVertexAI {
+		log.Fatal("GenerateImages is only supported in the Vertex AI backend.")
 	}
 
+	fmt.Println("Calling VertexAI Backend...")
 	fmt.Println("Generate image example.")
 	response1, err := client.Models.GenerateImages(
 		ctx, "imagen-4.0-generate-001",

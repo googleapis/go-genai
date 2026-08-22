@@ -1541,11 +1541,6 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 		InternalSetValueByPath(parentObject, []string{"modelArmorConfig"}, fromModelArmorConfig)
 	}
 
-	fromServiceTier := InternalGetValueByPath(fromObject, []string{"serviceTier"})
-	if fromServiceTier != nil {
-		InternalSetValueByPath(parentObject, []string{"serviceTier"}, fromServiceTier)
-	}
-
 	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
 	if fromAudioTranscriptionConfig != nil {
 		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)

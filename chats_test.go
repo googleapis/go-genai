@@ -451,14 +451,9 @@ func TestChatsStreamInvalidResponse(t *testing.T) {
 	// Create a test server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintln(w, `data:{
-			"candidates": [
-				{
-					"content": { "role": "model", "parts": [{"text": ""}] },
-					"finishReason": "STOP"
-				}
-			]
-		}`)
+		fmt.Fprint(w, `data:{"candidates": [{"content": {"role": "model", "parts": [{"text": ""}]}, "finishReason": "STOP"}]}
+
+`)
 	}))
 	defer ts.Close()
 
@@ -550,56 +545,58 @@ func TestChatsStreamUnitTest(t *testing.T) {
 		// Create a test server
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, `data:{
-				"candidates": [
-					{
-						"content": {
-							"role": "model",
-							"parts": [
-								{
-									"text": "1 + "
-								}
-							]
-						},
-						"avgLogprobs": -0.6608115907699342
-					}
-				]
-			}
+			// Every line of a multi-line payload carries its own "data:" prefix, per the SSE spec.
+			fmt.Fprint(w, `data:{
+data:	"candidates": [
+data:		{
+data:			"content": {
+data:				"role": "model",
+data:				"parts": [
+data:					{
+data:						"text": "1 + "
+data:					}
+data:				]
+data:			},
+data:			"avgLogprobs": -0.6608115907699342
+data:		}
+data:	]
+data:}
 
 data:{
-				"candidates": [
-					{
-						"content": {
-							"role": "model",
-							"parts": [
-								{
-									"text": "2"
-								}
-							]
-						},
-						"finishReason": "STOP",
-						"avgLogprobs": -0.6608115907699342
-					}
-				]
-			}
+data:	"candidates": [
+data:		{
+data:			"content": {
+data:				"role": "model",
+data:				"parts": [
+data:					{
+data:						"text": "2"
+data:					}
+data:				]
+data:			},
+data:			"finishReason": "STOP",
+data:			"avgLogprobs": -0.6608115907699342
+data:		}
+data:	]
+data:}
 
 data:{
-				"candidates": [
-					{
-						"content": {
-							"role": "model",
-							"parts": [
-								{
-									"text": " = 3"
-								}
-							]
-						},
-						"finishReason": "STOP",
-						"avgLogprobs": -0.6608115907699342
-					}
-				]
-			}
-			`)
+data:	"candidates": [
+data:		{
+data:			"content": {
+data:				"role": "model",
+data:				"parts": [
+data:					{
+data:						"text": " = 3"
+data:					}
+data:				]
+data:			},
+data:			"finishReason": "STOP",
+data:			"avgLogprobs": -0.6608115907699342
+data:		}
+data:	]
+data:}
+
+`)
 		}))
 		defer ts.Close()
 
@@ -660,34 +657,16 @@ func TestChatsStreamJoinResponsesUnitTest(t *testing.T) {
 		// Create a test server
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, `data:{
-				"candidates": [
-					{"content": {"role": "model", "parts": [{"text": "text1_candidate1"}]}},
-					{"content": {"role": "model", "parts": [{"text": "text1_candidate2"}]}}
-					]
-			}
+			// One event per line, as the API sends them.
+			fmt.Fprint(w, `data:{"candidates": [{"content": {"role": "model", "parts": [{"text": "text1_candidate1"}]}}, {"content": {"role": "model", "parts": [{"text": "text1_candidate2"}]}}]}
 
-data:{
-				"candidates": [
-					{"content": {"role": "model", "parts": [{"text": " "}]}},
-					{"content": {"role": "model", "parts": [{"text": " "}]}}
-					]
-			}
+data:{"candidates": [{"content": {"role": "model", "parts": [{"text": " "}]}}, {"content": {"role": "model", "parts": [{"text": " "}]}}]}
 
-data:{
-				"candidates": [
-					{"content": {"role": "model", "parts": [{"text": "text3_candidate1"}, {"text": " additional text3_candidate1 "}]}},
-					{"content": {"role": "model", "parts": [{"text": "text3_candidate2"}, {"text": " additional text3_candidate2 "}]}}
-					]
-			}
+data:{"candidates": [{"content": {"role": "model", "parts": [{"text": "text3_candidate1"}, {"text": " additional text3_candidate1 "}]}}, {"content": {"role": "model", "parts": [{"text": "text3_candidate2"}, {"text": " additional text3_candidate2 "}]}}]}
 
-data:{
-				"candidates": [
-					{"content": {"role": "model", "parts": [{"text": "text4_candidate1"}, {"text": " additional text4_candidate1"}]}},
-					{"content": {"role": "model", "parts": [{"text": "text4_candidate2"}, {"text": " additional text4_candidate2"}]}}
-					]
-			}
-			`)
+data:{"candidates": [{"content": {"role": "model", "parts": [{"text": "text4_candidate1"}, {"text": " additional text4_candidate1"}]}}, {"content": {"role": "model", "parts": [{"text": "text4_candidate2"}, {"text": " additional text4_candidate2"}]}}]}
+
+`)
 		}))
 		defer ts.Close()
 

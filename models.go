@@ -3285,6 +3285,11 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 		InternalSetValueByPath(toObject, []string{"audioTranscription"}, fromAudioTranscription)
 	}
 
+	fromMediaProcessing := InternalGetValueByPath(fromObject, []string{"mediaProcessing"})
+	if fromMediaProcessing != nil {
+		InternalSetValueByPath(toObject, []string{"mediaProcessing"}, fromMediaProcessing)
+	}
+
 	return toObject, nil
 }
 
@@ -3361,6 +3366,11 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 	fromAudioTranscription := InternalGetValueByPath(fromObject, []string{"audioTranscription"})
 	if fromAudioTranscription != nil {
 		InternalSetValueByPath(toObject, []string{"audioTranscription"}, fromAudioTranscription)
+	}
+
+	fromMediaProcessing := InternalGetValueByPath(fromObject, []string{"mediaProcessing"})
+	if fromMediaProcessing != nil {
+		InternalSetValueByPath(toObject, []string{"mediaProcessing"}, fromMediaProcessing)
 	}
 
 	return toObject, nil

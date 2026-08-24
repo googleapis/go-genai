@@ -877,7 +877,7 @@ func TestNewClient(t *testing.T) {
 			HTTPClient: &http.Client{},
 			HTTPOptions: HTTPOptions{
 				BaseURL:    "https://generativelanguage.googleapis.com/",
-				APIVersion: "v1beta",
+				APIVersion: "v1",
 			},
 		}
 		client, err := NewClient(ctx, &ClientConfig{
@@ -963,7 +963,7 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 				},
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
-			expectedAPIVersion: "v1beta",
+			expectedAPIVersion: "v1",
 		},
 		{
 			name: "Google AI Backend without API Version",
@@ -973,7 +973,7 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 				Backend:     BackendGeminiAPI,
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
-			expectedAPIVersion: "v1beta",
+			expectedAPIVersion: "v1",
 		},
 		{
 			name: "Vertex AI Backend without API Version",
@@ -1046,7 +1046,7 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 				HTTPClient:  &http.Client{Timeout: 5000 * time.Millisecond},
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
-			expectedAPIVersion: "v1beta",
+			expectedAPIVersion: "v1",
 		},
 	}
 

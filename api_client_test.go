@@ -2274,7 +2274,6 @@ func TestDoRequestRetriesClientLevelOptions(t *testing.T) {
 		})
 	}
 }
-
 func TestDefaultClientTimeout(t *testing.T) {
 	ctx := context.Background()
 	client, err := NewClient(ctx, &ClientConfig{
@@ -2393,3 +2392,30 @@ func TestDownloadFileTimeout(t *testing.T) {
 	})
 }
 
+func TestClientAPIVersion(t *testing.T) {
+	ctx := context.Background()
+	client, err := NewClient(ctx, &ClientConfig{
+		APIKey:     "test-api-key",
+		APIVersion: "v1beta",
+	})
+	if err != nil {
+		t.Fatalf("NewClient failed: %v", err)
+	}
+	if got := client.ClientConfig().HTTPOptions.APIVersion; got != "v1beta" {
+		t.Errorf("got APIVersion %q, want %q", got, "v1beta")
+	}
+}
+
+func TestClientAPIVersionConflict(t *testing.T) {
+	ctx := context.Background()
+	_, err := NewClient(ctx, &ClientConfig{
+		APIKey:     "test-api-key",
+		APIVersion: "v1beta",
+		HTTPOptions: HTTPOptions{
+			APIVersion: "v1",
+		},
+	})
+	if err == nil {
+		t.Fatalf("expected error when setting both APIVersion and HTTPOptions.APIVersion, got nil")
+	}
+}

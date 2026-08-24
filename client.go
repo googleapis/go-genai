@@ -137,6 +137,9 @@ type ClientConfig struct {
 	// client.
 	HTTPClient *http.Client
 
+	// Optional. API version to use (e.g. "v1" or "v1beta").
+	APIVersion string
+
 	// Optional HTTP options to override.
 	HTTPOptions HTTPOptions
 
@@ -373,10 +376,17 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 		cc.Credentials = cred
 	}
 
+	if cc.APIVersion != "" && cc.HTTPOptions.APIVersion != "" {
+		return nil, fmt.Errorf("api_version is set in both ClientConfig.APIVersion and ClientConfig.HTTPOptions.APIVersion. Please specify api_version in only one place")
+	}
+	if cc.APIVersion != "" {
+		cc.HTTPOptions.APIVersion = cc.APIVersion
+	}
+
 	if cc.HTTPOptions.APIVersion == "" && cc.Backend == BackendVertexAI {
 		cc.HTTPOptions.APIVersion = "v1beta1"
 	} else if cc.HTTPOptions.APIVersion == "" {
-		cc.HTTPOptions.APIVersion = "v1beta"
+		cc.HTTPOptions.APIVersion = "v1"
 	}
 
 	if cc.HTTPClient == nil {

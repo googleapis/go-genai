@@ -1882,7 +1882,7 @@ type HTTPOptions struct {
 	// Gemini Enterprise Agent Platform endpoint (e.g., "https://us-central1-aiplatform.googleapis.com/
 	BaseURLResourceScope ResourceScope `json:"baseUrlResourceScope,omitempty"`
 	// Optional. APIVersion specifies the version of the API to use. If empty, defaults
-	// to "v1beta" for Gemini API and "v1beta1" for Gemini Enterprise Agent Platform.
+	// to "v1" for Gemini API and "v1beta1" for Gemini Enterprise Agent Platform.
 	APIVersion string `json:"apiVersion,omitempty"`
 	// Optional. Additional HTTP headers to be sent with the request.
 	Headers http.Header `json:"headers,omitempty"`

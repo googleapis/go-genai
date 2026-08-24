@@ -2274,7 +2274,6 @@ func TestDoRequestRetriesClientLevelOptions(t *testing.T) {
 		})
 	}
 }
-
 func TestDefaultClientTimeout(t *testing.T) {
 	ctx := context.Background()
 	client, err := NewClient(ctx, &ClientConfig{
@@ -2393,3 +2392,71 @@ func TestDownloadFileTimeout(t *testing.T) {
 	})
 }
 
+func TestClientAPIVersion(t *testing.T) {
+	ctx := context.Background()
+	client, err := NewClient(ctx, &ClientConfig{
+		APIKey:     "test-api-key",
+		APIVersion: "v1beta",
+	})
+	if err != nil {
+		t.Fatalf("NewClient failed: %v", err)
+	}
+	if got := client.ClientConfig().HTTPOptions.APIVersion; got != "v1beta" {
+		t.Errorf("got APIVersion %q, want %q", got, "v1beta")
+	}
+}
+
+func TestClientAPIVersionFromEnv(t *testing.T) {
+	ctx := context.Background()
+	t.Setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+
+	client, err := NewClient(ctx, &ClientConfig{
+		APIKey: "test-api-key",
+	})
+	if err != nil {
+		t.Fatalf("NewClient failed: %v", err)
+	}
+	if got := client.ClientConfig().HTTPOptions.APIVersion; got != "v1alpha" {
+		t.Errorf("got APIVersion %q, want %q", got, "v1alpha")
+	}
+
+	// Explicit ClientConfig.APIVersion overrides GOOGLE_GENAI_API_VERSION without error.
+	clientExplicit, err := NewClient(ctx, &ClientConfig{
+		APIKey:     "test-api-key",
+		APIVersion: "v1",
+	})
+	if err != nil {
+		t.Fatalf("NewClient with explicit APIVersion failed: %v", err)
+	}
+	if got := clientExplicit.ClientConfig().HTTPOptions.APIVersion; got != "v1" {
+		t.Errorf("got APIVersion %q, want %q", got, "v1")
+	}
+
+	// Explicit HTTPOptions.APIVersion overrides GOOGLE_GENAI_API_VERSION without error.
+	clientHTTPOpts, err := NewClient(ctx, &ClientConfig{
+		APIKey: "test-api-key",
+		HTTPOptions: HTTPOptions{
+			APIVersion: "v1",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewClient with HTTPOptions.APIVersion failed: %v", err)
+	}
+	if got := clientHTTPOpts.ClientConfig().HTTPOptions.APIVersion; got != "v1" {
+		t.Errorf("got APIVersion %q, want %q", got, "v1")
+	}
+}
+
+func TestClientAPIVersionConflict(t *testing.T) {
+	ctx := context.Background()
+	_, err := NewClient(ctx, &ClientConfig{
+		APIKey:     "test-api-key",
+		APIVersion: "v1beta",
+		HTTPOptions: HTTPOptions{
+			APIVersion: "v1",
+		},
+	})
+	if err == nil {
+		t.Fatalf("expected error when setting both APIVersion and HTTPOptions.APIVersion, got nil")
+	}
+}

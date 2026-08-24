@@ -137,6 +137,9 @@ type ClientConfig struct {
 	// client.
 	HTTPClient *http.Client
 
+	// Optional. API version to use (e.g. "v1" or "v1beta").
+	APIVersion string
+
 	// Optional HTTP options to override.
 	HTTPOptions HTTPOptions
 
@@ -172,6 +175,9 @@ func defaultEnvVarProvider() map[string]string {
 	if v, ok := os.LookupEnv("GOOGLE_VERTEX_BASE_URL"); ok {
 		vars["GOOGLE_VERTEX_BASE_URL"] = v
 	}
+	if v, ok := os.LookupEnv("GOOGLE_GENAI_API_VERSION"); ok {
+		vars["GOOGLE_GENAI_API_VERSION"] = v
+	}
 	return vars
 }
 
@@ -186,6 +192,8 @@ func getAPIKeyFromEnv(envVars map[string]string) string {
 	}
 	return geminiAPIKey
 }
+
+const googleAIAPIDefaultVersion = "v1"
 
 // NewInternalAPIClient creates a new internal API client.
 //
@@ -373,10 +381,21 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 		cc.Credentials = cred
 	}
 
-	if cc.HTTPOptions.APIVersion == "" && cc.Backend == BackendVertexAI {
-		cc.HTTPOptions.APIVersion = "v1beta1"
-	} else if cc.HTTPOptions.APIVersion == "" {
-		cc.HTTPOptions.APIVersion = "v1beta"
+	if cc.APIVersion != "" && cc.HTTPOptions.APIVersion != "" {
+		return nil, fmt.Errorf("api_version is set in both ClientConfig.APIVersion and ClientConfig.HTTPOptions.APIVersion. Please specify api_version in only one place")
+	}
+	if cc.APIVersion != "" {
+		cc.HTTPOptions.APIVersion = cc.APIVersion
+	}
+
+	if cc.HTTPOptions.APIVersion == "" {
+		if apiVersion, ok := envVars["GOOGLE_GENAI_API_VERSION"]; ok && apiVersion != "" {
+			cc.HTTPOptions.APIVersion = apiVersion
+		} else if cc.Backend == BackendVertexAI {
+			cc.HTTPOptions.APIVersion = "v1beta1"
+		} else {
+			cc.HTTPOptions.APIVersion = googleAIAPIDefaultVersion
+		}
 	}
 
 	if cc.HTTPClient == nil {

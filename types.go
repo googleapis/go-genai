@@ -27,6 +27,20 @@ import (
 	"time"
 )
 
+// How the model processes this part's media for understanding. Only meaningful for
+// video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore
+// this field.
+type MediaProcessing string
+
+const (
+	// Default. Uses model-specific processing (3.5 Pro+ -> `AGENTIC`, older models -> `STATIC`).
+	MediaProcessingUnspecified MediaProcessing = "MEDIA_PROCESSING_UNSPECIFIED"
+	// Fixed-rate frame extraction. All frames placed in context.
+	MediaProcessingStatic MediaProcessing = "STATIC"
+	// Model-driven dynamic navigation. Recommended for most use cases.
+	MediaProcessingAgentic MediaProcessing = "AGENTIC"
+)
+
 // Outcome of the code execution.
 type Outcome string
 
@@ -355,6 +369,23 @@ const (
 	FunctionCallingConfigModeValidated FunctionCallingConfigMode = "VALIDATED"
 )
 
+// Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If unspecified,
+// defaults to `VERBATIM` transcription. In `SMART` mode, the model performs disfluency
+// removal (eliminating filler words, repetitions, and false starts), light grammatical
+// cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and minor
+// user edits (inline self-corrections). Timestamps and diarization are incompatible
+// with mode `SMART`.
+type AudioTranscriptionConfigMode string
+
+const (
+	// Unspecified transcription mode.
+	AudioTranscriptionConfigModeUnspecified AudioTranscriptionConfigMode = "MODE_UNSPECIFIED"
+	// Verbatim transcription mode.
+	AudioTranscriptionConfigModeVerbatim AudioTranscriptionConfigMode = "VERBATIM"
+	// Smart transcription mode.
+	AudioTranscriptionConfigModeSmart AudioTranscriptionConfigMode = "SMART"
+)
+
 // The reason why the model stopped generating tokens.
 // If empty, the model has not stopped generating the tokens.
 type FinishReason string
@@ -487,6 +518,8 @@ const (
 	TrafficTypeOnDemandPriority TrafficType = "ON_DEMAND_PRIORITY"
 	// Type for Flex traffic.
 	TrafficTypeOnDemandFlex TrafficType = "ON_DEMAND_FLEX"
+	// Type for Off-Peak Pay-As-You-Go traffic.
+	TrafficTypeOnDemandOffpeak TrafficType = "ON_DEMAND_OFFPEAK"
 	// Type for Provisioned Throughput traffic.
 	TrafficTypeProvisionedThroughput TrafficType = "PROVISIONED_THROUGHPUT"
 )
@@ -860,18 +893,6 @@ const (
 	ServiceTierStandard ServiceTier = "standard"
 	// Priority service tier.
 	ServiceTierPriority ServiceTier = "priority"
-)
-
-// How the model processes input media for understanding.
-type MediaProcessing string
-
-const (
-	// Default. Uses model-specific processing
-	MediaProcessingUnspecified MediaProcessing = "MEDIA_PROCESSING_UNSPECIFIED"
-	// Fixed-rate frame extraction. All frames placed in context.
-	MediaProcessingStatic MediaProcessing = "STATIC"
-	// Model-driven dynamic navigation. Recommended for most use cases.
-	MediaProcessingAgentic MediaProcessing = "AGENTIC"
 )
 
 // The tokenization quality used for given media.
@@ -1280,18 +1301,6 @@ const (
 	TurnCoverageTurnIncludesAudioActivityAndAllVideo TurnCoverage = "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO"
 )
 
-// Transcription mode.
-type AudioTranscriptionConfigMode string
-
-const (
-	// Unspecified transcription mode.
-	AudioTranscriptionConfigModeUnspecified AudioTranscriptionConfigMode = "MODE_UNSPECIFIED"
-	// Verbatim transcription mode.
-	AudioTranscriptionConfigModeVerbatim AudioTranscriptionConfigMode = "VERBATIM"
-	// Smart transcription mode.
-	AudioTranscriptionConfigModeSmart AudioTranscriptionConfigMode = "SMART"
-)
-
 // Media resolution for the input media.
 type PartMediaResolution struct {
 	// Optional. The tokenization quality used for given media.
@@ -1660,7 +1669,9 @@ type Part struct {
 	PartMetadata map[string]any `json:"partMetadata,omitempty"`
 	// Optional. Output only. The transcription of the audio part.
 	AudioTranscription *Transcription `json:"audioTranscription,omitempty"`
-	// Optional. How the model processes this part's media for understanding.
+	// Optional. How the model processes this part's media for understanding. Only meaningful
+	// for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore
+	// this field.
 	MediaProcessing MediaProcessing `json:"mediaProcessing,omitempty"`
 }
 
@@ -4644,6 +4655,9 @@ type VideoResponseFormat struct {
 	// Optional. The Google Cloud Storage URI to store the video output. Required for Vertex
 	// if delivery is URI.
 	GCSURI string `json:"gcsUri,omitempty"`
+	// Optional. The video output resolution. Supported values: "360p", "720p", "1080p",
+	// "4k".
+	Resolution string `json:"resolution,omitempty"`
 }
 
 func (v *VideoResponseFormat) UnmarshalJSON(data []byte) error {
@@ -5610,6 +5624,8 @@ type ReinforcementTuningExample struct {
 	References map[string]string `json:"references,omitempty"`
 	// Corresponds to system_instruction in user-facing GenerateContentRequest.
 	SystemInstruction *Content `json:"systemInstruction,omitempty"`
+	// Optional. Corresponds to tools in user-facing GenerateContentRequest.
+	Tools []*Tool `json:"tools,omitempty"`
 }
 
 // Sample reinforcement tuning user data in the training dataset. The contents are truncated
@@ -6474,6 +6490,9 @@ type ReinforcementTuningRewardInfo struct {
 	// is set only if the Cloud Run reward function configured by user returns a "user_requested_aux_info".
 	// Refer to ReinforcementTuningCloudRunRewardScorer for more details.
 	UserRequestedAuxInfo string `json:"userRequestedAuxInfo,omitempty"`
+	// Output only. In case of an error for this reward, this field will be populated with
+	// a detailed error status.
+	ErrorStatus *GoogleRpcStatus `json:"errorStatus,omitempty"`
 }
 
 // Response for the validate_reward method.

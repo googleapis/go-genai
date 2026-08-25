@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.70.0](https://github.com/googleapis/go-genai/compare/v1.69.0...v1.70.0) (2026-08-25)
+
+
+### Features
+
+* Add AudioTranscriptionConfigMode ([e601aac](https://github.com/googleapis/go-genai/commit/e601aac1f2565be602507ff4fc628018fa6ee045))
+
 ## [1.69.0](https://github.com/googleapis/go-genai/compare/v1.68.0...v1.69.0) (2026-08-19)
 
 

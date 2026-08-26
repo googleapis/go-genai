@@ -8516,6 +8516,28 @@ type LiveConnectConfig struct {
 	SafetySettings []*SafetySetting `json:"safetySettings,omitempty"`
 	// Optional. Config for translation.
 	TranslationConfig *TranslationConfig `json:"translationConfig,omitempty"`
+	// Saves live audio data to session and artifact service.
+	SaveLiveBlob *bool `json:"saveLiveBlob,omitempty"`
+}
+
+// Entry for caching realtime audio chunks.
+type RealtimeCacheEntry struct {
+	// The role of the participant ('user' or 'model').
+	Role string `json:"role,omitempty"`
+	// The audio chunk data.
+	Data *Blob `json:"data,omitempty"`
+	// Timestamp in seconds when the chunk was received or generated.
+	Timestamp float32 `json:"timestamp,omitempty"`
+}
+
+// Configuration for audio caching behavior.
+type AudioCacheConfig struct {
+	// Maximum cache size in bytes before auto-flush.
+	MaxCacheSizeBytes int32 `json:"maxCacheSizeBytes,omitempty"`
+	// Maximum duration to keep data in cache.
+	MaxCacheDurationSeconds float32 `json:"maxCacheDurationSeconds,omitempty"`
+	// Number of chunks that triggers auto-flush.
+	AutoFlushThreshold int32 `json:"autoFlushThreshold,omitempty"`
 }
 
 // Parameters for sending client content to the live API.

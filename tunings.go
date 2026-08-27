@@ -922,6 +922,16 @@ func reinforcementTuningExampleToVertex(fromObject map[string]any, parentObject 
 		InternalSetValueByPath(toObject, []string{"systemInstruction"}, fromSystemInstruction)
 	}
 
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
+	if fromTools != nil {
+		fromTools, err = InternalApplyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"tools"}, fromTools)
+	}
+
 	return toObject, nil
 }
 

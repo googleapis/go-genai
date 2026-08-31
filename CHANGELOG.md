@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.71.0](https://github.com/googleapis/go-genai/compare/v1.70.0...v1.71.0) (2026-08-31)
+
+
+### Features
+
+* Add translation_config SDK support for GEAP. ([83c445d](https://github.com/googleapis/go-genai/commit/83c445da0b4b1a166e4fd10b97674afd53a84852))
+
 ## [1.70.0](https://github.com/googleapis/go-genai/compare/v1.69.0...v1.70.0) (2026-08-25)
 
 

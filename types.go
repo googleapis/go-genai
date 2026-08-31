@@ -4701,7 +4701,7 @@ type TranslationConfig struct {
 	// essentially it will parrot the input. If false, we will not produce audio for the
 	// target language.
 	EchoTargetLanguage *bool `json:"echoTargetLanguage,omitempty"`
-	// Required. The target language for translation. Supported values are BCP-47 language
+	// Optional. The target language for translation. Supported values are BCP-47 language
 	// codes (e.g. "en", "es", "fr").
 	TargetLanguageCode string `json:"targetLanguageCode,omitempty"`
 }

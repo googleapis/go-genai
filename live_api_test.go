@@ -16,6 +16,7 @@ package genai
 
 import (
 	"context"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -25,9 +26,48 @@ import (
 // live module opens a WebSocket, so it cannot be replayed and only runs against
 // the real backend. See go/genai-sdk:integration-testing.
 
-// liveAPIModel is audio-native and rejects a TEXT response modality, so these
-// tests request AUDIO and enable output transcription.
-const liveAPIModel = "gemini-3.1-flash-live-preview"
+// liveBackend describes one backend under test. Live models are backend
+// specific, and both are audio-native and reject a TEXT response modality, so
+// these tests request AUDIO and enable output transcription.
+type liveBackend struct {
+	name    string
+	backend Backend
+	model   string
+	// location pins the Vertex client to a region, overriding the
+	// GOOGLE_CLOUD_LOCATION the Agent Platform wrapper exports. Empty means
+	// take the environment as-is.
+	location string
+	isVertex bool
+}
+
+var liveBackends = []liveBackend{
+	{name: "mldev", backend: BackendGeminiAPI, model: "gemini-3.1-flash-live-preview"},
+	// gemini-live-2.5-flash-native-audio is not served on the global endpoint:
+	// a setup there is rejected with 1008 "Publisher model ... was not found".
+	// It is served in us-central1, us-east5 and europe-west4, so the client is
+	// pinned to a region even though the shared table tests run at global.
+	{
+		name:     "vertex",
+		backend:  BackendVertexAI,
+		model:    "gemini-live-2.5-flash-native-audio",
+		location: "us-central1",
+		isVertex: true,
+	},
+}
+
+// skipDisabledLiveBackend skips when the running job has selected the other
+// backend, mirroring the shared table tests (table_test.go).
+func skipDisabledLiveBackend(t *testing.T, isVertex bool) {
+	t.Helper()
+	runVertexOnly := os.Getenv("GOOGLE_GENAI_RUN_VERTEX_ONLY_IN_API_MODE") != ""
+	runGeminiOnly := os.Getenv("GOOGLE_GENAI_RUN_GEMINI_ONLY_IN_API_MODE") != ""
+	if isVertex && runGeminiOnly {
+		t.Skip("Skipping Vertex AI live tests (GEMINI ONLY config enabled)")
+	}
+	if !isVertex && runVertexOnly {
+		t.Skip("Skipping Gemini API live tests (VERTEX ONLY config enabled)")
+	}
+}
 
 // liveTurnTimeout bounds a single model turn. Session.Receive blocks
 // indefinitely, so without this a wedged turn would hang the nightly.
@@ -135,13 +175,13 @@ func sayLive(t *testing.T, session *Session, text string) {
 	}
 }
 
-func connectLive(t *testing.T, ctx context.Context, config *LiveConnectConfig) *Session {
+func connectLive(t *testing.T, ctx context.Context, be liveBackend, config *LiveConnectConfig) *Session {
 	t.Helper()
-	client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI})
+	client, err := NewClient(ctx, &ClientConfig{Backend: be.backend, Location: be.location})
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}
-	session, err := client.Live.Connect(ctx, liveAPIModel, config)
+	session, err := client.Live.Connect(ctx, be.model, config)
 	if err != nil {
 		if isLiveQuotaError(err) {
 			t.Skipf("Resource Exhausted (429). Skipping test instead of failing: %v", err)
@@ -157,10 +197,19 @@ func TestLiveAPI(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	// Gemini API only for now: the Vertex live endpoint needs its own
-	// credentials and forces different response modalities.
+	for _, be := range liveBackends {
+		be := be
+		t.Run(be.name, func(t *testing.T) {
+			runLiveAPISubtests(t, ctx, be)
+		})
+	}
+}
+
+func runLiveAPISubtests(t *testing.T, ctx context.Context, be liveBackend) {
+	skipDisabledLiveBackend(t, be.isVertex)
+
 	t.Run("text_input", func(t *testing.T) {
-		session := connectLive(t, ctx, newLiveConfig())
+		session := connectLive(t, ctx, be, newLiveConfig())
 		defer session.Close() // nolint:errcheck
 
 		sayLive(t, session, "Say hello.")
@@ -175,7 +224,7 @@ func TestLiveAPI(t *testing.T) {
 	})
 
 	t.Run("multi_turn", func(t *testing.T) {
-		session := connectLive(t, ctx, newLiveConfig())
+		session := connectLive(t, ctx, be, newLiveConfig())
 		defer session.Close() // nolint:errcheck
 
 		sayLive(t, session, "Remember the number 42. Just acknowledge it.")
@@ -203,7 +252,7 @@ func TestLiveAPI(t *testing.T) {
 				Parameters:  &Schema{Type: TypeObject, Properties: map[string]*Schema{}},
 			}},
 		}}
-		session := connectLive(t, ctx, config)
+		session := connectLive(t, ctx, be, config)
 		defer session.Close() // nolint:errcheck
 
 		sayLive(t, session, "Please turn on the lights.")
@@ -228,7 +277,11 @@ func TestLiveAPI(t *testing.T) {
 			t.Fatalf("SendToolResponse failed unexpectedly: %v", err)
 		}
 
-		if followUp := receiveLiveTurn(t, session); strings.TrimSpace(followUp.transcript) == "" {
+		// Both backends must accept the tool result and complete the turn, but
+		// only the Gemini API returns assertable content: Vertex emits an empty
+		// transcription.
+		followUp := receiveLiveTurn(t, session)
+		if !be.isVertex && strings.TrimSpace(followUp.transcript) == "" {
 			t.Errorf("Expected the model to respond after the tool result, got no transcription")
 		}
 	})
@@ -237,7 +290,9 @@ func TestLiveAPI(t *testing.T) {
 	// is a rejected setup instead: connecting with a model that does not exist
 	// must surface a failure rather than hang.
 	t.Run("invalid_model_fails_to_connect", func(t *testing.T) {
-		client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI})
+		// Same Location override as connectLive: without it the Vertex case would
+		// probe the global endpoint rather than the one the rest of the suite uses.
+		client, err := NewClient(ctx, &ClientConfig{Backend: be.backend, Location: be.location})
 		if err != nil {
 			t.Fatalf("Error creating client: %v", err)
 		}

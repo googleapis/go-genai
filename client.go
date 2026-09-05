@@ -358,7 +358,7 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 	if cc.HTTPOptions.APIVersion == "" && cc.Backend == BackendVertexAI {
 		cc.HTTPOptions.APIVersion = "v1beta1"
 	} else if cc.HTTPOptions.APIVersion == "" {
-		cc.HTTPOptions.APIVersion = "v1beta"
+		cc.HTTPOptions.APIVersion = "v1"
 	}
 
 	if cc.HTTPClient == nil {

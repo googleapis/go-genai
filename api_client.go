@@ -177,7 +177,7 @@ func (ac *apiClient) createAPIURL(suffix, method string, httpOptions *HTTPOption
 		}
 		finalURL = u.JoinPath(httpOptions.APIVersion, path)
 	} else {
-		if !strings.Contains(path, fmt.Sprintf("/%s/", httpOptions.APIVersion)) {
+		if !strings.HasPrefix(path, "upload/") && !strings.Contains(path, fmt.Sprintf("/%s/", httpOptions.APIVersion)) {
 			path = fmt.Sprintf("%s/%s", httpOptions.APIVersion, path)
 		}
 		finalURL = u.JoinPath(path)

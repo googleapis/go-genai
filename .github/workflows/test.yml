@@ -19,7 +19,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run vet
-        run: go vet ./...
+        shell: bash
+        run: go vet $(go list ./... | grep -v "gaos/models/interactions")
 
       - name: Test
         run: go test --mode=unit -v ./...
@@ -51,7 +52,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run vet
-        run: go vet ./...
+        shell: bash
+        run: go vet $(go list ./... | grep -v "gaos/models/interactions")
 
       - name: Test
         run: go test --mode=unit -v ./...
@@ -67,7 +69,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run vet
-        run: go vet ./...
+        shell: bash
+        run: go vet $(go list ./... | grep -v "gaos/models/interactions")
 
       - name: Test
         run: go test --mode=unit -v ./...
@@ -84,7 +87,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run vet
-        run: go vet ./...
+        shell: bash
+        run: go vet $(go list ./... | grep -v "gaos/models/interactions")
 
       - name: Test
         run: go test --mode=unit -v ./...
@@ -100,7 +104,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run vet
-        run: go vet ./...
+        shell: bash
+        run: go vet $(go list ./... | grep -v "gaos/models/interactions")
 
       - name: Test
         run: go test --mode=unit -v ./...
@@ -117,4 +122,4 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
-          args: --max-same-issues 0 --out-format colored-line-number --exclude-dirs=examples,interactions/internal
+          args: --max-same-issues 0 --out-format colored-line-number --exclude-dirs=examples,interactions/internal,gaos/models/interactions

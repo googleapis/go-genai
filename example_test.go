@@ -21,7 +21,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
+	"cloud.google.com/go/auth"
 	"google.golang.org/genai"
 )
 
@@ -59,6 +61,47 @@ func ExampleNewClient_geminiapi() {
 		log.Fatalf("failed to create client: %v", err)
 	}
 	fmt.Println(client.ClientConfig().APIKey)
+}
+
+// This example shows how to create a new client for Gemini API with custom credentials and HTTP configuration.
+func ExampleNewClient_geminiapi_withCustomCredentials() {
+	ctx := context.Background()
+
+	// In a real application, you would create credentials from a service account
+	// For example, using auth.DetectDefault() or other credential methods
+	// Here we just demonstrate with a mock credentials object
+	creds := &auth.Credentials{}
+
+	// Create a custom HTTP client with specific timeouts
+	customHTTPClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	// Create client with custom credentials and HTTP configuration
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey:      apiKey,
+		Backend:     genai.BackendGeminiAPI,
+		Credentials: creds,
+		HTTPClient:  customHTTPClient,
+		HTTPOptions: genai.HTTPOptions{
+			APIVersion: "v1beta", // Specify API version if needed
+		},
+	})
+	if err != nil {
+		log.Fatalf("failed to create client: %v", err)
+	}
+
+	// The client now uses the custom credentials and HTTP configuration
+	// for all API calls
+	result, err := client.Models.GenerateContent(ctx,
+		"gemini-2.0-flash",
+		genai.Text("Tell me about cloud credentials?"),
+		nil,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	debugPrint(result)
 }
 
 // This example shows how to call the GenerateContent method with a simple text to Vertex AI.

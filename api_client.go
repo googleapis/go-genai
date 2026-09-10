@@ -15,7 +15,6 @@
 package genai
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -448,7 +447,6 @@ func deserializeUnaryResponse(resp *http.Response) (map[string]any, error) {
 }
 
 type responseStream[R any] struct {
-	r      *bufio.Scanner
 	rc     io.ReadCloser
 	h      http.Header
 	cancel context.CancelFunc
@@ -465,77 +463,50 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 				rs.cancel()
 			}
 		}()
-		for rs.r.Scan() {
-			line := rs.r.Bytes()
-			if len(line) == 0 {
-				continue
-			}
-			prefix, data, _ := bytes.Cut(line, []byte(":"))
-			switch string(prefix) {
-			case "data":
-				// Step 1: Unmarshal the JSON into a map[string]any so that we can call fromConverter
-				// in Step 2.
-				respRaw := make(map[string]any)
-				if err := json.Unmarshal(data, &respRaw); err != nil {
-					err = fmt.Errorf("iterateResponseStream: error unmarshalling data %s:%s. error: %w", string(prefix), string(data), err)
-					if !yield(nil, err) {
-						return
-					}
-				}
-				// Step 2: The toStruct function calls fromConverter(handle Vertex and MLDev schema
-				// difference and get a unified response). Then toStruct function converts the unified
-				// response from map[string]any to struct type.
-				// var resp = new(R)
-				resp, err := responseConverter(respRaw)
-				if err != nil {
-					if !yield(nil, err) {
-						return
-					}
-				}
-
-				// Step 3: Add the sdkHttpResponse to the response.
-				v := reflect.ValueOf(resp).Elem()
-				if v.Kind() == reflect.Struct {
-					field := v.FieldByName("SDKHTTPResponse")
-					if field.IsValid() && field.CanSet() {
-						if field.IsNil() {
-							field.Set(reflect.ValueOf(&HTTPResponse{}))
-						}
-						field.Interface().(*HTTPResponse).Headers = rs.h
-					}
-				}
-
-				// Step 4: yield the response.
-				if !yield(resp, nil) {
-					return
-				}
-			default:
-				var err error
-				if len(line) > 0 {
-					var respWithError = new(responseWithError)
-					// Stream chunk that doesn't matches error format.
-					if marshalErr := json.Unmarshal(line, respWithError); marshalErr != nil {
-						err = fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))
-					}
-					// Stream chunk that matches error format.
-					if respWithError.ErrorInfo != nil {
-						err = *respWithError.ErrorInfo
-					}
-				}
-				if err == nil {
-					err = fmt.Errorf("iterateResponseStream: invalid stream chunk: %s:%s", string(prefix), string(data))
-				}
+		for event, err := range iterateSSEStream(rs.rc) {
+			if err != nil {
 				if !yield(nil, err) {
 					return
 				}
+				continue
 			}
-		}
-		if rs.r.Err() != nil {
-			if rs.r.Err() == bufio.ErrTooLong {
-				log.Printf("The response is too large to process in streaming mode. Please use a non-streaming method.")
+			// Step 1: Unmarshal the JSON into a map[string]any so that we can call fromConverter
+			// in Step 2.
+			respRaw := make(map[string]any)
+			if err := json.Unmarshal(event.data, &respRaw); err != nil {
+				err = fmt.Errorf("iterateResponseStream: error unmarshalling data data:%s. error: %w", string(event.data), err)
+				if !yield(nil, err) {
+					return
+				}
+				continue
 			}
-			log.Printf("Error %v", rs.r.Err())
-			yield(nil, rs.r.Err())
+			// Step 2: The toStruct function calls fromConverter(handle Vertex and MLDev schema
+			// difference and get a unified response). Then toStruct function converts the unified
+			// response from map[string]any to struct type.
+			resp, err := responseConverter(respRaw)
+			if err != nil {
+				if !yield(nil, err) {
+					return
+				}
+				continue
+			}
+
+			// Step 3: Add the sdkHttpResponse to the response.
+			v := reflect.ValueOf(resp).Elem()
+			if v.Kind() == reflect.Struct {
+				field := v.FieldByName("SDKHTTPResponse")
+				if field.IsValid() && field.CanSet() {
+					if field.IsNil() {
+						field.Set(reflect.ValueOf(&HTTPResponse{}))
+					}
+					field.Interface().(*HTTPResponse).Headers = rs.h
+				}
+			}
+
+			// Step 4: yield the response.
+			if !yield(resp, nil) {
+				return
+			}
 		}
 	}
 }
@@ -597,49 +568,19 @@ func deserializeStreamResponse[T responseStream[R], R any](resp *http.Response, 
 		defer resp.Body.Close()
 		return newAPIError(resp)
 	}
-	output.r = bufio.NewScanner(resp.Body)
-	// Scanner default buffer max size is 64*1024 (64KB).
-	// We provide 1KB byte buffer to the scanner and set max to 256MB.
-	// When data exceed 1KB, then scanner will allocate new memory up to 256MB.
-	// When data exceed 256MB, scanner will stop and returns err: bufio.ErrTooLong.
-	output.r.Buffer(make([]byte, 1024), 268435456)
-
-	output.r.Split(scan)
 	output.rc = resp.Body
 	output.h = resp.Header
 	return nil
 }
 
-// dropCR drops a terminal \r from the data.
-func dropCR(data []byte) []byte {
-	if len(data) > 0 && data[len(data)-1] == '\r' {
-		return data[0 : len(data)-1]
+// invalidChunkError builds the error for a line that is not a recognized SSE field. Such a line
+// may be a bare JSON error body, so it is tried as one first.
+func invalidChunkError(line []byte) error {
+	var respWithError = new(responseWithError)
+	if err := json.Unmarshal(line, respWithError); err == nil && respWithError.ErrorInfo != nil {
+		return *respWithError.ErrorInfo
 	}
-	return data
-}
-
-func scan(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if atEOF && len(data) == 0 {
-		return 0, nil, nil
-	}
-	// Look for two consecutive newlines in the data
-	if i := bytes.Index(data, []byte("\n\n")); i >= 0 {
-		// We have a full two-newline-terminated token.
-		return i + 2, dropCR(data[0:i]), nil
-	}
-
-	// Handle the case of Windows-style newlines (\r\n\r\n)
-	if i := bytes.Index(data, []byte("\r\n\r\n")); i >= 0 {
-		// We have a full Windows-style two-newline-terminated token.
-		return i + 4, dropCR(data[0:i]), nil
-	}
-
-	// If we're at EOF, we have a final, non-terminated line. Return it.
-	if atEOF {
-		return len(data), dropCR(data), nil
-	}
-	// Request more data.
-	return 0, nil, nil
+	return fmt.Errorf("iterateResponseStream: invalid stream chunk: %s", string(line))
 }
 
 func (ac *apiClient) upload(ctx context.Context, r io.Reader, uploadURL string, httpOptions *HTTPOptions) (map[string]any, error) {

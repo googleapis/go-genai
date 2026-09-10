@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build ignore_vet
-
 package main
 
 import (
@@ -140,7 +138,7 @@ func gitFilesChanges(dir string) ([]string, error) {
 	}
 
 	c := exec.Command("git", args...)
-	log.Printf(c.String())
+	log.Println(c.String())
 
 	c.Dir = dir
 	b, err := c.Output()
@@ -154,7 +152,7 @@ func gitFilesChanges(dir string) ([]string, error) {
 
 func touchModule(root, mod string) error {
 	c := exec.Command("echo")
-	log.Printf(c.String())
+	log.Println(c.String())
 
 	f, err := os.OpenFile(path.Join(root, mod, "CHANGES.md"), os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {

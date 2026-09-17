@@ -27,6 +27,18 @@ import (
 	"time"
 )
 
+// How the model processes input media for understanding.
+type MediaProcessing string
+
+const (
+	// Default. Uses model-specific processing
+	MediaProcessingUnspecified MediaProcessing = "MEDIA_PROCESSING_UNSPECIFIED"
+	// Fixed-rate frame extraction. All frames placed in context.
+	MediaProcessingStatic MediaProcessing = "STATIC"
+	// Model-driven dynamic navigation. Recommended for most use cases.
+	MediaProcessingAgentic MediaProcessing = "AGENTIC"
+)
+
 // Outcome of the code execution.
 type Outcome string
 
@@ -355,6 +367,18 @@ const (
 	FunctionCallingConfigModeValidated FunctionCallingConfigMode = "VALIDATED"
 )
 
+// Transcription mode.
+type AudioTranscriptionConfigMode string
+
+const (
+	// Unspecified transcription mode.
+	AudioTranscriptionConfigModeUnspecified AudioTranscriptionConfigMode = "MODE_UNSPECIFIED"
+	// Verbatim transcription mode.
+	AudioTranscriptionConfigModeVerbatim AudioTranscriptionConfigMode = "VERBATIM"
+	// Smart transcription mode.
+	AudioTranscriptionConfigModeSmart AudioTranscriptionConfigMode = "SMART"
+)
+
 // The reason why the model stopped generating tokens.
 // If empty, the model has not stopped generating the tokens.
 type FinishReason string
@@ -487,6 +511,8 @@ const (
 	TrafficTypeOnDemandPriority TrafficType = "ON_DEMAND_PRIORITY"
 	// Type for Flex traffic.
 	TrafficTypeOnDemandFlex TrafficType = "ON_DEMAND_FLEX"
+	// Type for Off-Peak Pay-As-You-Go traffic.
+	TrafficTypeOnDemandOffpeak TrafficType = "ON_DEMAND_OFFPEAK"
 	// Type for Provisioned Throughput traffic.
 	TrafficTypeProvisionedThroughput TrafficType = "PROVISIONED_THROUGHPUT"
 )
@@ -860,18 +886,6 @@ const (
 	ServiceTierStandard ServiceTier = "standard"
 	// Priority service tier.
 	ServiceTierPriority ServiceTier = "priority"
-)
-
-// How the model processes input media for understanding.
-type MediaProcessing string
-
-const (
-	// Default. Uses model-specific processing
-	MediaProcessingUnspecified MediaProcessing = "MEDIA_PROCESSING_UNSPECIFIED"
-	// Fixed-rate frame extraction. All frames placed in context.
-	MediaProcessingStatic MediaProcessing = "STATIC"
-	// Model-driven dynamic navigation. Recommended for most use cases.
-	MediaProcessingAgentic MediaProcessing = "AGENTIC"
 )
 
 // The tokenization quality used for given media.
@@ -1280,18 +1294,6 @@ const (
 	TurnCoverageTurnIncludesAudioActivityAndAllVideo TurnCoverage = "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO"
 )
 
-// Transcription mode.
-type AudioTranscriptionConfigMode string
-
-const (
-	// Unspecified transcription mode.
-	AudioTranscriptionConfigModeUnspecified AudioTranscriptionConfigMode = "MODE_UNSPECIFIED"
-	// Verbatim transcription mode.
-	AudioTranscriptionConfigModeVerbatim AudioTranscriptionConfigMode = "VERBATIM"
-	// Smart transcription mode.
-	AudioTranscriptionConfigModeSmart AudioTranscriptionConfigMode = "SMART"
-)
-
 // Media resolution for the input media.
 type PartMediaResolution struct {
 	// Optional. The tokenization quality used for given media.
@@ -1363,7 +1365,7 @@ type FileData struct {
 	// Optional. The display name of the file. Used to provide a label or filename to distinguish
 	// files. This field is only returned in `PromptMessage` for prompt management. It is
 	// used in the Gemini calls only when server side tools (`code_execution`, `google_search`,
-	// and `url_context`) are enabled. This field is not supported in Gemini API.
+	// and `url_context`) are enabled.
 	DisplayName string `json:"displayName,omitempty"`
 	// Required. The URI of the file in Google Cloud Storage.
 	FileURI string `json:"fileUri,omitempty"`
@@ -1511,7 +1513,7 @@ type Blob struct {
 	// Optional. The display name of the blob. Used to provide a label or filename to distinguish
 	// blobs. This field is only returned in `PromptMessage` for prompt management. It is
 	// used in the Gemini calls only when server-side tools (`code_execution`, `google_search`,
-	// and `url_context`) are enabled. This field is not supported in Gemini API.
+	// and `url_context`) are enabled.
 	DisplayName string `json:"displayName,omitempty"`
 	// Required. The IANA standard MIME type of the source data.
 	MIMEType string `json:"mimeType,omitempty"`
@@ -2599,7 +2601,7 @@ func (s *StreamableHTTPTransport) MarshalJSON() ([]byte, error) {
 }
 
 // A MCPServer is a server that can be called by the model to perform actions. It is
-// a server that implements the MCP protocol. Next ID: 6. This data type is not supported
+// a server that implements the MCP protocol. Next ID: 7. This data type is not supported
 // in Vertex AI.
 type MCPServer struct {
 	// The name of the MCPServer.
@@ -4644,6 +4646,9 @@ type VideoResponseFormat struct {
 	// Optional. The Google Cloud Storage URI to store the video output. Required for Vertex
 	// if delivery is URI.
 	GCSURI string `json:"gcsUri,omitempty"`
+	// Optional. The video output resolution. Supported values: "360p", "720p", "1080p",
+	// "4k".
+	Resolution string `json:"resolution,omitempty"`
 }
 
 func (v *VideoResponseFormat) UnmarshalJSON(data []byte) error {
@@ -4815,7 +4820,7 @@ type GenerationConfig struct {
 	// Optional. New response format field for the model to configure output formatting
 	// and delivery.
 	ResponseFormat []*ResponseFormat `json:"responseFormat,omitempty"`
-	// Optional. Config for translation. This field is not supported in Vertex AI.
+	// Optional. Config for translation.
 	TranslationConfig *TranslationConfig `json:"translationConfig,omitempty"`
 	// Optional. Configuration for audio transcription (speech recognition).
 	AudioTranscriptionConfig *AudioTranscriptionConfig `json:"audioTranscriptionConfig,omitempty"`
@@ -5610,6 +5615,8 @@ type ReinforcementTuningExample struct {
 	References map[string]string `json:"references,omitempty"`
 	// Corresponds to system_instruction in user-facing GenerateContentRequest.
 	SystemInstruction *Content `json:"systemInstruction,omitempty"`
+	// Optional. Corresponds to tools in user-facing GenerateContentRequest.
+	Tools []*Tool `json:"tools,omitempty"`
 }
 
 // Sample reinforcement tuning user data in the training dataset. The contents are truncated
@@ -6474,6 +6481,9 @@ type ReinforcementTuningRewardInfo struct {
 	// is set only if the Cloud Run reward function configured by user returns a "user_requested_aux_info".
 	// Refer to ReinforcementTuningCloudRunRewardScorer for more details.
 	UserRequestedAuxInfo string `json:"userRequestedAuxInfo,omitempty"`
+	// Output only. In case of an error for this reward, this field will be populated with
+	// a detailed error status.
+	ErrorStatus *GoogleRpcStatus `json:"errorStatus,omitempty"`
 }
 
 // Response for the validate_reward method.

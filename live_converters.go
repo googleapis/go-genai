@@ -87,11 +87,6 @@ func liveClientMessageToMldev(fromObject map[string]any, parentObject map[string
 
 	fromRealtimeInput := InternalGetValueByPath(fromObject, []string{"realtimeInput"})
 	if fromRealtimeInput != nil {
-		fromRealtimeInput, err = liveClientRealtimeInputToMldev(fromRealtimeInput.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"realtimeInput"}, fromRealtimeInput)
 	}
 
@@ -134,32 +129,6 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 	fromToolResponse := InternalGetValueByPath(fromObject, []string{"toolResponse"})
 	if fromToolResponse != nil {
 		InternalSetValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
-	}
-
-	return toObject, nil
-}
-
-func liveClientRealtimeInputToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromMediaChunks := InternalGetValueByPath(fromObject, []string{"mediaChunks"})
-	if fromMediaChunks != nil {
-		fromMediaChunks, err = InternalApplyConverterToSliceWithRoot(fromMediaChunks.([]any), blobToMldev, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
-		InternalSetValueByPath(toObject, []string{"mediaChunks"}, fromMediaChunks)
-	}
-
-	fromActivityStart := InternalGetValueByPath(fromObject, []string{"activityStart"})
-	if fromActivityStart != nil {
-		InternalSetValueByPath(toObject, []string{"activityStart"}, fromActivityStart)
-	}
-
-	fromActivityEnd := InternalGetValueByPath(fromObject, []string{"activityEnd"})
-	if fromActivityEnd != nil {
-		InternalSetValueByPath(toObject, []string{"activityEnd"}, fromActivityEnd)
 	}
 
 	return toObject, nil
@@ -749,22 +718,12 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 			return nil, err
 		}
 
-		fromMedia, err = InternalApplyConverterToSliceWithRoot(fromMedia.([]any), blobToMldev, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"mediaChunks"}, fromMedia)
 	}
 
 	fromAudio := InternalGetValueByPath(fromObject, []string{"audio"})
 	if fromAudio != nil {
 		fromAudio, err = InternalTAudioBlob(fromAudio)
-		if err != nil {
-			return nil, err
-		}
-
-		fromAudio, err = blobToMldev(fromAudio.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -780,11 +739,6 @@ func liveSendRealtimeInputParametersToMldev(fromObject map[string]any, parentObj
 	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
 	if fromVideo != nil {
 		fromVideo, err = InternalTImageBlob(fromVideo)
-		if err != nil {
-			return nil, err
-		}
-
-		fromVideo, err = blobToMldev(fromVideo.(map[string]any), toObject, rootObject)
 		if err != nil {
 			return nil, err
 		}

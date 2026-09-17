@@ -61,26 +61,6 @@ func authConfigToMldev(fromObject map[string]any, parentObject map[string]any, r
 	return toObject, nil
 }
 
-func blobToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-
-	fromData := InternalGetValueByPath(fromObject, []string{"data"})
-	if fromData != nil {
-		InternalSetValueByPath(toObject, []string{"data"}, fromData)
-	}
-
-	if InternalGetValueByPath(fromObject, []string{"displayName"}) != nil {
-		return nil, fmt.Errorf("displayName parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
-	}
-
-	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
-	}
-
-	return toObject, nil
-}
-
 func candidateFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -1035,25 +1015,6 @@ func endpointFromVertex(fromObject map[string]any, parentObject map[string]any, 
 	fromDeployedModelId := InternalGetValueByPath(fromObject, []string{"deployedModelId"})
 	if fromDeployedModelId != nil {
 		InternalSetValueByPath(toObject, []string{"deployedModelId"}, fromDeployedModelId)
-	}
-
-	return toObject, nil
-}
-
-func fileDataToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
-	toObject = make(map[string]any)
-	if InternalGetValueByPath(fromObject, []string{"displayName"}) != nil {
-		return nil, fmt.Errorf("displayName parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
-	}
-
-	fromFileUri := InternalGetValueByPath(fromObject, []string{"fileUri"})
-	if fromFileUri != nil {
-		InternalSetValueByPath(toObject, []string{"fileUri"}, fromFileUri)
-	}
-
-	fromMimeType := InternalGetValueByPath(fromObject, []string{"mimeType"})
-	if fromMimeType != nil {
-		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil
@@ -2612,8 +2573,9 @@ func generationConfigToVertex(fromObject map[string]any, parentObject map[string
 		InternalSetValueByPath(toObject, []string{"responseFormat"}, fromResponseFormat)
 	}
 
-	if InternalGetValueByPath(fromObject, []string{"translationConfig"}) != nil {
-		return nil, fmt.Errorf("translationConfig parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	fromTranslationConfig := InternalGetValueByPath(fromObject, []string{"translationConfig"})
+	if fromTranslationConfig != nil {
+		InternalSetValueByPath(toObject, []string{"translationConfig"}, fromTranslationConfig)
 	}
 
 	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
@@ -3212,11 +3174,6 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 
 	fromFileData := InternalGetValueByPath(fromObject, []string{"fileData"})
 	if fromFileData != nil {
-		fromFileData, err = fileDataToMldev(fromFileData.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"fileData"}, fromFileData)
 	}
 
@@ -3237,11 +3194,6 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 
 	fromInlineData := InternalGetValueByPath(fromObject, []string{"inlineData"})
 	if fromInlineData != nil {
-		fromInlineData, err = blobToMldev(fromInlineData.(map[string]any), toObject, rootObject)
-		if err != nil {
-			return nil, err
-		}
-
 		InternalSetValueByPath(toObject, []string{"inlineData"}, fromInlineData)
 	}
 

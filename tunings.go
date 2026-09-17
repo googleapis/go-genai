@@ -803,6 +803,11 @@ func generationConfigFromVertex(fromObject map[string]any, parentObject map[stri
 		InternalSetValueByPath(toObject, []string{"responseFormat"}, fromResponseFormat)
 	}
 
+	fromTranslationConfig := InternalGetValueByPath(fromObject, []string{"translationConfig"})
+	if fromTranslationConfig != nil {
+		InternalSetValueByPath(toObject, []string{"translationConfig"}, fromTranslationConfig)
+	}
+
 	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
 	if fromAudioTranscriptionConfig != nil {
 		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)
@@ -920,6 +925,16 @@ func reinforcementTuningExampleToVertex(fromObject map[string]any, parentObject 
 		}
 
 		InternalSetValueByPath(toObject, []string{"systemInstruction"}, fromSystemInstruction)
+	}
+
+	fromTools := InternalGetValueByPath(fromObject, []string{"tools"})
+	if fromTools != nil {
+		fromTools, err = InternalApplyConverterToSliceWithRoot(fromTools.([]any), toolToVertex, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"tools"}, fromTools)
 	}
 
 	return toObject, nil

@@ -22,6 +22,9 @@ import (
 	"os"
 	"strings"
 
+	"google.golang.org/genai/interactions"
+	"google.golang.org/genai/interactions/models/components"
+
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/auth/credentials"
 	"cloud.google.com/go/auth/httptransport"
@@ -50,6 +53,15 @@ type Client struct {
 	Tunings *Tunings
 	// Tokens provides access to the Tokens service.
 	AuthTokens *Tokens
+
+	// Interactions provides access to the Interactions service.
+	Interactions *interactions.Interactions
+	// Webhooks provides access to the Webhooks service.
+	Webhooks *interactions.Webhooks
+	// Agents provides access to the Agents service.
+	Agents *interactions.Agents
+	// Credentials provides access to the Credentials service.
+	Credentials *interactions.Credentials
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -385,6 +397,46 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 	return &apiClient{clientConfig: cc}, nil
 }
 
+func newInteractionsClient(apiClient *InternalAPIClient) *interactions.GenAI {
+	cc := apiClient.clientConfig
+
+	var opts []interactions.SDKOption
+	sec := components.Security{}
+	if cc.APIKey != "" {
+		sec.APIKey = &cc.APIKey
+	}
+	if cc.HTTPOptions.Headers != nil {
+		sec.DefaultHeaders = make(map[string]string)
+		for key, values := range cc.HTTPOptions.Headers {
+			if len(values) > 0 {
+				sec.DefaultHeaders[key] = values[0]
+			}
+		}
+	}
+	if sec.APIKey != nil || len(sec.DefaultHeaders) > 0 {
+		opts = append(opts, interactions.WithSecurity(sec))
+	}
+
+	if cc.HTTPClient != nil {
+		opts = append(opts, interactions.WithClient(cc.HTTPClient))
+	}
+	if cc.HTTPOptions.BaseURL != "" {
+		opts = append(opts, interactions.WithServerURL(cc.HTTPOptions.BaseURL))
+	}
+	apiVersion := cc.HTTPOptions.APIVersion
+	if cc.Backend == BackendVertexAI && apiVersion != "" && cc.Project != "" && cc.Location != "" {
+		apiVersion = fmt.Sprintf("%s/projects/%s/locations/%s", apiVersion, cc.Project, cc.Location)
+	}
+	if apiVersion != "" {
+		opts = append(opts, interactions.WithAPIVersion(apiVersion))
+	}
+	if cc.HTTPOptions.Timeout != nil {
+		opts = append(opts, interactions.WithTimeout(*cc.HTTPOptions.Timeout))
+	}
+
+	return interactions.New(opts...)
+}
+
 // NewClient creates a new GenAI client.
 //
 // You can configure the client by passing in a ClientConfig struct.
@@ -419,6 +471,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	interactionsClient := newInteractionsClient(ac)
 	c := &Client{
 		clientConfig:     *cc,
 		Models:           &Models{apiClient: ac},
@@ -431,6 +484,10 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		Batches:          &Batches{apiClient: ac},
 		Tunings:          &Tunings{apiClient: ac},
 		AuthTokens:       &Tokens{apiClient: ac},
+		Interactions:     interactionsClient.Interactions,
+		Webhooks:         interactionsClient.Webhooks,
+		Agents:           interactionsClient.Agents,
+		Credentials:      interactionsClient.Credentials,
 	}
 	return c, nil
 }

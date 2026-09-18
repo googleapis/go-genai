@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.72.0](https://github.com/googleapis/go-genai/compare/v1.71.0...v1.72.0) (2026-09-18)
+
+
+### Features
+
+* Add interactions ([b85860b](https://github.com/googleapis/go-genai/commit/b85860bb65baa88ef7fd1fd4528a5163d897b1f9))
+* update discovery doc ([702e8d0](https://github.com/googleapis/go-genai/commit/702e8d0493918c44fc8a1d3081c87d4e8252fd8c))
+
+
+### Bug Fixes
+
+* Update GitHub Actions lint workflow for Node 24 compatibility ([aeb441a](https://github.com/googleapis/go-genai/commit/aeb441ac8a8e24cf718162b9e03cbd77da140eaa))
+
 ## [1.71.0](https://github.com/googleapis/go-genai/compare/v1.70.0...v1.71.0) (2026-08-31)
 
 

@@ -27,35 +27,35 @@ import (
 type EnvType string
 
 const (
+	EnvTypeEnvVar      EnvType = "EnvVar"
 	EnvTypeMapOfEnvVar EnvType = "mapOfEnvVar"
-	EnvTypeStr         EnvType = "str"
 	EnvTypeUnknown     EnvType = "Unknown"
 )
 
 // Env - Environment variables to set in the sandbox environment.
 type Env struct {
+	EnvVar      *EnvVar           `queryParam:"inline" union:"member"`
 	MapOfEnvVar map[string]EnvVar `queryParam:"inline" union:"member"`
-	Str         *string           `queryParam:"inline" union:"member"`
 	UnknownRaw  json.RawMessage   `json:"-" union:"unknown"`
 
 	Type EnvType
 }
 
 type EnvMember interface {
-	map[string]EnvVar | string
+	EnvVar | map[string]EnvVar
 }
 
 func NewEnv[T EnvMember](val T) Env {
 	switch v := any(val).(type) {
+	case EnvVar:
+		return Env{
+			EnvVar: &v,
+			Type:   EnvTypeEnvVar,
+		}
 	case map[string]EnvVar:
 		return Env{
 			MapOfEnvVar: v,
 			Type:        EnvTypeMapOfEnvVar,
-		}
-	case string:
-		return Env{
-			Str:  &v,
-			Type: EnvTypeStr,
 		}
 	}
 	panic(fmt.Sprintf("unreachable: %T is not a member of union Env", val))
@@ -81,19 +81,19 @@ func (u *Env) UnmarshalJSON(data []byte) error {
 	var candidates []utils.UnionCandidate
 
 	// Collect all valid candidates
+	var envVar EnvVar = EnvVar{}
+	if err := utils.UnmarshalJSON(data, &envVar, "", true, nil); err == nil {
+		candidates = append(candidates, utils.UnionCandidate{
+			Type:  EnvTypeEnvVar,
+			Value: &envVar,
+		})
+	}
+
 	var mapOfEnvVar map[string]EnvVar = map[string]EnvVar{}
 	if err := utils.UnmarshalJSON(data, &mapOfEnvVar, "", true, nil); err == nil {
 		candidates = append(candidates, utils.UnionCandidate{
 			Type:  EnvTypeMapOfEnvVar,
 			Value: mapOfEnvVar,
-		})
-	}
-
-	var str string = ""
-	if err := utils.UnmarshalJSON(data, &str, "", true, nil); err == nil {
-		candidates = append(candidates, utils.UnionCandidate{
-			Type:  EnvTypeStr,
-			Value: &str,
 		})
 	}
 
@@ -114,11 +114,11 @@ func (u *Env) UnmarshalJSON(data []byte) error {
 	// Set the union type and value based on the best candidate
 	u.Type = best.Type.(EnvType)
 	switch best.Type {
+	case EnvTypeEnvVar:
+		u.EnvVar = best.Value.(*EnvVar)
+		return nil
 	case EnvTypeMapOfEnvVar:
 		u.MapOfEnvVar = best.Value.(map[string]EnvVar)
-		return nil
-	case EnvTypeStr:
-		u.Str = best.Value.(*string)
 		return nil
 	}
 
@@ -128,12 +128,12 @@ func (u *Env) UnmarshalJSON(data []byte) error {
 }
 
 func (u Env) MarshalJSON() ([]byte, error) {
-	if u.MapOfEnvVar != nil {
-		return utils.MarshalJSON(u.MapOfEnvVar, "", true)
+	if u.EnvVar != nil {
+		return utils.MarshalJSON(u.EnvVar, "", true)
 	}
 
-	if u.Str != nil {
-		return utils.MarshalJSON(u.Str, "", true)
+	if u.MapOfEnvVar != nil {
+		return utils.MarshalJSON(u.MapOfEnvVar, "", true)
 	}
 
 	if u.UnknownRaw != nil {

@@ -175,9 +175,10 @@ func populateDeepObjectParams(tag *paramTag, objType reflect.Type, objValue refl
 	case reflect.Map:
 		// check if optionalnullable.OptionalNullable[T]
 		if nullableValue, ok := optionalnullable.AsOptionalNullable(objValue); ok {
-			// Handle optionalnullable.OptionalNullable[T] using GetUntyped method
+			// Serialize the wrapped value using the rules for its own type
 			if value, isSet := nullableValue.GetUntyped(); isSet && value != nil {
-				values.Add(tag.ParamName, valToString(value))
+				innerValue := reflect.ValueOf(value)
+				return populateDeepObjectParams(tag, innerValue.Type(), innerValue)
 			}
 			// If not set or explicitly null, skip adding to values
 			return values
@@ -189,6 +190,45 @@ func populateDeepObjectParams(tag *paramTag, objType reflect.Type, objValue refl
 	}
 
 	return values
+}
+
+func populateDeepObjectParamsValue(qsValues url.Values, scope string, value reflect.Value) {
+	if value.Kind() == reflect.Pointer {
+		if value.IsNil() {
+			return
+		}
+
+		value = value.Elem()
+	}
+
+	if nullableValue, ok := optionalnullable.AsOptionalNullable(value); ok {
+		inner, isSet := nullableValue.GetUntyped()
+		if !isSet || inner == nil {
+			return
+		}
+
+		populateDeepObjectParamsValue(qsValues, scope, reflect.ValueOf(inner))
+
+		return
+	}
+
+	switch value.Kind() {
+	case reflect.Array, reflect.Slice:
+		populateDeepObjectParamsArray(qsValues, scope, value)
+	case reflect.Map:
+		populateDeepObjectParamsMap(qsValues, scope, value)
+	case reflect.Struct:
+		switch value.Type() {
+		case reflect.TypeOf(big.Int{}), reflect.TypeOf(time.Time{}), reflect.TypeOf(types.Date{}):
+			qsValues.Add(scope, valToString(value.Interface()))
+
+			return
+		}
+
+		populateDeepObjectParamsStruct(qsValues, scope, value)
+	default:
+		qsValues.Add(scope, valToString(value.Interface()))
+	}
 }
 
 func populateDeepObjectParamsArray(qsValues url.Values, priorScope string, value reflect.Value) {
@@ -210,16 +250,8 @@ func populateDeepObjectParamsMap(qsValues url.Values, priorScope string, mapValu
 
 	for iter.Next() {
 		scope := priorScope + "[" + iter.Key().String() + "]"
-		iterValue := iter.Value()
 
-		switch iterValue.Kind() {
-		case reflect.Array, reflect.Slice:
-			populateDeepObjectParamsArray(qsValues, scope, iterValue)
-		case reflect.Map:
-			populateDeepObjectParamsMap(qsValues, scope, iterValue)
-		default:
-			qsValues.Add(scope, valToString(iterValue.Interface()))
-		}
+		populateDeepObjectParamsValue(qsValues, scope, iter.Value())
 	}
 }
 
@@ -238,10 +270,6 @@ func populateDeepObjectParamsStruct(qsValues url.Values, priorScope string, stru
 			continue
 		}
 
-		if fieldValue.Kind() == reflect.Pointer {
-			fieldValue = fieldValue.Elem()
-		}
-
 		qpTag := parseQueryParamTag(field)
 
 		if qpTag == nil {
@@ -254,23 +282,7 @@ func populateDeepObjectParamsStruct(qsValues url.Values, priorScope string, stru
 			scope = priorScope + "[" + qpTag.ParamName + "]"
 		}
 
-		switch fieldValue.Kind() {
-		case reflect.Array, reflect.Slice:
-			populateDeepObjectParamsArray(qsValues, scope, fieldValue)
-		case reflect.Map:
-			populateDeepObjectParamsMap(qsValues, scope, fieldValue)
-		case reflect.Struct:
-			switch fieldValue.Type() {
-			case reflect.TypeOf(big.Int{}), reflect.TypeOf(time.Time{}), reflect.TypeOf(types.Date{}):
-				qsValues.Add(scope, valToString(fieldValue.Interface()))
-
-				continue
-			}
-
-			populateDeepObjectParamsStruct(qsValues, scope, fieldValue)
-		default:
-			qsValues.Add(scope, valToString(fieldValue.Interface()))
-		}
+		populateDeepObjectParamsValue(qsValues, scope, fieldValue)
 	}
 }
 

@@ -423,11 +423,11 @@ func newInteractionsClient(apiClient *InternalAPIClient) *interactions.GenAI {
 	if cc.HTTPOptions.BaseURL != "" {
 		opts = append(opts, interactions.WithServerURL(cc.HTTPOptions.BaseURL))
 	}
-	apiVersion := cc.HTTPOptions.APIVersion
-	if cc.Backend == BackendVertexAI && apiVersion != "" && cc.Project != "" && cc.Location != "" {
-		apiVersion = fmt.Sprintf("%s/projects/%s/locations/%s", apiVersion, cc.Project, cc.Location)
-	}
-	if apiVersion != "" {
+	if cc.HTTPOptions.APIVersion != "" {
+		apiVersion := cc.HTTPOptions.APIVersion
+		if cc.Backend == BackendVertexAI && cc.Project != "" && cc.Location != "" {
+			apiVersion = fmt.Sprintf("%s/projects/%s/locations/%s", apiVersion, cc.Project, cc.Location)
+		}
 		opts = append(opts, interactions.WithAPIVersion(apiVersion))
 	}
 	if cc.HTTPOptions.Timeout != nil {

@@ -19,8 +19,16 @@ package interactions
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"mime"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"google.golang.org/genai/interactions/internal/config"
 	"google.golang.org/genai/interactions/internal/hooks"
@@ -266,5 +274,481 @@ func (s *Files) List(ctx context.Context, request operations.GetEnvironmentFiles
 	}
 
 	return res, nil
-
 }
+
+// Upload uploads a file or extracts an archive inside an environment workspace using chunked resumable upload.
+func (s *Files) Upload(ctx context.Context, request operations.UploadEnvironmentFileRequest, opts ...operations.Option) (*operations.UploadEnvironmentFileResponse, error) {
+	envID := strings.TrimPrefix(request.Environment, "environments/")
+	cleanPath := strings.TrimPrefix(request.Path, "/")
+	if envID == "" {
+		return nil, errors.New("environment is required")
+	}
+	if cleanPath == "" {
+		return nil, errors.New("path is required")
+	}
+
+	var sizeBytes int64
+	var fileToClose io.Closer
+	var contentReader io.Reader
+
+	if request.Content != nil {
+		sizeBytes = int64(len(request.Content))
+		contentReader = bytes.NewReader(request.Content)
+		if request.SizeBytes != nil {
+			sizeBytes = *request.SizeBytes
+		}
+	} else if request.FilePath != nil && *request.FilePath != "" {
+		fi, err := os.Stat(*request.FilePath)
+		if err != nil {
+			return nil, fmt.Errorf("error stating file %s: %w", *request.FilePath, err)
+		}
+		sizeBytes = fi.Size()
+		if request.SizeBytes != nil {
+			sizeBytes = *request.SizeBytes
+		}
+		f, err := os.Open(*request.FilePath)
+		if err != nil {
+			return nil, fmt.Errorf("error opening file %s: %w", *request.FilePath, err)
+		}
+		fileToClose = f
+		contentReader = f
+	} else if request.Reader != nil {
+		if request.SizeBytes == nil {
+			return nil, errors.New("sizeBytes must be provided when uploading from Reader")
+		}
+		sizeBytes = *request.SizeBytes
+		contentReader = request.Reader
+	} else {
+		return nil, errors.New("one of Content, FilePath, or Reader must be provided")
+	}
+	if fileToClose != nil {
+		defer fileToClose.Close()
+	}
+
+	mimeType := "application/octet-stream"
+	if request.MimeType != nil && *request.MimeType != "" {
+		mimeType = *request.MimeType
+	} else {
+		mimeType = inferMimeType(cleanPath)
+	}
+
+	o := operations.Options{}
+	supportedOptions := []string{
+		operations.SupportedOptionRetries,
+		operations.SupportedOptionTimeout,
+	}
+
+	for _, opt := range opts {
+		if err := opt(&o, supportedOptions...); err != nil {
+			return nil, fmt.Errorf("error applying option: %w", err)
+		}
+	}
+
+	globals := operations.UploadEnvironmentFileGlobals{
+		APIVersion: s.sdkConfiguration.Globals.APIVersion,
+	}
+	if request.APIVersion != nil {
+		globals.APIVersion = request.APIVersion
+	}
+	apiVersion := "v1beta"
+	if globals.APIVersion != nil && *globals.APIVersion != "" {
+		apiVersion = *globals.APIVersion
+	}
+
+	var baseURL string
+	if o.ServerURL == nil {
+		baseURL = utils.ReplaceParameters(s.sdkConfiguration.GetServerDetails())
+	} else {
+		baseURL = *o.ServerURL
+	}
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
+	handshakeURL := fmt.Sprintf("%s/upload/%s/environments/%s/files/%s", baseURL, apiVersion, envID, cleanPath)
+
+	overwrite := true
+	if request.Overwrite != nil {
+		overwrite = *request.Overwrite
+	}
+	extract := false
+	if request.Extract != nil {
+		extract = *request.Extract
+	}
+	handshakeURL += fmt.Sprintf("?overwrite=%t&extract=%t", overwrite, extract)
+
+	hookCtx := hooks.HookContext{
+		SDK:              s.rootSDK,
+		SDKConfiguration: s.sdkConfiguration,
+		BaseURL:          baseURL,
+		Context:          ctx,
+		OperationID:      "UploadEnvironmentFile",
+		OAuth2Scopes:     nil,
+		SecuritySource:   s.sdkConfiguration.Security,
+	}
+
+	if o.Timeout != nil {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, *o.Timeout)
+		defer cancel()
+	} else if s.sdkConfiguration.Timeout != nil {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, *s.sdkConfiguration.Timeout)
+		defer cancel()
+	}
+
+	handshakeReq, err := http.NewRequestWithContext(ctx, "PUT", handshakeURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating handshake request: %w", err)
+	}
+	handshakeReq.Header.Set("Accept", "application/json")
+	if s.sdkConfiguration.UserAgent != "" {
+		handshakeReq.Header.Set("User-Agent", s.sdkConfiguration.UserAgent)
+	}
+	handshakeReq.Header.Set("X-Goog-Upload-Protocol", "resumable")
+	handshakeReq.Header.Set("X-Goog-Upload-Command", "start")
+	handshakeReq.Header.Set("X-Goog-Upload-Header-Content-Length", strconv.FormatInt(sizeBytes, 10))
+	handshakeReq.Header.Set("X-Goog-Upload-Header-Content-Type", mimeType)
+
+	if err := utils.PopulateSecurity(ctx, handshakeReq, s.sdkConfiguration.Security); err != nil {
+		return nil, err
+	}
+	for k, v := range o.SetHeaders {
+		handshakeReq.Header.Set(k, v)
+	}
+
+	handshakeReq, err = s.hooks.BeforeRequest(hooks.BeforeRequestContext{HookContext: hookCtx}, handshakeReq)
+	if err != nil {
+		return nil, err
+	}
+
+	handshakeRes, err := s.sdkConfiguration.Client.Do(handshakeReq)
+	if err != nil || handshakeRes == nil {
+		if err != nil {
+			err = fmt.Errorf("error sending handshake request: %w", err)
+		} else {
+			err = fmt.Errorf("error sending handshake request: no response")
+		}
+		_, _ = s.hooks.AfterError(hooks.AfterErrorContext{HookContext: hookCtx}, nil, err)
+		return nil, err
+	}
+	if handshakeRes.StatusCode >= 400 {
+		_handshakeRes, err := s.hooks.AfterError(hooks.AfterErrorContext{HookContext: hookCtx}, handshakeRes, nil)
+		if err != nil {
+			return nil, err
+		}
+		if _handshakeRes != nil {
+			handshakeRes = _handshakeRes
+		}
+		rawBody, _ := utils.ConsumeRawBody(handshakeRes)
+		return nil, apierrors.NewAPIError(fmt.Sprintf("upload handshake failed with status: %d", handshakeRes.StatusCode), handshakeRes.StatusCode, string(rawBody), handshakeRes)
+	}
+	handshakeRes, err = s.hooks.AfterSuccess(hooks.AfterSuccessContext{HookContext: hookCtx}, handshakeRes)
+	if err != nil {
+		return nil, err
+	}
+
+	uploadURL := handshakeRes.Header.Get("X-Goog-Upload-URL")
+	if uploadURL == "" {
+		uploadURL = handshakeRes.Header.Get("x-goog-upload-url")
+	}
+	if uploadURL == "" {
+		return nil, errors.New("failed to get upload URL from upload handshake response")
+	}
+
+	const chunkSize = 8 * 1024 * 1024 // 8MB
+	var lastReq *http.Request
+	var lastRes *http.Response
+
+	if sizeBytes == 0 {
+		chunkReq, err := http.NewRequestWithContext(ctx, "POST", uploadURL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error creating upload chunk request: %w", err)
+		}
+		if s.sdkConfiguration.UserAgent != "" {
+			chunkReq.Header.Set("User-Agent", s.sdkConfiguration.UserAgent)
+		}
+		chunkReq.Header.Set("X-Goog-Upload-Command", "upload, finalize")
+		chunkReq.Header.Set("X-Goog-Upload-Offset", "0")
+		chunkReq.Header.Set("Content-Length", "0")
+		for k, v := range o.SetHeaders {
+			chunkReq.Header.Set(k, v)
+		}
+
+		res, err := s.sdkConfiguration.Client.Do(chunkReq)
+		if err != nil {
+			return nil, fmt.Errorf("error sending upload chunk: %w", err)
+		}
+		if res.StatusCode >= 400 {
+			rawBody, _ := utils.ConsumeRawBody(res)
+			return nil, apierrors.NewAPIError(fmt.Sprintf("upload chunk failed with status: %d", res.StatusCode), res.StatusCode, string(rawBody), res)
+		}
+		lastReq = chunkReq
+		lastRes = res
+	} else {
+		var offset int64 = 0
+		buf := make([]byte, chunkSize)
+		for offset < sizeBytes {
+			toRead := int(chunkSize)
+			if int64(toRead) > sizeBytes-offset {
+				toRead = int(sizeBytes - offset)
+			}
+			bytesRead, err := io.ReadFull(contentReader, buf[:toRead])
+			if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
+				return nil, fmt.Errorf("error reading content for upload: %w", err)
+			}
+			if bytesRead == 0 {
+				break
+			}
+			nextOffset := offset + int64(bytesRead)
+			isFinal := nextOffset >= sizeBytes
+			cmd := "upload"
+			if isFinal {
+				cmd = "upload, finalize"
+			}
+
+			chunkReq, err := http.NewRequestWithContext(ctx, "POST", uploadURL, bytes.NewReader(buf[:bytesRead]))
+			if err != nil {
+				return nil, fmt.Errorf("error creating upload chunk request: %w", err)
+			}
+			if s.sdkConfiguration.UserAgent != "" {
+				chunkReq.Header.Set("User-Agent", s.sdkConfiguration.UserAgent)
+			}
+			chunkReq.Header.Set("X-Goog-Upload-Command", cmd)
+			chunkReq.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))
+			chunkReq.Header.Set("Content-Length", strconv.Itoa(bytesRead))
+			for k, v := range o.SetHeaders {
+				chunkReq.Header.Set(k, v)
+			}
+
+			res, err := s.sdkConfiguration.Client.Do(chunkReq)
+			if err != nil {
+				return nil, fmt.Errorf("error sending upload chunk: %w", err)
+			}
+			if res.StatusCode >= 400 {
+				rawBody, _ := utils.ConsumeRawBody(res)
+				return nil, apierrors.NewAPIError(fmt.Sprintf("upload chunk failed with status: %d", res.StatusCode), res.StatusCode, string(rawBody), res)
+			}
+			lastReq = chunkReq
+			lastRes = res
+			offset = nextOffset
+		}
+	}
+
+	uploadResult := &operations.UploadEnvironmentFileResponse{
+		HTTPMeta: components.HTTPMetadata{
+			Request:  lastReq,
+			Response: lastRes,
+		},
+	}
+	rawBody, err := utils.ConsumeRawBody(lastRes)
+	if err != nil {
+		return nil, fmt.Errorf("error reading upload response body: %w", err)
+	}
+	if len(rawBody) > 0 {
+		if err := json.Unmarshal(rawBody, uploadResult); err != nil {
+			return nil, fmt.Errorf("error unmarshaling upload response: %w", err)
+		}
+	}
+	return uploadResult, nil
+}
+
+// UploadBytes is a convenience helper to upload in-memory bytes to an environment file.
+func (s *Files) UploadBytes(ctx context.Context, environment string, path string, content []byte, opts ...operations.Option) (*operations.UploadEnvironmentFileResponse, error) {
+	return s.Upload(ctx, operations.UploadEnvironmentFileRequest{
+		Environment: environment,
+		Path:        path,
+		Content:     content,
+	}, opts...)
+}
+
+// UploadFile is a convenience helper to upload a local file to an environment file.
+func (s *Files) UploadFile(ctx context.Context, environment string, path string, filePath string, opts ...operations.Option) (*operations.UploadEnvironmentFileResponse, error) {
+	return s.Upload(ctx, operations.UploadEnvironmentFileRequest{
+		Environment: environment,
+		Path:        path,
+		FilePath:    &filePath,
+	}, opts...)
+}
+
+// UploadStream is a convenience helper to upload a stream to an environment file.
+func (s *Files) UploadStream(ctx context.Context, environment string, path string, reader io.Reader, sizeBytes int64, opts ...operations.Option) (*operations.UploadEnvironmentFileResponse, error) {
+	return s.Upload(ctx, operations.UploadEnvironmentFileRequest{
+		Environment: environment,
+		Path:        path,
+		Reader:      reader,
+		SizeBytes:   &sizeBytes,
+	}, opts...)
+}
+
+// Download downloads file content from an environment workspace as bytes.
+func (s *Files) Download(ctx context.Context, environment string, path string, opts ...operations.Option) ([]byte, error) {
+	rc, err := s.DownloadStream(ctx, environment, path, opts...)
+	if err != nil {
+		return nil, err
+	}
+	defer rc.Close()
+	return io.ReadAll(rc)
+}
+
+// DownloadStream downloads file content from an environment workspace as a stream (io.ReadCloser).
+func (s *Files) DownloadStream(ctx context.Context, environment string, path string, opts ...operations.Option) (io.ReadCloser, error) {
+	envID := strings.TrimPrefix(environment, "environments/")
+	cleanPath := strings.TrimPrefix(path, "/")
+	if envID == "" {
+		return nil, errors.New("environment is required")
+	}
+	if cleanPath == "" {
+		return nil, errors.New("path is required")
+	}
+
+	o := operations.Options{}
+	supportedOptions := []string{
+		operations.SupportedOptionRetries,
+		operations.SupportedOptionTimeout,
+	}
+
+	for _, opt := range opts {
+		if err := opt(&o, supportedOptions...); err != nil {
+			return nil, fmt.Errorf("error applying option: %w", err)
+		}
+	}
+
+	var baseURL string
+	if o.ServerURL == nil {
+		baseURL = utils.ReplaceParameters(s.sdkConfiguration.GetServerDetails())
+	} else {
+		baseURL = *o.ServerURL
+	}
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
+	apiVersion := "v1beta"
+	if s.sdkConfiguration.Globals.APIVersion != nil && *s.sdkConfiguration.Globals.APIVersion != "" {
+		apiVersion = *s.sdkConfiguration.Globals.APIVersion
+	}
+
+	downloadURL := fmt.Sprintf("%s/%s/environments/%s/files/%s?alt=media", baseURL, apiVersion, envID, cleanPath)
+
+	hookCtx := hooks.HookContext{
+		SDK:              s.rootSDK,
+		SDKConfiguration: s.sdkConfiguration,
+		BaseURL:          baseURL,
+		Context:          ctx,
+		OperationID:      "GetEnvironmentFiles",
+		OAuth2Scopes:     nil,
+		SecuritySource:   s.sdkConfiguration.Security,
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+	req.Header.Set("Accept", "application/octet-stream")
+	if s.sdkConfiguration.UserAgent != "" {
+		req.Header.Set("User-Agent", s.sdkConfiguration.UserAgent)
+	}
+
+	if err := utils.PopulateSecurity(ctx, req, s.sdkConfiguration.Security); err != nil {
+		return nil, err
+	}
+
+	for k, v := range o.SetHeaders {
+		req.Header.Set(k, v)
+	}
+
+	req, err = s.hooks.BeforeRequest(hooks.BeforeRequestContext{HookContext: hookCtx}, req)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.sdkConfiguration.Client.Do(req)
+	if err != nil || res == nil {
+		if err != nil {
+			err = fmt.Errorf("error sending request: %w", err)
+		} else {
+			err = errors.New("error sending request: no response")
+		}
+
+		_, _ = s.hooks.AfterError(hooks.AfterErrorContext{HookContext: hookCtx}, nil, err)
+		return nil, err
+	}
+	if res.StatusCode >= 400 {
+		_res, err := s.hooks.AfterError(hooks.AfterErrorContext{HookContext: hookCtx}, res, nil)
+		if err != nil {
+			return nil, err
+		}
+		if _res != nil {
+			res = _res
+		}
+		rawBody, _ := utils.ConsumeRawBody(res)
+		return nil, apierrors.NewAPIError(fmt.Sprintf("download failed with status: %d", res.StatusCode), res.StatusCode, string(rawBody), res)
+	}
+
+	res, err = s.hooks.AfterSuccess(hooks.AfterSuccessContext{HookContext: hookCtx}, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Body, nil
+}
+
+// DownloadToFile downloads file content and writes it to localFilePath.
+func (s *Files) DownloadToFile(ctx context.Context, environment string, path string, localFilePath string, opts ...operations.Option) error {
+	data, err := s.Download(ctx, environment, path, opts...)
+	if err != nil {
+		return err
+	}
+	dir := filepath.Dir(localFilePath)
+	if dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return fmt.Errorf("failed to create destination directory %s: %w", dir, err)
+		}
+	}
+	if err := os.WriteFile(localFilePath, data, 0644); err != nil {
+		return fmt.Errorf("failed to write downloaded file to %s: %w", localFilePath, err)
+	}
+	return nil
+}
+
+func inferMimeType(path string) string {
+	ext := strings.ToLower(filepath.Ext(path))
+	switch ext {
+	case ".txt":
+		return "text/plain"
+	case ".json":
+		return "application/json"
+	case ".py":
+		return "text/x-python"
+	case ".js", ".mjs":
+		return "application/javascript"
+	case ".ts":
+		return "application/typescript"
+	case ".html", ".htm":
+		return "text/html"
+	case ".css":
+		return "text/css"
+	case ".csv":
+		return "text/csv"
+	case ".png":
+		return "image/png"
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".gif":
+		return "image/gif"
+	case ".webp":
+		return "image/webp"
+	case ".svg":
+		return "image/svg+xml"
+	case ".pdf":
+		return "application/pdf"
+	case ".zip":
+		return "application/zip"
+	case ".tar":
+		return "application/x-tar"
+	case ".gz", ".tgz":
+		return "application/gzip"
+	}
+	if m := mime.TypeByExtension(ext); m != "" {
+		return m
+	}
+	return "application/octet-stream"
+}
+

@@ -1332,6 +1332,16 @@ type ToolResponse struct {
 	Response map[string]any `json:"response,omitempty"`
 }
 
+// Extra metadata associated with the part for speech synthesis.
+type SpeechMetadata struct {
+	// Optional. The speaker for this part, which must match a `speaker` name in
+	// `MultiSpeakerVoiceConfig.speaker_voice_configs`.
+	Speaker string `json:"speaker,omitempty"`
+	// Optional. The style instruction for how the voice should be synthesized
+	// (e.g. "excited, fast-paced").
+	Style string `json:"style,omitempty"`
+}
+
 // Result of executing the ExecutableCode. Generated only when the `CodeExecution` tool
 // is used.
 type CodeExecutionResult struct {
@@ -1664,6 +1674,9 @@ type Part struct {
 	AudioTranscription *Transcription `json:"audioTranscription,omitempty"`
 	// Optional. How the model processes this part's media for understanding.
 	MediaProcessing MediaProcessing `json:"mediaProcessing,omitempty"`
+	// Optional. Extra metadata associated with the part for speech synthesis, such
+	// as speaker and style. Only valid when `Part.data` is set to `text`.
+	SpeechMetadata *SpeechMetadata `json:"speechMetadata,omitempty"`
 }
 
 // NewPartFromURI builds a Part from a given file URI and mime type.
@@ -2705,6 +2718,8 @@ type VoiceConfig struct {
 	ReplicatedVoiceConfig *ReplicatedVoiceConfig `json:"replicatedVoiceConfig,omitempty"`
 	// The configuration for a prebuilt voice.
 	PrebuiltVoiceConfig *PrebuiltVoiceConfig `json:"prebuiltVoiceConfig,omitempty"`
+	// Optional. The speaker identifier for synthesis.
+	Voice string `json:"voice,omitempty"`
 }
 
 // Configuration for a single speaker in a multi-speaker setup.

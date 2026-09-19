@@ -3242,6 +3242,11 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 		InternalSetValueByPath(toObject, []string{"mediaProcessing"}, fromMediaProcessing)
 	}
 
+	fromSpeechMetadata := InternalGetValueByPath(fromObject, []string{"speechMetadata"})
+	if fromSpeechMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"speechMetadata"}, fromSpeechMetadata)
+	}
+
 	return toObject, nil
 }
 
@@ -3323,6 +3328,11 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 	fromMediaProcessing := InternalGetValueByPath(fromObject, []string{"mediaProcessing"})
 	if fromMediaProcessing != nil {
 		InternalSetValueByPath(toObject, []string{"mediaProcessing"}, fromMediaProcessing)
+	}
+
+	fromSpeechMetadata := InternalGetValueByPath(fromObject, []string{"speechMetadata"})
+	if fromSpeechMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"speechMetadata"}, fromSpeechMetadata)
 	}
 
 	return toObject, nil
@@ -4405,6 +4415,11 @@ func voiceConfigToVertex(fromObject map[string]any, parentObject map[string]any,
 	fromPrebuiltVoiceConfig := InternalGetValueByPath(fromObject, []string{"prebuiltVoiceConfig"})
 	if fromPrebuiltVoiceConfig != nil {
 		InternalSetValueByPath(toObject, []string{"prebuiltVoiceConfig"}, fromPrebuiltVoiceConfig)
+	}
+
+	fromVoice := InternalGetValueByPath(fromObject, []string{"voice"})
+	if fromVoice != nil {
+		InternalSetValueByPath(toObject, []string{"voice"}, fromVoice)
 	}
 
 	return toObject, nil

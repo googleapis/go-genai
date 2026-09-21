@@ -53,7 +53,7 @@ func main() {
 
 	body1 := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: gaos_interactions.NewInteractionsInput(conversationHistory),
+		Input: ptr(gaos_interactions.NewInteractionsInput(conversationHistory)),
 		Store: ptr(false),
 	})
 
@@ -87,7 +87,7 @@ func main() {
 
 	body2 := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: gaos_interactions.NewInteractionsInput(conversationHistory),
+		Input: ptr(gaos_interactions.NewInteractionsInput(conversationHistory)),
 		Store: ptr(false),
 	})
 

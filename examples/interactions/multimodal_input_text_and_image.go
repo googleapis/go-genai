@@ -70,7 +70,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: gaos_interactions.NewInteractionsInput(contents),
+		Input: ptr(gaos_interactions.NewInteractionsInput(contents)),
 	})
 
 	res, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: body})

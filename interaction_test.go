@@ -79,7 +79,7 @@ func TestInteractionsWorkflow(t *testing.T) {
 	}})
 	body := operations.NewCreateInteractionRequestBody(interactions.CreateModelInteraction{
 		Model: interactions.Model("gemini-2.5-flash"),
-		Input: modelInput,
+		Input: &modelInput,
 	})
 	res, err := client.Interactions.Create(context.Background(), operations.CreateInteractionRequest{Body: body})
 	if err != nil {
@@ -143,7 +143,7 @@ func TestInteractionsWorkflow_Vertex(t *testing.T) {
 	}})
 	body := operations.NewCreateInteractionRequestBody(interactions.CreateModelInteraction{
 		Model: interactions.Model("gemini-2.5-flash"),
-		Input: modelInput,
+		Input: &modelInput,
 	})
 	res, err := client.Interactions.Create(context.Background(), operations.CreateInteractionRequest{Body: body})
 	if err != nil {
@@ -201,7 +201,7 @@ func TestInteractions_ClientOptions(t *testing.T) {
 	}})
 	body := operations.NewCreateInteractionRequestBody(interactions.CreateModelInteraction{
 		Model: interactions.Model("gemini-2.5-flash"),
-		Input: modelInput,
+		Input: &modelInput,
 	})
 
 	_, err = client.Interactions.Create(context.Background(), operations.CreateInteractionRequest{Body: body})

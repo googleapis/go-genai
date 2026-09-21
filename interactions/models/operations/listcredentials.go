@@ -23,7 +23,7 @@ import (
 )
 
 type ListCredentialsGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,10 +35,9 @@ func (l *ListCredentialsGlobals) GetAPIVersion() *string {
 }
 
 type ListCredentialsRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// Optional. Maximum number of credentials to return.
-	// If unspecified, defaults to 50. Maximum is 1000.
 	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
 	// Optional. Pagination token.
 	PageToken *string `queryParam:"style=form,explode=true,name=page_token"`

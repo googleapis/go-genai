@@ -23,7 +23,7 @@ import (
 )
 
 type GetEnvironmentFilesGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,7 +35,7 @@ func (g *GetEnvironmentFilesGlobals) GetAPIVersion() *string {
 }
 
 type GetEnvironmentFilesRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion  *string `pathParam:"style=simple,explode=false,name=api_version"`
 	Environment string  `pathParam:"style=simple,explode=false,name=environment"`
 	Path        string  `pathParam:"style=simple,explode=false,name=path"`

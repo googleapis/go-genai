@@ -17,7 +17,7 @@
 package globals
 
 type Globals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// Quota project header to send with Google GenAI API requests.
 	UserProject *string `header:"style=simple,explode=false,name=x-goog-user-project"`

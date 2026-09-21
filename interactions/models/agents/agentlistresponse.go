@@ -21,7 +21,9 @@ import (
 )
 
 type AgentListResponse struct {
-	Agents        []Agent `json:"agents,omitzero"`
+	// The list of agents.
+	Agents []Agent `json:"agents,omitzero"`
+	// A token to retrieve the next page of results.
 	NextPageToken *string `json:"next_page_token,omitzero"`
 }
 

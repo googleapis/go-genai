@@ -46,7 +46,7 @@ func newFiles(rootSDK *GenAI, sdkConfig config.SDKConfiguration, hooks *hooks.Ho
 	}
 }
 
-// List retrieves file metadata or directory contents from an environment's snapshot. To download file contents directly, pass ?alt=media or use the files.download helper.
+// List retrieves file metadata or directory contents from an environment's snapshot. To download file content, use the download URL returned in the response.
 func (s *Files) List(ctx context.Context, request operations.GetEnvironmentFilesRequest, opts ...operations.Option) (*operations.GetEnvironmentFilesResponse, error) {
 	globals := operations.GetEnvironmentFilesGlobals{
 		APIVersion: s.sdkConfiguration.Globals.APIVersion,

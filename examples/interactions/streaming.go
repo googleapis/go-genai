@@ -43,7 +43,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model:  gaos_interactions.Model("gemini-flash-latest"),
-		Input:  gaos_interactions.NewInteractionsInput("Tell me a story"),
+		Input:  ptr(gaos_interactions.NewInteractionsInput("Tell me a story")),
 		Stream: ptr(true),
 	})
 

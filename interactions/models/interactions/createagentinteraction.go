@@ -164,7 +164,9 @@ const (
 	CreateAgentInteractionEnvironmentTypeStr         CreateAgentInteractionEnvironmentType = "str"
 )
 
-// CreateAgentInteractionEnvironment - The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+// CreateAgentInteractionEnvironment - The environment configuration for the interaction. Can be an object
+// specifying remote environment sources or a string referencing an existing
+// environment ID.
 type CreateAgentInteractionEnvironment struct {
 	Environment *Environment `queryParam:"inline" union:"member"`
 	Str         *string      `queryParam:"inline" union:"member"`
@@ -263,7 +265,8 @@ const (
 	CreateAgentInteractionResponseFormatTypeArrayOfResponseFormat CreateAgentInteractionResponseFormatType = "arrayOfResponseFormat"
 )
 
-// CreateAgentInteractionResponseFormat - Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+// CreateAgentInteractionResponseFormat - Enforces that the generated response is a JSON object that complies with
+// the JSON schema specified in this field.
 type CreateAgentInteractionResponseFormat struct {
 	ResponseFormat        *ResponseFormat  `queryParam:"inline" union:"member"`
 	ArrayOfResponseFormat []ResponseFormat `queryParam:"inline" union:"member"`
@@ -355,7 +358,7 @@ func (u CreateAgentInteractionResponseFormat) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("could not marshal union type CreateAgentInteractionResponseFormat: all fields are null")
 }
 
-// CreateAgentInteraction - Parameters for creating agent interactions
+// CreateAgentInteraction - Interaction for generating the completion using agents.
 type CreateAgentInteraction struct {
 	// The agent to interact with.
 	Agent AgentOption `json:"agent"`
@@ -363,15 +366,23 @@ type CreateAgentInteraction struct {
 	AgentConfig *CreateAgentInteractionAgentConfig `json:"agent_config,omitzero"`
 	// Input only. Whether to run the model interaction in the background.
 	Background *bool `json:"background,omitzero"`
-	// The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+	// The environment configuration for the interaction. Can be an object
+	// specifying remote environment sources or a string referencing an existing
+	// environment ID.
 	Environment *CreateAgentInteractionEnvironment `json:"environment,omitzero"`
 	// The input for the interaction.
-	Input InteractionsInput `json:"input"`
+	Input *InteractionsInput `json:"input,omitzero"`
 	// The labels with user-defined metadata for the request.
+	//
+	// Label keys and values can be no longer than 63 characters
+	// (Unicode codepoints) and can only contain lowercase letters, numeric
+	// characters, underscores, and dashes. International characters are allowed.
+	// Label values are optional. Label keys must start with a letter.
 	Labels map[string]string `json:"labels,omitzero"`
 	// The ID of the previous interaction, if any.
 	PreviousInteractionID *string `json:"previous_interaction_id,omitzero"`
-	// Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+	// Enforces that the generated response is a JSON object that complies with
+	// the JSON schema specified in this field.
 	ResponseFormat *CreateAgentInteractionResponseFormat `json:"response_format,omitzero"`
 	// The mime type of the response. This is required if response_format is set.
 	//
@@ -463,9 +474,9 @@ func (c *CreateAgentInteraction) GetEnvironment() *CreateAgentInteractionEnviron
 	return c.Environment
 }
 
-func (c *CreateAgentInteraction) GetInput() InteractionsInput {
+func (c *CreateAgentInteraction) GetInput() *InteractionsInput {
 	if c == nil {
-		return InteractionsInput{}
+		return nil
 	}
 	return c.Input
 }

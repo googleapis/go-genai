@@ -23,7 +23,7 @@ import (
 )
 
 type ListTriggersGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,12 +35,12 @@ func (l *ListTriggersGlobals) GetAPIVersion() *string {
 }
 
 type ListTriggersRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// Optional. Filter expression (e.g., by state).
 	Filter *string `queryParam:"style=form,explode=true,name=filter"`
 	// Optional. The maximum number of triggers to return per page.
-	PageSize *int64 `queryParam:"style=form,explode=true,name=page_size"`
+	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
 	// Optional. A page token from a previous ListTriggers call.
 	PageToken *string `queryParam:"style=form,explode=true,name=page_token"`
 }
@@ -59,7 +59,7 @@ func (l *ListTriggersRequest) GetFilter() *string {
 	return l.Filter
 }
 
-func (l *ListTriggersRequest) GetPageSize() *int64 {
+func (l *ListTriggersRequest) GetPageSize() *int {
 	if l == nil {
 		return nil
 	}

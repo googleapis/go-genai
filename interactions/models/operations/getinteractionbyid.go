@@ -24,7 +24,7 @@ import (
 )
 
 type GetInteractionByIDGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -36,29 +36,17 @@ func (g *GetInteractionByIDGlobals) GetAPIVersion() *string {
 }
 
 type GetInteractionByIDRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// The unique identifier of the interaction to retrieve.
-	ID string `pathParam:"style=simple,explode=false,name=id"`
-	// If set to true, includes the input in the response.
-	//
-	// Deprecated: This will be removed in a future release, please migrate away from it as soon as possible.
-	IncludeInput *bool `default:"false" queryParam:"style=form,explode=true,name=include_input"`
-	// Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
+	// If true, includes the input in the response.
+	IncludeInput *bool `queryParam:"style=form,explode=true,name=include_input"`
+	// Required. The name of the interaction to retrieve.
+	ID string `pathParam:"style=simple,explode=false,name=interactionsId"`
+	// If set, resumes the interaction stream from the chunk after the event
+	// marked by the event id. Can only be used if `stream` is true.
 	LastEventID *string `queryParam:"style=form,explode=true,name=last_event_id"`
-	// If set to true, the generated content will be streamed incrementally.
-	Stream *bool `default:"false" queryParam:"style=form,explode=true,name=stream"`
-}
-
-func (g GetInteractionByIDRequest) MarshalJSON() ([]byte, error) {
-	return utils.MarshalJSON(g, "", false)
-}
-
-func (g *GetInteractionByIDRequest) UnmarshalJSON(data []byte) error {
-	if err := utils.UnmarshalJSON(data, &g, "", false, nil); err != nil {
-		return err
-	}
-	return nil
+	// If true, streams the interaction events as Server-Sent Events.
+	Stream *bool `queryParam:"style=form,explode=true,name=stream"`
 }
 
 func (g *GetInteractionByIDRequest) GetAPIVersion() *string {
@@ -68,18 +56,18 @@ func (g *GetInteractionByIDRequest) GetAPIVersion() *string {
 	return g.APIVersion
 }
 
-func (g *GetInteractionByIDRequest) GetID() string {
-	if g == nil {
-		return ""
-	}
-	return g.ID
-}
-
 func (g *GetInteractionByIDRequest) GetIncludeInput() *bool {
 	if g == nil {
 		return nil
 	}
 	return g.IncludeInput
+}
+
+func (g *GetInteractionByIDRequest) GetID() string {
+	if g == nil {
+		return ""
+	}
+	return g.ID
 }
 
 func (g *GetInteractionByIDRequest) GetLastEventID() *string {

@@ -23,7 +23,7 @@ import (
 )
 
 type CreateAgentGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,9 +35,9 @@ func (c *CreateAgentGlobals) GetAPIVersion() *string {
 }
 
 type CreateAgentRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// The request body.
+	// Required. The request body.
 	Body agents.Agent `request:"mediaType=application/json"`
 }
 

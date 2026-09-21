@@ -55,7 +55,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model:          gaos_interactions.Model("gemini-flash-latest"),
-		Input:          gaos_interactions.NewInteractionsInput("Which are the colors of a rainbow"),
+		Input:          ptr(gaos_interactions.NewInteractionsInput("Which are the colors of a rainbow")),
 		ResponseFormat: &createModelInteractionResponseFormat,
 	})
 

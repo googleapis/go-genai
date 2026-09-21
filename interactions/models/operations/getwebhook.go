@@ -23,7 +23,7 @@ import (
 )
 
 type GetWebhookGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,7 +35,7 @@ func (g *GetWebhookGlobals) GetAPIVersion() *string {
 }
 
 type GetWebhookRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// Required. The ID of the webhook to retrieve.
 	ID string `pathParam:"style=simple,explode=false,name=id"`

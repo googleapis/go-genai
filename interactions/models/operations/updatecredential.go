@@ -23,7 +23,7 @@ import (
 )
 
 type UpdateCredentialGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,13 +35,15 @@ func (u *UpdateCredentialGlobals) GetAPIVersion() *string {
 }
 
 type UpdateCredentialRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
+	// Required. Resource ID segment making up resource `name`. It identifies the resource
+	// within its parent collection as described in https://google.aip.dev/122.
 	ID string `pathParam:"style=simple,explode=false,name=id"`
 	// Optional. The list of fields to update.
-	UpdateMask *string                      `queryParam:"style=form,explode=true,name=update_mask"`
-	Body       credentials.CredentialUpdate `request:"mediaType=application/json"`
+	UpdateMask *string `queryParam:"style=form,explode=true,name=update_mask"`
+	// Required. The request body.
+	Body credentials.CredentialUpdate `request:"mediaType=application/json"`
 }
 
 func (u *UpdateCredentialRequest) GetAPIVersion() *string {

@@ -23,7 +23,7 @@ import (
 )
 
 type CreateTriggerGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,9 +35,10 @@ func (c *CreateTriggerGlobals) GetAPIVersion() *string {
 }
 
 type CreateTriggerRequest struct {
-	// Which version of the API to use.
-	APIVersion *string                      `pathParam:"style=simple,explode=false,name=api_version"`
-	Body       triggers.TriggerCreateParams `request:"mediaType=application/json"`
+	// API version for request routing.
+	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
+	// Required. The trigger configuration to create.
+	Body triggers.TriggerCreateParams `request:"mediaType=application/json"`
 }
 
 func (c *CreateTriggerRequest) GetAPIVersion() *string {

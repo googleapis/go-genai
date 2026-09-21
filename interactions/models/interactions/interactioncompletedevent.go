@@ -20,6 +20,9 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
+// InteractionCompletedEvent - Signals that the Interaction completed. Sent when the Interaction receives
+// Complete/Cancel or naturally terminates. No more input can be sent to the
+// Interaction after this.
 type InteractionCompletedEvent struct {
 	// The event_id token to be used to resume the interaction stream, from
 	// this event.

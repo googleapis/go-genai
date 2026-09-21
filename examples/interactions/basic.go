@@ -46,7 +46,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: gaos_interactions.NewInteractionsInput("Why is the sky blue?"),
+		Input: ptr(gaos_interactions.NewInteractionsInput("Why is the sky blue?")),
 	})
 
 	res, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: body})
@@ -63,4 +63,8 @@ func main() {
 			fmt.Printf("Output: %s\n", *res.Interaction.OutputText)
 		}
 	}
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

@@ -73,6 +73,7 @@ type GenAI struct {
 	Credentials  *Credentials
 	Interactions *Interactions
 	Triggers     *Triggers
+	Voices       *Voices
 	Webhooks     *Webhooks
 
 	sdkConfiguration config.SDKConfiguration
@@ -190,6 +191,7 @@ func New(opts ...SDKOption) *GenAI {
 	sdk.Credentials = newCredentials(sdk, sdk.sdkConfiguration, sdk.hooks)
 	sdk.Interactions = newInteractions(sdk, sdk.sdkConfiguration, sdk.hooks)
 	sdk.Triggers = newTriggers(sdk, sdk.sdkConfiguration, sdk.hooks)
+	sdk.Voices = newVoices(sdk, sdk.sdkConfiguration, sdk.hooks)
 	sdk.Webhooks = newWebhooks(sdk, sdk.sdkConfiguration, sdk.hooks)
 
 	return sdk

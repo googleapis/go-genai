@@ -23,7 +23,7 @@ import (
 )
 
 type CreateCredentialGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,9 +35,10 @@ func (c *CreateCredentialGlobals) GetAPIVersion() *string {
 }
 
 type CreateCredentialRequest struct {
-	// Which version of the API to use.
-	APIVersion *string                            `pathParam:"style=simple,explode=false,name=api_version"`
-	Body       credentials.CredentialCreateParams `request:"mediaType=application/json"`
+	// API version for request routing.
+	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
+	// Required. The request body.
+	Body credentials.CredentialCreateParams `request:"mediaType=application/json"`
 }
 
 func (c *CreateCredentialRequest) GetAPIVersion() *string {

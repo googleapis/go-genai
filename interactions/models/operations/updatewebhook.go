@@ -23,7 +23,7 @@ import (
 )
 
 type UpdateWebhookGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,13 +35,13 @@ func (u *UpdateWebhookGlobals) GetAPIVersion() *string {
 }
 
 type UpdateWebhookRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// Required. The ID of the webhook to update.
 	ID string `pathParam:"style=simple,explode=false,name=id"`
-	// Optional. The list of fields to update.
+	// Optional list of fields to update.
 	UpdateMask *string `queryParam:"style=form,explode=true,name=update_mask"`
-	// Required. The webhook to update.
+	// Required. The request body.
 	Body *webhooks.WebhookUpdate `request:"mediaType=application/json"`
 }
 

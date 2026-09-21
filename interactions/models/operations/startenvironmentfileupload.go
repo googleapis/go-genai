@@ -22,7 +22,7 @@ import (
 )
 
 type StartEnvironmentFileUploadGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -34,7 +34,7 @@ func (s *StartEnvironmentFileUploadGlobals) GetAPIVersion() *string {
 }
 
 type StartEnvironmentFileUploadRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// The ID of the environment that owns the destination file.
 	Environment string `pathParam:"style=simple,explode=false,name=environment"`

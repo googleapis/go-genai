@@ -194,7 +194,9 @@ const (
 	InteractionEnvironmentTypeUnknown     InteractionEnvironmentType = "Unknown"
 )
 
-// InteractionEnvironment - The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+// InteractionEnvironment - The environment configuration for the interaction. Can be an object
+// specifying remote environment sources or a string referencing an existing
+// environment ID.
 type InteractionEnvironment struct {
 	Environment *Environment    `queryParam:"inline" union:"member"`
 	Str         *string         `queryParam:"inline" union:"member"`
@@ -312,7 +314,8 @@ const (
 	InteractionResponseFormatTypeUnknown               InteractionResponseFormatType = "Unknown"
 )
 
-// InteractionResponseFormat - Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+// InteractionResponseFormat - Enforces that the generated response is a JSON object that complies with
+// the JSON schema specified in this field.
 type InteractionResponseFormat struct {
 	ResponseFormat        *ResponseFormat  `queryParam:"inline" union:"member"`
 	ArrayOfResponseFormat []ResponseFormat `queryParam:"inline" union:"member"`
@@ -457,10 +460,16 @@ type Interaction struct {
 	Agent *AgentOption `json:"agent,omitzero"`
 	// Configuration parameters for the agent interaction.
 	AgentConfig *InteractionAgentConfig `json:"agent_config,omitzero"`
-	// Output only. The time at which the response was created in ISO 8601 format
+	// The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+	//
+	// Deprecated: This will be removed in a future release, please migrate away from it as soon as possible.
+	CachedContent *string `json:"cached_content,omitzero"`
+	// Required. Output only. The time at which the response was created in ISO 8601 format
 	// (YYYY-MM-DDThh:mm:ssZ).
 	Created *string `json:"created,omitzero"`
-	// The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+	// The environment configuration for the interaction. Can be an object
+	// specifying remote environment sources or a string referencing an existing
+	// environment ID.
 	Environment *InteractionEnvironment `json:"environment,omitzero"`
 	// Output only. The environment ID for the interaction. Only populated if environment
 	// config is set in the request.
@@ -474,6 +483,11 @@ type Interaction struct {
 	// The input for the interaction.
 	Input *InteractionsInput `json:"input,omitzero"`
 	// The labels with user-defined metadata for the request.
+	//
+	// Label keys and values can be no longer than 63 characters
+	// (Unicode codepoints) and can only contain lowercase letters, numeric
+	// characters, underscores, and dashes. International characters are allowed.
+	// Label values are optional. Label keys must start with a letter.
 	Labels map[string]string `json:"labels,omitzero"`
 	// The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
 	Model *Model `json:"model,omitzero"`
@@ -489,7 +503,8 @@ type Interaction struct {
 	OutputVideo *VideoContent `json:"output_video,omitzero"`
 	// The ID of the previous interaction, if any.
 	PreviousInteractionID *string `json:"previous_interaction_id,omitzero"`
-	// Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+	// Enforces that the generated response is a JSON object that complies with
+	// the JSON schema specified in this field.
 	ResponseFormat *InteractionResponseFormat `json:"response_format,omitzero"`
 	// The mime type of the response. This is required if response_format is set.
 	//
@@ -504,13 +519,13 @@ type Interaction struct {
 	ServiceTier    *ServiceTier    `json:"service_tier,omitzero"`
 	// Required. Output only. The status of the interaction.
 	Status InteractionStatus `json:"status"`
-	// Output only. The steps that make up the interaction, when included in the response.
+	// Required. Output only. The steps that make up the interaction, when included in the response.
 	Steps []Step `json:"steps,omitzero"`
 	// System instruction for the interaction.
 	SystemInstruction *string `json:"system_instruction,omitzero"`
 	// A list of tool declarations the model may call during interaction.
 	Tools []Tool `json:"tools,omitzero"`
-	// Output only. The time at which the response was last updated in ISO 8601 format
+	// Required. Output only. The time at which the response was last updated in ISO 8601 format
 	// (YYYY-MM-DDThh:mm:ssZ).
 	Updated *string `json:"updated,omitzero"`
 	// Statistics on the interaction request's token usage.
@@ -570,6 +585,13 @@ func (i *Interaction) GetAgentConfigDynamic() *DynamicAgentConfig {
 		return v.DynamicAgentConfig
 	}
 	return nil
+}
+
+func (i *Interaction) GetCachedContent() *string {
+	if i == nil {
+		return nil
+	}
+	return i.CachedContent
 }
 
 func (i *Interaction) GetCreated() *string {

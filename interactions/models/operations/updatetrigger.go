@@ -23,7 +23,7 @@ import (
 )
 
 type UpdateTriggerGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,10 +35,11 @@ func (u *UpdateTriggerGlobals) GetAPIVersion() *string {
 }
 
 type UpdateTriggerRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Resource name of the trigger.
-	ID   string                 `pathParam:"style=simple,explode=false,name=id"`
+	// Required. Resource name of the trigger.
+	ID string `pathParam:"style=simple,explode=false,name=id"`
+	// Required. The trigger with updated fields.
 	Body triggers.TriggerUpdate `request:"mediaType=application/json"`
 }
 

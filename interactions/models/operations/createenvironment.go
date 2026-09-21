@@ -23,7 +23,7 @@ import (
 )
 
 type CreateEnvironmentGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,9 +35,9 @@ func (c *CreateEnvironmentGlobals) GetAPIVersion() *string {
 }
 
 type CreateEnvironmentRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Required. The environment to create.
+	// Required. The request body.
 	Body environments.CreateEnvironmentRequest `request:"mediaType=application/json"`
 }
 

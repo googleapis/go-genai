@@ -23,7 +23,7 @@ import (
 	"google.golang.org/genai/interactions/models/interactions"
 )
 
-// DeleteInteractionServerError - Error deleting interaction
+// DeleteInteractionServerError - Server Error
 type DeleteInteractionServerError struct {
 	// Error message from an interaction.
 	Error_   interactions.Error      `json:"error"`
@@ -37,7 +37,7 @@ func (e *DeleteInteractionServerError) Error() string {
 	return string(data)
 }
 
-// DeleteInteractionClientError - Error deleting interaction
+// DeleteInteractionClientError - Client Error
 type DeleteInteractionClientError struct {
 	// Error message from an interaction.
 	Error_   interactions.Error      `json:"error"`

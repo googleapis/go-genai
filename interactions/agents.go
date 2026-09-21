@@ -509,7 +509,7 @@ func (s *Agents) Delete(ctx context.Context, request operations.DeleteAgentReque
 	} else {
 		baseURL = *o.ServerURL
 	}
-	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/agents/{id}", request, globals)
+	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/agents/{agentsId}", request, globals)
 	if err != nil {
 		return nil, fmt.Errorf("error generating URL: %w", err)
 	}
@@ -722,7 +722,7 @@ func (s *Agents) Get(ctx context.Context, request operations.GetAgentRequest, op
 	} else {
 		baseURL = *o.ServerURL
 	}
-	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/agents/{id}", request, globals)
+	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/agents/{agentsId}", request, globals)
 	if err != nil {
 		return nil, fmt.Errorf("error generating URL: %w", err)
 	}

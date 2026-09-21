@@ -857,6 +857,16 @@ func TestNewClient(t *testing.T) {
 		}
 	})
 
+	t.Run("Check initialization of Voices", func(t *testing.T) {
+		client, err := NewClient(ctx, &ClientConfig{APIKey: "test-api-key", envVarProvider: func() map[string]string { return map[string]string{} }})
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+		if client.Voices == nil {
+			t.Error("Expected Voices to be initialized, but got nil")
+		}
+	})
+
 	t.Run("HTTPClient is read from passed config", func(t *testing.T) {
 		httpClient := &http.Client{}
 		client, err := NewClient(ctx, &ClientConfig{Backend: BackendGeminiAPI, APIKey: "test-api-key", HTTPClient: httpClient, envVarProvider: func() map[string]string { return map[string]string{} }})

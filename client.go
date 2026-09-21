@@ -62,6 +62,8 @@ type Client struct {
 	Agents *interactions.Agents
 	// Credentials provides access to the Credentials service.
 	Credentials *interactions.Credentials
+	// Voices provides access to the Voices service.
+	Voices *interactions.Voices
 }
 
 // Backend is the GenAI backend to use for the client.
@@ -488,6 +490,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		Webhooks:         interactionsClient.Webhooks,
 		Agents:           interactionsClient.Agents,
 		Credentials:      interactionsClient.Credentials,
+		Voices:           interactionsClient.Voices,
 	}
 	return c, nil
 }

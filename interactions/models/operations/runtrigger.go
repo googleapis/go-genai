@@ -23,7 +23,7 @@ import (
 )
 
 type RunTriggerGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,10 +35,10 @@ func (r *RunTriggerGlobals) GetAPIVersion() *string {
 }
 
 type RunTriggerRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Resource name of the trigger.
-	TriggerID string `pathParam:"style=simple,explode=false,name=trigger_id"`
+	// Required. Resource name of the trigger.
+	TriggerID string `pathParam:"style=simple,explode=false,name=triggerId"`
 }
 
 func (r *RunTriggerRequest) GetAPIVersion() *string {

@@ -133,9 +133,11 @@ type TriggerCreateParams struct {
 	ExecutionTimeoutSeconds *int `json:"execution_timeout_seconds,omitzero"`
 	// Required. The interaction request template to be executed.
 	Interaction Interaction `json:"interaction"`
-	// Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR).
+	// Optional. The maximum number of consecutive failures allowed before
+	// the trigger is automatically paused (status becomes ERROR).
 	MaxConsecutiveFailures *int `json:"max_consecutive_failures,omitzero"`
-	// Required. The cron schedule on which the trigger should run. Standard cron format.
+	// Required. The cron schedule on which the trigger should run.
+	// Standard cron format.
 	Schedule string `json:"schedule"`
 	// Required. Time zone in which the schedule should be interpreted.
 	TimeZone string `json:"time_zone"`

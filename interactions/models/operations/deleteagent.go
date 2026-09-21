@@ -23,7 +23,7 @@ import (
 )
 
 type DeleteAgentGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,9 +35,10 @@ func (d *DeleteAgentGlobals) GetAPIVersion() *string {
 }
 
 type DeleteAgentRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	ID         string  `pathParam:"style=simple,explode=false,name=id"`
+	// Required. The name of the agent to delete.
+	ID string `pathParam:"style=simple,explode=false,name=agentsId"`
 }
 
 func (d *DeleteAgentRequest) GetAPIVersion() *string {

@@ -23,7 +23,7 @@ import (
 )
 
 type PingWebhookGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,12 +35,11 @@ func (p *PingWebhookGlobals) GetAPIVersion() *string {
 }
 
 type PingWebhookRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// Required. The ID of the webhook to ping.
-	// Format: `{webhook_id}`
 	ID string `pathParam:"style=simple,explode=false,name=id"`
-	// The request body.
+	// Required. The request body.
 	Body *webhooks.PingWebhookRequest `request:"mediaType=application/json"`
 }
 

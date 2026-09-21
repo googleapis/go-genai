@@ -23,7 +23,7 @@ import (
 )
 
 type CreateWebhookGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,9 +35,9 @@ func (c *CreateWebhookGlobals) GetAPIVersion() *string {
 }
 
 type CreateWebhookRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Required. The webhook to create.
+	// Required. The request body.
 	Body webhooks.WebhookInput `request:"mediaType=application/json"`
 }
 

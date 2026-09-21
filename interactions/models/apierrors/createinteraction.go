@@ -23,7 +23,7 @@ import (
 	"google.golang.org/genai/interactions/models/interactions"
 )
 
-// CreateInteractionServerError - Error creating interaction
+// CreateInteractionServerError - Server Error
 type CreateInteractionServerError struct {
 	// Error message from an interaction.
 	Error_   interactions.Error      `json:"error"`
@@ -37,7 +37,7 @@ func (e *CreateInteractionServerError) Error() string {
 	return string(data)
 }
 
-// CreateInteractionClientError - Error creating interaction
+// CreateInteractionClientError - Client Error
 type CreateInteractionClientError struct {
 	// Error message from an interaction.
 	Error_   interactions.Error      `json:"error"`

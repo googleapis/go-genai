@@ -23,7 +23,7 @@ import (
 	"google.golang.org/genai/interactions/models/interactions"
 )
 
-// CancelInteractionByIDServerError - Error cancelling interaction
+// CancelInteractionByIDServerError - Server Error
 type CancelInteractionByIDServerError struct {
 	// Error message from an interaction.
 	Error_   interactions.Error      `json:"error"`
@@ -37,7 +37,7 @@ func (e *CancelInteractionByIDServerError) Error() string {
 	return string(data)
 }
 
-// CancelInteractionByIDClientError - Error cancelling interaction
+// CancelInteractionByIDClientError - Client Error
 type CancelInteractionByIDClientError struct {
 	// Error message from an interaction.
 	Error_   interactions.Error      `json:"error"`

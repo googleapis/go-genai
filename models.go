@@ -1215,8 +1215,9 @@ func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]a
 		InternalSetValueByPath(parentObject, []string{"toolConfig"}, fromToolConfig)
 	}
 
-	if InternalGetValueByPath(fromObject, []string{"labels"}) != nil {
-		return nil, fmt.Errorf("labels parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		InternalSetValueByPath(parentObject, []string{"labels"}, fromLabels)
 	}
 
 	fromCachedContent := InternalGetValueByPath(fromObject, []string{"cachedContent"})

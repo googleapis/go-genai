@@ -20,10 +20,12 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// Ranking - Config for Rank Service.
+// Ranking - Config for ranking and reranking.
 type Ranking struct {
 	// Optional. The model name of the rank service.
 	ModelName *string `json:"model_name,omitzero"`
+	// Config for Rank Service.
+	RankService *RankService `json:"rank_service,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
 	rankingConfig string `const:"rank_service" json:"ranking_config"`
 }
@@ -44,6 +46,13 @@ func (r *Ranking) GetModelName() *string {
 		return nil
 	}
 	return r.ModelName
+}
+
+func (r *Ranking) GetRankService() *RankService {
+	if r == nil {
+		return nil
+	}
+	return r.RankService
 }
 
 func (r *Ranking) GetRankingConfig() string {

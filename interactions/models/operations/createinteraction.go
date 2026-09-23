@@ -27,7 +27,7 @@ import (
 )
 
 type CreateInteractionGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -138,7 +138,7 @@ func (u CreateInteractionRequestBody) MarshalJSON() ([]byte, error) {
 }
 
 type CreateInteractionRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// The request body.
 	Body CreateInteractionRequestBody `request:"mediaType=application/json"`

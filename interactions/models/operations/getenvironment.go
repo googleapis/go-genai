@@ -23,7 +23,7 @@ import (
 )
 
 type GetEnvironmentGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,9 +35,10 @@ func (g *GetEnvironmentGlobals) GetAPIVersion() *string {
 }
 
 type GetEnvironmentRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
+	// Required. Resource ID segment making up resource `name`. It identifies the resource
+	// within its parent collection as described in https://google.aip.dev/122.
 	ID string `pathParam:"style=simple,explode=false,name=id"`
 }
 

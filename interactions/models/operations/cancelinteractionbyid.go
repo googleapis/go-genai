@@ -23,7 +23,7 @@ import (
 )
 
 type CancelInteractionByIDGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,10 +35,10 @@ func (c *CancelInteractionByIDGlobals) GetAPIVersion() *string {
 }
 
 type CancelInteractionByIDRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// The unique identifier of the interaction to cancel.
-	ID string `pathParam:"style=simple,explode=false,name=id"`
+	// Required. The name of the interaction to cancel.
+	ID string `pathParam:"style=simple,explode=false,name=interactionsId"`
 }
 
 func (c *CancelInteractionByIDRequest) GetAPIVersion() *string {
@@ -57,7 +57,7 @@ func (c *CancelInteractionByIDRequest) GetID() string {
 
 type CancelInteractionByIDResponse struct {
 	HTTPMeta components.HTTPMetadata `json:"-"`
-	// Successful cancellation of the interaction.
+	// Successful operation
 	Interaction *interactions.Interaction
 }
 

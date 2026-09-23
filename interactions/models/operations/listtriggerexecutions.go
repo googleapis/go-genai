@@ -23,7 +23,7 @@ import (
 )
 
 type ListTriggerExecutionsGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,14 +35,14 @@ func (l *ListTriggerExecutionsGlobals) GetAPIVersion() *string {
 }
 
 type ListTriggerExecutionsRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Resource name of the trigger.
-	TriggerID string `pathParam:"style=simple,explode=false,name=trigger_id"`
-	// Optional. The maximum number of executions to return per page.
-	PageSize *int64 `queryParam:"style=form,explode=true,name=page_size"`
-	// Optional. A page token from a previous ListTriggerExecutions call.
+	// The maximum number of executions to return per page.
+	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
+	// A page token from a previous ListTriggerExecutions call.
 	PageToken *string `queryParam:"style=form,explode=true,name=page_token"`
+	// Required. The trigger ID to list executions from.
+	TriggerID string `pathParam:"style=simple,explode=false,name=triggerId"`
 }
 
 func (l *ListTriggerExecutionsRequest) GetAPIVersion() *string {
@@ -52,14 +52,7 @@ func (l *ListTriggerExecutionsRequest) GetAPIVersion() *string {
 	return l.APIVersion
 }
 
-func (l *ListTriggerExecutionsRequest) GetTriggerID() string {
-	if l == nil {
-		return ""
-	}
-	return l.TriggerID
-}
-
-func (l *ListTriggerExecutionsRequest) GetPageSize() *int64 {
+func (l *ListTriggerExecutionsRequest) GetPageSize() *int {
 	if l == nil {
 		return nil
 	}
@@ -71,6 +64,13 @@ func (l *ListTriggerExecutionsRequest) GetPageToken() *string {
 		return nil
 	}
 	return l.PageToken
+}
+
+func (l *ListTriggerExecutionsRequest) GetTriggerID() string {
+	if l == nil {
+		return ""
+	}
+	return l.TriggerID
 }
 
 type ListTriggerExecutionsResponse struct {

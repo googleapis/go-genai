@@ -20,6 +20,7 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
+// InteractionCreatedEvent - Server response confirming that a new interaction was created.
 type InteractionCreatedEvent struct {
 	// The event_id token to be used to resume the interaction stream, from
 	// this event.

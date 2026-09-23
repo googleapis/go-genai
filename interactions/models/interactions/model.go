@@ -52,13 +52,15 @@ const (
 	ModelNanoBananaProPreview Model = "nano-banana-pro-preview"
 	// ModelGemini31FlashImage Gemini 3.1 Flash Image.
 	ModelGemini31FlashImage Model = "gemini-3.1-flash-image"
-	// ModelGemini35Flash Gemini 3.5 Flash - Our earlier Flash model, built for speed and foundational performance across routine, high-throughput workloads.
+	// ModelGemini31FlashTtsPreview Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
+	ModelGemini31FlashTtsPreview Model = "gemini-3.1-flash-tts-preview"
+	// ModelGemini35Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
 	ModelGemini35Flash Model = "gemini-3.5-flash"
-	// ModelGemini36Flash Gemini 3.6 Flash - Our previous generation Flash model, balancing speed and multimodal capabilities across general agentic and everyday tasks.
+	// ModelGemini36Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
 	ModelGemini36Flash Model = "gemini-3.6-flash"
-	// ModelGemini37Flash Gemini 3.7 Flash - Our high-speed, efficient Flash model built for everyday coding, agentic tool use, and reliable multi-step execution.
+	// ModelGemini37Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
 	ModelGemini37Flash Model = "gemini-3.7-flash"
-	// ModelGemini38Flash Gemini 3.8 Flash - Our most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows.
+	// ModelGemini38Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
 	ModelGemini38Flash Model = "gemini-3.8-flash"
 	// ModelLyria3ClipPreview Our low-latency, music generation model optimized for high-fidelity audio clips and precise rhythmic control.
 	ModelLyria3ClipPreview Model = "lyria-3-clip-preview"
@@ -78,7 +80,7 @@ func (e Model) ToPointer() *Model {
 func (e *Model) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "gemini-2.5-flash", "gemini-2.5-pro", "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest", "gemini-2.5-flash-lite", "gemini-2.5-flash-image", "gemini-3-flash-preview", "gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools", "gemini-3.1-flash-lite", "gemini-3-pro-image", "nano-banana-pro-preview", "gemini-3.1-flash-image", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "lyria-3-clip-preview", "lyria-3-pro-preview", "gemini-robotics-er-1.6-preview", "gemini-robotics-er-2-preview":
+		case "gemini-2.5-flash", "gemini-2.5-pro", "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest", "gemini-2.5-flash-lite", "gemini-2.5-flash-image", "gemini-3-flash-preview", "gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools", "gemini-3.1-flash-lite", "gemini-3-pro-image", "nano-banana-pro-preview", "gemini-3.1-flash-image", "gemini-3.1-flash-tts-preview", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "lyria-3-clip-preview", "lyria-3-pro-preview", "gemini-robotics-er-1.6-preview", "gemini-robotics-er-2-preview":
 			return true
 		}
 	}

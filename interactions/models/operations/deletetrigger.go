@@ -23,7 +23,7 @@ import (
 )
 
 type DeleteTriggerGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,9 +35,9 @@ func (d *DeleteTriggerGlobals) GetAPIVersion() *string {
 }
 
 type DeleteTriggerRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Resource name of the trigger.
+	// Required. Resource name of the trigger.
 	ID string `pathParam:"style=simple,explode=false,name=id"`
 }
 

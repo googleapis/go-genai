@@ -121,7 +121,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(interactions.CreateModelInteraction{
 		Model: interactions.Model("gemini-flash-latest"),
-		Input: interactions.NewInteractionsInput("Tell me a short joke about programming."),
+		Input: genai.Ptr(interactions.NewInteractionsInput("Tell me a short joke about programming.")),
 	})
 
 	res, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: body})

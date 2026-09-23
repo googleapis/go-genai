@@ -21,7 +21,7 @@ import (
 )
 
 type DeleteInteractionGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -33,10 +33,10 @@ func (d *DeleteInteractionGlobals) GetAPIVersion() *string {
 }
 
 type DeleteInteractionRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// The unique identifier of the interaction to delete.
-	ID string `pathParam:"style=simple,explode=false,name=id"`
+	// Required. The name of the interaction to delete.
+	ID string `pathParam:"style=simple,explode=false,name=interactionsId"`
 }
 
 func (d *DeleteInteractionRequest) GetAPIVersion() *string {

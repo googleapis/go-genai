@@ -43,8 +43,8 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model:  gaos_interactions.Model("gemini-flash-latest"),
-		Input:  gaos_interactions.NewInteractionsInput("Tell me a story"),
-		Stream: ptr(true),
+		Input:  genai.Ptr(gaos_interactions.NewInteractionsInput("Tell me a story")),
+		Stream: genai.Ptr(true),
 	})
 
 	res, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: body})
@@ -76,8 +76,4 @@ func main() {
 		fmt.Printf("\nError during streaming: %v\n", err)
 	}
 	fmt.Println()
-}
-
-func ptr[T any](v T) *T {
-	return &v
 }

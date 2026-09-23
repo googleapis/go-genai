@@ -66,8 +66,8 @@ func main() {
 	}
 
 	function := gaos_interactions.Function{
-		Name:        ptr("schedule_meeting"),
-		Description: ptr("Schedules a meeting with specified attendees at a given time and date."),
+		Name:        genai.Ptr("schedule_meeting"),
+		Description: genai.Ptr("Schedules a meeting with specified attendees at a given time and date."),
 		Parameters:  parametersSchema,
 	}
 
@@ -75,7 +75,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: gaos_interactions.NewInteractionsInput("Schedule a meeting for 10/06/2028 at 10 am with Peter and Amir about the Next Gen API"),
+		Input: genai.Ptr(gaos_interactions.NewInteractionsInput("Schedule a meeting for 10/06/2028 at 10 am with Peter and Amir about the Next Gen API")),
 		Tools: []gaos_interactions.Tool{tool},
 	})
 
@@ -100,8 +100,4 @@ func main() {
 			}
 		}
 	}
-}
-
-func ptr[T any](v T) *T {
-	return &v
 }

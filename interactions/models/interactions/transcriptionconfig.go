@@ -180,6 +180,10 @@ type TranscriptionConfig struct {
 	// Optional. BCP-47 language codes providing hints about the languages present in the
 	// audio. If omitted or empty, defaults to automatic language detection.
 	LanguageCodes []string `json:"language_codes,omitzero"`
+	// Deprecated: use language_codes. BCP-47 language codes providing hints about the languages present in the audio.
+	//
+	// Deprecated: This will be removed in a future release, please migrate away from it as soon as possible.
+	LanguageHints []string `json:"language_hints,omitzero"`
 	// Discriminated transcription mode options or enum.
 	Mode *TranscriptionConfigMode `json:"mode,omitzero"`
 	// Optional. The granularity of timestamps to include in the transcription output.
@@ -226,6 +230,13 @@ func (t *TranscriptionConfig) GetLanguageCodes() []string {
 		return nil
 	}
 	return t.LanguageCodes
+}
+
+func (t *TranscriptionConfig) GetLanguageHints() []string {
+	if t == nil {
+		return nil
+	}
+	return t.LanguageHints
 }
 
 func (t *TranscriptionConfig) GetMode() *TranscriptionConfigMode {

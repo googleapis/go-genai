@@ -146,7 +146,8 @@ func (u Transform) MarshalJSON() ([]byte, error) {
 type AllowlistEntry struct {
 	// Optional. Reference to a server-managed Credential resource by ID.
 	Credential *string `json:"credential,omitzero"`
-	// Domain to allow outbound requests to. Supports wildcards (e.g. '*.googleapis.com'). Use '*' to allow all domains.
+	// Domain to allow outbound requests to. Supports wildcards (e.g.
+	// '*.googleapis.com'). Use '*' to allow all domains.
 	Domain string `json:"domain"`
 	// Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically.
 	Transform *Transform `json:"transform,omitzero"`

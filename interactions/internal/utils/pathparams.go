@@ -129,9 +129,10 @@ func getSimplePathParams(parentName string, objType reflect.Type, objValue refle
 	case reflect.Map:
 		// check if optionalnullable.OptionalNullable[T]
 		if nullableValue, ok := optionalnullable.AsOptionalNullable(objValue); ok {
-			// Handle optionalnullable.OptionalNullable[T] using GetUntyped method
+			// Serialize the wrapped value using the rules for its own type
 			if value, isSet := nullableValue.GetUntyped(); isSet && value != nil {
-				pathParams[parentName] = valToString(value)
+				innerValue := reflect.ValueOf(value)
+				return getSimplePathParams(parentName, innerValue.Type(), innerValue, explode)
 			}
 			// If not set or explicitly null, return nil (skip parameter)
 			return pathParams
@@ -175,6 +176,11 @@ func getSimplePathParams(parentName string, objType reflect.Type, objValue refle
 
 				if fieldType.Type.Kind() == reflect.Pointer {
 					valType = valType.Elem()
+				}
+
+				valType, hasValue := unwrapOptionalNullable(valType)
+				if !hasValue {
+					continue
 				}
 
 				if explode {

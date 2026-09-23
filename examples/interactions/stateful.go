@@ -44,7 +44,7 @@ func main() {
 	fmt.Println("User: What are the three largest cities in Spain?")
 	body1 := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: gaos_interactions.NewInteractionsInput("What are the three largest cities in Spain?"),
+		Input: genai.Ptr(gaos_interactions.NewInteractionsInput("What are the three largest cities in Spain?")),
 	})
 
 	res1, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: body1})
@@ -64,7 +64,7 @@ func main() {
 	fmt.Println("\nUser: What is the most famous landmark in the second one?")
 	body2 := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model:                 gaos_interactions.Model("gemini-flash-latest"),
-		Input:                 gaos_interactions.NewInteractionsInput("What is the most famous landmark in the second one?"),
+		Input:                 genai.Ptr(gaos_interactions.NewInteractionsInput("What is the most famous landmark in the second one?")),
 		PreviousInteractionID: res1.Interaction.ID,
 	})
 

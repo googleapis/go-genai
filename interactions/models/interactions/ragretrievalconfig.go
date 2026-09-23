@@ -26,7 +26,7 @@ type RagRetrievalConfig struct {
 	Filter *Filter `json:"filter,omitzero"`
 	// Config for Hybrid Search.
 	HybridSearch *HybridSearch `json:"hybrid_search,omitzero"`
-	// Config for Rank Service.
+	// Config for ranking and reranking.
 	Ranking *Ranking `json:"ranking,omitzero"`
 	// Optional. The number of contexts to retrieve.
 	TopK *int `json:"top_k,omitzero"`

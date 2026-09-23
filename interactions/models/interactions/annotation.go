@@ -27,26 +27,28 @@ import (
 type AnnotationType string
 
 const (
-	AnnotationTypeFileCitation  AnnotationType = "file_citation"
-	AnnotationTypePlaceCitation AnnotationType = "place_citation"
-	AnnotationTypeURLCitation   AnnotationType = "url_citation"
-	AnnotationTypeWordInfo      AnnotationType = "word_info"
-	AnnotationTypeUnknown       AnnotationType = "UNKNOWN"
+	AnnotationTypeFileCitation   AnnotationType = "file_citation"
+	AnnotationTypePlaceCitation  AnnotationType = "place_citation"
+	AnnotationTypeSpeechMetadata AnnotationType = "speech_metadata"
+	AnnotationTypeURLCitation    AnnotationType = "url_citation"
+	AnnotationTypeWordInfo       AnnotationType = "word_info"
+	AnnotationTypeUnknown        AnnotationType = "UNKNOWN"
 )
 
 // Annotation - Citation information for model-generated content.
 type Annotation struct {
-	FileCitation  *FileCitation   `queryParam:"inline" union:"member"`
-	PlaceCitation *PlaceCitation  `queryParam:"inline" union:"member"`
-	URLCitation   *URLCitation    `queryParam:"inline" union:"member"`
-	WordInfo      *WordInfo       `queryParam:"inline" union:"member"`
-	UnknownRaw    json.RawMessage `json:"-" union:"unknown"`
+	FileCitation     *FileCitation     `queryParam:"inline" union:"member"`
+	PlaceCitation    *PlaceCitation    `queryParam:"inline" union:"member"`
+	SpeechAnnotation *SpeechAnnotation `queryParam:"inline" union:"member"`
+	URLCitation      *URLCitation      `queryParam:"inline" union:"member"`
+	WordInfo         *WordInfo         `queryParam:"inline" union:"member"`
+	UnknownRaw       json.RawMessage   `json:"-" union:"unknown"`
 
 	Type AnnotationType
 }
 
 type AnnotationMember interface {
-	FileCitation | PlaceCitation | URLCitation | WordInfo
+	FileCitation | PlaceCitation | SpeechAnnotation | URLCitation | WordInfo
 }
 
 func NewAnnotation[T AnnotationMember](val T) Annotation {
@@ -62,6 +64,12 @@ func NewAnnotation[T AnnotationMember](val T) Annotation {
 		return Annotation{
 			PlaceCitation: &v,
 			Type:          typ,
+		}
+	case SpeechAnnotation:
+		typ := AnnotationTypeSpeechMetadata
+		return Annotation{
+			SpeechAnnotation: &v,
+			Type:             typ,
 		}
 	case URLCitation:
 		typ := AnnotationTypeURLCitation
@@ -137,6 +145,15 @@ func (u *Annotation) UnmarshalJSON(data []byte) (err error) {
 		u.PlaceCitation = placeCitation
 		u.Type = AnnotationTypePlaceCitation
 		return nil
+	case "speech_metadata":
+		speechAnnotation := new(SpeechAnnotation)
+		if err := utils.UnmarshalJSON(data, &speechAnnotation, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == speech_metadata) type SpeechAnnotation within Annotation: %w", string(data), err)
+		}
+
+		u.SpeechAnnotation = speechAnnotation
+		u.Type = AnnotationTypeSpeechMetadata
+		return nil
 	case "url_citation":
 		urlCitation := new(URLCitation)
 		if err := utils.UnmarshalJSON(data, &urlCitation, "", true, nil); err != nil {
@@ -170,6 +187,10 @@ func (u Annotation) MarshalJSON() ([]byte, error) {
 
 	if u.PlaceCitation != nil {
 		return utils.MarshalJSON(u.PlaceCitation, "", true)
+	}
+
+	if u.SpeechAnnotation != nil {
+		return utils.MarshalJSON(u.SpeechAnnotation, "", true)
 	}
 
 	if u.URLCitation != nil {

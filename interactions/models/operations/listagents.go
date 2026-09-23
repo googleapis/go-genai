@@ -23,7 +23,7 @@ import (
 )
 
 type ListAgentsGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,11 +35,13 @@ func (l *ListAgentsGlobals) GetAPIVersion() *string {
 }
 
 type ListAgentsRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	PageSize   *int    `queryParam:"style=form,explode=true,name=page_size"`
 	PageToken  *string `queryParam:"style=form,explode=true,name=page_token"`
-	Parent     *string `queryParam:"style=form,explode=true,name=parent"`
+	// Required. The parent resource to list agents from.
+	// Format: `projects/{project}/locations/{location}`
+	Parent *string `queryParam:"style=form,explode=true,name=parent"`
 }
 
 func (l *ListAgentsRequest) GetAPIVersion() *string {

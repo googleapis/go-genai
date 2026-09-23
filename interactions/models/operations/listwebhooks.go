@@ -23,7 +23,7 @@ import (
 )
 
 type ListWebhooksGlobals struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 }
 
@@ -35,11 +35,11 @@ func (l *ListWebhooksGlobals) GetAPIVersion() *string {
 }
 
 type ListWebhooksRequest struct {
-	// Which version of the API to use.
+	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Optional. The maximum number of webhooks to return. The service may return fewer than
-	// this value. If unspecified, at most 50 webhooks will be returned.
-	// The maximum value is 1000.
+	// Optional. The maximum number of webhooks to return. The service may return
+	// fewer than this value. If unspecified, at most 50 webhooks will be
+	// returned. The maximum value is 1000.
 	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
 	// Optional. A page token, received from a previous `ListWebhooks` call.
 	// Provide this to retrieve the subsequent page.

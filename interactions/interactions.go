@@ -359,7 +359,7 @@ func (s *Interactions) Delete(ctx context.Context, request operations.DeleteInte
 	} else {
 		baseURL = *o.ServerURL
 	}
-	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/interactions/{id}", request, globals)
+	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/interactions/{interactionsId}", request, globals)
 	if err != nil {
 		return nil, fmt.Errorf("error generating URL: %w", err)
 	}
@@ -573,7 +573,7 @@ func (s *Interactions) Delete(ctx context.Context, request operations.DeleteInte
 
 }
 
-// Get retrieves the full details of a single interaction based on its `Interaction.id`.
+// Get `Interaction.id`.
 func (s *Interactions) Get(ctx context.Context, request operations.GetInteractionByIDRequest, opts ...operations.Option) (*operations.GetInteractionByIDResponse, error) {
 	globals := operations.GetInteractionByIDGlobals{
 		APIVersion: s.sdkConfiguration.Globals.APIVersion,
@@ -598,7 +598,7 @@ func (s *Interactions) Get(ctx context.Context, request operations.GetInteractio
 	} else {
 		baseURL = *o.ServerURL
 	}
-	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/interactions/{id}", request, globals)
+	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/interactions/{interactionsId}", request, globals)
 	if err != nil {
 		return nil, fmt.Errorf("error generating URL: %w", err)
 	}
@@ -857,7 +857,7 @@ func (s *Interactions) Get(ctx context.Context, request operations.GetInteractio
 
 }
 
-// Cancel cancels an interaction by id. This only applies to background interactions that are still running.
+// Cancel that are still running.
 func (s *Interactions) Cancel(ctx context.Context, request operations.CancelInteractionByIDRequest, opts ...operations.Option) (*operations.CancelInteractionByIDResponse, error) {
 	globals := operations.CancelInteractionByIDGlobals{
 		APIVersion: s.sdkConfiguration.Globals.APIVersion,
@@ -881,7 +881,7 @@ func (s *Interactions) Cancel(ctx context.Context, request operations.CancelInte
 	} else {
 		baseURL = *o.ServerURL
 	}
-	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/interactions/{id}/cancel", request, globals)
+	opURL, err := utils.GenerateURL(ctx, baseURL, "/{api_version}/interactions/{interactionsId}/cancel", request, globals)
 	if err != nil {
 		return nil, fmt.Errorf("error generating URL: %w", err)
 	}

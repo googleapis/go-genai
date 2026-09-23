@@ -30,7 +30,9 @@ const (
 	CreateModelInteractionEnvironmentTypeStr         CreateModelInteractionEnvironmentType = "str"
 )
 
-// CreateModelInteractionEnvironment - The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+// CreateModelInteractionEnvironment - The environment configuration for the interaction. Can be an object
+// specifying remote environment sources or a string referencing an existing
+// environment ID.
 type CreateModelInteractionEnvironment struct {
 	Environment *Environment `queryParam:"inline" union:"member"`
 	Str         *string      `queryParam:"inline" union:"member"`
@@ -129,7 +131,8 @@ const (
 	CreateModelInteractionResponseFormatTypeArrayOfResponseFormat CreateModelInteractionResponseFormatType = "arrayOfResponseFormat"
 )
 
-// CreateModelInteractionResponseFormat - Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+// CreateModelInteractionResponseFormat - Enforces that the generated response is a JSON object that complies with
+// the JSON schema specified in this field.
 type CreateModelInteractionResponseFormat struct {
 	ResponseFormat        *ResponseFormat  `queryParam:"inline" union:"member"`
 	ArrayOfResponseFormat []ResponseFormat `queryParam:"inline" union:"member"`
@@ -221,23 +224,35 @@ func (u CreateModelInteractionResponseFormat) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("could not marshal union type CreateModelInteractionResponseFormat: all fields are null")
 }
 
-// CreateModelInteraction - Parameters for creating model interactions
+// CreateModelInteraction - Interaction for generating the completion using models.
 type CreateModelInteraction struct {
 	// Input only. Whether to run the model interaction in the background.
 	Background *bool `json:"background,omitzero"`
-	// The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+	// The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+	//
+	// Deprecated: This will be removed in a future release, please migrate away from it as soon as possible.
+	CachedContent *string `json:"cached_content,omitzero"`
+	// The environment configuration for the interaction. Can be an object
+	// specifying remote environment sources or a string referencing an existing
+	// environment ID.
 	Environment *CreateModelInteractionEnvironment `json:"environment,omitzero"`
 	// Configuration parameters for model interactions.
 	GenerationConfig *GenerationConfig `json:"generation_config,omitzero"`
 	// The input for the interaction.
-	Input InteractionsInput `json:"input"`
+	Input *InteractionsInput `json:"input,omitzero"`
 	// The labels with user-defined metadata for the request.
+	//
+	// Label keys and values can be no longer than 63 characters
+	// (Unicode codepoints) and can only contain lowercase letters, numeric
+	// characters, underscores, and dashes. International characters are allowed.
+	// Label values are optional. Label keys must start with a letter.
 	Labels map[string]string `json:"labels,omitzero"`
 	// The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
 	Model Model `json:"model"`
 	// The ID of the previous interaction, if any.
 	PreviousInteractionID *string `json:"previous_interaction_id,omitzero"`
-	// Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+	// Enforces that the generated response is a JSON object that complies with
+	// the JSON schema specified in this field.
 	ResponseFormat *CreateModelInteractionResponseFormat `json:"response_format,omitzero"`
 	// The mime type of the response. This is required if response_format is set.
 	//
@@ -280,6 +295,13 @@ func (c *CreateModelInteraction) GetBackground() *bool {
 	return c.Background
 }
 
+func (c *CreateModelInteraction) GetCachedContent() *string {
+	if c == nil {
+		return nil
+	}
+	return c.CachedContent
+}
+
 func (c *CreateModelInteraction) GetEnvironment() *CreateModelInteractionEnvironment {
 	if c == nil {
 		return nil
@@ -294,9 +316,9 @@ func (c *CreateModelInteraction) GetGenerationConfig() *GenerationConfig {
 	return c.GenerationConfig
 }
 
-func (c *CreateModelInteraction) GetInput() InteractionsInput {
+func (c *CreateModelInteraction) GetInput() *InteractionsInput {
 	if c == nil {
-		return InteractionsInput{}
+		return nil
 	}
 	return c.Input
 }

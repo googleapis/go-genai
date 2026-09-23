@@ -8389,6 +8389,13 @@ type LiveClientSetup struct {
 	SafetySettings []*SafetySetting `json:"safetySettings,omitempty"`
 	// Optional. Configures the exchange of history between the client and the server.
 	HistoryConfig *HistoryConfig `json:"historyConfig,omitempty"`
+	// Optional. Labels with user-defined metadata for the request. Optional. Labels must
+	// follow standard unified Cloud label requirements: - Label keys must start with a
+	// letter. - Label keys and values can be no longer than 63 characters (Unicode codepoints)
+	// and can only contain lowercase letters, numeric characters, underscores, and dashes.
+	// - International characters are allowed. Usage: - Safety identifiers from aggregators:
+	// Use the key `safety_identifier` (e.g. `{"safety_identifier": "user_session_123"}`)
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // Incremental update of the current conversation delivered from the client.

@@ -241,6 +241,11 @@ func liveClientSetupToMldev(fromObject map[string]any, parentObject map[string]a
 		InternalSetValueByPath(toObject, []string{"historyConfig"}, fromHistoryConfig)
 	}
 
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		InternalSetValueByPath(toObject, []string{"labels"}, fromLabels)
+	}
+
 	return toObject, nil
 }
 
@@ -345,6 +350,10 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 	fromHistoryConfig := InternalGetValueByPath(fromObject, []string{"historyConfig"})
 	if fromHistoryConfig != nil {
 		InternalSetValueByPath(toObject, []string{"historyConfig"}, fromHistoryConfig)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"labels"}) != nil {
+		return nil, fmt.Errorf("labels parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
 	}
 
 	return toObject, nil

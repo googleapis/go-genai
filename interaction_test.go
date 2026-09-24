@@ -215,7 +215,6 @@ func TestInteractions_ClientOptions(t *testing.T) {
 	}
 }
 
-
 func TestWebhooksWorkflow(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -542,5 +541,265 @@ func TestCredentialsLifecycle(t *testing.T) {
 		if captured[i] != exp {
 			t.Errorf("Captured request [%d]: got %q, want %q", i, captured[i], exp)
 		}
+	}
+}
+
+func TestEnvironmentsFilesWorkflow(t *testing.T) {
+	var uploadURL string
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut {
+			if !strings.HasPrefix(r.URL.Path, "/upload/") {
+				t.Errorf("Expected PUT path to start with /upload/, got %s", r.URL.Path)
+			}
+			w.Header().Set("X-Goog-Upload-URL", uploadURL)
+			w.Header().Set("X-Goog-Upload-Status", "active")
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		if r.Method == http.MethodPost {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"name": "environments/env-1/files/test.txt", "path": "test.txt", "size_bytes": "12"}`))
+			return
+		}
+		if r.Method == http.MethodGet {
+			if r.URL.Query().Get("alt") != "media" {
+				t.Errorf("Query alt = %s; want media", r.URL.Query().Get("alt"))
+			}
+			w.Header().Set("Content-Type", "application/octet-stream")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("hello download"))
+			return
+		}
+		http.Error(w, "unexpected", http.StatusBadRequest)
+	}))
+	defer ts.Close()
+
+	uploadURL = ts.URL + "/upload/session"
+
+	client, err := NewClient(context.Background(), &ClientConfig{
+		Backend: BackendGeminiAPI,
+		HTTPOptions: HTTPOptions{
+			BaseURL: ts.URL,
+		},
+		APIKey: "dummy_key",
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	if client.Environments == nil {
+		t.Fatalf("client.Environments is nil")
+	}
+	if client.Environments.Files == nil {
+		t.Fatalf("client.Environments.Files is nil")
+	}
+
+	// Test Upload
+	uploadResp, err := client.Environments.Files.UploadBytes(context.Background(), "env-1", "test.txt", []byte("hello world!"))
+	if err != nil {
+		t.Fatalf("UploadBytes failed: %v", err)
+	}
+	if uploadResp.Files == nil || len(uploadResp.Files.Files) == 0 || uploadResp.Files.Files[0].GetName() == nil || *uploadResp.Files.Files[0].GetName() != "environments/env-1/files/test.txt" {
+		t.Errorf("Unexpected upload response: %+v", uploadResp.Files)
+	}
+
+	// Test Download
+	data, err := client.Environments.Files.Download(context.Background(), "env-1", "test.txt")
+	if err != nil {
+		t.Fatalf("Download failed: %v", err)
+	}
+	if string(data) != "hello download" {
+		t.Errorf("Download data = %s; want 'hello download'", string(data))
+	}
+}
+
+func TestEnvironmentsLifecycle(t *testing.T) {
+	var captured []string
+	var uploadURL string
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = append(captured, r.Method+" "+r.URL.String())
+
+		// Handle file upload handshake and upload
+		if r.Method == http.MethodPut && strings.Contains(r.URL.Path, "/files/") {
+			if !strings.HasPrefix(r.URL.Path, "/upload/") {
+				t.Errorf("Expected PUT path to start with /upload/, got %s", r.URL.Path)
+			}
+			w.Header().Set("X-Goog-Upload-URL", uploadURL)
+			w.Header().Set("X-Goog-Upload-Status", "active")
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		if r.Method == http.MethodPost && r.URL.Path == "/scotty/upload/resumable" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"file": {"name": "environments/env-123/files/main.py", "path": "main.py", "size_bytes": "20"}}`))
+			return
+		}
+
+		// Handle file download
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/files/main.py") && r.URL.Query().Get("alt") == "media" {
+			w.Header().Set("Content-Type", "application/octet-stream")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("print('hello world')"))
+			return
+		}
+
+		// Handle file list
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/files") {
+			resp := map[string]any{
+				"files": []map[string]any{
+					{
+						"name":       "main.py",
+						"path":       "workspace/main.py",
+						"type":       "file",
+						"size_bytes": "20",
+					},
+				},
+				"next_page_token": "token_next",
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(resp)
+			return
+		}
+
+		// Handle Environment CRUD
+		switch r.Method {
+		case http.MethodPost:
+			// CreateEnvironment
+			resp := map[string]any{
+				"id":      "env-123",
+				"status":  "active",
+				"created": "2026-07-22T15:18:38Z",
+				"updated": "2026-07-22T15:18:38Z",
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(resp)
+		case http.MethodGet:
+			if strings.HasSuffix(r.URL.Path, "/environments/env-123") {
+				// GetEnvironment
+				resp := map[string]any{
+					"id":      "env-123",
+					"status":  "active",
+					"created": "2026-07-22T15:18:38Z",
+					"updated": "2026-07-22T15:18:38Z",
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(resp)
+			} else {
+				// ListEnvironments
+				resp := map[string]any{
+					"environments": []map[string]any{
+						{
+							"id":      "env-123",
+							"status":  "active",
+							"created": "2026-07-22T15:18:38Z",
+							"updated": "2026-07-22T15:18:38Z",
+						},
+					},
+					"next_page_token": "",
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(resp)
+			}
+		case http.MethodDelete:
+			// DeleteEnvironment
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{}`))
+		default:
+			http.Error(w, "not found", http.StatusNotFound)
+		}
+	}))
+	defer ts.Close()
+
+	uploadURL = ts.URL + "/scotty/upload/resumable"
+
+	client, err := NewClient(context.Background(), &ClientConfig{
+		Backend: BackendGeminiAPI,
+		HTTPOptions: HTTPOptions{
+			BaseURL: ts.URL,
+		},
+		APIKey: "dummy_key",
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	if client.Environments == nil {
+		t.Fatalf("client.Environments is nil")
+	}
+	if client.Environments.Files == nil {
+		t.Fatalf("client.Environments.Files is nil")
+	}
+
+	ctx := context.Background()
+
+	// 1. CreateEnvironment
+	createResp, err := client.Environments.CreateEnvironment(ctx, operations.CreateEnvironmentRequest{})
+	if err != nil {
+		t.Fatalf("CreateEnvironment failed: %v", err)
+	}
+	if createResp.Environment == nil || createResp.Environment.ID != "env-123" {
+		t.Errorf("Unexpected CreateEnvironment response: %+v", createResp.Environment)
+	}
+
+	// 2. ListEnvironments
+	listResp, err := client.Environments.ListEnvironments(ctx, operations.ListEnvironmentsRequest{})
+	if err != nil {
+		t.Fatalf("ListEnvironments failed: %v", err)
+	}
+	if len(listResp.ListEnvironmentsResponse.Environments) == 0 {
+		t.Errorf("Expected at least 1 environment in list, got 0")
+	}
+
+	// 3. GetEnvironment
+	getResp, err := client.Environments.GetEnvironment(ctx, operations.GetEnvironmentRequest{
+		ID: "env-123",
+	})
+	if err != nil {
+		t.Fatalf("GetEnvironment failed: %v", err)
+	}
+	if getResp.Environment == nil || getResp.Environment.ID != "env-123" {
+		t.Errorf("Unexpected GetEnvironment response: %+v", getResp.Environment)
+	}
+
+	// 4. Files Upload
+	uploadResp, err := client.Environments.Files.UploadBytes(ctx, "env-123", "main.py", []byte("print('hello world')"))
+	if err != nil {
+		t.Fatalf("UploadBytes failed: %v", err)
+	}
+	if uploadResp.Files == nil || len(uploadResp.Files.Files) == 0 || uploadResp.Files.Files[0].GetName() == nil || *uploadResp.Files.Files[0].GetName() != "environments/env-123/files/main.py" {
+		t.Errorf("Unexpected upload response: %+v", uploadResp.Files)
+	}
+
+	// 5. Files List
+	filesListResp, err := client.Environments.Files.List(ctx, operations.GetEnvironmentFilesRequest{
+		Environment: "env-123",
+		Path:        "",
+	})
+	if err != nil {
+		t.Fatalf("Files.List failed: %v", err)
+	}
+	if len(filesListResp.GetEnvironmentFilesResponse.Files) == 0 {
+		t.Errorf("Expected at least 1 file in list, got 0")
+	}
+
+	// 6. Files Download
+	downloaded, err := client.Environments.Files.Download(ctx, "env-123", "main.py")
+	if err != nil {
+		t.Fatalf("Download failed: %v", err)
+	}
+	if string(downloaded) != "print('hello world')" {
+		t.Errorf("Download returned %s; want 'print(\\'hello world\\')'", string(downloaded))
+	}
+
+	// 7. DeleteEnvironment
+	_, err = client.Environments.DeleteEnvironment(ctx, operations.DeleteEnvironmentRequest{
+		ID: "env-123",
+	})
+	if err != nil {
+		t.Fatalf("DeleteEnvironment failed: %v", err)
 	}
 }

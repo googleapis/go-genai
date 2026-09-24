@@ -53,8 +53,8 @@ func main() {
 
 	body1 := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: genai.Ptr(gaos_interactions.NewInteractionsInput(conversationHistory)),
-		Store: genai.Ptr(false),
+		Input: ptr(gaos_interactions.NewInteractionsInput(conversationHistory)),
+		Store: ptr(false),
 	})
 
 	res1, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: body1})
@@ -87,8 +87,8 @@ func main() {
 
 	body2 := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: genai.Ptr(gaos_interactions.NewInteractionsInput(conversationHistory)),
-		Store: genai.Ptr(false),
+		Input: ptr(gaos_interactions.NewInteractionsInput(conversationHistory)),
+		Store: ptr(false),
 	})
 
 	res2, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: body2})
@@ -100,4 +100,8 @@ func main() {
 	if res2.Interaction != nil && res2.Interaction.OutputText != nil {
 		fmt.Println(*res2.Interaction.OutputText)
 	}
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

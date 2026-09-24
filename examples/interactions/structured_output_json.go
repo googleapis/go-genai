@@ -55,7 +55,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model:          gaos_interactions.Model("gemini-flash-latest"),
-		Input:          genai.Ptr(gaos_interactions.NewInteractionsInput("Which are the colors of a rainbow")),
+		Input:          ptr(gaos_interactions.NewInteractionsInput("Which are the colors of a rainbow")),
 		ResponseFormat: &createModelInteractionResponseFormat,
 	})
 
@@ -72,4 +72,8 @@ func main() {
 			fmt.Println("Output:", *res.Interaction.OutputText)
 		}
 	}
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

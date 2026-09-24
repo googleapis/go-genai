@@ -63,14 +63,14 @@ func main() {
 	contents := []gaos_interactions.Content{
 		gaos_interactions.NewContent(gaos_interactions.TextContent{Text: "What is shown in this image?"}),
 		gaos_interactions.NewContent(gaos_interactions.ImageContent{
-			Data:     genai.Ptr(imageBase64),
+			Data:     ptr(imageBase64),
 			MimeType: gaos_interactions.ImageContentMimeTypeImageJpeg.ToPointer(),
 		}),
 	}
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: genai.Ptr(gaos_interactions.NewInteractionsInput(contents)),
+		Input: ptr(gaos_interactions.NewInteractionsInput(contents)),
 	})
 
 	res, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: body})
@@ -86,4 +86,8 @@ func main() {
 			fmt.Printf("Output: %s\n", *res.Interaction.OutputText)
 		}
 	}
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

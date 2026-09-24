@@ -45,7 +45,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: genai.Ptr(gaos_interactions.NewInteractionsInput("Why is the sky blue")),
+		Input: ptr(gaos_interactions.NewInteractionsInput("Why is the sky blue")),
 		Tools: []gaos_interactions.Tool{tool},
 	})
 
@@ -63,4 +63,8 @@ func main() {
 			fmt.Println("Output Text:", *res.Interaction.OutputText)
 		}
 	}
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

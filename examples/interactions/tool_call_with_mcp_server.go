@@ -42,16 +42,16 @@ func main() {
 	fmt.Println("Using Gemini Developer API")
 
 	mcpServer := gaos_interactions.MCPServer{
-		Name: genai.Ptr("weather_service"),
-		URL:  genai.Ptr("https://gemini-api-demos.uc.r.appspot.com/mcp"),
+		Name: ptr("weather_service"),
+		URL:  ptr("https://gemini-api-demos.uc.r.appspot.com/mcp"),
 	}
 
 	tool := gaos_interactions.NewTool(mcpServer)
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model:             gaos_interactions.Model("gemini-flash-latest"),
-		Input:             genai.Ptr(gaos_interactions.NewInteractionsInput("What is the temperature today in London?")),
-		SystemInstruction: genai.Ptr("Today is 9-23-2025. Any dates before this are in the past, and any dates after this are in the future."),
+		Input:             ptr(gaos_interactions.NewInteractionsInput("What is the temperature today in London?")),
+		SystemInstruction: ptr("Today is 9-23-2025. Any dates before this are in the past, and any dates after this are in the future."),
 		Tools:             []gaos_interactions.Tool{tool},
 	})
 
@@ -69,4 +69,8 @@ func main() {
 			fmt.Println("Output:", *res.Interaction.OutputText)
 		}
 	}
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

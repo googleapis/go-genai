@@ -222,9 +222,7 @@ func countFieldsRecursive(candidate *UnionCandidate, typ reflect.Type, val refle
 		}
 		return
 	}
-	// Anything else
-	candidate.Matched++
-	return
+	panic("Unhandled type " + kind.String())
 }
 
 // jsonFieldName returns the JSON field name for a struct field.

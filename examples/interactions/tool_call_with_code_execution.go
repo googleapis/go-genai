@@ -45,7 +45,7 @@ func main() {
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model("gemini-flash-latest"),
-		Input: genai.Ptr(gaos_interactions.NewInteractionsInput("What is the sum of the first 100 integers?")),
+		Input: ptr(gaos_interactions.NewInteractionsInput("What is the sum of the first 100 integers?")),
 		Tools: []gaos_interactions.Tool{tool},
 	})
 
@@ -63,4 +63,8 @@ func main() {
 			fmt.Println("Output:", *res.Interaction.OutputText)
 		}
 	}
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

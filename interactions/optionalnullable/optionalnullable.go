@@ -245,3 +245,29 @@ func AsOptionalNullable(v reflect.Value) (OptionalNullableInterface, bool) {
 	}
 	return nil, false
 }
+
+var optionalNullableInterfaceType = reflect.TypeOf((*OptionalNullableInterface)(nil)).Elem()
+
+// IsOptionalNullableType reports whether typ is an OptionalNullable[T] type.
+// It is the type-level counterpart to AsOptionalNullable, for reflection-based
+// code that only has a reflect.Type (e.g. when deciding how to decode into a
+// zero value).
+func IsOptionalNullableType(typ reflect.Type) bool {
+	return typ != nil &&
+		typ.Kind() == reflect.Map &&
+		typ.Key().Kind() == reflect.Bool &&
+		typ.Elem().Kind() == reflect.Ptr &&
+		typ.Implements(optionalNullableInterfaceType)
+}
+
+// FromReflect is the reflection-based counterpart to From: it returns a new
+// OptionalNullable value of type typ (which must satisfy IsOptionalNullableType)
+// set to the value innerPtr points at. innerPtr must be assignable to typ's
+// element type (*T); pass a nil *T to set the value to null.
+func FromReflect(typ reflect.Type, innerPtr reflect.Value) reflect.Value {
+	m := reflect.MakeMapWithSize(typ, 1)
+	key := reflect.New(typ.Key()).Elem()
+	key.SetBool(true)
+	m.SetMapIndex(key, innerPtr)
+	return m
+}

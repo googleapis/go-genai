@@ -1925,3 +1925,96 @@ func TestAsOptionalNullable(t *testing.T) {
 		assertEqual(t, "test", value)
 	})
 }
+
+func TestIsOptionalNullableType(t *testing.T) {
+	tests := []struct {
+		name string
+		typ  reflect.Type
+		want bool
+	}{
+		{
+			name: "OptionalNullable of scalar",
+			typ:  reflect.TypeOf(OptionalNullable[string]{}),
+			want: true,
+		},
+		{
+			name: "OptionalNullable of pointer",
+			typ:  reflect.TypeOf(OptionalNullable[*int]{}),
+			want: true,
+		},
+		{
+			name: "OptionalNullable of slice",
+			typ:  reflect.TypeOf(OptionalNullable[[]string]{}),
+			want: true,
+		},
+		{
+			name: "plain string map",
+			typ:  reflect.TypeOf(map[string]string{}),
+			want: false,
+		},
+		{
+			name: "bool-keyed map with non-pointer values",
+			typ:  reflect.TypeOf(map[bool]string{}),
+			want: false,
+		},
+		{
+			name: "bool-keyed pointer map without the interface method",
+			typ:  reflect.TypeOf(map[bool]*string{}),
+			want: false,
+		},
+		{
+			name: "non-map type",
+			typ:  reflect.TypeOf(""),
+			want: false,
+		},
+		{
+			name: "pointer to OptionalNullable",
+			typ:  reflect.TypeOf(&OptionalNullable[string]{}),
+			want: false,
+		},
+		{
+			name: "nil type",
+			typ:  nil,
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assertEqual(t, tt.want, IsOptionalNullableType(tt.typ))
+		})
+	}
+}
+
+func TestFromReflect(t *testing.T) {
+	typ := reflect.TypeOf(OptionalNullable[string]{})
+
+	t.Run("with value", func(t *testing.T) {
+		inner := reflect.New(reflect.TypeOf(""))
+		inner.Elem().SetString("hello")
+
+		got, ok := FromReflect(typ, inner).Interface().(OptionalNullable[string])
+		if !ok {
+			t.Fatal("expected FromReflect to return an OptionalNullable[string]")
+		}
+		assertTrue(t, got.IsSet())
+		assertFalse(t, got.IsNull())
+		v, set := got.Get()
+		if !set || v == nil {
+			t.Fatal("expected a set, non-nil value")
+		}
+		assertEqual(t, "hello", *v)
+		assertEqual(t, From(ptrFrom("hello")), got)
+	})
+
+	t.Run("with nil pointer sets null", func(t *testing.T) {
+		nilPtr := reflect.Zero(typ.Elem())
+
+		got, ok := FromReflect(typ, nilPtr).Interface().(OptionalNullable[string])
+		if !ok {
+			t.Fatal("expected FromReflect to return an OptionalNullable[string]")
+		}
+		assertTrue(t, got.IsSet())
+		assertTrue(t, got.IsNull())
+		assertEqual(t, From[string](nil), got)
+	})
+}

@@ -274,6 +274,7 @@ func (s *Files) List(ctx context.Context, request operations.GetEnvironmentFiles
 	}
 
 	return res, nil
+
 }
 
 // Upload uploads a file or extracts an archive inside an environment workspace using chunked resumable upload.
@@ -751,4 +752,3 @@ func inferMimeType(path string) string {
 	}
 	return "application/octet-stream"
 }
-

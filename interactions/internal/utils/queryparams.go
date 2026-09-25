@@ -24,6 +24,8 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"sort"
+	"strings"
 	"time"
 
 	"google.golang.org/genai/interactions/optionalnullable"
@@ -37,25 +39,58 @@ func PopulateQueryParams(_ context.Context, req *http.Request, queryParams inter
 	}
 
 	values := url.Values{}
+	allowReserved := map[string][]bool{}
 
-	globalsAlreadyPopulated, err := populateQueryParams(queryParams, globals, values, []string{}, allowEmptyValue)
+	globalsAlreadyPopulated, err := populateQueryParams(queryParams, globals, values, []string{}, allowEmptyValue, allowReserved)
 	if err != nil {
 		return err
 	}
 
 	if globals != nil {
-		_, err = populateQueryParams(globals, nil, values, globalsAlreadyPopulated, allowEmptyValue)
+		_, err = populateQueryParams(globals, nil, values, globalsAlreadyPopulated, allowEmptyValue, allowReserved)
 		if err != nil {
 			return err
 		}
 	}
 
-	req.URL.RawQuery = values.Encode()
+	req.URL.RawQuery = encodeQueryValues(values, allowReserved)
 
 	return nil
 }
 
-func populateQueryParams(queryParams interface{}, globals interface{}, values url.Values, skipFields []string, allowEmptyValue map[string]struct{}) ([]string, error) {
+func encodeQueryValues(values url.Values, allowReserved map[string][]bool) string {
+	keys := make([]string, 0, len(values))
+	for k := range values {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	var buf strings.Builder
+	for _, k := range keys {
+		keyEscaped := url.QueryEscape(k)
+		for i, v := range values[k] {
+			if buf.Len() > 0 {
+				buf.WriteByte('&')
+			}
+			buf.WriteString(keyEscaped)
+			buf.WriteByte('=')
+			reserved := i < len(allowReserved[k]) && allowReserved[k][i]
+			if reserved {
+				buf.WriteString(escapeExceptReserved(v))
+			} else {
+				buf.WriteString(url.QueryEscape(v))
+			}
+		}
+	}
+	return buf.String()
+}
+
+func addQueryValue(values url.Values, allowReserved map[string][]bool, key, value string, reserved bool) {
+	values.Add(key, value)
+	allowReserved[key] = append(allowReserved[key], reserved)
+}
+
+func populateQueryParams(queryParams interface{}, globals interface{}, values url.Values, skipFields []string, allowEmptyValue map[string]struct{}, allowReserved map[string][]bool) ([]string, error) {
 	queryParamsVal := reflect.ValueOf(queryParams)
 	if queryParamsVal.Kind() == reflect.Pointer && queryParamsVal.IsNil() {
 		return nil, nil
@@ -83,7 +118,7 @@ func populateQueryParams(queryParams interface{}, globals interface{}, values ur
 
 		constValue := parseConstTag(fieldType)
 		if constValue != nil {
-			values.Add(qpTag.ParamName, *constValue)
+			addQueryValue(values, allowReserved, qpTag.ParamName, *constValue, qpTag.AllowReserved)
 			continue
 		}
 
@@ -103,7 +138,7 @@ func populateQueryParams(queryParams interface{}, globals interface{}, values ur
 				return nil, err
 			}
 			for k, v := range vals {
-				values.Add(k, v)
+				addQueryValue(values, allowReserved, k, v, qpTag.AllowReserved)
 			}
 		} else {
 			switch qpTag.Style {
@@ -111,21 +146,21 @@ func populateQueryParams(queryParams interface{}, globals interface{}, values ur
 				vals := populateDeepObjectParams(qpTag, fieldType.Type, valType)
 				for k, v := range vals {
 					for _, vv := range v {
-						values.Add(k, vv)
+						addQueryValue(values, allowReserved, k, vv, qpTag.AllowReserved)
 					}
 				}
 			case "form":
 				vals := populateFormParams(qpTag, fieldType.Type, valType, ",", defaultValue, allowEmptyValue)
 				for k, v := range vals {
 					for _, vv := range v {
-						values.Add(k, vv)
+						addQueryValue(values, allowReserved, k, vv, qpTag.AllowReserved)
 					}
 				}
 			case "pipeDelimited":
 				vals := populateFormParams(qpTag, fieldType.Type, valType, "|", defaultValue, allowEmptyValue)
 				for k, v := range vals {
 					for _, vv := range v {
-						values.Add(k, vv)
+						addQueryValue(values, allowReserved, k, vv, qpTag.AllowReserved)
 					}
 				}
 			default:
@@ -309,6 +344,7 @@ type paramTag struct {
 	Explode       bool
 	ParamName     string
 	Serialization string
+	AllowReserved bool
 
 	// Inline is a special case for union/oneOf. When a wrapper struct type is
 	// used, each union/oneOf value field should be inlined (e.g. not appended

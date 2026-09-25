@@ -39,7 +39,7 @@ type StartEnvironmentFileUploadRequest struct {
 	// The ID of the environment that owns the destination file.
 	Environment string `pathParam:"style=simple,explode=false,name=environment"`
 	// The relative destination path inside the environment workspace.
-	Path string `pathParam:"style=simple,explode=false,name=path"`
+	Path string `pathParam:"style=simple,explode=false,name=path,allowReserved=true"`
 	// Optional. If true, treats the uploaded file as a tar/tar.gz archive and unpacks it into `path`.
 	Extract *bool `queryParam:"style=form,explode=true,name=extract"`
 	// Optional. Whether to overwrite the destination file if it already exists.

@@ -28,6 +28,7 @@ import (
 	"time"
 	"unsafe"
 
+	"google.golang.org/genai/interactions/optionalnullable"
 	"google.golang.org/genai/interactions/types"
 )
 
@@ -333,7 +334,26 @@ func marshalValue(v interface{}, tag reflect.StructTag) (json.RawMessage, error)
 			return []byte("null"), nil
 		}
 
-		// Check if the map implements json.Marshaler (like optionalnullable.OptionalNullable[T])
+		// optionalnullable.OptionalNullable[T] must be unwrapped here rather than
+		// delegated to its own MarshalJSON, so tag-driven wire formats on the field
+		// (e.g. bigint:"string", decimal:"number") reach the inner value. The
+		// stored *T is redispatched as-is so pointer-receiver marshalers on T
+		// stay reachable.
+		if optionalnullable.IsOptionalNullableType(typ) {
+			for _, key := range val.MapKeys() {
+				if key.Bool() {
+					if inner := val.MapIndex(key); !inner.IsNil() {
+						if _, innerVal := dereferencePointers(inner.Type(), inner); innerVal.IsValid() {
+							return marshalValue(inner.Interface(), tag)
+						}
+					}
+					break
+				}
+			}
+			return []byte("null"), nil
+		}
+
+		// Check if the map implements json.Marshaler
 		if marshaler, ok := val.Interface().(json.Marshaler); ok {
 			return marshaler.MarshalJSON()
 		}
@@ -433,6 +453,9 @@ func handleDefaultConstValue(tagValue string, val interface{}, tag reflect.Struc
 	}
 
 	typ := dereferenceTypePointer(reflect.TypeOf(val))
+	if optionalnullable.IsOptionalNullableType(typ) {
+		typ = dereferenceTypePointer(typ.Elem())
+	}
 	switch typ {
 	case reflect.TypeOf(time.Time{}):
 		return []byte(fmt.Sprintf(`"%s"`, tagValue))
@@ -526,6 +549,27 @@ func unmarshalValue(value json.RawMessage, v reflect.Value, tag reflect.StructTa
 			return nil
 		}
 	case reflect.Map:
+		// optionalnullable.OptionalNullable[T] is unwrapped like on the marshal
+		// side, so tag-driven wire formats reach the inner value. A JSON null
+		// never gets this far: it is handled at the top of this function, where
+		// the wrapper's own UnmarshalJSON records the explicit null state.
+		if optionalnullable.IsOptionalNullableType(typ) {
+			innerPtr := reflect.New(typ.Elem().Elem())
+
+			if err := unmarshalValue(value, innerPtr, tag); err != nil {
+				return err
+			}
+
+			if v.Kind() == reflect.Ptr {
+				if v.IsNil() {
+					v.Set(reflect.New(typ))
+				}
+				v = v.Elem()
+			}
+			v.Set(optionalnullable.FromReflect(typ, innerPtr))
+			return nil
+		}
+
 		if implementsJSONUnmarshaler(v.Type()) {
 			if v.CanAddr() {
 				return json.Unmarshal(value, v.Addr().Interface())

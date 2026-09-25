@@ -38,7 +38,7 @@ type GetEnvironmentFilesRequest struct {
 	// API version for request routing.
 	APIVersion  *string `pathParam:"style=simple,explode=false,name=api_version"`
 	Environment string  `pathParam:"style=simple,explode=false,name=environment"`
-	Path        string  `pathParam:"style=simple,explode=false,name=path"`
+	Path        string  `pathParam:"style=simple,explode=false,name=path,allowReserved=true"`
 	// Optional. Maximum number of entries to return per page (for directory listing).
 	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
 	// Optional. Pagination token for directory listing.

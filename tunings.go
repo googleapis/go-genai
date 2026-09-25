@@ -1285,6 +1285,11 @@ func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any,
 		InternalSetValueByPath(toObject, []string{"distillationSamplingSpec"}, fromDistillationSamplingSpec)
 	}
 
+	fromGcsMetricsUri := InternalGetValueByPath(fromObject, []string{"gcsMetricsUri"})
+	if fromGcsMetricsUri != nil {
+		InternalSetValueByPath(toObject, []string{"gcsMetricsUri"}, fromGcsMetricsUri)
+	}
+
 	return toObject, nil
 }
 

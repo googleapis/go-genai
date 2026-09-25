@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.72.0](https://github.com/googleapis/go-genai/compare/v1.71.0...v1.72.0) (2026-09-25)
+
+
+### Features
+
+* Add interactions ([b85860b](https://github.com/googleapis/go-genai/commit/b85860bb65baa88ef7fd1fd4528a5163d897b1f9))
+* expose SpeechMetadata, VoiceConfig.voice, and SpeechAnnotation in public GenAI SDKs ([c342626](https://github.com/googleapis/go-genai/commit/c3426263052133c785bbadfeb554f037d21d9244))
+* **genai:** refresh examples and add build tests for Go SDK examples ([a8402d6](https://github.com/googleapis/go-genai/commit/a8402d625c3b70470d81dca7d87f5d621e770135))
+* implement environments files upload and download across .NET and Go SDKs ([ee76a1c](https://github.com/googleapis/go-genai/commit/ee76a1c35f21592c0dead523746c86638645258f))
+* include labels for LiveClientSetup ([69b3fa3](https://github.com/googleapis/go-genai/commit/69b3fa3d5bcd2ace8fc2eb11d6127ca64bc51aa4))
+* support labels for Gemini API GenerateContent ([bf539c0](https://github.com/googleapis/go-genai/commit/bf539c082c392854344319f8955a236a5274913d))
+* update discovery doc ([702e8d0](https://github.com/googleapis/go-genai/commit/702e8d0493918c44fc8a1d3081c87d4e8252fd8c))
+
+
+### Bug Fixes
+
+* Update GitHub Actions lint workflow for Node 24 compatibility ([aeb441a](https://github.com/googleapis/go-genai/commit/aeb441ac8a8e24cf718162b9e03cbd77da140eaa))
+
 ## [1.71.0](https://github.com/googleapis/go-genai/compare/v1.70.0...v1.71.0) (2026-08-31)
 
 

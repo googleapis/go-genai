@@ -6239,6 +6239,8 @@ type TuningJob struct {
 	VeoLoraTuningSpec *VeoLoraTuningSpec `json:"veoLoraTuningSpec,omitempty"`
 
 	DistillationSamplingSpec *DistillationSamplingSpec `json:"distillationSamplingSpec,omitempty"`
+	// The Cloud Storage metrics URI associated with this tuning job.
+	GCSMetricsURI string `json:"gcsMetricsUri,omitempty"`
 }
 
 func (t *TuningJob) UnmarshalJSON(data []byte) error {

@@ -17,111 +17,8 @@
 package triggers
 
 import (
-	"errors"
-	"fmt"
-
-	"google.golang.org/genai/interactions/internal/utils"
 	"google.golang.org/genai/interactions/models/interactions"
 )
-
-type InteractionType string
-
-const (
-	InteractionTypeCreateAgentInteraction InteractionType = "CreateAgentInteraction"
-	InteractionTypeCreateModelInteraction InteractionType = "CreateModelInteraction"
-)
-
-// Interaction - Required. The interaction request template to be executed.
-type Interaction struct {
-	CreateAgentInteraction *interactions.CreateAgentInteraction `queryParam:"inline" union:"member"`
-	CreateModelInteraction *interactions.CreateModelInteraction `queryParam:"inline" union:"member"`
-
-	Type InteractionType
-}
-
-type InteractionMember interface {
-	interactions.CreateAgentInteraction | interactions.CreateModelInteraction
-}
-
-func NewInteraction[T InteractionMember](val T) Interaction {
-	switch v := any(val).(type) {
-	case interactions.CreateAgentInteraction:
-		return Interaction{
-			CreateAgentInteraction: &v,
-			Type:                   InteractionTypeCreateAgentInteraction,
-		}
-	case interactions.CreateModelInteraction:
-		return Interaction{
-			CreateModelInteraction: &v,
-			Type:                   InteractionTypeCreateModelInteraction,
-		}
-	}
-	panic(fmt.Sprintf("unreachable: %T is not a member of union Interaction", val))
-}
-
-func (u *Interaction) UnmarshalJSON(data []byte) (err error) {
-	previous := *u
-	*u = Interaction{}
-	defer func() {
-		if err != nil {
-			*u = previous
-		}
-	}()
-
-	var candidates []utils.UnionCandidate
-
-	// Collect all valid candidates
-	var createAgentInteraction interactions.CreateAgentInteraction = interactions.CreateAgentInteraction{}
-	if err := utils.UnmarshalJSON(data, &createAgentInteraction, "", true, nil); err == nil {
-		candidates = append(candidates, utils.UnionCandidate{
-			Type:  InteractionTypeCreateAgentInteraction,
-			Value: &createAgentInteraction,
-		})
-	}
-
-	var createModelInteraction interactions.CreateModelInteraction = interactions.CreateModelInteraction{}
-	if err := utils.UnmarshalJSON(data, &createModelInteraction, "", true, nil); err == nil {
-		candidates = append(candidates, utils.UnionCandidate{
-			Type:  InteractionTypeCreateModelInteraction,
-			Value: &createModelInteraction,
-		})
-	}
-
-	if len(candidates) == 0 {
-		return fmt.Errorf("could not unmarshal `%s` into any supported union types for Interaction", string(data))
-	}
-
-	// Pick the best candidate using multi-stage filtering
-	best := utils.PickBestUnionCandidate(candidates, data)
-	if best == nil {
-		return fmt.Errorf("could not unmarshal `%s` into any supported union types for Interaction", string(data))
-	}
-
-	// Set the union type and value based on the best candidate
-	u.Type = best.Type.(InteractionType)
-	switch best.Type {
-	case InteractionTypeCreateAgentInteraction:
-		u.CreateAgentInteraction = best.Value.(*interactions.CreateAgentInteraction)
-		return nil
-	case InteractionTypeCreateModelInteraction:
-		u.CreateModelInteraction = best.Value.(*interactions.CreateModelInteraction)
-		return nil
-	}
-
-	return fmt.Errorf("could not unmarshal `%s` into any supported union types for Interaction", string(data))
-}
-
-func (u Interaction) MarshalJSON() ([]byte, error) {
-	if u.CreateAgentInteraction != nil {
-		return utils.MarshalJSON(u.CreateAgentInteraction, "", true)
-	}
-
-	if u.CreateModelInteraction != nil {
-		return utils.MarshalJSON(u.CreateModelInteraction, "", true)
-	}
-
-	return nil, errors.New("could not marshal union type Interaction: all fields are null")
-}
 
 // TriggerCreateParams - Parameters for creating a trigger.
 type TriggerCreateParams struct {
@@ -131,8 +28,8 @@ type TriggerCreateParams struct {
 	EnvironmentID *string `json:"environment_id,omitzero"`
 	// Optional. The execution timeout for the triggered interaction.
 	ExecutionTimeoutSeconds *int `json:"execution_timeout_seconds,omitzero"`
-	// Required. The interaction request template to be executed.
-	Interaction Interaction `json:"interaction"`
+	// Interaction for generating the completion using agents.
+	Interaction interactions.CreateAgentInteraction `json:"interaction"`
 	// Optional. The maximum number of consecutive failures allowed before
 	// the trigger is automatically paused (status becomes ERROR).
 	MaxConsecutiveFailures *int `json:"max_consecutive_failures,omitzero"`
@@ -164,9 +61,9 @@ func (t *TriggerCreateParams) GetExecutionTimeoutSeconds() *int {
 	return t.ExecutionTimeoutSeconds
 }
 
-func (t *TriggerCreateParams) GetInteraction() Interaction {
+func (t *TriggerCreateParams) GetInteraction() interactions.CreateAgentInteraction {
 	if t == nil {
-		return Interaction{}
+		return interactions.CreateAgentInteraction{}
 	}
 	return t.Interaction
 }

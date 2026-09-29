@@ -62,8 +62,8 @@ type Trigger struct {
 	ExecutionTimeoutSeconds *int `json:"execution_timeout_seconds,omitzero"`
 	// Required. Output only. Identifier. The ID of the trigger.
 	ID string `json:"id"`
-	// The Interaction resource.
-	Interaction interactions.Interaction `json:"interaction"`
+	// Interaction for generating the completion using agents.
+	Interaction interactions.CreateAgentInteraction `json:"interaction"`
 	// Output only. The time when the trigger was last paused.
 	LastPauseTime *time.Time `json:"last_pause_time,omitzero"`
 	// Output only. The time when the trigger was last resumed.
@@ -141,9 +141,9 @@ func (t *Trigger) GetID() string {
 	return t.ID
 }
 
-func (t *Trigger) GetInteraction() interactions.Interaction {
+func (t *Trigger) GetInteraction() interactions.CreateAgentInteraction {
 	if t == nil {
-		return interactions.Interaction{}
+		return interactions.CreateAgentInteraction{}
 	}
 	return t.Interaction
 }

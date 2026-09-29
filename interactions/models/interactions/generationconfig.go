@@ -273,11 +273,19 @@ type GenerationConfig struct {
 	// Optional. Speech and multi-speaker configuration.
 	SpeechConfig *SpeechConfigUnion `json:"speech_config,omitzero"`
 	// A list of character sequences that will stop output interaction.
-	StopSequences     []string           `json:"stop_sequences,omitzero"`
+	StopSequences []string `json:"stop_sequences,omitzero"`
+	// Controls the randomness of the output.
+	//
+	// Deprecated: This will be removed in a future release, please migrate away from it as soon as possible.
+	Temperature       *float32           `json:"temperature,omitzero"`
 	ThinkingLevel     *ThinkingLevel     `json:"thinking_level,omitzero"`
 	ThinkingSummaries *ThinkingSummaries `json:"thinking_summaries,omitzero"`
 	// The tool choice configuration.
 	ToolChoice *ToolChoice `json:"tool_choice,omitzero"`
+	// The maximum cumulative probability of tokens to consider when sampling.
+	//
+	// Deprecated: This will be removed in a future release, please migrate away from it as soon as possible.
+	TopP *float32 `json:"top_p,omitzero"`
 	// Configuration for speech recognition (transcription).
 	TranscriptionConfig *TranscriptionConfig `json:"transcription_config,omitzero"`
 	// Configuration options for video generation.
@@ -330,6 +338,13 @@ func (g *GenerationConfig) GetStopSequences() []string {
 	return g.StopSequences
 }
 
+func (g *GenerationConfig) GetTemperature() *float32 {
+	if g == nil {
+		return nil
+	}
+	return g.Temperature
+}
+
 func (g *GenerationConfig) GetThinkingLevel() *ThinkingLevel {
 	if g == nil {
 		return nil
@@ -349,6 +364,13 @@ func (g *GenerationConfig) GetToolChoice() *ToolChoice {
 		return nil
 	}
 	return g.ToolChoice
+}
+
+func (g *GenerationConfig) GetTopP() *float32 {
+	if g == nil {
+		return nil
+	}
+	return g.TopP
 }
 
 func (g *GenerationConfig) GetTranscriptionConfig() *TranscriptionConfig {

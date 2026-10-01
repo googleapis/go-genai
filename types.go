@@ -422,6 +422,10 @@ const (
 	FinishReasonImageRecitation FinishReason = "IMAGE_RECITATION"
 	// Image generation stopped for a reason not otherwise specified.
 	FinishReasonImageOther FinishReason = "IMAGE_OTHER"
+	// Token generation stopped because the response reached the per-request token limit,
+	// but generation is not yet complete. The response can be continued by passing the
+	// returned `continuation_token` in a subsequent request.
+	FinishReasonContinuation FinishReason = "CONTINUATION"
 )
 
 // The probability of harm for this category.
@@ -3066,6 +3070,10 @@ type GenerateContentConfig struct {
 	ServiceTier ServiceTier `json:"serviceTier,omitempty"`
 	// Optional. Configuration for audio transcription (speech recognition).
 	AudioTranscriptionConfig *AudioTranscriptionConfig `json:"audioTranscriptionConfig,omitempty"`
+	// Optional. An opaque continuation token used to resume generation from a
+	// previous response that stopped with `finish_reason` set to
+	// `CONTINUATION`.
+	ContinuationToken []byte `json:"continuationToken,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {
@@ -3626,6 +3634,9 @@ type Candidate struct {
 	// Output only. Metadata returned when the model uses the `url_context` tool to get
 	// information from a user-provided URL.
 	URLContextMetadata *URLContextMetadata `json:"urlContextMetadata,omitempty"`
+	// Optional. An opaque continuation token returned when `finish_reason` is
+	// `CONTINUATION`. Pass it in a subsequent request to continue generation.
+	ContinuationToken []byte `json:"continuationToken,omitempty"`
 }
 
 // Content filter results for a prompt sent in the request. Note: This is sent only

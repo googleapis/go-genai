@@ -821,7 +821,7 @@ func TestEnvironmentsFilesUploadAndDownload(t *testing.T) {
 		if r.Method == http.MethodPost && r.URL.Path == "/scotty/upload/session" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"files": [{"name": "environments/env-1/files/test.txt", "path": "test.txt", "size_bytes": "12"}]}`))
+			_, _ = w.Write([]byte(`{"files": [{"name": "environments/env-1/files/test.txt", "path": "test.txt", "size_bytes": "12"}]}`))
 			return
 		}
 		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/files/test.txt") {
@@ -830,7 +830,7 @@ func TestEnvironmentsFilesUploadAndDownload(t *testing.T) {
 			}
 			w.Header().Set("Content-Type", "application/octet-stream")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("downloaded content"))
+			_, _ = w.Write([]byte("downloaded content"))
 			return
 		}
 		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/files") {
@@ -845,7 +845,7 @@ func TestEnvironmentsFilesUploadAndDownload(t *testing.T) {
 				},
 			}
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(resp)
+			_ = json.NewEncoder(w).Encode(resp)
 			return
 		}
 		http.Error(w, "unexpected request: "+r.Method+" "+r.URL.String(), http.StatusBadRequest)
@@ -940,13 +940,13 @@ func TestEnvironmentsFilesUploadDifferentInputs(t *testing.T) {
 		if r.Method == http.MethodPost && r.URL.Path == "/scotty/upload/session" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"files": [{"name": "environments/env-1/files/output.txt", "path": "output.txt", "size_bytes": "20"}]}`))
+			_, _ = w.Write([]byte(`{"files": [{"name": "environments/env-1/files/output.txt", "path": "output.txt", "size_bytes": "20"}]}`))
 			return
 		}
 		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/files/download.txt") {
 			w.Header().Set("Content-Type", "application/octet-stream")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("saved file content"))
+			_, _ = w.Write([]byte("saved file content"))
 			return
 		}
 		http.Error(w, "unexpected", http.StatusBadRequest)
@@ -1038,7 +1038,7 @@ func TestEnvironmentsFilesUploadMultiChunk(t *testing.T) {
 			if cmd == "upload, finalize" {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"files": [{"name": "environments/env-1/files/large.bin", "path": "large.bin", "size_bytes": "9437184"}]}`))
+				_, _ = w.Write([]byte(`{"files": [{"name": "environments/env-1/files/large.bin", "path": "large.bin", "size_bytes": "9437184"}]}`))
 				return
 			}
 			w.Header().Set("X-Goog-Upload-Status", "active")

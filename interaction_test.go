@@ -1007,7 +1007,7 @@ func TestEnvironmentsFilesUploadDifferentInputs(t *testing.T) {
 }
 
 func TestEnvironmentsFilesUploadMultiChunk(t *testing.T) {
-	const chunkSize = 8 * 1024 * 1024 // 8MB
+	const chunkSize = 8 * 1024 * 1024         // 8MB
 	totalSize := int64(chunkSize + 1024*1024) // 9MB total (2 chunks)
 	payload := make([]byte, totalSize)
 	for i := range payload {

@@ -1089,3 +1089,64 @@ func TestEnvironmentsFilesUploadMultiChunk(t *testing.T) {
 		t.Errorf("Chunk 2 length = %d; want %d", chunkLengths[1], 1024*1024)
 	}
 }
+
+func TestVoicesWorkflow(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method == "GET" && strings.HasSuffix(r.URL.Path, "/voices") {
+			resp := map[string]any{
+				"voices": []map[string]any{
+					{
+						"id":           "Puck",
+						"display_name": "Puck",
+						"type":         "prebuilt",
+					},
+				},
+			}
+			_ = json.NewEncoder(w).Encode(resp)
+			return
+		}
+		if r.Method == "GET" && strings.HasSuffix(r.URL.Path, "/voices/Puck") {
+			resp := map[string]any{
+				"id":           "Puck",
+				"display_name": "Puck",
+				"type":         "prebuilt",
+			}
+			_ = json.NewEncoder(w).Encode(resp)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(context.Background(), &ClientConfig{
+		Backend: BackendGeminiAPI,
+		APIKey:  "dummy_key",
+		HTTPOptions: HTTPOptions{
+			BaseURL: ts.URL,
+		},
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	if client.Voices == nil {
+		t.Fatalf("client.Voices is nil")
+	}
+
+	listRes, err := client.Voices.List(context.Background(), operations.ListVoicesRequest{})
+	if err != nil {
+		t.Fatalf("Failed to call Voices.List: %v", err)
+	}
+	if listRes.ListVoicesResponse == nil || len(listRes.ListVoicesResponse.Voices) != 1 {
+		t.Fatalf("Expected 1 voice in ListVoicesResponse, got: %+v", listRes.ListVoicesResponse)
+	}
+
+	getRes, err := client.Voices.Get(context.Background(), operations.GetVoiceRequest{ID: "Puck"})
+	if err != nil {
+		t.Fatalf("Failed to call Voices.Get: %v", err)
+	}
+	if getRes.Voice == nil || getRes.Voice.ID == nil || *getRes.Voice.ID != "Puck" {
+		t.Errorf("Expected Voice.ID 'Puck', got '%v'", getRes.Voice)
+	}
+}

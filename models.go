@@ -119,11 +119,6 @@ func candidateFromMldev(fromObject map[string]any, parentObject map[string]any, 
 		InternalSetValueByPath(toObject, []string{"urlContextMetadata"}, fromUrlContextMetadata)
 	}
 
-	fromContinuationToken := InternalGetValueByPath(fromObject, []string{"continuationToken"})
-	if fromContinuationToken != nil {
-		InternalSetValueByPath(toObject, []string{"continuationToken"}, fromContinuationToken)
-	}
-
 	return toObject, nil
 }
 
@@ -1293,11 +1288,6 @@ func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]a
 		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)
 	}
 
-	fromContinuationToken := InternalGetValueByPath(fromObject, []string{"continuationToken"})
-	if fromContinuationToken != nil {
-		InternalSetValueByPath(parentObject, []string{"continuationToken"}, fromContinuationToken)
-	}
-
 	return toObject, nil
 }
 
@@ -1521,11 +1511,6 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 	fromAudioTranscriptionConfig := InternalGetValueByPath(fromObject, []string{"audioTranscriptionConfig"})
 	if fromAudioTranscriptionConfig != nil {
 		InternalSetValueByPath(toObject, []string{"audioTranscriptionConfig"}, fromAudioTranscriptionConfig)
-	}
-
-	fromContinuationToken := InternalGetValueByPath(fromObject, []string{"continuationToken"})
-	if fromContinuationToken != nil {
-		InternalSetValueByPath(parentObject, []string{"continuationToken"}, fromContinuationToken)
 	}
 
 	return toObject, nil

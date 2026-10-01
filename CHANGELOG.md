@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.72.0](https://github.com/googleapis/go-genai/compare/v1.71.0...v1.72.0) (2026-10-01)
+
+
+### Features
+
+* add gcs_metrics_uri for exporting tuning job metrics. ([a2adbb5](https://github.com/googleapis/go-genai/commit/a2adbb50f5a2b066e537c251adf12ba5dbf472c2))
+* Add interactions ([b85860b](https://github.com/googleapis/go-genai/commit/b85860bb65baa88ef7fd1fd4528a5163d897b1f9))
+* expose SpeechMetadata, VoiceConfig.voice, and SpeechAnnotation in public GenAI SDKs ([c342626](https://github.com/googleapis/go-genai/commit/c3426263052133c785bbadfeb554f037d21d9244))
+* **genai:** refresh examples and add build tests for Go SDK examples ([a8402d6](https://github.com/googleapis/go-genai/commit/a8402d625c3b70470d81dca7d87f5d621e770135))
+* implement environments files upload and download across .NET and Go SDKs ([ee76a1c](https://github.com/googleapis/go-genai/commit/ee76a1c35f21592c0dead523746c86638645258f))
+* include labels for LiveClientSetup ([69b3fa3](https://github.com/googleapis/go-genai/commit/69b3fa3d5bcd2ace8fc2eb11d6127ca64bc51aa4))
+* support continuation_token in GenerateContent ([3ecb7eb](https://github.com/googleapis/go-genai/commit/3ecb7ebbf750a30103da93f13d91daf0101343f3))
+* support labels for Gemini API GenerateContent ([bf539c0](https://github.com/googleapis/go-genai/commit/bf539c082c392854344319f8955a236a5274913d))
+* update discovery doc ([702e8d0](https://github.com/googleapis/go-genai/commit/702e8d0493918c44fc8a1d3081c87d4e8252fd8c))
+
+
+### Bug Fixes
+
+* **interactions:** ignore unchecked returns in mock server handlers in interaction_test.go ([1617851](https://github.com/googleapis/go-genai/commit/1617851cade14008c960736b2c88a5d79ab0cb9d))
+* Update GitHub Actions lint workflow for Node 24 compatibility ([aeb441a](https://github.com/googleapis/go-genai/commit/aeb441ac8a8e24cf718162b9e03cbd77da140eaa))
+* use `CreateAgentInteraction` for `Trigger.interaction` and `TriggerCreateParams.interaction` ([d918e85](https://github.com/googleapis/go-genai/commit/d918e85438735b4fda4b95eaf12b1c96554fe5cf))
+
 ## [1.71.0](https://github.com/googleapis/go-genai/compare/v1.70.0...v1.71.0) (2026-08-31)
 
 

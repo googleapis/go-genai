@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.73.0](https://github.com/googleapis/go-genai/compare/v1.72.0...v1.73.0) (2026-10-02)
+
+
+### Features
+
+* add `lyria-3.5`, `gemini-omni-1.1-flash`, and `gemini-omni-flash-preview` to Interactions `Model` enum ([0a17bc3](https://github.com/googleapis/go-genai/commit/0a17bc3e070ec7e26c5677072162486578fb418c))
+* support continuation_token in Interactions ([5fed937](https://github.com/googleapis/go-genai/commit/5fed9374ce1a519114650287bd99dd46f1689cd2))
+
 ## [1.72.0](https://github.com/googleapis/go-genai/compare/v1.71.0...v1.72.0) (2026-10-01)
 
 

@@ -54,13 +54,13 @@ const (
 	ModelGeminiNanoBanana21 Model = "gemini-nano-banana-2.1"
 	// ModelGemini31FlashTtsPreview Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
 	ModelGemini31FlashTtsPreview Model = "gemini-3.1-flash-tts-preview"
-	// ModelGemini35Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+	// ModelGemini35Flash Gemini 3.5 Flash - Our earlier Flash model, built for speed and foundational performance across routine, high-throughput workloads.
 	ModelGemini35Flash Model = "gemini-3.5-flash"
-	// ModelGemini36Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+	// ModelGemini36Flash Gemini 3.6 Flash - Our previous generation Flash model, balancing speed and multimodal capabilities across general agentic and everyday tasks.
 	ModelGemini36Flash Model = "gemini-3.6-flash"
-	// ModelGemini37Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+	// ModelGemini37Flash Gemini 3.7 Flash - Our high-speed, efficient Flash model built for everyday coding, agentic tool use, and reliable multi-step execution.
 	ModelGemini37Flash Model = "gemini-3.7-flash"
-	// ModelGemini38Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+	// ModelGemini38Flash Gemini 3.8 Flash - Our most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows.
 	ModelGemini38Flash Model = "gemini-3.8-flash"
 	// ModelGemini38FlashTts Gemini 3.8 Flash TTS - Flagship TTS model for Voice Design and dual-speaker screenplay control. Prompt custom vocal personas, direct line-by-line delivery, and add vocal bursts.
 	ModelGemini38FlashTts Model = "gemini-3.8-flash-tts"
@@ -76,7 +76,7 @@ const (
 	ModelLyria35 Model = "lyria-3.5"
 	// ModelGeminiOmni11Flash Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
 	ModelGeminiOmni11Flash Model = "gemini-omni-1.1-flash"
-	// ModelGeminiOmniFlashPreview Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
+	// ModelGeminiOmniFlashPreview Preview release of our multimodal model for conversational video generation, editing, and cinematic control.
 	ModelGeminiOmniFlashPreview Model = "gemini-omni-flash-preview"
 )
 

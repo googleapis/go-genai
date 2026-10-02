@@ -232,6 +232,10 @@ type CreateModelInteraction struct {
 	//
 	// Deprecated: This will be removed in a future release, please migrate away from it as soon as possible.
 	CachedContent *string `json:"cached_content,omitzero"`
+	// Opaque token to resume a long decode. Output: set when status is
+	// INCOMPLETE and decoding can be resumed. Input: pass the latest token
+	// back unchanged in CreateInteraction to continue decoding.
+	ContinuationToken *string `json:"continuation_token,omitzero"`
 	// The environment configuration for the interaction. Can be an object
 	// specifying remote environment sources or a string referencing an existing
 	// environment ID.
@@ -300,6 +304,13 @@ func (c *CreateModelInteraction) GetCachedContent() *string {
 		return nil
 	}
 	return c.CachedContent
+}
+
+func (c *CreateModelInteraction) GetContinuationToken() *string {
+	if c == nil {
+		return nil
+	}
+	return c.ContinuationToken
 }
 
 func (c *CreateModelInteraction) GetEnvironment() *CreateModelInteractionEnvironment {

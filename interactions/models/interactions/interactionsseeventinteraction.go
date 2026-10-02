@@ -53,6 +53,8 @@ func (e *InteractionSseEventInteractionStatus) IsExact() bool {
 type InteractionSseEventInteraction struct {
 	// The agent to interact with.
 	Agent *string `json:"agent,omitzero"`
+	// Output only. Opaque token to resume a long decode when status is incomplete.
+	ContinuationToken *string `json:"continuation_token,omitzero"`
 	// Output only. The time at which the response was created in ISO 8601 format.
 	Created *string `json:"created,omitzero"`
 	// Required. Output only. A unique identifier for the interaction completion.
@@ -88,6 +90,13 @@ func (i *InteractionSseEventInteraction) GetAgent() *string {
 		return nil
 	}
 	return i.Agent
+}
+
+func (i *InteractionSseEventInteraction) GetContinuationToken() *string {
+	if i == nil {
+		return nil
+	}
+	return i.ContinuationToken
 }
 
 func (i *InteractionSseEventInteraction) GetCreated() *string {

@@ -20,8 +20,35 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
+// SpeakerConfigMode - Optional speech mode. `VERBATIM` is default. `CONVERSATIONAL` is only
+// supported for multi-speaker.
+type SpeakerConfigMode string
+
+const (
+	SpeakerConfigModeVerbatim       SpeakerConfigMode = "verbatim"
+	SpeakerConfigModeConversational SpeakerConfigMode = "conversational"
+)
+
+func (e SpeakerConfigMode) ToPointer() *SpeakerConfigMode {
+	return &e
+}
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *SpeakerConfigMode) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "verbatim", "conversational":
+			return true
+		}
+	}
+	return false
+}
+
 // SpeakerConfig - Configuration for multi-speaker and speech generation.
 type SpeakerConfig struct {
+	// Optional speech mode. `VERBATIM` is default. `CONVERSATIONAL` is only
+	// supported for multi-speaker.
+	Mode *SpeakerConfigMode `json:"mode,omitzero"`
 	// Individual speaker configurations.
 	Speakers []SpeechConfig `json:"speakers,omitzero"`
 }
@@ -35,6 +62,13 @@ func (s *SpeakerConfig) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (s *SpeakerConfig) GetMode() *SpeakerConfigMode {
+	if s == nil {
+		return nil
+	}
+	return s.Mode
 }
 
 func (s *SpeakerConfig) GetSpeakers() []SpeechConfig {

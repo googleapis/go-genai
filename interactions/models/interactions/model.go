@@ -74,6 +74,12 @@ const (
 	ModelGeminiRoboticsEr16Preview Model = "gemini-robotics-er-1.6-preview"
 	// ModelGeminiRoboticsEr2Preview Gemini Robotics Embodied Reasoning 2 Preview
 	ModelGeminiRoboticsEr2Preview Model = "gemini-robotics-er-2-preview"
+	// ModelLyria35 Our flagship music generation model, optimized for full-length songs with complex structural coherence.
+	ModelLyria35 Model = "lyria-3.5"
+	// ModelGeminiOmni11Flash Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
+	ModelGeminiOmni11Flash Model = "gemini-omni-1.1-flash"
+	// ModelGeminiOmniFlashPreview Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
+	ModelGeminiOmniFlashPreview Model = "gemini-omni-flash-preview"
 )
 
 func (e Model) ToPointer() *Model {
@@ -84,7 +90,7 @@ func (e Model) ToPointer() *Model {
 func (e *Model) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "gemini-2.5-flash", "gemini-2.5-pro", "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest", "gemini-2.5-flash-lite", "gemini-2.5-flash-image", "gemini-3-flash-preview", "gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools", "gemini-3.1-flash-lite", "gemini-3-pro-image", "nano-banana-pro-preview", "gemini-3.1-flash-image", "gemini-3.1-flash-tts-preview", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "lyria-3-clip-preview", "lyria-3-pro-preview", "gemini-robotics-er-1.6-preview", "gemini-robotics-er-2-preview":
+		case "gemini-2.5-flash", "gemini-2.5-pro", "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest", "gemini-2.5-flash-lite", "gemini-2.5-flash-image", "gemini-3-flash-preview", "gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools", "gemini-3.1-flash-lite", "gemini-3-pro-image", "nano-banana-pro-preview", "gemini-3.1-flash-image", "gemini-3.1-flash-tts-preview", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "lyria-3-clip-preview", "lyria-3-pro-preview", "gemini-robotics-er-1.6-preview", "gemini-robotics-er-2-preview", "lyria-3.5", "gemini-omni-1.1-flash", "gemini-omni-flash-preview":
 			return true
 		}
 	}

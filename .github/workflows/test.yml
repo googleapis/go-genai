@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main
+env:
+  SPEAKEASY_VERSION: v2.941.1
 jobs:
   go_tests_latest:
     runs-on: windows-latest

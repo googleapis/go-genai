@@ -152,6 +152,28 @@ const (
 	APISpecElasticSearch APISpec = "ELASTIC_SEARCH"
 )
 
+// SafetyPolicy
+type SafetyPolicy string
+
+const (
+	// Unspecified safety policy. This value should not be used.
+	SafetyPolicyUnspecified SafetyPolicy = "SAFETY_POLICY_UNSPECIFIED"
+	// Financial transactions safety policy.
+	SafetyPolicyFinancialTransactions SafetyPolicy = "FINANCIAL_TRANSACTIONS"
+	// Sensitive data modification safety policy.
+	SafetyPolicySensitiveDataModification SafetyPolicy = "SENSITIVE_DATA_MODIFICATION"
+	// Communication tool safety policy.
+	SafetyPolicyCommunicationTool SafetyPolicy = "COMMUNICATION_TOOL"
+	// Account creation safety policy.
+	SafetyPolicyAccountCreation SafetyPolicy = "ACCOUNT_CREATION"
+	// Data modification safety policy.
+	SafetyPolicyDataModification SafetyPolicy = "DATA_MODIFICATION"
+	// User consent management safety policy.
+	SafetyPolicyUserConsentManagement SafetyPolicy = "USER_CONSENT_MANAGEMENT"
+	// Legal terms and agreements safety policy.
+	SafetyPolicyLegalTermsAndAgreements SafetyPolicy = "LEGAL_TERMS_AND_AGREEMENTS"
+)
+
 // The environment being operated.
 type Environment string
 
@@ -164,28 +186,6 @@ const (
 	EnvironmentMobile Environment = "ENVIRONMENT_MOBILE"
 	// Operates in a desktop environment.
 	EnvironmentDesktop Environment = "ENVIRONMENT_DESKTOP"
-)
-
-// SafetyPolicy
-type SafetyPolicy string
-
-const (
-	// Unspecified safety policy.
-	SafetyPolicyUnspecified SafetyPolicy = "SAFETY_POLICY_UNSPECIFIED"
-	// Safety policy for financial transactions.
-	SafetyPolicyFinancialTransactions SafetyPolicy = "FINANCIAL_TRANSACTIONS"
-	// Safety policy for sensitive data modification.
-	SafetyPolicySensitiveDataModification SafetyPolicy = "SENSITIVE_DATA_MODIFICATION"
-	// Safety policy for communication tools (e.g. Gmail, Chat, Meet).
-	SafetyPolicyCommunicationTool SafetyPolicy = "COMMUNICATION_TOOL"
-	// Safety policy for account creation.
-	SafetyPolicyAccountCreation SafetyPolicy = "ACCOUNT_CREATION"
-	// Safety policy for data modification.
-	SafetyPolicyDataModification SafetyPolicy = "DATA_MODIFICATION"
-	// Safety policy for user consent management.
-	SafetyPolicyUserConsentManagement SafetyPolicy = "USER_CONSENT_MANAGEMENT"
-	// Safety policy for legal terms and agreements.
-	SafetyPolicyLegalTermsAndAgreements SafetyPolicy = "LEGAL_TERMS_AND_AGREEMENTS"
 )
 
 // Sites with confidence level chosen & above this value will be blocked from the search
@@ -2337,8 +2337,7 @@ type ComputerUse struct {
 	ExcludedPredefinedFunctions []string `json:"excludedPredefinedFunctions,omitempty"`
 	// Optional. Enables the prompt injection detection check on computer-use request.
 	EnablePromptInjectionDetection *bool `json:"enablePromptInjectionDetection,omitempty"`
-	// Optional. Disabled safety policies for computer use. This field is not supported
-	// in Vertex AI.
+	// Optional. Disabled safety policies for computer use.
 	DisabledSafetyPolicies []SafetyPolicy `json:"disabledSafetyPolicies,omitempty"`
 }
 
@@ -6250,7 +6249,7 @@ type TuningJob struct {
 	VeoLoraTuningSpec *VeoLoraTuningSpec `json:"veoLoraTuningSpec,omitempty"`
 
 	DistillationSamplingSpec *DistillationSamplingSpec `json:"distillationSamplingSpec,omitempty"`
-	// The Cloud Storage metrics URI associated with this tuning job.
+	// Output only. The Cloud Storage metrics URI associated with this TuningJob.
 	GCSMetricsURI string `json:"gcsMetricsUri,omitempty"`
 }
 

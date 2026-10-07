@@ -46,12 +46,16 @@ const (
 	ModelGemini31ProPreviewCustomtools Model = "gemini-3.1-pro-preview-customtools"
 	// ModelGemini31FlashLite Our most cost-efficient model, optimized for high-volume agentic tasks, translation, and simple data processing.
 	ModelGemini31FlashLite Model = "gemini-3.1-flash-lite"
+	// ModelGemini31FlashLiteImage Gemini 3.1 Flash Lite Image.
+	ModelGemini31FlashLiteImage Model = "gemini-3.1-flash-lite-image"
 	// ModelGemini3ProImage Gemini 3 Pro Image
 	ModelGemini3ProImage Model = "gemini-3-pro-image"
 	// ModelNanoBananaProPreview Gemini 3 Pro Image Preview
 	ModelNanoBananaProPreview Model = "nano-banana-pro-preview"
 	// ModelGemini31FlashImage Gemini 3.1 Flash Image.
 	ModelGemini31FlashImage Model = "gemini-3.1-flash-image"
+	// ModelGeminiNanoBanana21 Gemini Nano Banana 2.1.
+	ModelGeminiNanoBanana21 Model = "gemini-nano-banana-2.1"
 	// ModelGemini31FlashTtsPreview Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
 	ModelGemini31FlashTtsPreview Model = "gemini-3.1-flash-tts-preview"
 	// ModelGemini35Flash Our most intelligent model for sustained frontier performance in agentic and coding tasks.
@@ -90,7 +94,7 @@ func (e Model) ToPointer() *Model {
 func (e *Model) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "gemini-2.5-flash", "gemini-2.5-pro", "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest", "gemini-2.5-flash-lite", "gemini-2.5-flash-image", "gemini-3-flash-preview", "gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools", "gemini-3.1-flash-lite", "gemini-3-pro-image", "nano-banana-pro-preview", "gemini-3.1-flash-image", "gemini-3.1-flash-tts-preview", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "lyria-3-clip-preview", "lyria-3-pro-preview", "gemini-robotics-er-1.6-preview", "gemini-robotics-er-2-preview", "lyria-3.5", "gemini-omni-1.1-flash", "gemini-omni-flash-preview":
+		case "gemini-2.5-flash", "gemini-2.5-pro", "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest", "gemini-2.5-flash-lite", "gemini-2.5-flash-image", "gemini-3-flash-preview", "gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools", "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-image", "gemini-3-pro-image", "nano-banana-pro-preview", "gemini-3.1-flash-image", "gemini-nano-banana-2.1", "gemini-3.1-flash-tts-preview", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "lyria-3-clip-preview", "lyria-3-pro-preview", "gemini-robotics-er-1.6-preview", "gemini-robotics-er-2-preview", "lyria-3.5", "gemini-omni-1.1-flash", "gemini-omni-flash-preview":
 			return true
 		}
 	}

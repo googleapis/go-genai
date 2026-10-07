@@ -24,7 +24,6 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// Disabled - Turns all network off.
 type Disabled string
 
 const (
@@ -48,106 +47,83 @@ func (e *Disabled) UnmarshalJSON(data []byte) error {
 	}
 }
 
-// Allowlist - Outbound networking configuration for the sandbox. When specified, restricts which external domains the sandbox can reach. Omit entirely to allow all outbound traffic with no header injection.
-type Allowlist struct {
-	// List of allowed outbound domains. Only requests to listed domains are permitted. Use [{'domain': '*'}] to allow all domains while still injecting headers on specific ones.
-	Allowlist []AllowlistEntry `json:"allowlist,omitzero"`
-}
-
-func (a Allowlist) MarshalJSON() ([]byte, error) {
-	return utils.MarshalJSON(a, "", false)
-}
-
-func (a *Allowlist) UnmarshalJSON(data []byte) error {
-	if err := utils.UnmarshalJSON(data, &a, "", false, nil); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *Allowlist) GetAllowlist() []AllowlistEntry {
-	if a == nil {
-		return nil
-	}
-	return a.Allowlist
-}
-
-type EnvironmentNetworkEgressAllowlistType string
+type AllowlistType string
 
 const (
-	EnvironmentNetworkEgressAllowlistTypeAllowlist EnvironmentNetworkEgressAllowlistType = "Allowlist"
-	EnvironmentNetworkEgressAllowlistTypeDisabled  EnvironmentNetworkEgressAllowlistType = "Disabled"
-	EnvironmentNetworkEgressAllowlistTypeUnknown   EnvironmentNetworkEgressAllowlistType = "Unknown"
+	AllowlistTypeArrayOfAllowlistEntry AllowlistType = "arrayOfAllowlistEntry"
+	AllowlistTypeDisabled              AllowlistType = "Disabled"
+	AllowlistTypeUnknown               AllowlistType = "Unknown"
 )
 
-// EnvironmentNetworkEgressAllowlist - Outbound networking configuration for the sandbox. Accepts an object with an 'allowlist' array to restrict traffic, or the string 'disabled' to turn off all network access. Omit entirely to allow all outbound traffic with no header injection.
-type EnvironmentNetworkEgressAllowlist struct {
-	Allowlist  *Allowlist      `queryParam:"inline" union:"member"`
-	Disabled   *Disabled       `queryParam:"inline" union:"member"`
-	UnknownRaw json.RawMessage `json:"-" union:"unknown"`
+// Allowlist - List of allowed domains and their configurations. Set to `"disabled"`
+// to block all network egress.
+type Allowlist struct {
+	ArrayOfAllowlistEntry []AllowlistEntry `queryParam:"inline" union:"member"`
+	Disabled              *Disabled        `queryParam:"inline" union:"member"`
+	UnknownRaw            json.RawMessage  `json:"-" union:"unknown"`
 
-	Type EnvironmentNetworkEgressAllowlistType
+	Type AllowlistType
 }
 
-type EnvironmentNetworkEgressAllowlistMember interface {
-	Allowlist | Disabled
+type AllowlistMember interface {
+	[]AllowlistEntry | Disabled
 }
 
-func NewEnvironmentNetworkEgressAllowlist[T EnvironmentNetworkEgressAllowlistMember](val T) EnvironmentNetworkEgressAllowlist {
+func NewAllowlist[T AllowlistMember](val T) Allowlist {
 	switch v := any(val).(type) {
-	case Allowlist:
-		return EnvironmentNetworkEgressAllowlist{
-			Allowlist: &v,
-			Type:      EnvironmentNetworkEgressAllowlistTypeAllowlist,
+	case []AllowlistEntry:
+		return Allowlist{
+			ArrayOfAllowlistEntry: v,
+			Type:                  AllowlistTypeArrayOfAllowlistEntry,
 		}
 	case Disabled:
-		return EnvironmentNetworkEgressAllowlist{
+		return Allowlist{
 			Disabled: &v,
-			Type:     EnvironmentNetworkEgressAllowlistTypeDisabled,
+			Type:     AllowlistTypeDisabled,
 		}
 	}
-	panic(fmt.Sprintf("unreachable: %T is not a member of union EnvironmentNetworkEgressAllowlist", val))
+	panic(fmt.Sprintf("unreachable: %T is not a member of union Allowlist", val))
 }
-func NewEnvironmentNetworkEgressAllowlistUnknown(raw json.RawMessage) EnvironmentNetworkEgressAllowlist {
-	return EnvironmentNetworkEgressAllowlist{
+func NewAllowlistUnknown(raw json.RawMessage) Allowlist {
+	return Allowlist{
 		UnknownRaw: raw,
-		Type:       EnvironmentNetworkEgressAllowlistTypeUnknown,
+		Type:       AllowlistTypeUnknown,
 	}
 }
 
-func (u EnvironmentNetworkEgressAllowlist) GetUnknownRaw() json.RawMessage {
+func (u Allowlist) GetUnknownRaw() json.RawMessage {
 	return u.UnknownRaw
 }
 
-func (u EnvironmentNetworkEgressAllowlist) IsUnknown() bool {
-	return u.Type == EnvironmentNetworkEgressAllowlistTypeUnknown
+func (u Allowlist) IsUnknown() bool {
+	return u.Type == AllowlistTypeUnknown
 }
 
-func (u *EnvironmentNetworkEgressAllowlist) UnmarshalJSON(data []byte) error {
-	*u = EnvironmentNetworkEgressAllowlist{}
+func (u *Allowlist) UnmarshalJSON(data []byte) error {
+	*u = Allowlist{}
 
 	var candidates []utils.UnionCandidate
 
 	// Collect all valid candidates
-	var allowlist Allowlist = Allowlist{}
-	if err := utils.UnmarshalJSON(data, &allowlist, "", true, nil); err == nil {
+	var arrayOfAllowlistEntry []AllowlistEntry = []AllowlistEntry{}
+	if err := utils.UnmarshalJSON(data, &arrayOfAllowlistEntry, "", true, nil); err == nil {
 		candidates = append(candidates, utils.UnionCandidate{
-			Type:  EnvironmentNetworkEgressAllowlistTypeAllowlist,
-			Value: &allowlist,
+			Type:  AllowlistTypeArrayOfAllowlistEntry,
+			Value: arrayOfAllowlistEntry,
 		})
 	}
 
 	var disabled Disabled = Disabled("")
 	if err := utils.UnmarshalJSON(data, &disabled, "", true, nil); err == nil {
 		candidates = append(candidates, utils.UnionCandidate{
-			Type:  EnvironmentNetworkEgressAllowlistTypeDisabled,
+			Type:  AllowlistTypeDisabled,
 			Value: &disabled,
 		})
 	}
 
 	if len(candidates) == 0 {
 		u.UnknownRaw = json.RawMessage(data)
-		u.Type = EnvironmentNetworkEgressAllowlistTypeUnknown
+		u.Type = AllowlistTypeUnknown
 		return nil
 	}
 
@@ -155,29 +131,29 @@ func (u *EnvironmentNetworkEgressAllowlist) UnmarshalJSON(data []byte) error {
 	best := utils.PickBestUnionCandidate(candidates, data)
 	if best == nil {
 		u.UnknownRaw = json.RawMessage(data)
-		u.Type = EnvironmentNetworkEgressAllowlistTypeUnknown
+		u.Type = AllowlistTypeUnknown
 		return nil
 	}
 
 	// Set the union type and value based on the best candidate
-	u.Type = best.Type.(EnvironmentNetworkEgressAllowlistType)
+	u.Type = best.Type.(AllowlistType)
 	switch best.Type {
-	case EnvironmentNetworkEgressAllowlistTypeAllowlist:
-		u.Allowlist = best.Value.(*Allowlist)
+	case AllowlistTypeArrayOfAllowlistEntry:
+		u.ArrayOfAllowlistEntry = best.Value.([]AllowlistEntry)
 		return nil
-	case EnvironmentNetworkEgressAllowlistTypeDisabled:
+	case AllowlistTypeDisabled:
 		u.Disabled = best.Value.(*Disabled)
 		return nil
 	}
 
 	u.UnknownRaw = json.RawMessage(data)
-	u.Type = EnvironmentNetworkEgressAllowlistTypeUnknown
+	u.Type = AllowlistTypeUnknown
 	return nil
 }
 
-func (u EnvironmentNetworkEgressAllowlist) MarshalJSON() ([]byte, error) {
-	if u.Allowlist != nil {
-		return utils.MarshalJSON(u.Allowlist, "", true)
+func (u Allowlist) MarshalJSON() ([]byte, error) {
+	if u.ArrayOfAllowlistEntry != nil {
+		return utils.MarshalJSON(u.ArrayOfAllowlistEntry, "", true)
 	}
 
 	if u.Disabled != nil {
@@ -187,5 +163,30 @@ func (u EnvironmentNetworkEgressAllowlist) MarshalJSON() ([]byte, error) {
 	if u.UnknownRaw != nil {
 		return json.RawMessage(u.UnknownRaw), nil
 	}
-	return nil, errors.New("could not marshal union type EnvironmentNetworkEgressAllowlist: all fields are null")
+	return nil, errors.New("could not marshal union type Allowlist: all fields are null")
+}
+
+// EnvironmentNetworkEgressAllowlist - Network egress configuration for the environment.
+type EnvironmentNetworkEgressAllowlist struct {
+	// List of allowed domains and their configurations. Set to `"disabled"`
+	// to block all network egress.
+	Allowlist *Allowlist `json:"allowlist,omitzero"`
+}
+
+func (e EnvironmentNetworkEgressAllowlist) MarshalJSON() ([]byte, error) {
+	return utils.MarshalJSON(e, "", false)
+}
+
+func (e *EnvironmentNetworkEgressAllowlist) UnmarshalJSON(data []byte) error {
+	if err := utils.UnmarshalJSON(data, &e, "", false, nil); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *EnvironmentNetworkEgressAllowlist) GetAllowlist() *Allowlist {
+	if e == nil {
+		return nil
+	}
+	return e.Allowlist
 }

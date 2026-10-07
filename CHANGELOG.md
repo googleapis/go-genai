@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.73.0](https://github.com/googleapis/go-genai/compare/v1.72.0...v1.73.0) (2026-10-07)
+
+
+### Features
+
+* add `lyria-3.5`, `gemini-omni-1.1-flash`, and `gemini-omni-flash-preview` to Interactions `Model` enum ([0a17bc3](https://github.com/googleapis/go-genai/commit/0a17bc3e070ec7e26c5677072162486578fb418c))
+* **go:** expose Voices service on genai.Client and add Voices examples ([770093f](https://github.com/googleapis/go-genai/commit/770093f72c1a01f00237cb5695d728110c19b8c1))
+* Support `"allowlist": "disabled"` in environment network config. ([3a7595e](https://github.com/googleapis/go-genai/commit/3a7595eccddf2530209ac9eb044802c71c246eb0))
+* support continuation_token in Interactions ([5fed937](https://github.com/googleapis/go-genai/commit/5fed9374ce1a519114650287bd99dd46f1689cd2))
+* update discovery doc ([aeef05c](https://github.com/googleapis/go-genai/commit/aeef05c7b2a0c12a01051ff4e3ec005b85e57faa))
+
+
+### Bug Fixes
+
+* **gemini-api-cli:** remove unsupported 2.5 and 1.6 models from Interactions model options and CLI examples ([b1c58b2](https://github.com/googleapis/go-genai/commit/b1c58b217d7b555fcdc685eb0ec5e3b2b236384a))
+
 ## [1.72.0](https://github.com/googleapis/go-genai/compare/v1.71.0...v1.72.0) (2026-10-01)
 
 

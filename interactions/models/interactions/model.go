@@ -20,10 +20,6 @@ package interactions
 type Model string
 
 const (
-	// ModelGemini25Flash Our first hybrid reasoning model which supports a 1M token context window and has thinking budgets.
-	ModelGemini25Flash Model = "gemini-2.5-flash"
-	// ModelGemini25Pro Our state-of-the-art multipurpose model, which excels at coding and complex reasoning tasks.
-	ModelGemini25Pro Model = "gemini-2.5-pro"
 	// ModelGemma426bA4bIt Gemma 4 26B A4B IT
 	ModelGemma426bA4bIt Model = "gemma-4-26b-a4b-it"
 	// ModelGemma431bIt Gemma 4 31B IT
@@ -34,8 +30,8 @@ const (
 	ModelGeminiFlashLiteLatest Model = "gemini-flash-lite-latest"
 	// ModelGeminiProLatest Latest release of Gemini Pro
 	ModelGeminiProLatest Model = "gemini-pro-latest"
-	// ModelGemini25FlashLite Our smallest and most cost effective model, built for at scale usage.
-	ModelGemini25FlashLite Model = "gemini-2.5-flash-lite"
+	// ModelGemini35FlashLite Our smallest and most cost effective model, built for at scale usage.
+	ModelGemini35FlashLite Model = "gemini-3.5-flash-lite"
 	// ModelGemini25FlashImage Our native image generation model, optimized for speed, flexibility, and contextual understanding. Text input and output is priced the same as 2.5 Flash.
 	ModelGemini25FlashImage Model = "gemini-2.5-flash-image"
 	// ModelGemini3FlashPreview Our most intelligent model built for speed, combining frontier intelligence with superior search and grounding.
@@ -74,8 +70,6 @@ const (
 	ModelLyria3ClipPreview Model = "lyria-3-clip-preview"
 	// ModelLyria3ProPreview Our advanced, full-song generative model with deep compositional understanding, optimized for precise structural control and complex transitions across diverse musical styles.
 	ModelLyria3ProPreview Model = "lyria-3-pro-preview"
-	// ModelGeminiRoboticsEr16Preview Gemini Robotics-ER 1.6 Preview
-	ModelGeminiRoboticsEr16Preview Model = "gemini-robotics-er-1.6-preview"
 	// ModelGeminiRoboticsEr2Preview Gemini Robotics Embodied Reasoning 2 Preview
 	ModelGeminiRoboticsEr2Preview Model = "gemini-robotics-er-2-preview"
 	// ModelLyria35 Our flagship music generation model, optimized for full-length songs with complex structural coherence.
@@ -94,7 +88,7 @@ func (e Model) ToPointer() *Model {
 func (e *Model) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "gemini-2.5-flash", "gemini-2.5-pro", "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest", "gemini-2.5-flash-lite", "gemini-2.5-flash-image", "gemini-3-flash-preview", "gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools", "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-image", "gemini-3-pro-image", "nano-banana-pro-preview", "gemini-3.1-flash-image", "gemini-nano-banana-2.1", "gemini-3.1-flash-tts-preview", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "lyria-3-clip-preview", "lyria-3-pro-preview", "gemini-robotics-er-1.6-preview", "gemini-robotics-er-2-preview", "lyria-3.5", "gemini-omni-1.1-flash", "gemini-omni-flash-preview":
+		case "gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest", "gemini-3.5-flash-lite", "gemini-2.5-flash-image", "gemini-3-flash-preview", "gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools", "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-image", "gemini-3-pro-image", "nano-banana-pro-preview", "gemini-3.1-flash-image", "gemini-nano-banana-2.1", "gemini-3.1-flash-tts-preview", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "lyria-3-clip-preview", "lyria-3-pro-preview", "gemini-robotics-er-2-preview", "lyria-3.5", "gemini-omni-1.1-flash", "gemini-omni-flash-preview":
 			return true
 		}
 	}

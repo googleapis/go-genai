@@ -27,10 +27,11 @@ import (
 var ErrUnsupportedOption = errors.New("unsupported option")
 
 const (
-	SupportedOptionRetries              = "retries"
-	SupportedOptionTimeout              = "timeout"
-	SupportedOptionAcceptHeaderOverride = "acceptHeaderOverride"
-	SupportedOptionURLOverride          = "urlOverride"
+	SupportedOptionRetries               = "retries"
+	SupportedOptionTimeout               = "timeout"
+	SupportedOptionAcceptHeaderOverride  = "acceptHeaderOverride"
+	SupportedOptionURLOverride           = "urlOverride"
+	SupportedOptionAutomaticContinuation = "automaticContinuation"
 )
 
 type AcceptHeaderEnum string
@@ -52,6 +53,9 @@ type Options struct {
 	AcceptHeaderOverride *AcceptHeaderEnum
 	URLOverride          *string
 	SetHeaders           map[string]string
+	// AutomaticContinuation overrides the default (enabled) automatic
+	// continuation of Interactions.Create; see WithAutomaticContinuation.
+	AutomaticContinuation *bool
 }
 
 type Option func(*Options, ...string) error
@@ -84,6 +88,24 @@ func WithRetries(config retry.Config) Option {
 		}
 
 		opts.Retries = &config
+		return nil
+	}
+}
+
+// WithAutomaticContinuation enables or disables automatic continuation for
+// Interactions.Create (enabled by default). When enabled, an interaction that
+// stops at the per-request decode token limit (status "requires_continuation"
+// with a continuation_token) is resumed with further requests until it
+// finishes, and unary responses are merged into one Interaction. When
+// disabled, the server response is returned as-is so the caller can drive
+// continuation with continuation_token. See Interactions.Create.
+func WithAutomaticContinuation(enabled bool) Option {
+	return func(opts *Options, supportedOptions ...string) error {
+		if !utils.Contains(supportedOptions, SupportedOptionAutomaticContinuation) {
+			return ErrUnsupportedOption
+		}
+
+		opts.AutomaticContinuation = &enabled
 		return nil
 	}
 }

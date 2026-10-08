@@ -105,6 +105,12 @@ type EventStream[T any] struct {
 	val      *T
 	raw      json.RawMessage
 	eventID  *string
+
+	// nextFn and closeFn, when set, replace the SSE reader; see
+	// NewEventStreamFromFunc.
+	nextFn    func() (*T, json.RawMessage, error)
+	closeFn   func() error
+	closeOnce sync.Once
 }
 
 func NewEventStream[T any](
@@ -142,6 +148,21 @@ func NewEventStream[T any](
 	return es
 }
 
+// NewEventStreamFromFunc returns an EventStream whose events are produced by
+// next instead of being parsed from an SSE body: next returns the next event
+// and the JSON it was decoded from, (nil, nil, nil) when the stream ends, or
+// the error ending it. close is called by Close, at most once. The SDK uses it
+// to present several HTTP streams (e.g. the hops of an automatically
+// continued interaction) as one stream.
+func NewEventStreamFromFunc[T any](next func() (*T, json.RawMessage, error), close func() error) *EventStream[T] {
+	return &EventStream[T]{
+		r:       io.NopCloser(bytes.NewReader(nil)),
+		ctx:     context.Background(),
+		nextFn:  next,
+		closeFn: close,
+	}
+}
+
 func WithDataRequired[T any](dataRequired bool) func(*EventStream[T]) {
 	return func(es *EventStream[T]) {
 		es.dataRequired = dataRequired
@@ -176,6 +197,18 @@ func (es *EventStream[T]) release() {
 func (es *EventStream[T]) Next() bool {
 	if es.err != nil || es.finished.Load() {
 		return false
+	}
+
+	if es.nextFn != nil {
+		val, raw, err := es.nextFn()
+		if err != nil || val == nil {
+			es.err = err
+			es.finished.Store(true)
+			return false
+		}
+		es.val = val
+		es.raw = raw
+		return true
 	}
 
 	for {
@@ -372,6 +405,13 @@ func (es *EventStream[T]) Err() error {
 func (es *EventStream[T]) Close() error {
 	es.finished.Store(true)
 	err := es.r.Close()
+	if es.closeFn != nil {
+		es.closeOnce.Do(func() {
+			if cerr := es.closeFn(); err == nil {
+				err = cerr
+			}
+		})
+	}
 	es.release()
 	return err
 }

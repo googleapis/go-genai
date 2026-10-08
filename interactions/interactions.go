@@ -48,8 +48,9 @@ func newInteractions(rootSDK *GenAI, sdkConfig config.SDKConfiguration, hooks *h
 	}
 }
 
-// Create creates a new interaction.
-func (s *Interactions) Create(ctx context.Context, request operations.CreateInteractionRequest, opts ...operations.Option) (*operations.CreateInteractionResponse, error) {
+// createOnce sends a single CreateInteraction request (one hop). Create, in
+// continuation.go, wraps it with automatic continuation.
+func (s *Interactions) createOnce(ctx context.Context, request operations.CreateInteractionRequest, opts ...operations.Option) (*operations.CreateInteractionResponse, error) {
 	globals := operations.CreateInteractionGlobals{
 		APIVersion: s.sdkConfiguration.Globals.APIVersion,
 	}
@@ -59,6 +60,7 @@ func (s *Interactions) Create(ctx context.Context, request operations.CreateInte
 		operations.SupportedOptionRetries,
 		operations.SupportedOptionTimeout,
 		operations.SupportedOptionAcceptHeaderOverride,
+		operations.SupportedOptionAutomaticContinuation,
 	}
 
 	for _, opt := range opts {

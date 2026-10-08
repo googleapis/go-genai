@@ -56,6 +56,8 @@ type InteractionStatusUpdate struct {
 	eventType     string                        `const:"interaction.status_update" json:"event_type"`
 	InteractionID string                        `json:"interaction_id"`
 	Status        InteractionStatusUpdateStatus `json:"status"`
+	// Statistics on the interaction request's token usage.
+	Usage *Usage `json:"usage,omitzero"`
 }
 
 func (i InteractionStatusUpdate) MarshalJSON() ([]byte, error) {
@@ -92,4 +94,11 @@ func (i *InteractionStatusUpdate) GetStatus() InteractionStatusUpdateStatus {
 		return InteractionStatusUpdateStatus("")
 	}
 	return i.Status
+}
+
+func (i *InteractionStatusUpdate) GetUsage() *Usage {
+	if i == nil {
+		return nil
+	}
+	return i.Usage
 }

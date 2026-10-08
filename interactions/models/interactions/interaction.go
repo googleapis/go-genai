@@ -481,6 +481,10 @@ type Interaction struct {
 	//
 	// Deprecated: This will be removed in a future release, please migrate away from it as soon as possible.
 	CachedContent *string `json:"cached_content,omitzero"`
+	// The IDs of all server interactions merged into this response when automatic continuation is enabled, in order (ending with the final hop's ID).
+	//
+	// Note: this is added by the SDK.
+	ContinuationIds []string `json:"continuation_ids,omitzero"`
 	// Opaque token to resume a long decode. Output: set when status is
 	// REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
 	// token back unchanged in CreateInteraction to continue decoding.
@@ -614,6 +618,13 @@ func (i *Interaction) GetCachedContent() *string {
 		return nil
 	}
 	return i.CachedContent
+}
+
+func (i *Interaction) GetContinuationIds() []string {
+	if i == nil {
+		return nil
+	}
+	return i.ContinuationIds
 }
 
 func (i *Interaction) GetContinuationToken() *string {

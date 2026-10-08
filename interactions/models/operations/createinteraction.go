@@ -142,6 +142,8 @@ type CreateInteractionRequest struct {
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// The request body.
 	Body CreateInteractionRequestBody `request:"mediaType=application/json"`
+	// AutomaticContinuation enables automatic resumption of long decodes across multiple hops.
+	AutomaticContinuation *bool `json:"-"`
 }
 
 func (c *CreateInteractionRequest) GetAPIVersion() *string {
@@ -156,6 +158,13 @@ func (c *CreateInteractionRequest) GetBody() CreateInteractionRequestBody {
 		return CreateInteractionRequestBody{}
 	}
 	return c.Body
+}
+
+func (c *CreateInteractionRequest) GetAutomaticContinuation() *bool {
+	if c == nil {
+		return nil
+	}
+	return c.AutomaticContinuation
 }
 
 type CreateInteractionResponse struct {

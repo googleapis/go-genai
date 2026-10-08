@@ -47,10 +47,16 @@ func main() {
 		model = "gemini-flash-latest"
 	}
 
-	fmt.Println("--- Unary Continuation ---")
+	fmt.Println("--- Automatic Unary Continuation ---")
+	runAutomaticUnaryContinuation(ctx, client, model)
+
+	fmt.Println("\n--- Automatic Streaming Continuation ---")
+	runAutomaticStreamingContinuation(ctx, client, model)
+
+	fmt.Println("\n--- Manual Unary Continuation ---")
 	runUnaryContinuation(ctx, client, model)
 
-	fmt.Println("\n--- Streaming Continuation ---")
+	fmt.Println("\n--- Manual Streaming Continuation ---")
 	runStreamingContinuation(ctx, client, model)
 }
 
@@ -70,6 +76,73 @@ func printInteractionText(interaction *gaos_interactions.Interaction) {
 	}
 }
 
+func runAutomaticUnaryContinuation(ctx context.Context, client *genai.Client, model string) {
+	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
+		Model: gaos_interactions.Model(model),
+		Input: genai.Ptr(gaos_interactions.NewInteractionsInput("Write a 500 word story about a robot.")),
+	})
+
+	res, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{
+		Body:                  body,
+		AutomaticContinuation: genai.Ptr(true),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	interaction := res.Interaction
+	if interaction == nil {
+		log.Fatal("No interaction returned")
+	}
+
+	printInteractionText(interaction)
+	fmt.Printf("\nFinal status: %s\n", interaction.Status)
+}
+
+func runAutomaticStreamingContinuation(ctx context.Context, client *genai.Client, model string) {
+	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
+		Model:  gaos_interactions.Model(model),
+		Input:  genai.Ptr(gaos_interactions.NewInteractionsInput("Write a 500 word story about a robot.")),
+		Stream: genai.Ptr(true),
+	})
+
+	res, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{
+		Body:                  body,
+		AutomaticContinuation: genai.Ptr(true),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	stream := res.InteractionSSEStreamEvent
+	if stream == nil {
+		log.Fatal("Response was not a stream")
+	}
+	defer stream.Close()
+
+	var status gaos_interactions.InteractionSseEventInteractionStatus
+	for stream.Next() {
+		event := stream.Value()
+		if event == nil {
+			continue
+		}
+		if stepDelta := event.GetDataStepDelta(); stepDelta != nil {
+			if textDelta := stepDelta.GetDeltaText(); textDelta != nil {
+				fmt.Print(textDelta.GetText())
+				os.Stdout.Sync()
+			}
+		} else if completed := event.GetDataInteractionCompleted(); completed != nil {
+			evInteraction := completed.GetInteraction()
+			status = evInteraction.GetStatus()
+		}
+	}
+
+	if err := stream.Err(); err != nil {
+		log.Fatalf("\nError during streaming: %v\n", err)
+	}
+	fmt.Printf("\nFinal stream status: %s\n", status)
+}
+
 func runUnaryContinuation(ctx context.Context, client *genai.Client, model string) {
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
 		Model: gaos_interactions.Model(model),
@@ -86,13 +159,11 @@ func runUnaryContinuation(ctx context.Context, client *genai.Client, model strin
 		log.Fatal("No interaction returned")
 	}
 
-	printInteractionText(interaction)
-
-	for interaction.Status == gaos_interactions.InteractionStatusIncomplete && interaction.ContinuationToken != nil {
+	for interaction.Status == gaos_interactions.InteractionStatusContinuationRequired && interaction.ContinuationToken != nil {
 		contBody := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
-			Model:                 gaos_interactions.Model(model),
-			PreviousInteractionID: interaction.ID,
-			ContinuationToken:     interaction.ContinuationToken,
+			Model:             gaos_interactions.Model(model),
+			Input:             genai.Ptr(gaos_interactions.NewInteractionsInput("Write a 500 word story about a robot.")),
+			ContinuationToken: interaction.ContinuationToken,
 		})
 
 		res, err = client.Interactions.Create(ctx, operations.CreateInteractionRequest{Body: contBody})
@@ -103,24 +174,20 @@ func runUnaryContinuation(ctx context.Context, client *genai.Client, model strin
 		if interaction == nil {
 			log.Fatal("No interaction returned on continuation")
 		}
-		printInteractionText(interaction)
 	}
+	printInteractionText(interaction)
 	fmt.Printf("\nFinal status: %s\n", interaction.Status)
 }
 
 func runStreamingContinuation(ctx context.Context, client *genai.Client, model string) {
-	var interactionID *string
 	var continuationToken *string
 
 	for {
 		reqModel := gaos_interactions.CreateModelInteraction{
-			Model:                 gaos_interactions.Model(model),
-			PreviousInteractionID: interactionID,
-			ContinuationToken:     continuationToken,
-			Stream:                genai.Ptr(true),
-		}
-		if continuationToken == nil {
-			reqModel.Input = genai.Ptr(gaos_interactions.NewInteractionsInput("Write a 500 word story about a robot."))
+			Model:             gaos_interactions.Model(model),
+			Input:             genai.Ptr(gaos_interactions.NewInteractionsInput("Write a 500 word story about a robot.")),
+			ContinuationToken: continuationToken,
+			Stream:            genai.Ptr(true),
 		}
 
 		res, err := client.Interactions.Create(ctx, operations.CreateInteractionRequest{
@@ -148,8 +215,6 @@ func runStreamingContinuation(ctx context.Context, client *genai.Client, model s
 				}
 			} else if completed := event.GetDataInteractionCompleted(); completed != nil {
 				evInteraction := completed.GetInteraction()
-				id := evInteraction.GetID()
-				interactionID = &id
 				status = evInteraction.GetStatus()
 				continuationToken = evInteraction.GetContinuationToken()
 			}
@@ -161,7 +226,7 @@ func runStreamingContinuation(ctx context.Context, client *genai.Client, model s
 		}
 		stream.Close()
 
-		if status != gaos_interactions.InteractionSseEventInteractionStatusIncomplete || continuationToken == nil {
+		if status != gaos_interactions.InteractionSseEventInteractionStatus("continuation_required") || continuationToken == nil {
 			fmt.Printf("\nFinal stream status: %s\n", status)
 			break
 		}

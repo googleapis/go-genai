@@ -48,8 +48,167 @@ func newInteractions(rootSDK *GenAI, sdkConfig config.SDKConfiguration, hooks *h
 	}
 }
 
-// Create creates a new interaction.
+// Create creates a new interaction with optional automatic continuation across hops.
 func (s *Interactions) Create(ctx context.Context, request operations.CreateInteractionRequest, opts ...operations.Option) (*operations.CreateInteractionResponse, error) {
+	o := operations.Options{}
+	supportedOptions := []string{
+		operations.SupportedOptionRetries,
+		operations.SupportedOptionTimeout,
+		operations.SupportedOptionAcceptHeaderOverride,
+		operations.SupportedOptionAutomaticContinuation,
+	}
+
+	for _, opt := range opts {
+		if err := opt(&o, supportedOptions...); err != nil {
+			return nil, fmt.Errorf("error applying option: %w", err)
+		}
+	}
+
+	var explicitAutoContinue *bool
+	if request.AutomaticContinuation != nil {
+		explicitAutoContinue = request.AutomaticContinuation
+	}
+	if o.AutomaticContinuation != nil {
+		explicitAutoContinue = o.AutomaticContinuation
+	}
+	autoContinue := explicitAutoContinue != nil && *explicitAutoContinue
+
+	streaming := isStreaming(request.Body)
+	bg := isBackground(request.Body)
+	storeFalse := isStoreFalse(request.Body)
+	hasCallerToken := hasContinuationToken(request.Body)
+
+	if bg && explicitAutoContinue != nil && !*explicitAutoContinue {
+		return nil, fmt.Errorf("automatic_continuation=false cannot be used with background=true")
+	}
+
+	if storeFalse && !streaming && autoContinue {
+		return nil, fmt.Errorf("automatic_continuation=true cannot be used with store=false in unary mode. Use store=true, stream=true, or background=true for automatic continuation to work")
+	}
+
+	if autoContinue && streaming {
+		reqCopy := request
+		reqCopy.AutomaticContinuation = nil
+		resp, err := s.createDirect(ctx, reqCopy, opts...)
+		if err != nil {
+			return nil, err
+		}
+		if resp.InteractionSSEStreamEvent != nil {
+			hopStatus := ""
+			hopContinuationToken := ""
+			resp.InteractionSSEStreamEvent.SetEventObserver(func(event *interactions.InteractionSSEStreamEvent) {
+				hopStatus, hopContinuationToken = extractHopContinuationState(
+					event,
+					hopStatus,
+					hopContinuationToken,
+				)
+			})
+			resp.InteractionSSEStreamEvent.SetContinuationSupplier(func(lastEvent *interactions.InteractionSSEStreamEvent) (*stream.EventStream[interactions.InteractionSSEStreamEvent], error) {
+				if hopStatus == "" && lastEvent != nil {
+					hopStatus, hopContinuationToken = extractHopContinuationState(
+						lastEvent,
+						hopStatus,
+						hopContinuationToken,
+					)
+				}
+				status := hopStatus
+				tok := hopContinuationToken
+				hopStatus = ""
+				hopContinuationToken = ""
+
+				if !canResumeStreamHop(status, tok) {
+					return nil, nil
+				}
+
+				nextBody := withContinuationToken(request.Body, tok)
+				nextReq := operations.CreateInteractionRequest{
+					APIVersion: request.APIVersion,
+					Body:       nextBody,
+				}
+				nextResp, err := s.createDirect(ctx, nextReq, opts...)
+				if err != nil {
+					return nil, err
+				}
+				return nextResp.InteractionSSEStreamEvent, nil
+			})
+		}
+		return resp, nil
+	}
+
+	if autoContinue {
+		currentBody := request.Body
+		var lastResp *operations.CreateInteractionResponse
+
+		for {
+			currentReq := operations.CreateInteractionRequest{
+				APIVersion: request.APIVersion,
+				Body:       currentBody,
+			}
+			resp, err := s.createDirect(ctx, currentReq, opts...)
+			if err != nil {
+				return nil, err
+			}
+			lastResp = resp
+
+			nextToken, shouldCont := shouldContinueUnary(resp.Interaction)
+			if shouldCont {
+				currentBody = withContinuationToken(request.Body, nextToken)
+			} else {
+				break
+			}
+		}
+
+		if lastResp != nil && lastResp.Interaction != nil {
+			lastResp.Interaction = withOutputText(lastResp.Interaction)
+		}
+		return lastResp, nil
+	}
+
+	reqCopy := request
+	reqCopy.AutomaticContinuation = nil
+	resp, err := s.createDirect(ctx, reqCopy, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	if !autoContinue && streaming && !hasCallerToken && resp.InteractionSSEStreamEvent != nil {
+		hopStatus := ""
+		hopContinuationToken := ""
+		resp.InteractionSSEStreamEvent.SetEventObserver(func(event *interactions.InteractionSSEStreamEvent) {
+			hopStatus, hopContinuationToken = extractHopContinuationState(
+				event,
+				hopStatus,
+				hopContinuationToken,
+			)
+		})
+		resp.InteractionSSEStreamEvent.SetContinuationSupplier(func(lastEvent *interactions.InteractionSSEStreamEvent) (*stream.EventStream[interactions.InteractionSSEStreamEvent], error) {
+			if hopStatus == "" && lastEvent != nil {
+				hopStatus, hopContinuationToken = extractHopContinuationState(
+					lastEvent,
+					hopStatus,
+					hopContinuationToken,
+				)
+			}
+			if hopStatus == "continuation_required" && hopContinuationToken != "" {
+				warnIncompleteContinuation()
+			}
+			return nil, nil
+		})
+	}
+
+	if resp.Interaction != nil {
+		resp.Interaction = withOutputText(resp.Interaction)
+		if !autoContinue && !hasCallerToken {
+			if _, shouldWarn := shouldContinueUnary(resp.Interaction); shouldWarn {
+				warnIncompleteContinuation()
+			}
+		}
+	}
+
+	return resp, nil
+}
+
+func (s *Interactions) createDirect(ctx context.Context, request operations.CreateInteractionRequest, opts ...operations.Option) (*operations.CreateInteractionResponse, error) {
 	globals := operations.CreateInteractionGlobals{
 		APIVersion: s.sdkConfiguration.Globals.APIVersion,
 	}
@@ -59,6 +218,7 @@ func (s *Interactions) Create(ctx context.Context, request operations.CreateInte
 		operations.SupportedOptionRetries,
 		operations.SupportedOptionTimeout,
 		operations.SupportedOptionAcceptHeaderOverride,
+		operations.SupportedOptionAutomaticContinuation,
 	}
 
 	for _, opt := range opts {
@@ -777,7 +937,7 @@ func (s *Interactions) Get(ctx context.Context, request operations.GetInteractio
 				return nil, err
 			}
 
-			res.Interaction = &out
+			res.Interaction = withOutputText(&out)
 		case utils.MatchContentType(httpRes.Header.Get("Content-Type"), `text/event-stream`):
 			out := stream.NewEventStream(ctx, httpRes.Body, func(se []byte) (interactions.InteractionSSEStreamEvent, error) {
 				var e interactions.InteractionSSEStreamEvent
@@ -1044,7 +1204,7 @@ func (s *Interactions) Cancel(ctx context.Context, request operations.CancelInte
 				return nil, err
 			}
 
-			res.Interaction = &out
+			res.Interaction = withOutputText(&out)
 		default:
 			rawBody, err := utils.ConsumeRawBody(httpRes)
 			if err != nil {

@@ -1623,6 +1623,57 @@ type Transcription struct {
 	SpeakerLabel string `json:"speakerLabel,omitempty"`
 	// Optional. Detailed word-level transcriptions and timing details.
 	Words []*WordInfo `json:"words,omitempty"`
+	// Optional. Start offset in time of the transcription relative to the start of the
+	// audio.
+	StartOffset time.Duration `json:"startOffset,omitempty"`
+	// Optional. End offset in time of the transcription relative to the start of the audio.
+	EndOffset time.Duration `json:"endOffset,omitempty"`
+}
+
+func (t *Transcription) UnmarshalJSON(data []byte) error {
+	type Alias Transcription
+	aux := &struct {
+		StartOffset *InternalDurationJSON `json:"startOffset,omitempty"`
+		EndOffset   *InternalDurationJSON `json:"endOffset,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(t),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if !reflect.ValueOf(aux.StartOffset).IsZero() {
+		t.StartOffset = time.Duration(*aux.StartOffset)
+	}
+
+	if !reflect.ValueOf(aux.EndOffset).IsZero() {
+		t.EndOffset = time.Duration(*aux.EndOffset)
+	}
+
+	return nil
+}
+
+func (t *Transcription) MarshalJSON() ([]byte, error) {
+	type Alias Transcription
+	aux := &struct {
+		StartOffset *InternalDurationJSON `json:"startOffset,omitempty"`
+		EndOffset   *InternalDurationJSON `json:"endOffset,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(t),
+	}
+
+	if !reflect.ValueOf(t.StartOffset).IsZero() {
+		aux.StartOffset = (*InternalDurationJSON)(&t.StartOffset)
+	}
+
+	if !reflect.ValueOf(t.EndOffset).IsZero() {
+		aux.EndOffset = (*InternalDurationJSON)(&t.EndOffset)
+	}
+
+	return json.Marshal(aux)
 }
 
 // A datatype containing media content.
@@ -8280,6 +8331,8 @@ type RealtimeInputConfig struct {
 	ActivityHandling ActivityHandling `json:"activityHandling,omitempty"`
 	// Optional. Defines which input is included in the user's turn.
 	TurnCoverage TurnCoverage `json:"turnCoverage,omitempty"`
+	// Optional. If true, enables interim transcript timestamps.
+	InterimTranscriptTimestampEnabled *bool `json:"interimTranscriptTimestampEnabled,omitempty"`
 }
 
 // Configuration of session resumption mechanism.

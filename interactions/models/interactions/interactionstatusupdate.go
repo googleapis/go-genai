@@ -49,6 +49,9 @@ func (e *InteractionStatusUpdateStatus) IsExact() bool {
 }
 
 type InteractionStatusUpdate struct {
+	// An optional opaque continuation token used to resume decoding from the
+	// latest checkpoint after a disconnected stream.
+	ContinuationToken *string `json:"continuation_token,omitzero"`
 	// The event_id token to be used to resume the interaction stream, from
 	// this event.
 	EventID *string `json:"event_id,omitzero"`
@@ -67,6 +70,13 @@ func (i *InteractionStatusUpdate) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (i *InteractionStatusUpdate) GetContinuationToken() *string {
+	if i == nil {
+		return nil
+	}
+	return i.ContinuationToken
 }
 
 func (i *InteractionStatusUpdate) GetEventID() *string {

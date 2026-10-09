@@ -269,6 +269,14 @@ func (s *Session) SendToolResponse(input LiveToolResponseInput) error {
 	return s.send(input.toLiveClientMessage())
 }
 
+// Preview. SendContextUpdate transmits a [LiveClientContextUpdate] over the established WebSocket connection.
+//
+// Updates to the context of the current session. Only fields that are set will be updated.
+// Updates are guaranteed to be processed in order with the rest of the inputs.
+func (s *Session) SendContextUpdate(input *LiveClientContextUpdate) error {
+	return s.send(&LiveClientMessage{ContextUpdate: input})
+}
+
 // Send transmits a LiveClientMessage over the established connection.
 // It returns an error if sending the message fails.
 func (s *Session) send(input *LiveClientMessage) error {

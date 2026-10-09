@@ -8524,6 +8524,36 @@ type LiveClientToolResponse struct {
 	FunctionResponses []*FunctionResponse `json:"functionResponses,omitempty"`
 }
 
+// A wrapper around the list of tools.
+// This wrapper exists because a bare `repeated Tool` field cannot tell apart
+// "not sending a tools update" from "clearing all tools": an unset repeated
+// field and an empty repeated field look identical on the wire. Wrapping the
+// list in a message adds a presence bit, so the two cases become: - `tools`
+// field unset: no update; keep the previously provided tools. - `tools` field
+// set (even with an empty list): replace the current tools with the provided
+// list, which may be empty to clear all tools.
+type LiveClientContextUpdateTools struct {
+	// Optional. The list of tools the model may use to generate the next response.
+	Tools []*Tool `json:"tools,omitempty"`
+}
+
+// Updates to the context of the current session.
+// Only fields that are set will be updated. Updates are guaranteed to be
+// processed *in order* with the rest of the inputs.
+type LiveClientContextUpdate struct {
+	// Optional. Updated system instruction for the model. If set, overrides `BidiGenerateContentSetup.system_instruction`.
+	// The system instructions are part of the model preamble, so updating them invalidates
+	// the prefix cache. Clients should only update this field when strictly necessary as
+	// it might have a performance impact on the model generation.
+	SystemInstruction *Content `json:"systemInstruction,omitempty"`
+	// Optional. An updated list of tools the model may use to generate the subsequent responses.
+	// If set, this list replaces the previously provided tools. The tools are part of the
+	// model preamble, so updating them invalidates the prefix cache. Clients should only
+	// update this field when strictly necessary as it might have a performance impact on
+	// the model generation.
+	Tools *LiveClientContextUpdateTools `json:"tools,omitempty"`
+}
+
 // Messages sent by the client in the API call.
 type LiveClientMessage struct {
 	// Optional. Message to be sent by the system when connecting to the API. SDK users
@@ -8535,6 +8565,8 @@ type LiveClientMessage struct {
 	RealtimeInput *LiveClientRealtimeInput `json:"realtimeInput,omitempty"`
 	// Optional. Response to a `ToolCallMessage` received from the server.
 	ToolResponse *LiveClientToolResponse `json:"toolResponse,omitempty"`
+	// Optional. Updates to the context of the current session.
+	ContextUpdate *LiveClientContextUpdate `json:"contextUpdate,omitempty"`
 }
 
 // Session config for the API connection.

@@ -1273,6 +1273,16 @@ func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]a
 		InternalSetValueByPath(parentObject, []string{"continuationToken"}, fromContinuationToken)
 	}
 
+	fromResponseFormat := InternalGetValueByPath(fromObject, []string{"responseFormat"})
+	if fromResponseFormat != nil {
+		fromResponseFormat, err = responseFormatToMldev(fromResponseFormat.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"responseFormat"}, fromResponseFormat)
+	}
+
 	return toObject, nil
 }
 
@@ -1501,6 +1511,10 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 	fromContinuationToken := InternalGetValueByPath(fromObject, []string{"continuationToken"})
 	if fromContinuationToken != nil {
 		InternalSetValueByPath(parentObject, []string{"continuationToken"}, fromContinuationToken)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"responseFormat"}) != nil {
+		return nil, fmt.Errorf("responseFormat parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
 	}
 
 	return toObject, nil
@@ -3560,6 +3574,31 @@ func replicatedVoiceConfigToVertex(fromObject map[string]any, parentObject map[s
 
 	if InternalGetValueByPath(fromObject, []string{"voiceConsentSignature"}) != nil {
 		return nil, fmt.Errorf("voiceConsentSignature parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
+func responseFormatToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromAudio := InternalGetValueByPath(fromObject, []string{"audio"})
+	if fromAudio != nil {
+		InternalSetValueByPath(toObject, []string{"audio"}, fromAudio)
+	}
+
+	fromImage := InternalGetValueByPath(fromObject, []string{"image"})
+	if fromImage != nil {
+		InternalSetValueByPath(toObject, []string{"image"}, fromImage)
+	}
+
+	fromText := InternalGetValueByPath(fromObject, []string{"text"})
+	if fromText != nil {
+		InternalSetValueByPath(toObject, []string{"text"}, fromText)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"video"}) != nil {
+		return nil, fmt.Errorf("video parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
 	}
 
 	return toObject, nil

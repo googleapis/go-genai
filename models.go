@@ -5555,19 +5555,92 @@ var breakingChangeWarningGenerateVideosNotSource sync.Once
 var deprecationWarningGenerateVideosFromSource sync.Once
 
 // GenerateContent generates content based on the provided model, contents, and configuration.
+//
+// A response that stops before the model finishes is continued automatically: the same request is
+// sent again with the response's continuation token until the model finishes. The responses are
+// returned merged into one, with their parts concatenated and their usage metadata summed. Each
+// request is billed, including any that succeeded before a later one failed. Set
+// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (m Models) GenerateContent(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) (*GenerateContentResponse, error) {
 	if config != nil {
 		config.setDefaults()
 	}
-	return m.generateContent(ctx, model, contents, config)
+	enableContinuation := shouldEnableAutomaticContinuation(config)
+	response, err := m.generateContent(ctx, model, contents, config)
+	if err != nil {
+		return nil, err
+	}
+	if !enableContinuation {
+		return response, nil
+	}
+
+	hopResponses := []*GenerateContentResponse{response}
+	for {
+		nextToken := shouldContinueGeneration(response)
+		if len(nextToken) == 0 {
+			break
+		}
+
+		callConfig := prepareContinuationConfig(config, nextToken)
+		response, err = m.generateContent(ctx, model, contents, callConfig)
+		if err != nil {
+			return nil, err
+		}
+		hopResponses = append(hopResponses, response)
+	}
+
+	if len(hopResponses) > 1 {
+		return mergeContinuationResponses(hopResponses)
+	}
+
+	return response, nil
 }
 
 // GenerateContentStream generates a stream of content based on the provided model, contents, and configuration.
+//
+// A response that stops before the model finishes is continued automatically: the same request is
+// sent again with the response's continuation token until the model finishes, and the chunks of
+// every request are emitted in order. The usage metadata in a chunk covers only the request it came
+// from. Each request is billed, including any that succeeded before a later one failed. Set
+// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (m Models) GenerateContentStream(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) iter.Seq2[*GenerateContentResponse, error] {
 	if config != nil {
 		config.setDefaults()
 	}
-	return m.generateContentStream(ctx, model, contents, config)
+	enableContinuation := shouldEnableAutomaticContinuation(config)
+	callConfig := config
+
+	return func(yield func(*GenerateContentResponse, error) bool) {
+		for {
+			var hopFinishReason FinishReason
+			var hopContinuationToken []byte
+
+			for chunk, err := range m.generateContentStream(ctx, model, contents, callConfig) {
+				if err != nil {
+					yield(nil, err)
+					return
+				}
+				if chunk != nil && len(chunk.Candidates) > 0 {
+					cand := chunk.Candidates[0]
+					if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified {
+						hopFinishReason = cand.FinishReason
+					}
+					if len(cand.ContinuationToken) > 0 {
+						hopContinuationToken = cand.ContinuationToken
+					}
+				}
+				if !yield(chunk, nil) {
+					return
+				}
+			}
+
+			if enableContinuation && len(hopContinuationToken) > 0 && isResumableFinishReason(hopFinishReason) {
+				callConfig = prepareContinuationConfig(config, hopContinuationToken)
+				continue
+			}
+			break
+		}
+	}
 }
 
 // List retrieves a paginated list of models resources.

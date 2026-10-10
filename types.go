@@ -3124,6 +3124,11 @@ type GenerateContentConfig struct {
 	// previous response that stopped with `finish_reason` set to
 	// `CONTINUATION`.
 	ContinuationToken []byte `json:"continuationToken,omitempty"`
+	// Optional. Defaults to true. When a response ends with finish reason
+	// `CONTINUATION`, the SDK sends the same request again with the response's
+	// continuation token until the model finishes. Timeouts, retries and
+	// billing apply to each request. Set to false to turn this off.
+	AutomaticContinuation *bool `json:"automaticContinuation,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {

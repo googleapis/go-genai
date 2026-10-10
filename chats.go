@@ -32,6 +32,11 @@ type Chats struct {
 
 // Chat represents a single chat session (multi-turn conversation) with the model.
 //
+// A response that stops before the model finishes is continued automatically: the same request is
+// sent again with the response's continuation token until the model finishes, and the turn is
+// recorded once, with the whole answer. Each of those requests is billed. Set
+// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
+//
 //		client, _ := genai.NewClient(ctx, &genai.ClientConfig{})
 //		chat, _ := client.Chats.Create(ctx, "gemini-2.5-flash", nil, nil)
 //	  result, err = chat.SendMessage(ctx, genai.Part{Text: "What is 1 + 2?"})
@@ -123,6 +128,11 @@ func extractCuratedHistory(comprehensiveHistory []*Content) ([]*Content, error) 
 }
 
 // Create initializes a new chat session.
+//
+// A response that stops before the model finishes is continued automatically: the same request is
+// sent again with the response's continuation token until the model finishes, and the turn is
+// recorded once, with the whole answer. Each of those requests is billed. Set
+// [GenerateContentConfig.AutomaticContinuation] to false in config to turn this off.
 func (c *Chats) Create(ctx context.Context, model string, config *GenerateContentConfig, history []*Content) (*Chat, error) {
 	compHistory := history
 	if compHistory == nil {
@@ -171,6 +181,11 @@ func (c *Chat) History(curated bool) []*Content {
 }
 
 // SendMessage is a wrapper around Send.
+//
+// A response that stops before the model finishes is continued automatically: the same request is
+// sent again with the response's continuation token until the model finishes, and the turn is
+// recorded once, with the whole answer. Each of those requests is billed. Set
+// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (c *Chat) SendMessage(ctx context.Context, parts ...Part) (*GenerateContentResponse, error) {
 	// Transform Parts to single Content
 	p := make([]*Part, len(parts))
@@ -180,7 +195,12 @@ func (c *Chat) SendMessage(ctx context.Context, parts ...Part) (*GenerateContent
 	return c.Send(ctx, p...)
 }
 
-// Send function sends the conversation history with the additional user's message and returns the model's response.
+// Send sends the conversation history with the additional user's message and returns the model's response.
+//
+// A response that stops before the model finishes is continued automatically: the same request is
+// sent again with the response's continuation token until the model finishes, and the turn is
+// recorded once, with the whole answer. Each of those requests is billed. Set
+// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (c *Chat) Send(ctx context.Context, parts ...*Part) (*GenerateContentResponse, error) {
 	inputContent := &Content{Parts: parts, Role: RoleUser}
 
@@ -204,6 +224,10 @@ func (c *Chat) Send(ctx context.Context, parts ...*Part) (*GenerateContentRespon
 }
 
 // SendMessageStream is a wrapper around SendStream.
+//
+// A response that the model stopped early and the session continues is not cut off: the chunks
+// of every request are emitted in order and recorded together. Each request is billed. Set
+// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (c *Chat) SendMessageStream(ctx context.Context, parts ...Part) iter.Seq2[*GenerateContentResponse, error] {
 	// Transform Parts to single Content
 	p := make([]*Part, len(parts))
@@ -213,7 +237,11 @@ func (c *Chat) SendMessageStream(ctx context.Context, parts ...Part) iter.Seq2[*
 	return c.SendStream(ctx, p...)
 }
 
-// SendStream function sends the conversation history with the additional user's message and returns the model's response.
+// SendStream sends the conversation history with the additional user's message and returns the model's streaming response.
+//
+// A response that the model stopped early and the session continues is not cut off: the chunks
+// of every request are emitted in order and recorded together. Each request is billed. Set
+// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*GenerateContentResponse, error] {
 	inputContent := &Content{Parts: parts, Role: RoleUser}
 

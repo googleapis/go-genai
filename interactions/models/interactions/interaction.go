@@ -429,14 +429,15 @@ func (u InteractionResponseFormat) MarshalJSON() ([]byte, error) {
 type InteractionStatus string
 
 const (
-	InteractionStatusInProgress     InteractionStatus = "in_progress"
-	InteractionStatusRequiresAction InteractionStatus = "requires_action"
-	InteractionStatusCompleted      InteractionStatus = "completed"
-	InteractionStatusFailed         InteractionStatus = "failed"
-	InteractionStatusCancelled      InteractionStatus = "cancelled"
-	InteractionStatusIncomplete     InteractionStatus = "incomplete"
-	InteractionStatusBudgetExceeded InteractionStatus = "budget_exceeded"
-	InteractionStatusQueued         InteractionStatus = "queued"
+	InteractionStatusInProgress           InteractionStatus = "in_progress"
+	InteractionStatusRequiresAction       InteractionStatus = "requires_action"
+	InteractionStatusCompleted            InteractionStatus = "completed"
+	InteractionStatusFailed               InteractionStatus = "failed"
+	InteractionStatusCancelled            InteractionStatus = "cancelled"
+	InteractionStatusIncomplete           InteractionStatus = "incomplete"
+	InteractionStatusBudgetExceeded       InteractionStatus = "budget_exceeded"
+	InteractionStatusQueued               InteractionStatus = "queued"
+	InteractionStatusContinuationRequired InteractionStatus = "continuation_required"
 )
 
 func (e InteractionStatus) ToPointer() *InteractionStatus {
@@ -447,7 +448,7 @@ func (e InteractionStatus) ToPointer() *InteractionStatus {
 func (e *InteractionStatus) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded", "queued":
+		case "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded", "queued", "continuation_required":
 			return true
 		}
 	}

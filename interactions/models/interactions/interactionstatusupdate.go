@@ -23,14 +23,15 @@ import (
 type InteractionStatusUpdateStatus string
 
 const (
-	InteractionStatusUpdateStatusInProgress     InteractionStatusUpdateStatus = "in_progress"
-	InteractionStatusUpdateStatusRequiresAction InteractionStatusUpdateStatus = "requires_action"
-	InteractionStatusUpdateStatusCompleted      InteractionStatusUpdateStatus = "completed"
-	InteractionStatusUpdateStatusFailed         InteractionStatusUpdateStatus = "failed"
-	InteractionStatusUpdateStatusCancelled      InteractionStatusUpdateStatus = "cancelled"
-	InteractionStatusUpdateStatusIncomplete     InteractionStatusUpdateStatus = "incomplete"
-	InteractionStatusUpdateStatusBudgetExceeded InteractionStatusUpdateStatus = "budget_exceeded"
-	InteractionStatusUpdateStatusQueued         InteractionStatusUpdateStatus = "queued"
+	InteractionStatusUpdateStatusInProgress           InteractionStatusUpdateStatus = "in_progress"
+	InteractionStatusUpdateStatusRequiresAction       InteractionStatusUpdateStatus = "requires_action"
+	InteractionStatusUpdateStatusCompleted            InteractionStatusUpdateStatus = "completed"
+	InteractionStatusUpdateStatusFailed               InteractionStatusUpdateStatus = "failed"
+	InteractionStatusUpdateStatusCancelled            InteractionStatusUpdateStatus = "cancelled"
+	InteractionStatusUpdateStatusIncomplete           InteractionStatusUpdateStatus = "incomplete"
+	InteractionStatusUpdateStatusBudgetExceeded       InteractionStatusUpdateStatus = "budget_exceeded"
+	InteractionStatusUpdateStatusQueued               InteractionStatusUpdateStatus = "queued"
+	InteractionStatusUpdateStatusContinuationRequired InteractionStatusUpdateStatus = "continuation_required"
 )
 
 func (e InteractionStatusUpdateStatus) ToPointer() *InteractionStatusUpdateStatus {
@@ -41,7 +42,7 @@ func (e InteractionStatusUpdateStatus) ToPointer() *InteractionStatusUpdateStatu
 func (e *InteractionStatusUpdateStatus) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded", "queued":
+		case "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded", "queued", "continuation_required":
 			return true
 		}
 	}

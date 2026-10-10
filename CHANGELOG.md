@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.74.0](https://github.com/googleapis/go-genai/compare/v1.73.0...v1.74.0) (2026-10-10)
+
+
+### Features
+
+* Add `continuation_token` to the Interactions `interaction.status_update` event. ([397c14f](https://github.com/googleapis/go-genai/commit/397c14f0c3613f0d41a4da53548b57c3a5bbdf5f))
+* Add a CONTINUATION_REQUIRED Interaction status ([125cd3e](https://github.com/googleapis/go-genai/commit/125cd3efb20140dddcf6284ae06c237af696b742))
+* Add startOffset/endOffset to Transcription and interimTranscriptTimestampEnabled to RealtimeInputConfig ([3db3beb](https://github.com/googleapis/go-genai/commit/3db3beb49453f6944af5970c6983beb2defa14c0))
+* Add usage in InteractionStatusUpdate events ([ba9bb94](https://github.com/googleapis/go-genai/commit/ba9bb94e383a0c05ddf657441cb785749d974447))
+* Support automatic continuation (long decoding) ([1f7179b](https://github.com/googleapis/go-genai/commit/1f7179b48142fffa8bc0fa6aa1a632633688b16a))
+
+
+### Bug Fixes
+
+* **genai:** deduplicate Flash and Omni descriptions in ModelOption ([1957e9c](https://github.com/googleapis/go-genai/commit/1957e9c4684682ebd330d5a50ba73bd669eeffb7))
+
 ## [1.73.0](https://github.com/googleapis/go-genai/compare/v1.72.0...v1.73.0) (2026-10-07)
 
 

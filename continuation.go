@@ -28,8 +28,11 @@ func shouldEnableAutomaticContinuation(config *GenerateContentConfig) bool {
 	return *config.AutomaticContinuation
 }
 
+// Per the continuation protocol, when a continuation_token is present the
+// backend only sets finish_reason to empty/UNSPECIFIED (intermediate
+// checkpoint chunk) or CONTINUATION (stream end).
 func isResumableFinishReason(finishReason FinishReason) bool {
-	return finishReason == FinishReasonContinuation
+	return finishReason == "" || finishReason == FinishReasonUnspecified || finishReason == FinishReasonContinuation
 }
 
 func shouldContinueGeneration(response *GenerateContentResponse) []byte {

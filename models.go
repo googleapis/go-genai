@@ -5617,6 +5617,11 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 
 			for chunk, err := range m.generateContentStream(ctx, model, contents, callConfig) {
 				if err != nil {
+					// If a mid-stream error occurs after an intermediate checkpoint
+					// continuation token was received, resume from that checkpoint.
+					if enableContinuation && ctx.Err() == nil && len(hopContinuationToken) > 0 && isResumableFinishReason(hopFinishReason) {
+						break
+					}
 					yield(nil, err)
 					return
 				}
@@ -5627,6 +5632,8 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 					}
 					if len(cand.ContinuationToken) > 0 {
 						hopContinuationToken = cand.ContinuationToken
+					} else if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && !isResumableFinishReason(cand.FinishReason) {
+						hopContinuationToken = nil
 					}
 				}
 				if !yield(chunk, nil) {

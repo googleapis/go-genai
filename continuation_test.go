@@ -132,7 +132,12 @@ func TestIsResumableFinishReason(t *testing.T) {
 		{
 			name:         "UNSPECIFIED",
 			finishReason: FinishReasonUnspecified,
-			want:         false,
+			want:         true,
+		},
+		{
+			name:         "empty",
+			finishReason: "",
+			want:         true,
 		},
 	}
 
@@ -924,6 +929,61 @@ func TestModelsGenerateContentStream_AutomaticContinuationLoop(t *testing.T) {
 	if optOutText != "Stream part 1, " {
 		t.Errorf("optOutText = %q, want %q", optOutText, "Stream part 1, ")
 	}
+
+	t.Run("resumes from checkpoint continuationToken on mid-stream cutoff or error and clears stale token on STOP", func(t *testing.T) {
+		var hopCount int32
+		ckptTs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			count := atomic.AddInt32(&hopCount, 1)
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.WriteHeader(http.StatusOK)
+
+			switch count {
+			case 1:
+				// Hop 1: intermediate checkpoint chunk (no finishReason), then stream cuts off cleanly
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Ckpt 1, "}]}, "continuationToken": "Y2twdC0x"}]}`)
+			case 2:
+				// Hop 2: intermediate checkpoint chunk, then malformed SSE JSON causing mid-stream error
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Ckpt 2, "}]}, "continuationToken": "Y2twdC0y"}]}`)
+				fmt.Fprintf(w, "data: %s\n\n", `{malformed json`)
+			case 3:
+				// Hop 3: intermediate checkpoint chunk followed by STOP without token (must not resume again)
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Ckpt 3, "}]}, "continuationToken": "c3RhbGU="}]}`)
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Done."}]}, "finishReason": "STOP"}]}`)
+			default:
+				t.Fatalf("unexpected stream hop request count: %d", count)
+			}
+		}))
+		defer ckptTs.Close()
+
+		ckptClient, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: ckptTs.URL},
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		var gotText string
+		for resp, err := range ckptClient.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
+			NewContentFromText("Stream with cutoff and error", RoleUser),
+		}, nil) {
+			if err != nil {
+				t.Fatalf("unexpected stream error: %v", err)
+			}
+			if resp != nil {
+				gotText += resp.Text()
+			}
+		}
+
+		if atomic.LoadInt32(&hopCount) != 3 {
+			t.Errorf("expected 3 stream hop requests, got %d", atomic.LoadInt32(&hopCount))
+		}
+		if gotText != "Ckpt 1, Ckpt 2, Ckpt 3, Done." {
+			t.Errorf("gotText = %q, want %q", gotText, "Ckpt 1, Ckpt 2, Ckpt 3, Done.")
+		}
+	})
 }
 
 func TestChat_AutomaticContinuation(t *testing.T) {

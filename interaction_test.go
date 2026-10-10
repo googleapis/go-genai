@@ -43,6 +43,14 @@ func TestInteractionsWorkflow(t *testing.T) {
 		if r.Method != "POST" {
 			t.Errorf("Method unexpected: %s", r.Method)
 		}
+		ua := r.Header.Get("User-Agent")
+		if !strings.HasPrefix(ua, "google-genai-sdk/") || !strings.Contains(ua, "gl-go/") {
+			t.Errorf("Unexpected User-Agent header: %q", ua)
+		}
+		apiClient := r.Header.Get("X-Goog-Api-Client")
+		if apiClient != ua {
+			t.Errorf("Expected X-Goog-Api-Client %q to match User-Agent %q", apiClient, ua)
+		}
 
 		// Return a mock response
 		resp := map[string]any{
@@ -104,6 +112,14 @@ func TestInteractionsWorkflow_Vertex(t *testing.T) {
 		}
 		if r.Method != "POST" {
 			t.Errorf("Method unexpected: %s", r.Method)
+		}
+		ua := r.Header.Get("User-Agent")
+		if !strings.HasPrefix(ua, "google-genai-sdk/") || !strings.Contains(ua, "gl-go/") {
+			t.Errorf("Unexpected User-Agent header: %q", ua)
+		}
+		apiClient := r.Header.Get("X-Goog-Api-Client")
+		if apiClient != ua {
+			t.Errorf("Expected X-Goog-Api-Client %q to match User-Agent %q", apiClient, ua)
 		}
 
 		// Return a mock response

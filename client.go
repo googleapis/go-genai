@@ -411,12 +411,15 @@ func newInteractionsClient(apiClient *InternalAPIClient) *interactions.GenAI {
 	if cc.APIKey != "" {
 		sec.APIKey = &cc.APIKey
 	}
+	headers := make(http.Header)
 	if cc.HTTPOptions.Headers != nil {
-		sec.DefaultHeaders = make(map[string]string)
-		for key, values := range cc.HTTPOptions.Headers {
-			if len(values) > 0 {
-				sec.DefaultHeaders[key] = values[0]
-			}
+		headers = cc.HTTPOptions.Headers.Clone()
+	}
+	appendSDKHeaders(headers)
+	sec.DefaultHeaders = make(map[string]string, len(headers))
+	for key, values := range headers {
+		if len(values) > 0 {
+			sec.DefaultHeaders[key] = strings.Join(values, " ")
 		}
 	}
 	if sec.APIKey != nil || len(sec.DefaultHeaders) > 0 {

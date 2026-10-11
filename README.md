@@ -44,6 +44,23 @@ result, err := client.Models.GenerateContent(ctx, "gemini-flash-latest", []*gena
 
 Add the SDK to your module with `go get google.golang.org/genai`.
 
+## Function call argument numbers
+
+Numbers decoded into `FunctionCall.Args`, including nested objects and arrays,
+are `json.Number` values. This preserves large integers and decimal values when
+reading a function call or sending it back in conversation history. Earlier
+versions decoded these values as `float64`, which could silently round them.
+
+Use `json.Number.Int64()` for integers within the `int64` range, or retain
+`json.Number` when marshaling arguments back to JSON. `Float64()` is available
+when approximate floating-point values are appropriate. Code that previously
+asserted `args["count"].(float64)` must handle `json.Number` instead.
+
+Caller-supplied `int64` and `json.Number` arguments are preserved during request
+serialization. Precision already lost in a caller-supplied `float64` cannot be
+recovered. Explicitly floating-point fields such as `PartialArg.NumberValue`
+retain their existing types and precision limits.
+
 ## Create Clients
 
 ### Imports

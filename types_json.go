@@ -15,6 +15,7 @@
 package genai
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -135,4 +136,26 @@ func (d *dateJSON) MarshalJSON() ([]byte, error) {
 		m["day"] = d.Day
 	}
 	return json.Marshal(m)
+}
+
+// unmarshalJSONWithNumbers avoids rounding dynamic numbers during the SDK's
+// intermediate JSON-to-map conversions. Like json.Unmarshal, it rejects trailing
+// JSON values instead of silently accepting the first value in a stream.
+func unmarshalJSONWithNumbers(data []byte, output any) error {
+	// Validate the whole input, preserving json.Unmarshal's syntax errors and
+	// rejection of trailing values before mutating output.
+	if !json.Valid(data) {
+		var raw json.RawMessage
+		return json.Unmarshal(data, &raw)
+	}
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.UseNumber()
+	return decoder.Decode(output)
+}
+
+// UnmarshalJSON preserves numbers in Args as json.Number. Converting them to
+// float64 would lose precision for large integers and high-precision decimals.
+func (f *FunctionCall) UnmarshalJSON(data []byte) error {
+	type alias FunctionCall
+	return unmarshalJSONWithNumbers(data, (*alias)(f))
 }

@@ -271,7 +271,7 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 				if chunk.Candidates[0].Content != nil {
 					outputContents = append(outputContents, chunk.Candidates[0].Content)
 				}
-				if chunk.Candidates[0].FinishReason != FinishReasonUnspecified {
+				if chunk.Candidates[0].FinishReason != "" && chunk.Candidates[0].FinishReason != FinishReasonUnspecified {
 					finishReason = chunk.Candidates[0].FinishReason
 				}
 			}

@@ -61,6 +61,28 @@ func isResumableFinishReason(finishReason FinishReason) bool {
 	return finishReason == "" || finishReason == FinishReasonUnspecified || finishReason == FinishReasonContinuation
 }
 
+func canResumeStream(enableContinuation bool, continuationToken []byte, finishReason FinishReason) bool {
+	return enableContinuation && len(continuationToken) > 0 && isResumableFinishReason(finishReason)
+}
+
+func clearIntermediateFinishReason(chunk *GenerateContentResponse, enableContinuation bool, continuationToken []byte) *GenerateContentResponse {
+	if chunk == nil || len(chunk.Candidates) == 0 || chunk.Candidates[0] == nil {
+		return chunk
+	}
+	cand := chunk.Candidates[0]
+	if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && canResumeStream(enableContinuation, continuationToken, cand.FinishReason) {
+		candCopy := *cand
+		candCopy.FinishReason = ""
+		candidatesCopy := make([]*Candidate, len(chunk.Candidates))
+		copy(candidatesCopy, chunk.Candidates)
+		candidatesCopy[0] = &candCopy
+		chunkCopy := *chunk
+		chunkCopy.Candidates = candidatesCopy
+		return &chunkCopy
+	}
+	return chunk
+}
+
 func shouldContinueGeneration(response *GenerateContentResponse) []byte {
 	if response == nil || len(response.Candidates) == 0 {
 		return nil

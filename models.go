@@ -5622,7 +5622,7 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 				if err != nil {
 					// If a mid-stream error occurs after an intermediate checkpoint
 					// continuation token was received, resume from that checkpoint.
-					if enableContinuation && ctx.Err() == nil && len(hopContinuationToken) > 0 && isResumableFinishReason(hopFinishReason) {
+					if ctx.Err() == nil && canResumeStream(enableContinuation, hopContinuationToken, hopFinishReason) {
 						break
 					}
 					yield(nil, err)
@@ -5639,6 +5639,7 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 						} else if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && !isResumableFinishReason(cand.FinishReason) {
 							hopContinuationToken = nil
 						}
+						chunk = clearIntermediateFinishReason(chunk, enableContinuation, hopContinuationToken)
 					}
 					if chunk.UsageMetadata != nil {
 						if accumulatedUsage != nil {
@@ -5657,7 +5658,7 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 				}
 			}
 
-			if enableContinuation && len(hopContinuationToken) > 0 && isResumableFinishReason(hopFinishReason) {
+			if canResumeStream(enableContinuation, hopContinuationToken, hopFinishReason) {
 				if hopUsage != nil {
 					accumulatedUsage = hopUsage
 				}

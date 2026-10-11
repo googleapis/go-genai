@@ -914,6 +914,7 @@ func TestModelsGenerateContentStream_AutomaticContinuationLoop(t *testing.T) {
 	}
 
 	var accumulatedText string
+	var streamChunks []*GenerateContentResponse
 	for resp, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
 		NewContentFromText("Stream please", RoleUser),
 	}, nil) {
@@ -922,6 +923,7 @@ func TestModelsGenerateContentStream_AutomaticContinuationLoop(t *testing.T) {
 		}
 		if resp != nil {
 			accumulatedText += resp.Text()
+			streamChunks = append(streamChunks, resp)
 		}
 	}
 
@@ -931,10 +933,22 @@ func TestModelsGenerateContentStream_AutomaticContinuationLoop(t *testing.T) {
 	if accumulatedText != "Stream part 1, stream part 2." {
 		t.Errorf("accumulated stream text = %q, want %q", accumulatedText, "Stream part 1, stream part 2.")
 	}
+	if len(streamChunks) != 4 {
+		t.Fatalf("expected 4 stream chunks, got %d", len(streamChunks))
+	}
+	for i := 0; i < 3; i++ {
+		if streamChunks[i].Candidates[0].FinishReason != "" {
+			t.Errorf("chunk %d FinishReason = %q, want empty", i, streamChunks[i].Candidates[0].FinishReason)
+		}
+	}
+	if streamChunks[3].Candidates[0].FinishReason != FinishReasonStop {
+		t.Errorf("final chunk FinishReason = %q, want %q", streamChunks[3].Candidates[0].FinishReason, FinishReasonStop)
+	}
 
-	// Verify explicit AutomaticContinuation=false does not continue
+	// Verify explicit AutomaticContinuation=false does not continue and preserves FinishReasonContinuation
 	atomic.StoreInt32(&requestCount, 0)
 	var optOutText string
+	var optOutChunks []*GenerateContentResponse
 	for resp, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
 		NewContentFromText("Stream please", RoleUser),
 	}, &GenerateContentConfig{
@@ -945,6 +959,7 @@ func TestModelsGenerateContentStream_AutomaticContinuationLoop(t *testing.T) {
 		}
 		if resp != nil {
 			optOutText += resp.Text()
+			optOutChunks = append(optOutChunks, resp)
 		}
 	}
 
@@ -953,6 +968,12 @@ func TestModelsGenerateContentStream_AutomaticContinuationLoop(t *testing.T) {
 	}
 	if optOutText != "Stream part 1, " {
 		t.Errorf("optOutText = %q, want %q", optOutText, "Stream part 1, ")
+	}
+	if len(optOutChunks) != 2 {
+		t.Fatalf("expected 2 chunks when AutomaticContinuation is false, got %d", len(optOutChunks))
+	}
+	if optOutChunks[1].Candidates[0].FinishReason != FinishReasonContinuation {
+		t.Errorf("optOut final chunk FinishReason = %q, want %q", optOutChunks[1].Candidates[0].FinishReason, FinishReasonContinuation)
 	}
 
 	t.Run("resumes from checkpoint continuationToken on mid-stream cutoff or error and clears stale token on STOP", func(t *testing.T) {
@@ -1179,12 +1200,14 @@ func TestChat_AutomaticContinuation(t *testing.T) {
 		}
 
 		var text string
+		var streamChunks []*GenerateContentResponse
 		for chunk, err := range chat.SendMessageStream(ctx, Part{Text: "Stream test"}) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if chunk != nil {
 				text += chunk.Text()
+				streamChunks = append(streamChunks, chunk)
 			}
 		}
 
@@ -1193,6 +1216,15 @@ func TestChat_AutomaticContinuation(t *testing.T) {
 		}
 		if text != "Chat stream 1, chat stream 2." {
 			t.Errorf("stream text = %q, want %q", text, "Chat stream 1, chat stream 2.")
+		}
+		if len(streamChunks) != 2 {
+			t.Fatalf("expected 2 chunks, got %d", len(streamChunks))
+		}
+		if streamChunks[0].Candidates[0].FinishReason != "" {
+			t.Errorf("chunk 0 FinishReason = %q, want empty", streamChunks[0].Candidates[0].FinishReason)
+		}
+		if streamChunks[1].Candidates[0].FinishReason != FinishReasonStop {
+			t.Errorf("chunk 1 FinishReason = %q, want %q", streamChunks[1].Candidates[0].FinishReason, FinishReasonStop)
 		}
 
 		// Verify chat history has user message plus both model chunks recorded
@@ -1418,6 +1450,14 @@ func TestChat_AutomaticContinuation_FourHopsStream(t *testing.T) {
 	if len(chunks) != 4 {
 		t.Fatalf("expected 4 chunks, got %d", len(chunks))
 	}
+	for i := 0; i < 3; i++ {
+		if chunks[i].Candidates[0].FinishReason != "" {
+			t.Errorf("chunk %d FinishReason = %q, want empty", i, chunks[i].Candidates[0].FinishReason)
+		}
+	}
+	if chunks[3].Candidates[0].FinishReason != FinishReasonStop {
+		t.Errorf("final chunk FinishReason = %q, want %q", chunks[3].Candidates[0].FinishReason, FinishReasonStop)
+	}
 	lastChunk := chunks[len(chunks)-1]
 	lastUM := lastChunk.UsageMetadata
 	if lastUM == nil {
@@ -1500,6 +1540,14 @@ func TestGenerateContentStream_UsageMetadataAcrossHops(t *testing.T) {
 
 	if len(chunks) != 4 {
 		t.Fatalf("expected 4 chunks across 2 hops, got %d", len(chunks))
+	}
+	for i := 0; i < 3; i++ {
+		if chunks[i].Candidates[0].FinishReason != "" {
+			t.Errorf("chunk %d FinishReason = %q, want empty", i, chunks[i].Candidates[0].FinishReason)
+		}
+	}
+	if chunks[3].Candidates[0].FinishReason != FinishReasonStop {
+		t.Errorf("final chunk FinishReason = %q, want %q", chunks[3].Candidates[0].FinishReason, FinishReasonStop)
 	}
 
 	// Chunk 0 (Hop 1, chunk 1): prompt=50, cached=10, candidates=5, thoughts=2, total=57, initialPrompt=50

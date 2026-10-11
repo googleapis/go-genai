@@ -5600,9 +5600,9 @@ func (m Models) GenerateContent(ctx context.Context, model string, contents []*C
 //
 // A response that stops before the model finishes is continued automatically: the same request is
 // sent again with the response's continuation token until the model finishes, and the chunks of
-// every request are emitted in order. The usage metadata in a chunk covers only the request it came
-// from. Each request is billed, including any that succeeded before a later one failed. Set
-// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
+// every request are emitted in order. The usage metadata in a chunk is accumulated across
+// continuation requests. Each request is billed, including any that succeeded before a later one
+// failed. Set [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (m Models) GenerateContentStream(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) iter.Seq2[*GenerateContentResponse, error] {
 	if config != nil {
 		config.setDefaults()
@@ -5611,9 +5611,12 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 	callConfig := config
 
 	return func(yield func(*GenerateContentResponse, error) bool) {
+		var accumulatedUsage *GenerateContentResponseUsageMetadata
+
 		for {
 			var hopFinishReason FinishReason
 			var hopContinuationToken []byte
+			var hopUsage *GenerateContentResponseUsageMetadata
 
 			for chunk, err := range m.generateContentStream(ctx, model, contents, callConfig) {
 				if err != nil {
@@ -5625,15 +5628,28 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 					yield(nil, err)
 					return
 				}
-				if chunk != nil && len(chunk.Candidates) > 0 {
-					cand := chunk.Candidates[0]
-					if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified {
-						hopFinishReason = cand.FinishReason
+				if chunk != nil {
+					if len(chunk.Candidates) > 0 {
+						cand := chunk.Candidates[0]
+						if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified {
+							hopFinishReason = cand.FinishReason
+						}
+						if len(cand.ContinuationToken) > 0 {
+							hopContinuationToken = cand.ContinuationToken
+						} else if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && !isResumableFinishReason(cand.FinishReason) {
+							hopContinuationToken = nil
+						}
 					}
-					if len(cand.ContinuationToken) > 0 {
-						hopContinuationToken = cand.ContinuationToken
-					} else if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && !isResumableFinishReason(cand.FinishReason) {
-						hopContinuationToken = nil
+					if chunk.UsageMetadata != nil {
+						if accumulatedUsage != nil {
+							mergedUsage := mergeUsageMetadata(accumulatedUsage, chunk.UsageMetadata)
+							chunkCopy := *chunk
+							chunkCopy.UsageMetadata = mergedUsage
+							chunk = &chunkCopy
+							hopUsage = mergedUsage
+						} else {
+							hopUsage = chunk.UsageMetadata
+						}
 					}
 				}
 				if !yield(chunk, nil) {
@@ -5642,6 +5658,9 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 			}
 
 			if enableContinuation && len(hopContinuationToken) > 0 && isResumableFinishReason(hopFinishReason) {
+				if hopUsage != nil {
+					accumulatedUsage = hopUsage
+				}
 				callConfig = prepareContinuationConfig(config, hopContinuationToken)
 				continue
 			}

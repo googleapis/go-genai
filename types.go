@@ -3976,6 +3976,24 @@ func (r *GenerateContentResponse) CodeExecutionResult() string {
 	return ""
 }
 
+// InitialPromptTokenCount returns the prompt token count from the initial request
+// prior to any continuation hops.
+func (r *GenerateContentResponse) InitialPromptTokenCount() int32 {
+	if r == nil || r.UsageMetadata == nil {
+		return 0
+	}
+	return r.UsageMetadata.InitialPromptTokenCount()
+}
+
+// InitialPromptTokenCount returns the prompt token count from the initial request
+// prior to any continuation hops.
+func (u *GenerateContentResponseUsageMetadata) InitialPromptTokenCount() int32 {
+	if u == nil {
+		return 0
+	}
+	return getInitialPromptTokenCount(u)
+}
+
 // Optional parameters for the EmbedContent method.
 type EmbedContentConfig struct {
 	// Type of task for which the embedding will be used.

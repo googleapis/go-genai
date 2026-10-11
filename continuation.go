@@ -17,9 +17,35 @@ package genai
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"strings"
+	"sync"
 	"time"
+	"weak"
 )
+
+var initialPromptTokenCounts sync.Map // map[weak.Pointer[GenerateContentResponseUsageMetadata]]int32
+
+func setInitialPromptTokenCount(u *GenerateContentResponseUsageMetadata, count int32) {
+	if u == nil || count == 0 {
+		return
+	}
+	wp := weak.Make(u)
+	initialPromptTokenCounts.Store(wp, count)
+	runtime.AddCleanup(u, func(key weak.Pointer[GenerateContentResponseUsageMetadata]) {
+		initialPromptTokenCounts.Delete(key)
+	}, wp)
+}
+
+func getInitialPromptTokenCount(u *GenerateContentResponseUsageMetadata) int32 {
+	if u == nil {
+		return 0
+	}
+	if v, ok := initialPromptTokenCounts.Load(weak.Make(u)); ok {
+		return v.(int32)
+	}
+	return u.PromptTokenCount
+}
 
 func shouldEnableAutomaticContinuation(config *GenerateContentConfig) bool {
 	if config == nil || config.AutomaticContinuation == nil {
@@ -80,6 +106,20 @@ func mergeContinuationResponses(responses []*GenerateContentResponse) (*Generate
 	// Always retain SDKHTTPResponse from the latest hop
 	merged.SDKHTTPResponse = responses[len(responses)-1].SDKHTTPResponse
 	return merged, nil
+}
+
+func mergeUsageMetadata(prev, curr *GenerateContentResponseUsageMetadata) *GenerateContentResponseUsageMetadata {
+	if curr == nil {
+		return prev
+	}
+	if prev == nil {
+		return curr
+	}
+	res := mergeValuesReflect(reflect.ValueOf(prev), reflect.ValueOf(curr), "usageMetadata", true)
+	if !res.IsValid() || res.IsNil() {
+		return nil
+	}
+	return res.Interface().(*GenerateContentResponseUsageMetadata)
 }
 
 func isTerminalHopField(fieldName string) bool {
@@ -145,9 +185,21 @@ func mergeValuesReflect(prev, curr reflect.Value, fieldName string, isInsideUsag
 
 	// Pointers
 	if prev.Kind() == reflect.Pointer && curr.Kind() == reflect.Pointer {
+		var initialPrompt int32
+		if prevUM, ok := prev.Interface().(*GenerateContentResponseUsageMetadata); ok {
+			if currUM, ok := curr.Interface().(*GenerateContentResponseUsageMetadata); ok {
+				initialPrompt = prevUM.InitialPromptTokenCount()
+				if initialPrompt == 0 {
+					initialPrompt = currUM.InitialPromptTokenCount()
+				}
+			}
+		}
 		mergedElem := mergeValuesReflect(prev.Elem(), curr.Elem(), fieldName, isInsideUsageMetadata)
 		newPtr := reflect.New(prev.Type().Elem())
 		newPtr.Elem().Set(mergedElem)
+		if mergedUM, ok := newPtr.Interface().(*GenerateContentResponseUsageMetadata); ok && initialPrompt != 0 {
+			setInitialPromptTokenCount(mergedUM, initialPrompt)
+		}
 		return newPtr
 	}
 
@@ -378,6 +430,11 @@ func deepCopyValue(v reflect.Value) reflect.Value {
 		}
 		newPtr := reflect.New(v.Type().Elem())
 		newPtr.Elem().Set(deepCopyValue(v.Elem()))
+		if origUM, ok := v.Interface().(*GenerateContentResponseUsageMetadata); ok {
+			if newUM, ok := newPtr.Interface().(*GenerateContentResponseUsageMetadata); ok {
+				setInitialPromptTokenCount(newUM, origUM.InitialPromptTokenCount())
+			}
+		}
 		return newPtr
 	case reflect.Interface:
 		if v.IsNil() {

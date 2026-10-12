@@ -435,17 +435,17 @@ func TestMergeContinuationResponses_UsageMetadata(t *testing.T) {
 		t.Fatal("expected non-nil UsageMetadata")
 	}
 
-	if um.PromptTokenCount != 20 {
-		t.Errorf("PromptTokenCount = %d, want 20", um.PromptTokenCount)
+	if um.PromptTokenCount != 10 {
+		t.Errorf("PromptTokenCount = %d, want 10", um.PromptTokenCount)
 	}
-	if um.CachedContentTokenCount != 8 {
-		t.Errorf("CachedContentTokenCount = %d, want 8", um.CachedContentTokenCount)
+	if um.CachedContentTokenCount != 4 {
+		t.Errorf("CachedContentTokenCount = %d, want 4", um.CachedContentTokenCount)
 	}
 	if um.CandidatesTokenCount != 35 {
 		t.Errorf("CandidatesTokenCount = %d, want 35", um.CandidatesTokenCount)
 	}
-	if um.TotalTokenCount != 55 {
-		t.Errorf("TotalTokenCount = %d, want 55", um.TotalTokenCount)
+	if um.TotalTokenCount != 45 {
+		t.Errorf("TotalTokenCount = %d, want 45", um.TotalTokenCount)
 	}
 	if merged.InitialPromptTokenCount() != 10 {
 		t.Errorf("merged.InitialPromptTokenCount() = %d, want 10", merged.InitialPromptTokenCount())
@@ -453,13 +453,19 @@ func TestMergeContinuationResponses_UsageMetadata(t *testing.T) {
 	if um.InitialPromptTokenCount() != 10 {
 		t.Errorf("um.InitialPromptTokenCount() = %d, want 10", um.InitialPromptTokenCount())
 	}
-
-	// Check PromptTokensDetails and CacheTokensDetails modality summing
-	if len(um.PromptTokensDetails) != 1 || um.PromptTokensDetails[0].Modality != MediaModalityText || um.PromptTokensDetails[0].TokenCount != 20 {
-		t.Errorf("PromptTokensDetails = %+v, want [Text: 20]", um.PromptTokensDetails)
+	if um.BillableUsage == nil {
+		t.Fatal("expected non-nil BillableUsage")
 	}
-	if len(um.CacheTokensDetails) != 1 || um.CacheTokensDetails[0].Modality != MediaModalityText || um.CacheTokensDetails[0].TokenCount != 8 {
-		t.Errorf("CacheTokensDetails = %+v, want [Text: 8]", um.CacheTokensDetails)
+	if um.BillableUsage.PromptTokenCount != 20 || um.BillableUsage.CachedContentTokenCount != 8 || um.BillableUsage.CandidatesTokenCount != 35 || um.BillableUsage.TotalTokenCount != 55 {
+		t.Errorf("BillableUsage = %+v, want Prompt=20 Cached=8 Candidates=35 Total=55", um.BillableUsage)
+	}
+
+	// Check PromptTokensDetails and CacheTokensDetails preserved from hop 1
+	if len(um.PromptTokensDetails) != 1 || um.PromptTokensDetails[0].Modality != MediaModalityText || um.PromptTokensDetails[0].TokenCount != 10 {
+		t.Errorf("PromptTokensDetails = %+v, want [Text: 10]", um.PromptTokensDetails)
+	}
+	if len(um.CacheTokensDetails) != 1 || um.CacheTokensDetails[0].Modality != MediaModalityText || um.CacheTokensDetails[0].TokenCount != 4 {
+		t.Errorf("CacheTokensDetails = %+v, want [Text: 4]", um.CacheTokensDetails)
 	}
 
 	// Check modality breakdown grouping and summing for CandidatesTokensDetails
@@ -1463,11 +1469,11 @@ func TestChat_AutomaticContinuation_FourHopsStream(t *testing.T) {
 	if lastUM == nil {
 		t.Fatal("expected non-nil UsageMetadata on final chunk")
 	}
-	if lastUM.PromptTokenCount != 530 {
-		t.Errorf("final chunk PromptTokenCount = %d, want 530", lastUM.PromptTokenCount)
+	if lastUM.PromptTokenCount != 100 {
+		t.Errorf("final chunk PromptTokenCount = %d, want 100", lastUM.PromptTokenCount)
 	}
-	if lastUM.CachedContentTokenCount != 80 {
-		t.Errorf("final chunk CachedContentTokenCount = %d, want 80", lastUM.CachedContentTokenCount)
+	if lastUM.CachedContentTokenCount != 20 {
+		t.Errorf("final chunk CachedContentTokenCount = %d, want 20", lastUM.CachedContentTokenCount)
 	}
 	if lastUM.CandidatesTokenCount != 50 {
 		t.Errorf("final chunk CandidatesTokenCount = %d, want 50", lastUM.CandidatesTokenCount)
@@ -1475,14 +1481,20 @@ func TestChat_AutomaticContinuation_FourHopsStream(t *testing.T) {
 	if lastUM.ThoughtsTokenCount != 32 {
 		t.Errorf("final chunk ThoughtsTokenCount = %d, want 32", lastUM.ThoughtsTokenCount)
 	}
-	if lastUM.TotalTokenCount != 612 {
-		t.Errorf("final chunk TotalTokenCount = %d, want 612", lastUM.TotalTokenCount)
+	if lastUM.TotalTokenCount != 182 {
+		t.Errorf("final chunk TotalTokenCount = %d, want 182", lastUM.TotalTokenCount)
 	}
 	if lastChunk.InitialPromptTokenCount() != 100 {
 		t.Errorf("final chunk InitialPromptTokenCount() = %d, want 100", lastChunk.InitialPromptTokenCount())
 	}
 	if lastUM.InitialPromptTokenCount() != 100 {
 		t.Errorf("final chunk UsageMetadata.InitialPromptTokenCount() = %d, want 100", lastUM.InitialPromptTokenCount())
+	}
+	if lastUM.BillableUsage == nil {
+		t.Fatal("expected non-nil BillableUsage on final chunk")
+	}
+	if lastUM.BillableUsage.PromptTokenCount != 530 || lastUM.BillableUsage.CachedContentTokenCount != 80 || lastUM.BillableUsage.CandidatesTokenCount != 50 || lastUM.BillableUsage.ThoughtsTokenCount != 32 || lastUM.BillableUsage.TotalTokenCount != 612 {
+		t.Errorf("final chunk BillableUsage = %+v, want Prompt=530 Cached=80 Candidates=50 Thoughts=32 Total=612", lastUM.BillableUsage)
 	}
 
 	// Verify history has user turn + 4 model chunks
@@ -1507,7 +1519,7 @@ func TestGenerateContentStream_UsageMetadataAcrossHops(t *testing.T) {
 			fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop1-A "}]}}], "usageMetadata": {"promptTokenCount": 50, "cachedContentTokenCount": 10, "candidatesTokenCount": 5, "thoughtsTokenCount": 2, "totalTokenCount": 57}}`)
 			fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop1-B "}]}, "finishReason": "CONTINUATION", "continuationToken": "aG9wLTE="}], "usageMetadata": {"promptTokenCount": 50, "cachedContentTokenCount": 10, "candidatesTokenCount": 12, "thoughtsTokenCount": 4, "totalTokenCount": 66}}`)
 		case 2:
-			// Hop 2 emits 2 chunks with Hop 2 usage; totals are summed across hops while InitialPromptTokenCount preserves Hop 1's 50
+			// Hop 2 emits 2 chunks with Hop 2 usage; context window usage preserves Hop 1's 50 while BillableUsage accumulates billed totals
 			fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop2-A "}]}}], "usageMetadata": {"promptTokenCount": 66, "cachedContentTokenCount": 10, "candidatesTokenCount": 8, "thoughtsTokenCount": 3, "totalTokenCount": 77}}`)
 			fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop2-B."}]}, "finishReason": "STOP"}], "usageMetadata": {"promptTokenCount": 66, "cachedContentTokenCount": 10, "candidatesTokenCount": 18, "thoughtsTokenCount": 6, "totalTokenCount": 90}}`)
 		default:
@@ -1558,12 +1570,12 @@ func TestGenerateContentStream_UsageMetadataAcrossHops(t *testing.T) {
 	if um := chunks[1].UsageMetadata; um.PromptTokenCount != 50 || um.CachedContentTokenCount != 10 || um.CandidatesTokenCount != 12 || um.ThoughtsTokenCount != 4 || um.TotalTokenCount != 66 || chunks[1].InitialPromptTokenCount() != 50 {
 		t.Errorf("chunk 1 UsageMetadata = %+v, initialPrompt = %d", um, chunks[1].InitialPromptTokenCount())
 	}
-	// Chunk 2 (Hop 2, chunk 1): prompt=50+66=116, cached=10+10=20, candidates=12+8=20, thoughts=4+3=7, total=66+77=143, initialPrompt=50
-	if um := chunks[2].UsageMetadata; um.PromptTokenCount != 116 || um.CachedContentTokenCount != 20 || um.CandidatesTokenCount != 20 || um.ThoughtsTokenCount != 7 || um.TotalTokenCount != 143 || chunks[2].InitialPromptTokenCount() != 50 || um.InitialPromptTokenCount() != 50 {
-		t.Errorf("chunk 2 UsageMetadata = %+v, initialPrompt = %d, want prompt=116 cached=20 candidates=20 thoughts=7 total=143 initialPrompt=50", um, chunks[2].InitialPromptTokenCount())
+	// Chunk 2 (Hop 2, chunk 1): context prompt=50, cached=10, candidates=12+8=20, thoughts=4+3=7, total=50+20+7=77, initialPrompt=50; billable prompt=116, cached=20, candidates=20, thoughts=7, total=143
+	if um := chunks[2].UsageMetadata; um.PromptTokenCount != 50 || um.CachedContentTokenCount != 10 || um.CandidatesTokenCount != 20 || um.ThoughtsTokenCount != 7 || um.TotalTokenCount != 77 || chunks[2].InitialPromptTokenCount() != 50 || um.InitialPromptTokenCount() != 50 || um.BillableUsage == nil || um.BillableUsage.PromptTokenCount != 116 || um.BillableUsage.CachedContentTokenCount != 20 || um.BillableUsage.CandidatesTokenCount != 20 || um.BillableUsage.ThoughtsTokenCount != 7 || um.BillableUsage.TotalTokenCount != 143 {
+		t.Errorf("chunk 2 UsageMetadata = %+v, billable = %+v, initialPrompt = %d", um, um.BillableUsage, chunks[2].InitialPromptTokenCount())
 	}
-	// Chunk 3 (Hop 2, chunk 2): prompt=50+66=116, cached=10+10=20, candidates=12+18=30, thoughts=4+6=10, total=66+90=156, initialPrompt=50
-	if um := chunks[3].UsageMetadata; um.PromptTokenCount != 116 || um.CachedContentTokenCount != 20 || um.CandidatesTokenCount != 30 || um.ThoughtsTokenCount != 10 || um.TotalTokenCount != 156 || chunks[3].InitialPromptTokenCount() != 50 || um.InitialPromptTokenCount() != 50 {
-		t.Errorf("chunk 3 UsageMetadata = %+v, initialPrompt = %d, want prompt=116 cached=20 candidates=30 thoughts=10 total=156 initialPrompt=50", um, chunks[3].InitialPromptTokenCount())
+	// Chunk 3 (Hop 2, chunk 2): context prompt=50, cached=10, candidates=12+18=30, thoughts=4+6=10, total=50+30+10=90, initialPrompt=50; billable prompt=116, cached=20, candidates=30, thoughts=10, total=156
+	if um := chunks[3].UsageMetadata; um.PromptTokenCount != 50 || um.CachedContentTokenCount != 10 || um.CandidatesTokenCount != 30 || um.ThoughtsTokenCount != 10 || um.TotalTokenCount != 90 || chunks[3].InitialPromptTokenCount() != 50 || um.InitialPromptTokenCount() != 50 || um.BillableUsage == nil || um.BillableUsage.PromptTokenCount != 116 || um.BillableUsage.CachedContentTokenCount != 20 || um.BillableUsage.CandidatesTokenCount != 30 || um.BillableUsage.ThoughtsTokenCount != 10 || um.BillableUsage.TotalTokenCount != 156 {
+		t.Errorf("chunk 3 UsageMetadata = %+v, billable = %+v, initialPrompt = %d", um, um.BillableUsage, chunks[3].InitialPromptTokenCount())
 	}
 }

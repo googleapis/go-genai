@@ -130,6 +130,23 @@ func mergeContinuationResponses(responses []*GenerateContentResponse) (*Generate
 	return merged, nil
 }
 
+func extractBillableUsage(u *GenerateContentResponseUsageMetadata) BillableUsage {
+	if u == nil {
+		return BillableUsage{}
+	}
+	if u.BillableUsage != nil {
+		return *u.BillableUsage
+	}
+	return BillableUsage{
+		PromptTokenCount:        u.PromptTokenCount,
+		CachedContentTokenCount: u.CachedContentTokenCount,
+		CandidatesTokenCount:    u.CandidatesTokenCount,
+		ThoughtsTokenCount:      u.ThoughtsTokenCount,
+		ToolUsePromptTokenCount: u.ToolUsePromptTokenCount,
+		TotalTokenCount:         u.TotalTokenCount,
+	}
+}
+
 func mergeUsageMetadata(prev, curr *GenerateContentResponseUsageMetadata) *GenerateContentResponseUsageMetadata {
 	if curr == nil {
 		return prev
@@ -137,11 +154,65 @@ func mergeUsageMetadata(prev, curr *GenerateContentResponseUsageMetadata) *Gener
 	if prev == nil {
 		return curr
 	}
-	res := mergeValuesReflect(reflect.ValueOf(prev), reflect.ValueOf(curr), "usageMetadata", true)
-	if !res.IsValid() || res.IsNil() {
+	initialPrompt := prev.InitialPromptTokenCount()
+	if initialPrompt == 0 {
+		initialPrompt = curr.InitialPromptTokenCount()
+	}
+	prevBillable := extractBillableUsage(prev)
+	currBillable := extractBillableUsage(curr)
+
+	mergedElem := mergeValuesReflect(reflect.ValueOf(prev).Elem(), reflect.ValueOf(curr).Elem(), "usageMetadata", true)
+	if !mergedElem.IsValid() {
 		return nil
 	}
-	return res.Interface().(*GenerateContentResponseUsageMetadata)
+	mergedUM := new(GenerateContentResponseUsageMetadata)
+	reflect.ValueOf(mergedUM).Elem().Set(mergedElem)
+
+	// Preserve initial prompt context fields from the first hop that reported them.
+	if prev.PromptTokenCount != 0 {
+		mergedUM.PromptTokenCount = prev.PromptTokenCount
+	} else {
+		mergedUM.PromptTokenCount = curr.PromptTokenCount
+	}
+	if prev.CachedContentTokenCount != 0 {
+		mergedUM.CachedContentTokenCount = prev.CachedContentTokenCount
+	} else {
+		mergedUM.CachedContentTokenCount = curr.CachedContentTokenCount
+	}
+	if len(prev.PromptTokensDetails) > 0 {
+		mergedUM.PromptTokensDetails = deepCopyValue(reflect.ValueOf(prev.PromptTokensDetails)).Interface().([]*ModalityTokenCount)
+	} else if len(curr.PromptTokensDetails) > 0 {
+		mergedUM.PromptTokensDetails = deepCopyValue(reflect.ValueOf(curr.PromptTokensDetails)).Interface().([]*ModalityTokenCount)
+	} else {
+		mergedUM.PromptTokensDetails = nil
+	}
+	if len(prev.CacheTokensDetails) > 0 {
+		mergedUM.CacheTokensDetails = deepCopyValue(reflect.ValueOf(prev.CacheTokensDetails)).Interface().([]*ModalityTokenCount)
+	} else if len(curr.CacheTokensDetails) > 0 {
+		mergedUM.CacheTokensDetails = deepCopyValue(reflect.ValueOf(curr.CacheTokensDetails)).Interface().([]*ModalityTokenCount)
+	} else {
+		mergedUM.CacheTokensDetails = nil
+	}
+
+	// Recompute context-window total from preserved initial prompt + linearly accumulated output/thought/tool tokens.
+	mergedUM.TotalTokenCount = mergedUM.PromptTokenCount +
+		mergedUM.CandidatesTokenCount +
+		mergedUM.ThoughtsTokenCount +
+		mergedUM.ToolUsePromptTokenCount
+
+	mergedUM.BillableUsage = &BillableUsage{
+		PromptTokenCount:        prevBillable.PromptTokenCount + currBillable.PromptTokenCount,
+		CachedContentTokenCount: prevBillable.CachedContentTokenCount + currBillable.CachedContentTokenCount,
+		CandidatesTokenCount:    prevBillable.CandidatesTokenCount + currBillable.CandidatesTokenCount,
+		ThoughtsTokenCount:      prevBillable.ThoughtsTokenCount + currBillable.ThoughtsTokenCount,
+		ToolUsePromptTokenCount: prevBillable.ToolUsePromptTokenCount + currBillable.ToolUsePromptTokenCount,
+		TotalTokenCount:         prevBillable.TotalTokenCount + currBillable.TotalTokenCount,
+	}
+
+	if initialPrompt != 0 {
+		setInitialPromptTokenCount(mergedUM, initialPrompt)
+	}
+	return mergedUM
 }
 
 func isTerminalHopField(fieldName string) bool {
@@ -207,21 +278,14 @@ func mergeValuesReflect(prev, curr reflect.Value, fieldName string, isInsideUsag
 
 	// Pointers
 	if prev.Kind() == reflect.Pointer && curr.Kind() == reflect.Pointer {
-		var initialPrompt int32
 		if prevUM, ok := prev.Interface().(*GenerateContentResponseUsageMetadata); ok {
 			if currUM, ok := curr.Interface().(*GenerateContentResponseUsageMetadata); ok {
-				initialPrompt = prevUM.InitialPromptTokenCount()
-				if initialPrompt == 0 {
-					initialPrompt = currUM.InitialPromptTokenCount()
-				}
+				return reflect.ValueOf(mergeUsageMetadata(prevUM, currUM))
 			}
 		}
 		mergedElem := mergeValuesReflect(prev.Elem(), curr.Elem(), fieldName, isInsideUsageMetadata)
 		newPtr := reflect.New(prev.Type().Elem())
 		newPtr.Elem().Set(mergedElem)
-		if mergedUM, ok := newPtr.Interface().(*GenerateContentResponseUsageMetadata); ok && initialPrompt != 0 {
-			setInitialPromptTokenCount(mergedUM, initialPrompt)
-		}
 		return newPtr
 	}
 

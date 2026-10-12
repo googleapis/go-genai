@@ -3753,6 +3753,34 @@ type GenerateContentResponseUsageMetadata struct {
 	TotalTokenCount int32 `json:"totalTokenCount,omitempty"`
 	// Output only. The traffic type for this request.
 	TrafficType TrafficType `json:"trafficType,omitempty"`
+	// Cumulative billable token usage summed across all continuation hops.
+	// Only populated when automatic continuation merges multiple hops.
+	BillableUsage *BillableUsage `json:"billableUsage,omitempty"`
+}
+
+// BillableUsage represents cumulative billable token counts summed across all continuation hops.
+type BillableUsage struct {
+	// Cumulative billed prompt token count summed across all continuation hops.
+	PromptTokenCount int32 `json:"promptTokenCount,omitempty"`
+	// Cumulative billed cached content token count summed across all continuation hops.
+	CachedContentTokenCount int32 `json:"cachedContentTokenCount,omitempty"`
+	// Cumulative billed output token count summed across all continuation hops.
+	CandidatesTokenCount int32 `json:"candidatesTokenCount,omitempty"`
+	// Cumulative billed thoughts token count summed across all continuation hops.
+	ThoughtsTokenCount int32 `json:"thoughtsTokenCount,omitempty"`
+	// Cumulative billed tool-use prompt token count summed across all continuation hops.
+	ToolUsePromptTokenCount int32 `json:"toolUsePromptTokenCount,omitempty"`
+	// Cumulative billed total token count summed across all continuation hops.
+	TotalTokenCount int32 `json:"totalTokenCount,omitempty"`
+}
+
+// InitialPromptTokenCount returns the prompt token count from the initial request
+// prior to any continuation hops.
+func (u *GenerateContentResponseUsageMetadata) InitialPromptTokenCount() int32 {
+	if u == nil {
+		return 0
+	}
+	return getInitialPromptTokenCount(u)
 }
 
 // The status of the underlying model. This is used to indicate the stage of the underlying
@@ -3983,15 +4011,6 @@ func (r *GenerateContentResponse) InitialPromptTokenCount() int32 {
 		return 0
 	}
 	return r.UsageMetadata.InitialPromptTokenCount()
-}
-
-// InitialPromptTokenCount returns the prompt token count from the initial request
-// prior to any continuation hops.
-func (u *GenerateContentResponseUsageMetadata) InitialPromptTokenCount() int32 {
-	if u == nil {
-		return 0
-	}
-	return getInitialPromptTokenCount(u)
 }
 
 // Optional parameters for the EmbedContent method.

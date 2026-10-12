@@ -15,6 +15,7 @@
 package genai
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -25,6 +26,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -1023,5 +1025,87 @@ func TestModelsAllEmptyResponse(t *testing.T) {
 				t.Errorf("Models.All() expected empty list, got: %v", gotModels)
 			}
 		})
+	}
+}
+
+func TestIsGemini36OrNewer(t *testing.T) {
+	tests := []struct {
+		model string
+		want  bool
+	}{
+		{"gemini-3.6-flash", true},
+		{"publishers/google/models/gemini-3.6-pro", true},
+		{"models/gemini-3.6-flash-001", true},
+		{"gemini-3.8-flash", true},
+		{"GEMINI-3.6-FLASH", true},
+		{"gemini-3.1-pro", false},
+		{"gemini-3-flash", false},
+		{"gemini-2.5-flash", false},
+		{"gemini-flash-latest", false},
+		{"", false},
+		{"palm-2", false},
+	}
+
+	for _, tc := range tests {
+		if got := isGemini36OrNewer(tc.model); got != tc.want {
+			t.Errorf("isGemini36OrNewer(%q) = %v, want %v", tc.model, got, tc.want)
+		}
+	}
+}
+
+func TestWarnUnsupportedParameters(t *testing.T) {
+	origOut := log.Writer()
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer func() {
+		log.SetOutput(origOut)
+		unsupportedWarningTemperature = sync.Once{}
+		unsupportedWarningTopP = sync.Once{}
+		unsupportedWarningTopK = sync.Once{}
+		unsupportedWarningThinkingBudget = sync.Once{}
+	}()
+
+	unsupportedWarningTemperature = sync.Once{}
+	unsupportedWarningTopP = sync.Once{}
+	unsupportedWarningTopK = sync.Once{}
+	unsupportedWarningThinkingBudget = sync.Once{}
+
+	cfg := &GenerateContentConfig{
+		Temperature: Ptr[float32](0.7),
+		TopP:        Ptr[float32](0.9),
+		TopK:        Ptr[float32](40),
+		ThinkingConfig: &ThinkingConfig{
+			ThinkingBudget: Ptr[int32](1024),
+		},
+	}
+
+	// Older models should not log warnings.
+	warnUnsupportedParameters("gemini-3.1-pro", cfg)
+	warnUnsupportedParameters("gemini-2.5-flash", cfg)
+	warnUnsupportedParameters("gemini-3.6-flash", nil)
+	if buf.Len() != 0 {
+		t.Fatalf("expected no warnings for older models or nil config, got: %q", buf.String())
+	}
+
+	// Gemini 3.6+ should log each warning once.
+	warnUnsupportedParameters("gemini-3.6-flash", cfg)
+	output := buf.String()
+	wantWarnings := []string{
+		"temperature is not supported on Gemini 3.6 and newer models and is ignored.",
+		"top_p is not supported on Gemini 3.6 and newer models and is ignored.",
+		"top_k is not supported on Gemini 3.6 and newer models and is ignored.",
+		"thinking_budget is not supported on Gemini 3.6 and newer models and is ignored. Please use thinking_level instead.",
+	}
+	for _, want := range wantWarnings {
+		if !strings.Contains(output, want) {
+			t.Errorf("expected warning %q in output %q", want, output)
+		}
+	}
+
+	// Subsequent calls should not log again.
+	buf.Reset()
+	warnUnsupportedParameters("gemini-3.6-pro", cfg)
+	if buf.Len() != 0 {
+		t.Errorf("expected no warnings on second call, got: %q", buf.String())
 	}
 }

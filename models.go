@@ -5553,6 +5553,87 @@ var deprecationWarningEditImage sync.Once
 var deprecationWarningGenerateImages sync.Once
 var breakingChangeWarningGenerateVideosNotSource sync.Once
 var deprecationWarningGenerateVideosFromSource sync.Once
+var unsupportedWarningTemperature sync.Once
+var unsupportedWarningTopP sync.Once
+var unsupportedWarningTopK sync.Once
+var unsupportedWarningThinkingBudget sync.Once
+
+func isGemini36OrNewer(model string) bool {
+	for i := len(model) - 1; i >= 0; i-- {
+		if model[i] == '/' {
+			model = model[i+1:]
+			break
+		}
+	}
+	const prefix = "gemini-"
+	if len(model) <= len(prefix) {
+		return false
+	}
+	for i := 0; i < len(prefix); i++ {
+		c := model[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 'a' - 'A'
+		}
+		if c != prefix[i] {
+			return false
+		}
+	}
+	rest := model[len(prefix):]
+	major, n := parseLeadingUint(rest)
+	if n == 0 {
+		return false
+	}
+	rest = rest[n:]
+	minor := 0
+	if len(rest) > 0 && rest[0] == '.' {
+		var m int
+		minor, m = parseLeadingUint(rest[1:])
+		if m == 0 {
+			return false
+		}
+		rest = rest[1+m:]
+	}
+	if len(rest) > 0 && rest[0] != '-' {
+		return false
+	}
+	return major > 3 || (major == 3 && minor >= 6)
+}
+
+func parseLeadingUint(s string) (int, int) {
+	val := 0
+	i := 0
+	for i < len(s) && s[i] >= '0' && s[i] <= '9' {
+		val = val*10 + int(s[i]-'0')
+		i++
+	}
+	return val, i
+}
+
+func warnUnsupportedParameters(model string, config *GenerateContentConfig) {
+	if config == nil || !isGemini36OrNewer(model) {
+		return
+	}
+	if config.Temperature != nil {
+		unsupportedWarningTemperature.Do(func() {
+			log.Println("temperature is not supported on Gemini 3.6 and newer models and is ignored.")
+		})
+	}
+	if config.TopP != nil {
+		unsupportedWarningTopP.Do(func() {
+			log.Println("top_p is not supported on Gemini 3.6 and newer models and is ignored.")
+		})
+	}
+	if config.TopK != nil {
+		unsupportedWarningTopK.Do(func() {
+			log.Println("top_k is not supported on Gemini 3.6 and newer models and is ignored.")
+		})
+	}
+	if config.ThinkingConfig != nil && config.ThinkingConfig.ThinkingBudget != nil {
+		unsupportedWarningThinkingBudget.Do(func() {
+			log.Println("thinking_budget is not supported on Gemini 3.6 and newer models and is ignored. Please use thinking_level instead.")
+		})
+	}
+}
 
 // GenerateContent generates content based on the provided model, contents, and configuration.
 //
@@ -5562,6 +5643,7 @@ var deprecationWarningGenerateVideosFromSource sync.Once
 // request is billed, including any that succeeded before a later one failed. Set
 // [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (m Models) GenerateContent(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) (*GenerateContentResponse, error) {
+	warnUnsupportedParameters(model, config)
 	if config != nil {
 		config.setDefaults()
 	}
@@ -5604,6 +5686,7 @@ func (m Models) GenerateContent(ctx context.Context, model string, contents []*C
 // continuation requests. Each request is billed, including any that succeeded before a later one
 // failed. Set [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
 func (m Models) GenerateContentStream(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) iter.Seq2[*GenerateContentResponse, error] {
+	warnUnsupportedParameters(model, config)
 	if config != nil {
 		config.setDefaults()
 	}

@@ -42,18 +42,7 @@ type UpdateWebhookRequest struct {
 	// Optional list of fields to update.
 	UpdateMask *string `queryParam:"style=form,explode=true,name=update_mask"`
 	// Required. The request body.
-	Body *webhooks.WebhookUpdate `request:"mediaType=application/json"`
-}
-
-func (u UpdateWebhookRequest) MarshalJSON() ([]byte, error) {
-	return utils.MarshalJSON(u, "", false)
-}
-
-func (u *UpdateWebhookRequest) UnmarshalJSON(data []byte) error {
-	if err := utils.UnmarshalJSON(data, &u, "", false, nil); err != nil {
-		return err
-	}
-	return nil
+	Body webhooks.WebhookUpdate `request:"mediaType=application/json"`
 }
 
 func (u *UpdateWebhookRequest) GetAPIVersion() *string {
@@ -77,9 +66,9 @@ func (u *UpdateWebhookRequest) GetUpdateMask() *string {
 	return u.UpdateMask
 }
 
-func (u *UpdateWebhookRequest) GetBody() *webhooks.WebhookUpdate {
+func (u *UpdateWebhookRequest) GetBody() webhooks.WebhookUpdate {
 	if u == nil {
-		return nil
+		return webhooks.WebhookUpdate{}
 	}
 	return u.Body
 }

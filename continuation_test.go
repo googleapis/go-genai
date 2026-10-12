@@ -1567,3 +1567,109 @@ func TestGenerateContentStream_UsageMetadataAcrossHops(t *testing.T) {
 		t.Errorf("chunk 3 UsageMetadata = %+v, initialPrompt = %d, want prompt=116 cached=20 candidates=30 thoughts=10 total=156 initialPrompt=50", um, chunks[3].InitialPromptTokenCount())
 	}
 }
+
+func TestGenerateContentStream_ContextCancellation_DoesNotResumeFromCheckpoint(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var requestCount int32
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		count := atomic.AddInt32(&requestCount, 1)
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+
+		if count == 1 {
+			// Emit checkpoint chunk
+			fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Pre-cancel "}]}, "continuationToken": "Y2twMS10b2tlbg=="}]}`)
+			// Cancel context and abruptly drop connection
+			cancel()
+			return
+		}
+		t.Fatalf("unexpected continuation request %d after context cancellation", count)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(ctx, &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		envVarProvider: func() map[string]string {
+			return map[string]string{"GOOGLE_API_KEY": "test-key"}
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	var chunks []*GenerateContentResponse
+	var gotErr error
+	for chunk, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-pro", []*Content{
+		NewContentFromText("Test cancellation", RoleUser),
+	}, nil) {
+		if err != nil {
+			gotErr = err
+			break
+		}
+		if chunk != nil {
+			chunks = append(chunks, chunk)
+		}
+	}
+
+	if gotErr == nil {
+		t.Errorf("expected context cancellation error, got nil")
+	}
+	if atomic.LoadInt32(&requestCount) != 1 {
+		t.Errorf("requestCount = %d, want 1 (must not attempt continuation on cancelled context)", requestCount)
+	}
+}
+
+func TestGenerateContentStream_StaleCheckpointTokenDiscardedOnStop(t *testing.T) {
+	ctx := context.Background()
+	var requestCount int32
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		count := atomic.AddInt32(&requestCount, 1)
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+
+		if count == 1 {
+			// Chunk 1 with checkpoint continuationToken
+			fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Chunk 1 checkpoint "}]}, "continuationToken": "Y2twMS10b2tlbg=="}]}`)
+			// Chunk 2 with finishReason STOP
+			fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Chunk 2 stop"}]}, "finishReason": "STOP"}]}`)
+			return
+		}
+		t.Fatalf("unexpected continuation request %d after finishReason STOP", count)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(ctx, &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		envVarProvider: func() map[string]string {
+			return map[string]string{"GOOGLE_API_KEY": "test-key"}
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	var chunks []*GenerateContentResponse
+	for chunk, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-pro", []*Content{
+		NewContentFromText("Test stale token discard", RoleUser),
+	}, nil) {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if chunk != nil {
+			chunks = append(chunks, chunk)
+		}
+	}
+
+	if len(chunks) != 2 {
+		t.Fatalf("expected 2 chunks, got %d", len(chunks))
+	}
+	if chunks[1].Candidates[0].FinishReason != FinishReasonStop {
+		t.Errorf("chunk 1 FinishReason = %q, want STOP", chunks[1].Candidates[0].FinishReason)
+	}
+	if atomic.LoadInt32(&requestCount) != 1 {
+		t.Errorf("requestCount = %d, want 1", requestCount)
+	}
+}
+

@@ -15,9 +15,11 @@
 package genai
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -1148,5 +1150,86 @@ func TestVoicesWorkflow(t *testing.T) {
 	}
 	if getRes.Voice == nil || getRes.Voice.ID == nil || *getRes.Voice.ID != "Puck" {
 		t.Errorf("Expected Voice.ID 'Puck', got '%v'", getRes.Voice)
+	}
+}
+
+func TestInteractionsUnsupportedParameterWarnings(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		resp := map[string]any{
+			"id":      "mock_interaction_id",
+			"created": "2026-03-30T22:20:00Z",
+			"updated": "2026-03-30T22:20:00Z",
+			"status":  "completed",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(resp)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(context.Background(), &ClientConfig{
+		Backend: BackendGeminiAPI,
+		HTTPOptions: HTTPOptions{
+			BaseURL: ts.URL,
+		},
+		APIKey: "dummy_key",
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	origOut := log.Writer()
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer log.SetOutput(origOut)
+
+	modelInput := interactions.NewInteractionsInput([]interactions.Content{{
+		TextContent: &interactions.TextContent{
+			Text: "Hello",
+		},
+	}})
+	genConfig := &interactions.GenerationConfig{
+		Temperature: Ptr[float32](0.7),
+		TopP:        Ptr[float32](0.9),
+	}
+
+	// Older model (< 3.6) should not log warnings.
+	olderBody := operations.NewCreateInteractionRequestBody(interactions.CreateModelInteraction{
+		Model:            interactions.Model("gemini-3.1-pro"),
+		Input:            &modelInput,
+		GenerationConfig: genConfig,
+	})
+	if _, err := client.Interactions.Create(context.Background(), operations.CreateInteractionRequest{Body: olderBody}); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if buf.Len() != 0 {
+		t.Fatalf("Expected no warnings for gemini-3.1-pro, got: %q", buf.String())
+	}
+
+	// Gemini 3.6+ should log warnings once.
+	newerBody := operations.NewCreateInteractionRequestBody(interactions.CreateModelInteraction{
+		Model:            interactions.Model("gemini-3.6-flash"),
+		Input:            &modelInput,
+		GenerationConfig: genConfig,
+	})
+	if _, err := client.Interactions.Create(context.Background(), operations.CreateInteractionRequest{Body: newerBody}); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	output := buf.String()
+	for _, want := range []string{
+		"WARNING: temperature is not supported on Gemini 3.6 and newer models and is ignored.",
+		"WARNING: top_p is not supported on Gemini 3.6 and newer models and is ignored.",
+	} {
+		if !strings.Contains(output, want) {
+			t.Errorf("Expected warning %q in %q", want, output)
+		}
+	}
+
+	// Second call should not log again.
+	buf.Reset()
+	if _, err := client.Interactions.Create(context.Background(), operations.CreateInteractionRequest{Body: newerBody}); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if buf.Len() != 0 {
+		t.Errorf("Expected no warnings on second call, got: %q", buf.String())
 	}
 }

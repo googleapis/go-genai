@@ -27,10 +27,11 @@ import (
 var ErrUnsupportedOption = errors.New("unsupported option")
 
 const (
-	SupportedOptionRetries              = "retries"
-	SupportedOptionTimeout              = "timeout"
-	SupportedOptionAcceptHeaderOverride = "acceptHeaderOverride"
-	SupportedOptionURLOverride          = "urlOverride"
+	SupportedOptionRetries               = "retries"
+	SupportedOptionTimeout               = "timeout"
+	SupportedOptionAcceptHeaderOverride  = "acceptHeaderOverride"
+	SupportedOptionURLOverride           = "urlOverride"
+	SupportedOptionAutomaticContinuation = "automaticContinuation"
 )
 
 type AcceptHeaderEnum string
@@ -46,15 +47,24 @@ func (e AcceptHeaderEnum) ToPointer() *AcceptHeaderEnum {
 }
 
 type Options struct {
-	ServerURL            *string
-	Retries              *retry.Config
-	Timeout              *time.Duration
-	AcceptHeaderOverride *AcceptHeaderEnum
-	URLOverride          *string
-	SetHeaders           map[string]string
+	ServerURL             *string
+	Retries               *retry.Config
+	Timeout               *time.Duration
+	AcceptHeaderOverride  *AcceptHeaderEnum
+	URLOverride           *string
+	SetHeaders            map[string]string
+	AutomaticContinuation *bool
 }
 
 type Option func(*Options, ...string) error
+
+// WithAutomaticContinuation allows enabling automatic continuation across hops.
+func WithAutomaticContinuation(automaticContinuation bool) Option {
+	return func(opts *Options, supportedOptions ...string) error {
+		opts.AutomaticContinuation = &automaticContinuation
+		return nil
+	}
+}
 
 // WithServerURL allows providing an alternative server URL.
 func WithServerURL(serverURL string) Option {

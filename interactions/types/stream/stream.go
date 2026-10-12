@@ -93,11 +93,13 @@ type EventStream[T any] struct {
 	releaseOnce  sync.Once
 	dataRequired bool
 
-	finished atomic.Bool
-	first    bool
-	err      error
-	val      *T
-	eventID  *string
+	finished             atomic.Bool
+	first                bool
+	err                  error
+	val                  *T
+	eventID              *string
+	eventObserver        func(event *T)
+	continuationSupplier func(lastEvent *T) (*EventStream[T], error)
 }
 
 func NewEventStream[T any](
@@ -164,6 +166,49 @@ func (es *EventStream[T]) release() {
 	})
 }
 
+// SetEventObserver registers a callback invoked for each parsed event in the stream.
+func (es *EventStream[T]) SetEventObserver(fn func(event *T)) {
+	es.eventObserver = fn
+}
+
+// SetContinuationSupplier registers a callback to supply the next stream hop when
+// the current stream reaches EOF.
+func (es *EventStream[T]) SetContinuationSupplier(fn func(lastEvent *T) (*EventStream[T], error)) {
+	es.continuationSupplier = fn
+}
+
+// tryContinue attempts to transition to the next stream hop via continuationSupplier.
+// If continuation succeeds, it swaps the underlying stream state and returns true.
+// Otherwise, it records fallbackErr, marks the stream finished, and returns false.
+func (es *EventStream[T]) tryContinue(fallbackErr error) bool {
+	if es.continuationSupplier != nil && es.val != nil {
+		nextStream, contErr := es.continuationSupplier(es.val)
+		if contErr != nil {
+			es.err = contErr
+			es.finished.Store(true)
+			es.release()
+			return false
+		}
+		if nextStream != nil {
+			_ = es.r.Close()
+			es.r = nextStream.r
+			es.scanner = nextStream.scanner
+			es.unmarshaller = nextStream.unmarshaller
+			es.sentinel = nextStream.sentinel
+			es.cancel = nextStream.cancel
+			es.releaseOnce = sync.Once{}
+			es.first = true
+			es.val = nil
+			es.err = nil
+			return true
+		}
+	}
+	es.err = fallbackErr
+	es.finished.Store(true)
+	es.release()
+	return false
+}
+
 // Next waits for the next event from a stream which will be available
 // through the Value() method. It returns false when the stream is done or
 // an error occurred. After this method returns false, the Err method is used
@@ -186,9 +231,9 @@ func (es *EventStream[T]) Next() bool {
 		}
 
 		if !es.scanner.Scan() {
-			es.err = es.scanner.Err()
-			es.finished.Store(true)
-			es.release()
+			if es.tryContinue(es.scanner.Err()) {
+				continue
+			}
 			return false
 		}
 
@@ -257,8 +302,9 @@ func (es *EventStream[T]) Next() bool {
 		event.ID = es.eventID
 
 		if es.sentinel != "" && data == es.sentinel+"\n" {
-			es.finished.Store(true)
-			es.release()
+			if es.tryContinue(nil) {
+				continue
+			}
 			return false
 		}
 
@@ -296,8 +342,9 @@ func (es *EventStream[T]) Next() bool {
 		if encoding == "string" {
 			jsonData, err := json.Marshal(data)
 			if err != nil {
-				es.err = err
-				es.release()
+				if es.tryContinue(err) {
+					continue
+				}
 				return false
 			}
 			event.Data = jsonData
@@ -307,19 +354,24 @@ func (es *EventStream[T]) Next() bool {
 
 		e, err := json.Marshal(event)
 		if err != nil {
-			es.err = err
-			es.release()
+			if es.tryContinue(err) {
+				continue
+			}
 			return false
 		}
 
 		parsedEvent, err := es.unmarshaller(e)
 		if err != nil {
-			es.err = err
-			es.release()
+			if es.tryContinue(err) {
+				continue
+			}
 			return false
 		}
 
 		es.val = &parsedEvent
+		if es.eventObserver != nil {
+			es.eventObserver(es.val)
+		}
 
 		return true
 	}

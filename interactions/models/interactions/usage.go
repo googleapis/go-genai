@@ -22,6 +22,8 @@ import (
 
 // Usage - Statistics on the interaction request's token usage.
 type Usage struct {
+	// Accumulated billable token usage across all continuation calls.
+	BillableUsage *BillableUsage `json:"billable_usage,omitzero"`
 	// A breakdown of cached token usage by modality.
 	CachedTokensByModality []ModalityTokens `json:"cached_tokens_by_modality,omitzero"`
 	// Grounding tool count.
@@ -56,6 +58,13 @@ func (u *Usage) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (u *Usage) GetBillableUsage() *BillableUsage {
+	if u == nil {
+		return nil
+	}
+	return u.BillableUsage
 }
 
 func (u *Usage) GetCachedTokensByModality() []ModalityTokens {

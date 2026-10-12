@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -146,6 +147,136 @@ func TestIsResumableFinishReason(t *testing.T) {
 			got := isResumableFinishReason(tc.finishReason)
 			if got != tc.want {
 				t.Errorf("isResumableFinishReason(%v) = %v, want %v", tc.finishReason, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestNextStreamContinuationToken(t *testing.T) {
+	tests := []struct {
+		name                      string
+		hopStartToken             []byte
+		hopToken                  []byte
+		finishReason              FinishReason
+		hasPromptFeedback         bool
+		hopHasYieldedContent      bool
+		reconnectsWithoutProgress int
+		wantToken                 []byte
+		wantReconnects            int
+	}{
+		{
+			name:                      "new checkpoint token resets reconnects",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  []byte("new-ckpt-tok"),
+			finishReason:              "",
+			hopHasYieldedContent:      true,
+			reconnectsWithoutProgress: 2,
+			wantToken:                 []byte("new-ckpt-tok"),
+			wantReconnects:            0,
+		},
+		{
+			name:                      "new token on CONTINUATION resets reconnects",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  []byte("hop2-tok"),
+			finishReason:              FinishReasonContinuation,
+			hopHasYieldedContent:      true,
+			reconnectsWithoutProgress: 1,
+			wantToken:                 []byte("hop2-tok"),
+			wantReconnects:            0,
+		},
+		{
+			name:                      "explicit finishReason without new token returns nil",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  nil,
+			finishReason:              FinishReasonContinuation,
+			reconnectsWithoutProgress: 1,
+			wantToken:                 nil,
+			wantReconnects:            1,
+		},
+		{
+			name:                      "explicit finishReason with echoed start token returns nil",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  []byte("start-tok"),
+			finishReason:              FinishReasonContinuation,
+			reconnectsWithoutProgress: 0,
+			wantToken:                 nil,
+			wantReconnects:            0,
+		},
+		{
+			name:                      "resumed hop cutoff before yielding content without new token retries from hopStartToken",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  nil,
+			finishReason:              "",
+			hopHasYieldedContent:      false,
+			reconnectsWithoutProgress: 0,
+			wantToken:                 []byte("start-tok"),
+			wantReconnects:            1,
+		},
+		{
+			name:                      "resumed hop cutoff before yielding content with echoed start token retries from hopStartToken",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  []byte("start-tok"),
+			finishReason:              FinishReasonUnspecified,
+			hopHasYieldedContent:      false,
+			reconnectsWithoutProgress: 2,
+			wantToken:                 []byte("start-tok"),
+			wantReconnects:            3,
+		},
+		{
+			name:                      "resumed hop cutoff after yielding content without new token returns nil instead of replaying hopStartToken",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  nil,
+			finishReason:              "",
+			hopHasYieldedContent:      true,
+			reconnectsWithoutProgress: 0,
+			wantToken:                 nil,
+			wantReconnects:            0,
+		},
+		{
+			name:                      "retry budget exhausted returns nil",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  nil,
+			finishReason:              "",
+			reconnectsWithoutProgress: maxStreamReconnectsWithoutProgress,
+			wantToken:                 nil,
+			wantReconnects:            maxStreamReconnectsWithoutProgress,
+		},
+		{
+			name:                      "hop 1 fails before any checkpoint returns nil token",
+			hopStartToken:             nil,
+			hopToken:                  nil,
+			finishReason:              "",
+			reconnectsWithoutProgress: 0,
+			wantToken:                 nil,
+			wantReconnects:            1,
+		},
+		{
+			name:                      "prompt feedback prevents retrying hopStartToken",
+			hopStartToken:             []byte("start-tok"),
+			hopToken:                  nil,
+			finishReason:              "",
+			hasPromptFeedback:         true,
+			reconnectsWithoutProgress: 1,
+			wantToken:                 nil,
+			wantReconnects:            0,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotToken, gotReconnects := nextStreamContinuationToken(
+				tc.hopStartToken,
+				tc.hopToken,
+				tc.finishReason,
+				tc.hasPromptFeedback,
+				tc.hopHasYieldedContent,
+				tc.reconnectsWithoutProgress,
+			)
+			if !bytes.Equal(gotToken, tc.wantToken) {
+				t.Errorf("nextStreamContinuationToken() token = %q, want %q", gotToken, tc.wantToken)
+			}
+			if gotReconnects != tc.wantReconnects {
+				t.Errorf("nextStreamContinuationToken() reconnects = %d, want %d", gotReconnects, tc.wantReconnects)
 			}
 		})
 	}
@@ -1030,6 +1161,289 @@ func TestModelsGenerateContentStream_AutomaticContinuationLoop(t *testing.T) {
 			t.Errorf("gotText = %q, want %q", gotText, "Ckpt 1, Ckpt 2, Ckpt 3, Done.")
 		}
 	})
+
+	t.Run("resumed hop drops before emitting its own checkpoint on error and cutoff then retries from hopStartToken", func(t *testing.T) {
+		var hopCount int32
+		const hop1Token = "aG9wLTE="
+		retryTs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			count := atomic.AddInt32(&hopCount, 1)
+			body, _ := io.ReadAll(r.Body)
+			var reqMap map[string]any
+			_ = json.Unmarshal(body, &reqMap)
+			reqToken := reqMap["continuationToken"]
+			if reqToken == nil {
+				reqToken = reqMap["continuation_token"]
+			}
+
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.WriteHeader(http.StatusOK)
+
+			switch count {
+			case 1:
+				if reqToken != nil {
+					t.Errorf("hop 1 unexpectedly had continuationToken: %v", reqToken)
+				}
+				fmt.Fprintf(w, "data: %s\n\n", fmt.Sprintf(`{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 1, "}]}, "finishReason": "CONTINUATION", "continuationToken": "%s"}]}`, hop1Token))
+			case 2:
+				// Hop 2 attempt 1: errors during prefill before yielding candidate content parts or a new checkpoint token
+				if reqToken != hop1Token {
+					t.Errorf("attempt 2 continuationToken = %v, want %s", reqToken, hop1Token)
+				}
+				fmt.Fprintf(w, "data: %s\n\n", `{malformed json`)
+			case 3:
+				// Hop 2 attempt 2: cuts off cleanly during prefill without candidate content parts, finishReason, or a new checkpoint token
+				if reqToken != hop1Token {
+					t.Errorf("attempt 3 continuationToken = %v, want %s", reqToken, hop1Token)
+				}
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model"}}]}`)
+			case 4:
+				// Hop 2 attempt 3: succeeds and finishes with STOP
+				if reqToken != hop1Token {
+					t.Errorf("attempt 4 continuationToken = %v, want %s", reqToken, hop1Token)
+				}
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 2 done."}]}, "finishReason": "STOP"}]}`)
+			default:
+				t.Fatalf("unexpected request count: %d", count)
+			}
+		}))
+		defer retryTs.Close()
+
+		retryClient, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: retryTs.URL},
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		var gotText string
+		for resp, err := range retryClient.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
+			NewContentFromText("Retry hopStartToken", RoleUser),
+		}, nil) {
+			if err != nil {
+				t.Fatalf("unexpected stream error: %v", err)
+			}
+			if resp != nil {
+				gotText += resp.Text()
+			}
+		}
+
+		if atomic.LoadInt32(&hopCount) != 4 {
+			t.Errorf("expected 4 stream requests, got %d", atomic.LoadInt32(&hopCount))
+		}
+		if gotText != "Hop 1, Hop 2 done." {
+			t.Errorf("gotText = %q, want %q", gotText, "Hop 1, Hop 2 done.")
+		}
+	})
+
+	t.Run("resumed hop dropping after yielding content without new checkpoint does not replay hopStartToken", func(t *testing.T) {
+		const hop1Token = "aG9wLTE="
+
+		t.Run("mid-stream error after yielding content surfaces error immediately", func(t *testing.T) {
+			var hopCount int32
+			errTs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				count := atomic.AddInt32(&hopCount, 1)
+				w.Header().Set("Content-Type", "text/event-stream")
+				w.WriteHeader(http.StatusOK)
+
+				switch count {
+				case 1:
+					fmt.Fprintf(w, "data: %s\n\n", fmt.Sprintf(`{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 1, "}]}, "finishReason": "CONTINUATION", "continuationToken": "%s"}]}`, hop1Token))
+				case 2:
+					// Yields content part without a new checkpoint token, then errors
+					fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Partial hop 2"}]}}]}`)
+					fmt.Fprintf(w, "data: %s\n\n", `{malformed json`)
+				default:
+					t.Fatalf("unexpected request count %d (should not replay hopStartToken after yielding content)", count)
+				}
+			}))
+			defer errTs.Close()
+
+			errClient, err := NewClient(ctx, &ClientConfig{
+				HTTPOptions: HTTPOptions{BaseURL: errTs.URL},
+				envVarProvider: func() map[string]string {
+					return map[string]string{"GOOGLE_API_KEY": "test-key"}
+				},
+			})
+			if err != nil {
+				t.Fatalf("failed to create client: %v", err)
+			}
+
+			var gotText string
+			var streamErr error
+			for resp, err := range errClient.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
+				NewContentFromText("No duplicate chunks on error", RoleUser),
+			}, nil) {
+				if err != nil {
+					streamErr = err
+				}
+				if resp != nil {
+					gotText += resp.Text()
+				}
+			}
+
+			if streamErr == nil {
+				t.Fatal("expected non-nil stream error when resumed hop errors after yielding content without new checkpoint")
+			}
+			if atomic.LoadInt32(&hopCount) != 2 {
+				t.Errorf("expected 2 requests (no replay of hopStartToken), got %d", atomic.LoadInt32(&hopCount))
+			}
+			if gotText != "Hop 1, Partial hop 2" {
+				t.Errorf("gotText = %q, want %q", gotText, "Hop 1, Partial hop 2")
+			}
+		})
+
+		t.Run("premature cutoff after yielding content surfaces APIError immediately", func(t *testing.T) {
+			var hopCount int32
+			cutoffTs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				count := atomic.AddInt32(&hopCount, 1)
+				w.Header().Set("Content-Type", "text/event-stream")
+				w.WriteHeader(http.StatusOK)
+
+				switch count {
+				case 1:
+					fmt.Fprintf(w, "data: %s\n\n", fmt.Sprintf(`{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 1, "}]}, "finishReason": "CONTINUATION", "continuationToken": "%s"}]}`, hop1Token))
+				case 2:
+					// Yields content part without a new checkpoint token or FinishReason, then closes cleanly
+					fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Partial hop 2"}]}}]}`)
+				default:
+					t.Fatalf("unexpected request count %d (should not replay hopStartToken after yielding content)", count)
+				}
+			}))
+			defer cutoffTs.Close()
+
+			cutoffClient, err := NewClient(ctx, &ClientConfig{
+				HTTPOptions: HTTPOptions{BaseURL: cutoffTs.URL},
+				envVarProvider: func() map[string]string {
+					return map[string]string{"GOOGLE_API_KEY": "test-key"}
+				},
+			})
+			if err != nil {
+				t.Fatalf("failed to create client: %v", err)
+			}
+
+			var gotText string
+			var streamErr error
+			for resp, err := range cutoffClient.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
+				NewContentFromText("No duplicate chunks on cutoff", RoleUser),
+			}, nil) {
+				if err != nil {
+					streamErr = err
+				}
+				if resp != nil {
+					gotText += resp.Text()
+				}
+			}
+
+			var apiErr APIError
+			if !errors.As(streamErr, &apiErr) {
+				t.Fatalf("expected APIError on premature cutoff, got %T: %v", streamErr, streamErr)
+			}
+			if atomic.LoadInt32(&hopCount) != 2 {
+				t.Errorf("expected 2 requests (no replay of hopStartToken), got %d", atomic.LoadInt32(&hopCount))
+			}
+			if gotText != "Hop 1, Partial hop 2" {
+				t.Errorf("gotText = %q, want %q", gotText, "Hop 1, Partial hop 2")
+			}
+		})
+	})
+
+	t.Run("stops and surfaces error after maxStreamReconnectsWithoutProgress consecutive failures on resumed hop", func(t *testing.T) {
+		var hopCount int32
+		const hop1Token = "aG9wLTE="
+		failTs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			count := atomic.AddInt32(&hopCount, 1)
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.WriteHeader(http.StatusOK)
+
+			if count == 1 {
+				fmt.Fprintf(w, "data: %s\n\n", fmt.Sprintf(`{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 1, "}]}, "finishReason": "CONTINUATION", "continuationToken": "%s"}]}`, hop1Token))
+				return
+			}
+			// Subsequent hop attempts fail before emitting a new checkpoint token.
+			fmt.Fprintf(w, "data: %s\n\n", `{malformed json`)
+		}))
+		defer failTs.Close()
+
+		failClient, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: failTs.URL},
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		var streamErr error
+		for _, err := range failClient.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
+			NewContentFromText("Fail repeatedly", RoleUser),
+		}, nil) {
+			if err != nil {
+				streamErr = err
+			}
+		}
+
+		if streamErr == nil {
+			t.Fatal("expected non-nil stream error after exhausting reconnect budget")
+		}
+		wantRequests := int32(maxStreamReconnectsWithoutProgress + 2)
+		if atomic.LoadInt32(&hopCount) != wantRequests {
+			t.Errorf("expected %d total requests, got %d", wantRequests, atomic.LoadInt32(&hopCount))
+		}
+	})
+
+	t.Run("resumed hop ending with CONTINUATION but no new token stops instead of replaying hopStartToken", func(t *testing.T) {
+		var hopCount int32
+		const hop1Token = "aG9wLTE="
+		noNewTokTs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			count := atomic.AddInt32(&hopCount, 1)
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.WriteHeader(http.StatusOK)
+
+			switch count {
+			case 1:
+				fmt.Fprintf(w, "data: %s\n\n", fmt.Sprintf(`{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 1, "}]}, "finishReason": "CONTINUATION", "continuationToken": "%s"}]}`, hop1Token))
+			case 2:
+				// Ends with CONTINUATION but no new continuationToken
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 2."}]}, "finishReason": "CONTINUATION"}]}`)
+			default:
+				t.Fatalf("unexpected request count: %d", count)
+			}
+		}))
+		defer noNewTokTs.Close()
+
+		noNewTokClient, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: noNewTokTs.URL},
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		var gotText string
+		for resp, err := range noNewTokClient.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
+			NewContentFromText("No new token", RoleUser),
+		}, nil) {
+			if err != nil {
+				t.Fatalf("unexpected stream error: %v", err)
+			}
+			if resp != nil {
+				gotText += resp.Text()
+			}
+		}
+
+		if atomic.LoadInt32(&hopCount) != 2 {
+			t.Errorf("expected 2 requests (no replay of hopStartToken), got %d", atomic.LoadInt32(&hopCount))
+		}
+		if gotText != "Hop 1, Hop 2." {
+			t.Errorf("gotText = %q, want %q", gotText, "Hop 1, Hop 2.")
+		}
+	})
 }
 
 func TestChat_AutomaticContinuation(t *testing.T) {
@@ -1566,4 +1980,313 @@ func TestGenerateContentStream_UsageMetadataAcrossHops(t *testing.T) {
 	if um := chunks[3].UsageMetadata; um.PromptTokenCount != 116 || um.CachedContentTokenCount != 20 || um.CandidatesTokenCount != 30 || um.ThoughtsTokenCount != 10 || um.TotalTokenCount != 156 || chunks[3].InitialPromptTokenCount() != 50 || um.InitialPromptTokenCount() != 50 {
 		t.Errorf("chunk 3 UsageMetadata = %+v, initialPrompt = %d, want prompt=116 cached=20 candidates=30 thoughts=10 total=156 initialPrompt=50", um, chunks[3].InitialPromptTokenCount())
 	}
+}
+
+func TestMergeContinuationResponses_EmptyOrFewerCandidatesClearsStaleContinuation(t *testing.T) {
+	t.Run("later hop with nil candidates clears stale continuation on hop 1 candidate", func(t *testing.T) {
+		hop1 := &GenerateContentResponse{
+			Candidates: []*Candidate{
+				{
+					Content:           &Content{Role: RoleModel, Parts: []*Part{{Text: "Hop 1 text"}}},
+					FinishReason:      FinishReasonContinuation,
+					FinishMessage:     "continued",
+					ContinuationToken: []byte("hop-1-token"),
+				},
+			},
+		}
+		hop2 := &GenerateContentResponse{
+			Candidates: nil,
+			PromptFeedback: &GenerateContentResponsePromptFeedback{
+				BlockReason: BlockedReasonSafety,
+			},
+		}
+
+		merged, err := mergeContinuationResponses([]*GenerateContentResponse{hop1, hop2})
+		if err != nil {
+			t.Fatalf("unexpected merge error: %v", err)
+		}
+		if len(merged.Candidates) != 1 {
+			t.Fatalf("expected 1 candidate, got %d", len(merged.Candidates))
+		}
+		if merged.Candidates[0].FinishReason != "" {
+			t.Errorf("FinishReason = %q, want empty", merged.Candidates[0].FinishReason)
+		}
+		if merged.Candidates[0].FinishMessage != "" {
+			t.Errorf("FinishMessage = %q, want empty", merged.Candidates[0].FinishMessage)
+		}
+		if merged.Candidates[0].ContinuationToken != nil {
+			t.Errorf("ContinuationToken = %v, want nil", merged.Candidates[0].ContinuationToken)
+		}
+		if merged.Text() != "Hop 1 text" {
+			t.Errorf("merged.Text() = %q, want %q", merged.Text(), "Hop 1 text")
+		}
+		if merged.PromptFeedback == nil || merged.PromptFeedback.BlockReason != BlockedReasonSafety {
+			t.Errorf("PromptFeedback = %+v, want BlockReason=%v", merged.PromptFeedback, BlockedReasonSafety)
+		}
+		// Ensure original hop1 candidate was not mutated
+		if hop1.Candidates[0].FinishReason != FinishReasonContinuation || len(hop1.Candidates[0].ContinuationToken) == 0 {
+			t.Errorf("hop1 candidate was mutated: %+v", hop1.Candidates[0])
+		}
+	})
+
+	t.Run("later hop with empty candidates slice clears stale continuation", func(t *testing.T) {
+		hop1 := &GenerateContentResponse{
+			Candidates: []*Candidate{
+				{
+					Content:           &Content{Role: RoleModel, Parts: []*Part{{Text: "Hop 1 text"}}},
+					FinishReason:      FinishReasonContinuation,
+					FinishMessage:     "continued",
+					ContinuationToken: []byte("hop-1-token"),
+				},
+			},
+		}
+		hop2 := &GenerateContentResponse{
+			Candidates: []*Candidate{},
+			PromptFeedback: &GenerateContentResponsePromptFeedback{
+				BlockReason: BlockedReasonSafety,
+			},
+		}
+
+		merged, err := mergeContinuationResponses([]*GenerateContentResponse{hop1, hop2})
+		if err != nil {
+			t.Fatalf("unexpected merge error: %v", err)
+		}
+		if len(merged.Candidates) != 1 {
+			t.Fatalf("expected 1 candidate, got %d", len(merged.Candidates))
+		}
+		if merged.Candidates[0].FinishReason != "" {
+			t.Errorf("FinishReason = %q, want empty", merged.Candidates[0].FinishReason)
+		}
+		if merged.Candidates[0].ContinuationToken != nil {
+			t.Errorf("ContinuationToken = %v, want nil", merged.Candidates[0].ContinuationToken)
+		}
+	})
+
+	t.Run("later hop with fewer candidates clears stale continuation on unmatched candidate", func(t *testing.T) {
+		hop1 := &GenerateContentResponse{
+			Candidates: []*Candidate{
+				{
+					Content:           &Content{Role: RoleModel, Parts: []*Part{{Text: "Cand 0 hop 1. "}}},
+					FinishReason:      FinishReasonContinuation,
+					ContinuationToken: []byte("tok-0"),
+				},
+				{
+					Content:           &Content{Role: RoleModel, Parts: []*Part{{Text: "Cand 1 hop 1."}}},
+					FinishReason:      FinishReasonContinuation,
+					FinishMessage:     "continued-1",
+					ContinuationToken: []byte("tok-1"),
+				},
+			},
+		}
+		hop2 := &GenerateContentResponse{
+			Candidates: []*Candidate{
+				{
+					Content:      &Content{Role: RoleModel, Parts: []*Part{{Text: "Cand 0 hop 2."}}},
+					FinishReason: FinishReasonStop,
+				},
+			},
+		}
+
+		merged, err := mergeContinuationResponses([]*GenerateContentResponse{hop1, hop2})
+		if err != nil {
+			t.Fatalf("unexpected merge error: %v", err)
+		}
+		if len(merged.Candidates) != 2 {
+			t.Fatalf("expected 2 candidates, got %d", len(merged.Candidates))
+		}
+		if merged.Candidates[0].FinishReason != FinishReasonStop || merged.Candidates[0].ContinuationToken != nil {
+			t.Errorf("cand 0 = %+v, want STOP and nil token", merged.Candidates[0])
+		}
+		if merged.Candidates[1].FinishReason != "" || merged.Candidates[1].FinishMessage != "" || merged.Candidates[1].ContinuationToken != nil {
+			t.Errorf("cand 1 = %+v, want empty FinishReason/FinishMessage and nil ContinuationToken", merged.Candidates[1])
+		}
+	})
+}
+
+func TestModelsGenerateContent_LaterHopPromptFeedbackEmptyCandidates(t *testing.T) {
+	ctx := context.Background()
+
+	var requestCount int32
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		count := atomic.AddInt32(&requestCount, 1)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		switch count {
+		case 1:
+			fmt.Fprintln(w, `{
+				"candidates": [
+					{
+						"content": {"role": "model", "parts": [{"text": "Partial output before block."}]},
+						"finishReason": "CONTINUATION",
+						"finishMessage": "continuing",
+						"continuationToken": "aG9wLTE="
+					}
+				]
+			}`)
+		case 2:
+			fmt.Fprintln(w, `{
+				"promptFeedback": {
+					"blockReason": "SAFETY"
+				}
+			}`)
+		default:
+			t.Fatalf("unexpected request count: %d", count)
+		}
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(ctx, &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		envVarProvider: func() map[string]string {
+			return map[string]string{"GOOGLE_API_KEY": "test-key"}
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	resp, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", []*Content{
+		NewContentFromText("Hello", RoleUser),
+	}, nil)
+	if err != nil {
+		t.Fatalf("GenerateContent failed: %v", err)
+	}
+
+	if atomic.LoadInt32(&requestCount) != 2 {
+		t.Errorf("expected 2 requests, got %d", atomic.LoadInt32(&requestCount))
+	}
+	if len(resp.Candidates) != 1 {
+		t.Fatalf("expected 1 candidate, got %d", len(resp.Candidates))
+	}
+	if resp.Candidates[0].FinishReason != "" {
+		t.Errorf("FinishReason = %q, want empty", resp.Candidates[0].FinishReason)
+	}
+	if resp.Candidates[0].FinishMessage != "" {
+		t.Errorf("FinishMessage = %q, want empty", resp.Candidates[0].FinishMessage)
+	}
+	if resp.Candidates[0].ContinuationToken != nil {
+		t.Errorf("ContinuationToken = %v, want nil", resp.Candidates[0].ContinuationToken)
+	}
+	if resp.Text() != "Partial output before block." {
+		t.Errorf("resp.Text() = %q, want %q", resp.Text(), "Partial output before block.")
+	}
+	if resp.PromptFeedback == nil || resp.PromptFeedback.BlockReason != BlockedReasonSafety {
+		t.Errorf("PromptFeedback = %+v, want BlockReason=%v", resp.PromptFeedback, BlockedReasonSafety)
+	}
+}
+
+func TestModelsGenerateContentStream_PromptFeedbackAndPrematureStreamEnd(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("does not retry hopStartToken when later hop returns PromptFeedback with nil candidates", func(t *testing.T) {
+		var requestCount int32
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			count := atomic.AddInt32(&requestCount, 1)
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.WriteHeader(http.StatusOK)
+
+			switch count {
+			case 1:
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 1 text"}]}, "finishReason": "CONTINUATION", "continuationToken": "aG9wLTE="}]}`)
+			case 2:
+				fmt.Fprintf(w, "data: %s\n\n", `{"promptFeedback": {"blockReason": "SAFETY"}}`)
+			default:
+				t.Fatalf("unexpected request count: %d", count)
+			}
+		}))
+		defer ts.Close()
+
+		client, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		var chunks []*GenerateContentResponse
+		for chunk, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
+			NewContentFromText("Stream with promptFeedback on hop 2", RoleUser),
+		}, nil) {
+			if err != nil {
+				t.Fatalf("unexpected stream error: %v", err)
+			}
+			if chunk != nil {
+				chunks = append(chunks, chunk)
+			}
+		}
+
+		if atomic.LoadInt32(&requestCount) != 2 {
+			t.Errorf("expected 2 requests (no retry on PromptFeedback), got %d", atomic.LoadInt32(&requestCount))
+		}
+		if len(chunks) != 2 {
+			t.Fatalf("expected 2 chunks, got %d", len(chunks))
+		}
+		if chunks[0].Text() != "Hop 1 text" {
+			t.Errorf("chunk 0 text = %q, want %q", chunks[0].Text(), "Hop 1 text")
+		}
+		if chunks[1].PromptFeedback == nil || chunks[1].PromptFeedback.BlockReason != BlockedReasonSafety {
+			t.Errorf("chunk 1 PromptFeedback = %+v, want BlockReason=%v", chunks[1].PromptFeedback, BlockedReasonSafety)
+		}
+	})
+
+	t.Run("yields APIError when continuation hop closes cleanly without FinishReason after exhausting retries", func(t *testing.T) {
+		var requestCount int32
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			count := atomic.AddInt32(&requestCount, 1)
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.WriteHeader(http.StatusOK)
+
+			if count == 1 {
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates": [{"content": {"role": "model", "parts": [{"text": "Hop 1 text"}]}, "finishReason": "CONTINUATION", "continuationToken": "aG9wLTE="}]}`)
+				return
+			}
+			// Hop 2 and all retries close cleanly with 0 chunks (no FinishReason, no PromptFeedback, no error).
+		}))
+		defer ts.Close()
+
+		client, err := NewClient(ctx, &ClientConfig{
+			HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create client: %v", err)
+		}
+
+		var chunks []*GenerateContentResponse
+		var streamErr error
+		for chunk, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-flash", []*Content{
+			NewContentFromText("Stream with premature clean close on hop 2", RoleUser),
+		}, nil) {
+			if err != nil {
+				streamErr = err
+			}
+			if chunk != nil {
+				chunks = append(chunks, chunk)
+			}
+		}
+
+		wantRequests := int32(maxStreamReconnectsWithoutProgress + 2)
+		if atomic.LoadInt32(&requestCount) != wantRequests {
+			t.Errorf("expected %d requests, got %d", wantRequests, atomic.LoadInt32(&requestCount))
+		}
+		if len(chunks) != 1 || chunks[0].Text() != "Hop 1 text" {
+			t.Errorf("unexpected chunks: %+v", chunks)
+		}
+		if streamErr == nil {
+			t.Fatal("expected non-nil APIError on premature continuation stream end, got nil")
+		}
+		var apiErr APIError
+		if !errors.As(streamErr, &apiErr) {
+			t.Fatalf("expected APIError, got %T: %v", streamErr, streamErr)
+		}
+		if apiErr.Status != "UNKNOWN" {
+			t.Errorf("apiErr.Status = %q, want %q", apiErr.Status, "UNKNOWN")
+		}
+	})
 }

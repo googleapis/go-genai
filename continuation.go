@@ -15,6 +15,7 @@
 package genai
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -61,8 +62,34 @@ func isResumableFinishReason(finishReason FinishReason) bool {
 	return finishReason == "" || finishReason == FinishReasonUnspecified || finishReason == FinishReasonContinuation
 }
 
-func canResumeStream(enableContinuation bool, continuationToken []byte, finishReason FinishReason) bool {
+func canResumeStream(enableContinuation bool, continuationToken []byte, finishReason FinishReason, hasPromptFeedback bool) bool {
+	if hasPromptFeedback {
+		return false
+	}
 	return enableContinuation && len(continuationToken) > 0 && isResumableFinishReason(finishReason)
+}
+
+// Maximum number of consecutive streaming reconnects that do not receive a new
+// checkpoint continuation token before the error or cutoff is surfaced to the caller.
+const maxStreamReconnectsWithoutProgress = 3
+
+func nextStreamContinuationToken(hopStartToken, hopToken []byte, finishReason FinishReason, hasPromptFeedback, hopHasYieldedContent bool, reconnectsWithoutProgress int) ([]byte, int) {
+	if hasPromptFeedback {
+		return nil, 0
+	}
+	if finishReason != "" && finishReason != FinishReasonUnspecified {
+		if finishReason == FinishReasonContinuation && len(hopToken) > 0 && !bytes.Equal(hopToken, hopStartToken) {
+			return hopToken, 0
+		}
+		return nil, reconnectsWithoutProgress
+	}
+	if len(hopToken) > 0 && !bytes.Equal(hopToken, hopStartToken) {
+		return hopToken, 0
+	}
+	if hopHasYieldedContent || reconnectsWithoutProgress >= maxStreamReconnectsWithoutProgress {
+		return nil, reconnectsWithoutProgress
+	}
+	return hopStartToken, reconnectsWithoutProgress + 1
 }
 
 func clearIntermediateFinishReason(chunk *GenerateContentResponse, enableContinuation bool, continuationToken []byte) *GenerateContentResponse {
@@ -70,7 +97,7 @@ func clearIntermediateFinishReason(chunk *GenerateContentResponse, enableContinu
 		return chunk
 	}
 	cand := chunk.Candidates[0]
-	if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && canResumeStream(enableContinuation, continuationToken, cand.FinishReason) {
+	if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && canResumeStream(enableContinuation, continuationToken, cand.FinishReason, chunk.PromptFeedback != nil) {
 		candCopy := *cand
 		candCopy.FinishReason = ""
 		candidatesCopy := make([]*Candidate, len(chunk.Candidates))
@@ -108,6 +135,64 @@ func prepareContinuationConfig(config *GenerateContentConfig, continuationToken 
 	return &cloned
 }
 
+func clearStaleContinuationOnCandidate(cand *Candidate) *Candidate {
+	if cand == nil || (len(cand.ContinuationToken) == 0 && cand.FinishReason != FinishReasonContinuation) {
+		return cand
+	}
+	cp := *cand
+	cp.ContinuationToken = nil
+	if cp.FinishReason == FinishReasonContinuation {
+		cp.FinishReason = ""
+		cp.FinishMessage = ""
+	}
+	return &cp
+}
+
+func mergeCandidates(prevCandidates, currCandidates []*Candidate) []*Candidate {
+	if len(currCandidates) == 0 {
+		if prevCandidates == nil {
+			return nil
+		}
+		out := make([]*Candidate, len(prevCandidates))
+		for i, prevCand := range prevCandidates {
+			var copied *Candidate
+			if prevCand != nil {
+				copied = deepCopyValue(reflect.ValueOf(prevCand)).Interface().(*Candidate)
+			}
+			out[i] = clearStaleContinuationOnCandidate(copied)
+		}
+		return out
+	}
+
+	maxLen := len(prevCandidates)
+	if len(currCandidates) > maxLen {
+		maxLen = len(currCandidates)
+	}
+	out := make([]*Candidate, maxLen)
+	for i := 0; i < maxLen; i++ {
+		var prevCand, currCand *Candidate
+		if i < len(prevCandidates) {
+			prevCand = prevCandidates[i]
+		}
+		if i < len(currCandidates) {
+			currCand = currCandidates[i]
+		}
+		if currCand == nil {
+			var copied *Candidate
+			if prevCand != nil {
+				copied = deepCopyValue(reflect.ValueOf(prevCand)).Interface().(*Candidate)
+			}
+			out[i] = clearStaleContinuationOnCandidate(copied)
+			continue
+		}
+		mergedElem := mergeValuesReflect(reflect.ValueOf(prevCand), reflect.ValueOf(currCand), "candidate", false)
+		if mergedElem.IsValid() && !mergedElem.IsNil() {
+			out[i] = mergedElem.Interface().(*Candidate)
+		}
+	}
+	return out
+}
+
 func mergeContinuationResponses(responses []*GenerateContentResponse) (*GenerateContentResponse, error) {
 	if len(responses) == 0 {
 		return &GenerateContentResponse{}, nil
@@ -118,11 +203,16 @@ func mergeContinuationResponses(responses []*GenerateContentResponse) (*Generate
 
 	merged := responses[0]
 	for i := 1; i < len(responses); i++ {
-		res := mergeValuesReflect(reflect.ValueOf(merged), reflect.ValueOf(responses[i]), "", false)
+		curr := responses[i]
+		res := mergeValuesReflect(reflect.ValueOf(merged), reflect.ValueOf(curr), "", false)
 		if !res.IsValid() {
 			return nil, fmt.Errorf("failed to merge continuation responses at index %d", i)
 		}
+		prevCandidates := merged.Candidates
 		merged = res.Interface().(*GenerateContentResponse)
+		if len(prevCandidates) > 0 && (curr == nil || len(curr.Candidates) == 0) {
+			merged.Candidates = mergeCandidates(prevCandidates, nil)
+		}
 	}
 
 	// Always retain SDKHTTPResponse from the latest hop
@@ -265,6 +355,11 @@ func mergeValuesReflect(prev, curr reflect.Value, fieldName string, isInsideUsag
 	if prev.Kind() == reflect.Slice && curr.Kind() == reflect.Slice {
 		// Keyed-list exception 1: candidates: merge element-wise
 		if isCandidatesField(fieldName) {
+			if prevCands, ok := prev.Interface().([]*Candidate); ok {
+				if currCands, ok := curr.Interface().([]*Candidate); ok {
+					return reflect.ValueOf(mergeCandidates(prevCands, currCands))
+				}
+			}
 			maxLen := prev.Len()
 			if curr.Len() > maxLen {
 				maxLen = curr.Len()
@@ -300,7 +395,7 @@ func mergeValuesReflect(prev, curr reflect.Value, fieldName string, isInsideUsag
 			newSlice.Index(i).Set(deepCopyValue(prev.Index(i)))
 		}
 		for i := 0; i < curr.Len(); i++ {
-			newSlice.Index(prev.Len()+i).Set(deepCopyValue(curr.Index(i)))
+			newSlice.Index(prev.Len() + i).Set(deepCopyValue(curr.Index(i)))
 		}
 		return newSlice
 	}

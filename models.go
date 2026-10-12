@@ -5612,25 +5612,32 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 
 	return func(yield func(*GenerateContentResponse, error) bool) {
 		var accumulatedUsage *GenerateContentResponseUsageMetadata
+		var continuationToken []byte
+		reconnectsWithoutProgress := 0
 
 		for {
+			hopStartToken := continuationToken
 			var hopFinishReason FinishReason
 			var hopContinuationToken []byte
 			var hopUsage *GenerateContentResponseUsageMetadata
+			var hopHasPromptFeedback bool
+			var hopHasYieldedContent bool
+			var hopErr error
 
 			for chunk, err := range m.generateContentStream(ctx, model, contents, callConfig) {
 				if err != nil {
-					// If a mid-stream error occurs after an intermediate checkpoint
-					// continuation token was received, resume from that checkpoint.
-					if ctx.Err() == nil && canResumeStream(enableContinuation, hopContinuationToken, hopFinishReason) {
-						break
-					}
-					yield(nil, err)
-					return
+					hopErr = err
+					break
 				}
 				if chunk != nil {
+					if chunk.PromptFeedback != nil {
+						hopHasPromptFeedback = true
+					}
 					if len(chunk.Candidates) > 0 {
 						cand := chunk.Candidates[0]
+						if cand != nil && cand.Content != nil && len(cand.Content.Parts) > 0 {
+							hopHasYieldedContent = true
+						}
 						if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified {
 							hopFinishReason = cand.FinishReason
 						}
@@ -5658,14 +5665,34 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 				}
 			}
 
-			if canResumeStream(enableContinuation, hopContinuationToken, hopFinishReason) {
-				if hopUsage != nil {
-					accumulatedUsage = hopUsage
+			if hopUsage != nil {
+				accumulatedUsage = hopUsage
+			}
+			nextToken, nextReconnects := nextStreamContinuationToken(hopStartToken, hopContinuationToken, hopFinishReason, hopHasPromptFeedback, hopHasYieldedContent, reconnectsWithoutProgress)
+			reconnectsWithoutProgress = nextReconnects
+
+			if hopErr != nil {
+				if ctx.Err() == nil && canResumeStream(enableContinuation, nextToken, hopFinishReason, hopHasPromptFeedback) {
+					continuationToken = nextToken
+					callConfig = prepareContinuationConfig(config, continuationToken)
+					continue
 				}
-				callConfig = prepareContinuationConfig(config, hopContinuationToken)
+				yield(nil, hopErr)
+				return
+			}
+
+			if canResumeStream(enableContinuation, nextToken, hopFinishReason, hopHasPromptFeedback) {
+				continuationToken = nextToken
+				callConfig = prepareContinuationConfig(config, continuationToken)
 				continue
 			}
-			break
+			if enableContinuation && len(hopStartToken) > 0 && hopFinishReason == "" && !hopHasPromptFeedback {
+				yield(nil, APIError{
+					Message: "automatic continuation stream ended prematurely without a FinishReason",
+					Status:  "UNKNOWN",
+				})
+			}
+			return
 		}
 	}
 }

@@ -559,6 +559,74 @@ func TestMergeContinuationResponses_GroundingMetadataPreserved(t *testing.T) {
 	}
 }
 
+func TestMergeContinuationResponses_EmptyCandidatesHopClearsFinishReasonAndPreservesPromptFeedback(t *testing.T) {
+	hop1 := &GenerateContentResponse{
+		Candidates: []*Candidate{
+			{
+				Content: &Content{
+					Role:  RoleModel,
+					Parts: []*Part{{Text: "Partial output before block."}},
+				},
+				FinishReason:      FinishReasonContinuation,
+				ContinuationToken: []byte("tok-hop-1"),
+				FinishMessage:     "Continuing",
+			},
+		},
+		UsageMetadata: &GenerateContentResponseUsageMetadata{
+			PromptTokenCount:     10,
+			CandidatesTokenCount: 100,
+			TotalTokenCount:      110,
+		},
+	}
+
+	for _, emptyCandidates := range [][]*Candidate{nil, {}} {
+		hop2 := &GenerateContentResponse{
+			Candidates: emptyCandidates,
+			PromptFeedback: &GenerateContentResponsePromptFeedback{
+				BlockReason:        BlockedReasonOther,
+				BlockReasonMessage: "Blocked on continuation hop",
+			},
+			UsageMetadata: &GenerateContentResponseUsageMetadata{
+				PromptTokenCount: 110,
+				TotalTokenCount:  110,
+			},
+		}
+
+		merged, err := mergeContinuationResponses([]*GenerateContentResponse{hop1, hop2})
+		if err != nil {
+			t.Fatalf("unexpected merge error: %v", err)
+		}
+		if merged.Text() != "Partial output before block." {
+			t.Errorf("merged.Text() = %q, want %q", merged.Text(), "Partial output before block.")
+		}
+		if len(merged.Candidates) != 1 {
+			t.Fatalf("len(merged.Candidates) = %d, want 1", len(merged.Candidates))
+		}
+		cand := merged.Candidates[0]
+		if cand.FinishReason != "" {
+			t.Errorf("FinishReason = %q, want empty", cand.FinishReason)
+		}
+		if len(cand.ContinuationToken) != 0 {
+			t.Errorf("ContinuationToken = %v, want nil/empty", cand.ContinuationToken)
+		}
+		if cand.FinishMessage != "" {
+			t.Errorf("FinishMessage = %q, want empty", cand.FinishMessage)
+		}
+		if merged.PromptFeedback == nil || merged.PromptFeedback.BlockReason != BlockedReasonOther {
+			t.Errorf("PromptFeedback = %+v, want BlockReasonOther", merged.PromptFeedback)
+		}
+		if merged.PromptFeedback.BlockReasonMessage != "Blocked on continuation hop" {
+			t.Errorf("BlockReasonMessage = %q, want %q", merged.PromptFeedback.BlockReasonMessage, "Blocked on continuation hop")
+		}
+		if merged.UsageMetadata == nil || merged.UsageMetadata.PromptTokenCount != 120 {
+			t.Errorf("UsageMetadata = %+v, want PromptTokenCount 120", merged.UsageMetadata)
+		}
+		if merged.UsageMetadata.InitialPromptTokenCount() != 10 {
+			t.Errorf("InitialPromptTokenCount() = %d, want 10", merged.UsageMetadata.InitialPromptTokenCount())
+		}
+	}
+}
+
 func TestModelsGenerateContent_AutomaticContinuationLoop(t *testing.T) {
 	ctx := context.Background()
 

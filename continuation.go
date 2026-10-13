@@ -192,8 +192,21 @@ func mergeValuesReflect(prev, curr reflect.Value, fieldName string, isInsideUsag
 		return deepCopyValue(curr)
 	}
 
+	// Merge preserved candidates against an empty Candidate when curr.Candidates
+	// is nil/empty so terminal continuation state is cleared before Rule 2.
+	if isCandidatesField(fieldName) &&
+		prev.IsValid() && prev.Kind() == reflect.Slice && prev.Len() > 0 &&
+		(!curr.IsValid() || curr.Kind() != reflect.Slice || curr.Len() == 0) {
+		emptyCandidate := reflect.ValueOf(&Candidate{})
+		newSlice := reflect.MakeSlice(prev.Type(), prev.Len(), prev.Len())
+		for i := 0; i < prev.Len(); i++ {
+			newSlice.Index(i).Set(mergeValuesReflect(prev.Index(i), emptyCandidate, "candidate", isInsideUsageMetadata))
+		}
+		return newSlice
+	}
+
 	// Rule 2: Null / Absent handling: keep non-zero side
-	if !curr.IsValid() || curr.IsZero() {
+	if !curr.IsValid() || (curr.IsZero() && curr.Type() != reflect.TypeOf(Candidate{})) {
 		return deepCopyValue(prev)
 	}
 	if !prev.IsValid() || prev.IsZero() {

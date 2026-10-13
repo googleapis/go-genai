@@ -17,8 +17,130 @@
 package interactions
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
 	"google.golang.org/genai/interactions/internal/utils"
 )
+
+type CodeExecutionResultStepResultType string
+
+const (
+	CodeExecutionResultStepResultTypeArrayOfContent CodeExecutionResultStepResultType = "arrayOfContent"
+	CodeExecutionResultStepResultTypeStr            CodeExecutionResultStepResultType = "str"
+	CodeExecutionResultStepResultTypeUnknown        CodeExecutionResultStepResultType = "Unknown"
+)
+
+// CodeExecutionResultStepResult - The output of the code execution.
+type CodeExecutionResultStepResult struct {
+	ArrayOfContent []Content       `queryParam:"inline" union:"member"`
+	Str            *string         `queryParam:"inline" union:"member"`
+	UnknownRaw     json.RawMessage `json:"-" union:"unknown"`
+
+	Type CodeExecutionResultStepResultType
+}
+
+type CodeExecutionResultStepResultMember interface {
+	[]Content | string
+}
+
+func NewCodeExecutionResultStepResult[T CodeExecutionResultStepResultMember](val T) CodeExecutionResultStepResult {
+	switch v := any(val).(type) {
+	case []Content:
+		return CodeExecutionResultStepResult{
+			ArrayOfContent: v,
+			Type:           CodeExecutionResultStepResultTypeArrayOfContent,
+		}
+	case string:
+		return CodeExecutionResultStepResult{
+			Str:  &v,
+			Type: CodeExecutionResultStepResultTypeStr,
+		}
+	}
+	panic(fmt.Sprintf("unreachable: %T is not a member of union CodeExecutionResultStepResult", val))
+}
+func NewCodeExecutionResultStepResultUnknown(raw json.RawMessage) CodeExecutionResultStepResult {
+	return CodeExecutionResultStepResult{
+		UnknownRaw: raw,
+		Type:       CodeExecutionResultStepResultTypeUnknown,
+	}
+}
+
+func (u CodeExecutionResultStepResult) GetUnknownRaw() json.RawMessage {
+	return u.UnknownRaw
+}
+
+func (u CodeExecutionResultStepResult) IsUnknown() bool {
+	return u.Type == CodeExecutionResultStepResultTypeUnknown
+}
+
+func (u *CodeExecutionResultStepResult) UnmarshalJSON(data []byte) error {
+	*u = CodeExecutionResultStepResult{}
+
+	var candidates []utils.UnionCandidate
+
+	// Collect all valid candidates
+	var arrayOfContent []Content = []Content{}
+	if err := utils.UnmarshalJSON(data, &arrayOfContent, "", true, nil); err == nil {
+		candidates = append(candidates, utils.UnionCandidate{
+			Type:  CodeExecutionResultStepResultTypeArrayOfContent,
+			Value: arrayOfContent,
+		})
+	}
+
+	var str string = ""
+	if err := utils.UnmarshalJSON(data, &str, "", true, nil); err == nil {
+		candidates = append(candidates, utils.UnionCandidate{
+			Type:  CodeExecutionResultStepResultTypeStr,
+			Value: &str,
+		})
+	}
+
+	if len(candidates) == 0 {
+		u.UnknownRaw = json.RawMessage(data)
+		u.Type = CodeExecutionResultStepResultTypeUnknown
+		return nil
+	}
+
+	// Pick the best candidate using multi-stage filtering
+	best := utils.PickBestUnionCandidate(candidates, data)
+	if best == nil {
+		u.UnknownRaw = json.RawMessage(data)
+		u.Type = CodeExecutionResultStepResultTypeUnknown
+		return nil
+	}
+
+	// Set the union type and value based on the best candidate
+	u.Type = best.Type.(CodeExecutionResultStepResultType)
+	switch best.Type {
+	case CodeExecutionResultStepResultTypeArrayOfContent:
+		u.ArrayOfContent = best.Value.([]Content)
+		return nil
+	case CodeExecutionResultStepResultTypeStr:
+		u.Str = best.Value.(*string)
+		return nil
+	}
+
+	u.UnknownRaw = json.RawMessage(data)
+	u.Type = CodeExecutionResultStepResultTypeUnknown
+	return nil
+}
+
+func (u CodeExecutionResultStepResult) MarshalJSON() ([]byte, error) {
+	if u.ArrayOfContent != nil {
+		return utils.MarshalJSON(u.ArrayOfContent, "", true)
+	}
+
+	if u.Str != nil {
+		return utils.MarshalJSON(u.Str, "", true)
+	}
+
+	if u.UnknownRaw != nil {
+		return json.RawMessage(u.UnknownRaw), nil
+	}
+	return nil, errors.New("could not marshal union type CodeExecutionResultStepResult: all fields are null")
+}
 
 // CodeExecutionResultStep - Code execution result step.
 type CodeExecutionResultStep struct {
@@ -26,8 +148,8 @@ type CodeExecutionResultStep struct {
 	CallID string `json:"call_id"`
 	// Whether the code execution resulted in an error.
 	IsError *bool `json:"is_error,omitzero"`
-	// Required. The output of the code execution.
-	Result string `json:"result"`
+	// The output of the code execution.
+	Result CodeExecutionResultStepResult `json:"result"`
 	// A signature hash for backend validation.
 	Signature *string `json:"signature,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
@@ -59,9 +181,9 @@ func (c *CodeExecutionResultStep) GetIsError() *bool {
 	return c.IsError
 }
 
-func (c *CodeExecutionResultStep) GetResult() string {
+func (c *CodeExecutionResultStep) GetResult() CodeExecutionResultStepResult {
 	if c == nil {
-		return ""
+		return CodeExecutionResultStepResult{}
 	}
 	return c.Result
 }

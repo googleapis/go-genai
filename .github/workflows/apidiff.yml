@@ -94,6 +94,8 @@ jobs:
         sed -i '/ToolComputerUse: removed/d' ./diff.txt
         sed -i '/DistillationHyperParameters.LearningRateMultiplier: changed from float64 to float32/d' ./diff.txt
         sed -i '/AudioTranscriptionConfig.AdaptationPhrases: removed/d' ./diff.txt
+        sed -i '/CodeExecutionResultStep).GetResult: changed from func() string to func() CodeExecutionResultStepResult/d' ./diff.txt
+        sed -i '/CodeExecutionResultStep.Result: changed from string to CodeExecutionResultStepResult/d' ./diff.txt
         cat diff.txt && ! [ -s diff.txt ]
     # TODO(b/425394445): figure out how to solve permission issue.
     # - name: Add breaking change label

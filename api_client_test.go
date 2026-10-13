@@ -2274,3 +2274,122 @@ func TestDoRequestRetriesClientLevelOptions(t *testing.T) {
 		})
 	}
 }
+
+func TestDefaultClientTimeout(t *testing.T) {
+	ctx := context.Background()
+	client, err := NewClient(ctx, &ClientConfig{
+		APIKey:  "test-api-key",
+		Backend: BackendGeminiAPI,
+	})
+	if err != nil {
+		t.Fatalf("NewClient failed: %v", err)
+	}
+	if client.clientConfig.HTTPClient == nil {
+		t.Fatal("expected non-nil default HTTPClient")
+	}
+	if client.clientConfig.HTTPClient.Timeout != 0 {
+		t.Errorf("default HTTPClient.Timeout = %v, want 0 (no client-side timeout)", client.clientConfig.HTTPClient.Timeout)
+	}
+	if client.clientConfig.HTTPOptions.Timeout != nil {
+		t.Errorf("default HTTPOptions.Timeout = %v, want nil", client.clientConfig.HTTPOptions.Timeout)
+	}
+}
+
+func TestThirtyMinuteTimeout(t *testing.T) {
+	ctx := context.Background()
+	ac := &apiClient{
+		clientConfig: &ClientConfig{
+			APIKey:     "test-api-key",
+			Backend:    BackendGeminiAPI,
+			HTTPClient: &http.Client{},
+			HTTPOptions: HTTPOptions{
+				BaseURL:    "https://generativelanguage.googleapis.com",
+				APIVersion: "v1beta",
+				Timeout:    Ptr(30 * time.Minute),
+			},
+		},
+	}
+
+	req, patchedOpts, err := buildRequest(ctx, ac, "models/gemini-2.5-flash:generateContent", map[string]any{}, http.MethodPost, &HTTPOptions{})
+	if err != nil {
+		t.Fatalf("buildRequest failed: %v", err)
+	}
+	if got := req.Header.Get("X-Server-Timeout"); got != "1800" {
+		t.Errorf("X-Server-Timeout = %q, want %q", got, "1800")
+	}
+	if patchedOpts.Timeout == nil || *patchedOpts.Timeout != 30*time.Minute {
+		t.Errorf("patchedOpts.Timeout = %v, want 30m", patchedOpts.Timeout)
+	}
+}
+
+func TestDownloadFileTimeout(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("request timeout cancels slow download", func(t *testing.T) {
+		var gotServerTimeoutHeader string
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotServerTimeoutHeader = r.Header.Get("X-Server-Timeout")
+			time.Sleep(200 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("file-bytes"))
+		}))
+		defer ts.Close()
+
+		ac := &apiClient{
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: ts.Client(),
+				HTTPOptions: HTTPOptions{
+					BaseURL:    ts.URL,
+					APIVersion: "v1beta",
+				},
+			},
+		}
+
+		_, err := downloadFile(ctx, ac, "files/test-file:download", &HTTPOptions{
+			Timeout: Ptr(50 * time.Millisecond),
+		})
+		if err == nil || !strings.Contains(err.Error(), "context deadline exceeded") {
+			t.Errorf("downloadFile error = %v, want context deadline exceeded", err)
+		}
+		if gotServerTimeoutHeader != "1" {
+			t.Errorf("X-Server-Timeout = %q, want %q", gotServerTimeoutHeader, "1")
+		}
+	})
+
+	t.Run("client timeout applies to downloadFile", func(t *testing.T) {
+		var gotServerTimeoutHeader string
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotServerTimeoutHeader = r.Header.Get("X-Server-Timeout")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("file-bytes"))
+		}))
+		defer ts.Close()
+
+		ac := &apiClient{
+			clientConfig: &ClientConfig{
+				APIKey:     "test-api-key",
+				Backend:    BackendGeminiAPI,
+				HTTPClient: ts.Client(),
+				HTTPOptions: HTTPOptions{
+					BaseURL:    ts.URL,
+					APIVersion: "v1beta",
+					Timeout:    Ptr(30 * time.Minute),
+				},
+			},
+		}
+
+		data, err := downloadFile(ctx, ac, "files/test-file:download", &HTTPOptions{})
+		if err != nil {
+			t.Fatalf("downloadFile failed: %v", err)
+		}
+		if string(data) != "file-bytes" {
+			t.Errorf("downloadFile data = %q, want %q", string(data), "file-bytes")
+		}
+		if gotServerTimeoutHeader != "1800" {
+			t.Errorf("X-Server-Timeout = %q, want %q", gotServerTimeoutHeader, "1800")
+		}
+	})
+}
+

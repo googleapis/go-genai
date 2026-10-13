@@ -120,13 +120,19 @@ func sendRequest(ctx context.Context, ac *apiClient, path string, method string,
 }
 
 func downloadFile(ctx context.Context, ac *apiClient, path string, httpOptions *HTTPOptions) ([]byte, error) {
-	// The client and request timeout are not used for downloadFile.
-	// TODO(b/427540996): implement timeout.
 	req, patchedHTTPOptions, err := buildRequest(ctx, ac, path, nil, http.MethodGet, httpOptions)
 	if err != nil {
 		return nil, err
 	}
-	req = req.WithContext(ctx)
+
+	requestContext := ctx
+	timeout := patchedHTTPOptions.Timeout
+	var cancel context.CancelFunc
+	if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
+		requestContext, cancel = context.WithTimeout(ctx, *timeout)
+		defer cancel()
+	}
+	req = req.WithContext(requestContext)
 
 	resp, err := doRequest(ac, req, patchedHTTPOptions.RetryOptions)
 	if err != nil {
@@ -676,8 +682,14 @@ func (ac *apiClient) upload(ctx context.Context, r io.Reader, uploadURL string, 
 				}
 			}
 
-			// TODO(b/427540996): Support timeout.
-			req, err := http.NewRequestWithContext(ctx, http.MethodPost, finalUploadURL, bytes.NewReader(buffer[:bytesRead]))
+			requestContext := ctx
+			timeout := patchedHTTPOptions.Timeout
+			var cancel context.CancelFunc
+			if timeout != nil && *timeout > 0*time.Second && isTimeoutBeforeDeadline(ctx, *timeout) {
+				requestContext, cancel = context.WithTimeout(ctx, *timeout)
+				defer cancel()
+			}
+			req, err := http.NewRequestWithContext(requestContext, http.MethodPost, finalUploadURL, bytes.NewReader(buffer[:bytesRead]))
 			if err != nil {
 				return nil, fmt.Errorf("Failed to create upload request for chunk at offset %d: %w", offset, err)
 			}
@@ -687,7 +699,10 @@ func (ac *apiClient) upload(ctx context.Context, r io.Reader, uploadURL string, 
 			if ac.clientConfig.APIKey != "" {
 				req.Header.Set("x-goog-api-key", ac.clientConfig.APIKey)
 			}
-			// TODO(b/427540996): Add timeout logging.
+			timeoutSeconds := inferTimeout(ctx, ac, patchedHTTPOptions.Timeout).Seconds()
+			if timeoutSeconds > 0 {
+				req.Header.Set("x-server-timeout", strconv.FormatInt(int64(math.Ceil(timeoutSeconds)), 10))
+			}
 
 			req.Header.Set("X-Goog-Upload-Command", uploadCommand)
 			req.Header.Set("X-Goog-Upload-Offset", strconv.FormatInt(offset, 10))

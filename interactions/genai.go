@@ -181,7 +181,7 @@ func New(opts ...SDKOption) *GenAI {
 
 	// Use WithClient to override the default client if you would like to customize the timeout
 	if sdk.sdkConfiguration.Client == nil {
-		sdk.sdkConfiguration.Client = &http.Client{Timeout: 60 * time.Second}
+		sdk.sdkConfiguration.Client = &http.Client{}
 	}
 
 	sdk.sdkConfiguration = sdk.hooks.SDKInit(sdk.sdkConfiguration)

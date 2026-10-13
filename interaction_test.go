@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -1150,3 +1151,16 @@ func TestVoicesWorkflow(t *testing.T) {
 		t.Errorf("Expected Voice.ID 'Puck', got '%v'", getRes.Voice)
 	}
 }
+
+func TestInteractionsDefaultClientTimeout(t *testing.T) {
+	sdk := gaos.New()
+	clientVal := reflect.ValueOf(sdk).Elem().FieldByName("sdkConfiguration").FieldByName("Client")
+	if !clientVal.IsValid() || clientVal.IsNil() {
+		t.Fatal("expected non-nil default Client in interactions.GenAI")
+	}
+	timeoutVal := clientVal.Elem().Elem().FieldByName("Timeout")
+	if got := time.Duration(timeoutVal.Int()); got != 0 {
+		t.Errorf("interactions.New() default client Timeout = %v, want 0 (no timeout)", got)
+	}
+}
+

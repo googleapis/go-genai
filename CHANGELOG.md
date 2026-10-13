@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.74.0](https://github.com/googleapis/go-genai/compare/v1.73.0...v1.74.0) (2026-10-13)
+
+
+### Features
+
+* accumulate streaming continuation usage metadata and expose InitialPromptTokenCount ([67c96f3](https://github.com/googleapis/go-genai/commit/67c96f328b8bd89a25f85cfecad6b927307fe0dc))
+* Add `continuation_token` to the Interactions `interaction.status_update` event. ([397c14f](https://github.com/googleapis/go-genai/commit/397c14f0c3613f0d41a4da53548b57c3a5bbdf5f))
+* Add a CONTINUATION_REQUIRED Interaction status ([125cd3e](https://github.com/googleapis/go-genai/commit/125cd3efb20140dddcf6284ae06c237af696b742))
+* add billable token counts fields ([43c5132](https://github.com/googleapis/go-genai/commit/43c513202463ea63cdfe687daeee6cf7d2aa891a))
+* Add startOffset/endOffset to Transcription and interimTranscriptTimestampEnabled to RealtimeInputConfig ([3db3beb](https://github.com/googleapis/go-genai/commit/3db3beb49453f6944af5970c6983beb2defa14c0))
+* Add usage in InteractionStatusUpdate events ([ba9bb94](https://github.com/googleapis/go-genai/commit/ba9bb94e383a0c05ddf657441cb785749d974447))
+* **cli:** update Speakeasy generator to v2.948.0, bump CLI to v0.4.2, and apply CLI overlay fixes ([f660ee9](https://github.com/googleapis/go-genai/commit/f660ee9fc22393ab1192eb6ad7a2f9bda2f47322))
+* Support automatic continuation (long decoding) ([1f7179b](https://github.com/googleapis/go-genai/commit/1f7179b48142fffa8bc0fa6aa1a632633688b16a))
+
+
+### Bug Fixes
+
+* clear intermediate CONTINUATION FinishReason in streaming continuation ([2c08efa](https://github.com/googleapis/go-genai/commit/2c08efadeae762fa7b47151d685fcf131f56ace2))
+* **genai:** deduplicate Flash and Omni descriptions in ModelOption ([1957e9c](https://github.com/googleapis/go-genai/commit/1957e9c4684682ebd330d5a50ba73bd669eeffb7))
+* Raise default HTTP timeouts so long-running requests aren't killed client-side ([2e7f4aa](https://github.com/googleapis/go-genai/commit/2e7f4aac28828ce1979922365a9374dbc2c5a12b))
+* resume streaming generation from the latest checkpoint continuation token on mid-stream errors or cutoffs ([3e51164](https://github.com/googleapis/go-genai/commit/3e51164726dc40c482c6862c36ea64676bcb120e))
+* Update EnvironmentConfig.env schema to map keys to EnvVar or string. ([b84d964](https://github.com/googleapis/go-genai/commit/b84d9642bc7cfe357c66df891133068341db4f40))
+
 ## [1.73.0](https://github.com/googleapis/go-genai/compare/v1.72.0...v1.73.0) (2026-10-07)
 
 

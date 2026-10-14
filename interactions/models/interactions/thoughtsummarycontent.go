@@ -91,6 +91,10 @@ func (u *ThoughtSummaryContent) UnmarshalJSON(data []byte) (err error) {
 
 	dis := new(discriminator)
 	if err := json.Unmarshal(data, &dis); err != nil {
+		var syntaxErr *json.SyntaxError
+		if errors.As(err, &syntaxErr) {
+			return fmt.Errorf("could not unmarshal discriminator: %w", err)
+		}
 		u.UnknownRaw = json.RawMessage(data)
 		u.Type = ThoughtSummaryContentTypeUnknown
 		return nil

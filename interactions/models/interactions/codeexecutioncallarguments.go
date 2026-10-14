@@ -17,9 +17,6 @@
 package interactions
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
@@ -28,23 +25,22 @@ type Language string
 
 const (
 	LanguagePython Language = "python"
+	LanguageBash   Language = "bash"
 )
 
 func (e Language) ToPointer() *Language {
 	return &e
 }
-func (e *Language) UnmarshalJSON(data []byte) error {
-	var v string
-	if err := json.Unmarshal(data, &v); err != nil {
-		return err
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *Language) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "python", "bash":
+			return true
+		}
 	}
-	switch v {
-	case "python":
-		*e = Language(v)
-		return nil
-	default:
-		return fmt.Errorf("invalid value for Language: %v", v)
-	}
+	return false
 }
 
 // CodeExecutionCallArguments - The arguments to pass to the code execution.

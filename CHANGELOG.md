@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.75.0](https://github.com/googleapis/go-genai/compare/v1.74.0...v1.75.0) (2026-10-14)
+
+
+### Features
+
+* **interactions:** add gemini-4-argon to Model enum ([f8f7050](https://github.com/googleapis/go-genai/commit/f8f7050219c05206b0a7d0aab4b72e9e19c109a1))
+
+
+### Bug Fixes
+
+* clear continuation state and preserve prompt feedback when continuation hop returns no candidates ([f0c1430](https://github.com/googleapis/go-genai/commit/f0c1430ab13067edfbc1a56f0a8588b185c363bc))
+* fix the grounding metadata merging for automatic continuation in generate content and generate content stream ([19689a2](https://github.com/googleapis/go-genai/commit/19689a2f60df26f143a985fb1c6af52a619eb3df))
+* make continuation streams retry dropped hops, stop on prompt_feedback, and keep real errors in generate_content ([0828ad4](https://github.com/googleapis/go-genai/commit/0828ad45c7ac1dc27f0df9e55085ac4c2c39c748))
+
 ## [1.74.0](https://github.com/googleapis/go-genai/compare/v1.73.0...v1.74.0) (2026-10-13)
 
 

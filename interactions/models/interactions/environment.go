@@ -97,6 +97,9 @@ func (u *Env) UnmarshalJSON(data []byte) error {
 	}
 
 	if len(candidates) == 0 {
+		if !json.Valid(data) {
+			return fmt.Errorf("could not unmarshal `%s` into any supported union types for Env", string(data))
+		}
 		u.UnknownRaw = json.RawMessage(data)
 		u.Type = EnvTypeUnknown
 		return nil
@@ -121,6 +124,9 @@ func (u *Env) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	if !json.Valid(data) {
+		return fmt.Errorf("could not unmarshal `%s` into any supported union types for Env", string(data))
+	}
 	u.UnknownRaw = json.RawMessage(data)
 	u.Type = EnvTypeUnknown
 	return nil
@@ -238,6 +244,9 @@ func (u *Network) UnmarshalJSON(data []byte) error {
 	}
 
 	if len(candidates) == 0 {
+		if !json.Valid(data) {
+			return fmt.Errorf("could not unmarshal `%s` into any supported union types for Network", string(data))
+		}
 		u.UnknownRaw = json.RawMessage(data)
 		u.Type = NetworkTypeUnknown
 		return nil
@@ -262,6 +271,9 @@ func (u *Network) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	if !json.Valid(data) {
+		return fmt.Errorf("could not unmarshal `%s` into any supported union types for Network", string(data))
+	}
 	u.UnknownRaw = json.RawMessage(data)
 	u.Type = NetworkTypeUnknown
 	return nil

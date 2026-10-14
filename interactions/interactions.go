@@ -110,6 +110,7 @@ func (s *Interactions) Create(ctx context.Context, request operations.CreateInte
 		}()
 	}
 
+	ctx = utils.WithOperation(ctx, "CreateInteraction")
 	req, err := http.NewRequestWithContext(ctx, "POST", opURL, bodyReader)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
@@ -631,6 +632,7 @@ func (s *Interactions) Get(ctx context.Context, request operations.GetInteractio
 		}()
 	}
 
+	ctx = utils.WithOperation(ctx, "getInteractionById")
 	req, err := http.NewRequestWithContext(ctx, "GET", opURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
@@ -907,6 +909,7 @@ func (s *Interactions) Cancel(ctx context.Context, request operations.CancelInte
 		defer cancel()
 	}
 
+	ctx = utils.WithOperation(ctx, "cancelInteractionById")
 	req, err := http.NewRequestWithContext(ctx, "POST", opURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)

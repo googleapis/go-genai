@@ -19,6 +19,8 @@ package apierrors
 import (
 	"fmt"
 	"net/http"
+
+	"google.golang.org/genai/interactions/redact"
 )
 
 type APIError struct {
@@ -42,7 +44,11 @@ func NewAPIError(message string, statusCode int, body string, httpRes *http.Resp
 func (e *APIError) Error() string {
 	body := ""
 	if len(e.Body) > 0 {
-		body = fmt.Sprintf("\n%s", e.Body)
+		redacted := e.Body
+		if e.RawResponse != nil && e.RawResponse.Request != nil {
+			redacted = string(redact.ResponseBody(e.RawResponse.Request.Context(), e.RawResponse.Header.Get("Content-Type"), []byte(e.Body)))
+		}
+		body = fmt.Sprintf("\n%s", redacted)
 	}
 
 	return fmt.Sprintf("%s: Status %d%s", e.Message, e.StatusCode, body)

@@ -318,6 +318,7 @@ func (s *Credentials) Create(ctx context.Context, request operations.CreateCrede
 		defer cancel()
 	}
 
+	ctx = utils.WithOperation(ctx, "CreateCredential")
 	req, err := http.NewRequestWithContext(ctx, "POST", opURL, bodyReader)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
@@ -964,6 +965,7 @@ func (s *Credentials) Update(ctx context.Context, request operations.UpdateCrede
 		defer cancel()
 	}
 
+	ctx = utils.WithOperation(ctx, "UpdateCredential")
 	req, err := http.NewRequestWithContext(ctx, "PATCH", opURL, bodyReader)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)

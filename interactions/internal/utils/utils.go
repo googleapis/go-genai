@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"google.golang.org/genai/interactions/optionalnullable"
+	"google.golang.org/genai/interactions/redact"
 )
 
 const (
@@ -38,6 +39,12 @@ const (
 	headerParamTagKey = "header"
 	pathParamTagKey   = "pathParam"
 )
+
+// WithOperation marks requests built from ctx as belonging to operationID, so
+// that transports can mask the operation's sensitive values when logging.
+func WithOperation(ctx context.Context, operationID string) context.Context {
+	return redact.WithOperation(ctx, operationID)
+}
 
 var (
 	paramRegex                       = regexp.MustCompile(`({.*?})`)

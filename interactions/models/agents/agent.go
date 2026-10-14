@@ -84,6 +84,9 @@ func (u *AgentConfig) UnmarshalJSON(data []byte) error {
 	}
 
 	if len(candidates) == 0 {
+		if !json.Valid(data) {
+			return fmt.Errorf("could not unmarshal `%s` into any supported union types for AgentConfig", string(data))
+		}
 		u.UnknownRaw = json.RawMessage(data)
 		u.Type = AgentConfigTypeUnknown
 		return nil
@@ -105,6 +108,9 @@ func (u *AgentConfig) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	if !json.Valid(data) {
+		return fmt.Errorf("could not unmarshal `%s` into any supported union types for AgentConfig", string(data))
+	}
 	u.UnknownRaw = json.RawMessage(data)
 	u.Type = AgentConfigTypeUnknown
 	return nil
@@ -195,6 +201,9 @@ func (u *BaseEnvironment) UnmarshalJSON(data []byte) error {
 	}
 
 	if len(candidates) == 0 {
+		if !json.Valid(data) {
+			return fmt.Errorf("could not unmarshal `%s` into any supported union types for BaseEnvironment", string(data))
+		}
 		u.UnknownRaw = json.RawMessage(data)
 		u.Type = BaseEnvironmentTypeUnknown
 		return nil
@@ -219,6 +228,9 @@ func (u *BaseEnvironment) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	if !json.Valid(data) {
+		return fmt.Errorf("could not unmarshal `%s` into any supported union types for BaseEnvironment", string(data))
+	}
 	u.UnknownRaw = json.RawMessage(data)
 	u.Type = BaseEnvironmentTypeUnknown
 	return nil

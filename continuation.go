@@ -220,6 +220,11 @@ func mergeValuesReflect(prev, curr reflect.Value, fieldName string, isInsideUsag
 
 	// Pointers
 	if prev.Kind() == reflect.Pointer && curr.Kind() == reflect.Pointer {
+		if prevCand, ok := prev.Interface().(*Candidate); ok {
+			if currCand, ok := curr.Interface().(*Candidate); ok {
+				curr = reflect.ValueOf(shiftCandidateGroundingSupports(prevCand, currCand))
+			}
+		}
 		var initialPrompt int32
 		if prevUM, ok := prev.Interface().(*GenerateContentResponseUsageMetadata); ok {
 			if currUM, ok := curr.Interface().(*GenerateContentResponseUsageMetadata); ok {
@@ -313,7 +318,7 @@ func mergeValuesReflect(prev, curr reflect.Value, fieldName string, isInsideUsag
 			newSlice.Index(i).Set(deepCopyValue(prev.Index(i)))
 		}
 		for i := 0; i < curr.Len(); i++ {
-			newSlice.Index(prev.Len()+i).Set(deepCopyValue(curr.Index(i)))
+			newSlice.Index(prev.Len() + i).Set(deepCopyValue(curr.Index(i)))
 		}
 		return newSlice
 	}
@@ -452,6 +457,50 @@ func mergeSafetyRatings(prev, curr reflect.Value) reflect.Value {
 		resultSlice.Index(i).Set(byCategory[catKey])
 	}
 	return resultSlice
+}
+
+func shiftCandidateGroundingSupports(prevCand, currCand *Candidate) *Candidate {
+	if prevCand == nil || currCand == nil || currCand.GroundingMetadata == nil || len(currCand.GroundingMetadata.GroundingSupports) == 0 {
+		return currCand
+	}
+	var chunkOffset int32
+	if prevCand.GroundingMetadata != nil {
+		chunkOffset = int32(len(prevCand.GroundingMetadata.GroundingChunks))
+	}
+	var partOffset int32
+	if prevCand.Content != nil {
+		partOffset = int32(len(prevCand.Content.Parts))
+	}
+	if chunkOffset == 0 && partOffset == 0 {
+		return currCand
+	}
+
+	shiftedSupports := make([]*GroundingSupport, len(currCand.GroundingMetadata.GroundingSupports))
+	for i, s := range currCand.GroundingMetadata.GroundingSupports {
+		if s == nil {
+			continue
+		}
+		sCopy := *s
+		if chunkOffset > 0 && len(s.GroundingChunkIndices) > 0 {
+			shiftedIndices := make([]int32, len(s.GroundingChunkIndices))
+			for j, idx := range s.GroundingChunkIndices {
+				shiftedIndices[j] = idx + chunkOffset
+			}
+			sCopy.GroundingChunkIndices = shiftedIndices
+		}
+		if partOffset > 0 && s.Segment != nil {
+			segCopy := *s.Segment
+			segCopy.PartIndex += partOffset
+			sCopy.Segment = &segCopy
+		}
+		shiftedSupports[i] = &sCopy
+	}
+
+	gmCopy := *currCand.GroundingMetadata
+	gmCopy.GroundingSupports = shiftedSupports
+	candCopy := *currCand
+	candCopy.GroundingMetadata = &gmCopy
+	return &candCopy
 }
 
 func deepCopyValue(v reflect.Value) reflect.Value {

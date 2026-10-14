@@ -627,6 +627,474 @@ func TestMergeContinuationResponses_EmptyCandidatesHopClearsFinishReasonAndPrese
 	}
 }
 
+func TestMergeContinuationResponses_GroundingSupportsShiftChunkAndPartIndices(t *testing.T) {
+	hop1 := &GenerateContentResponse{
+		Candidates: []*Candidate{
+			{
+				Content: &Content{
+					Role:  RoleModel,
+					Parts: []*Part{{Text: "Thought...", Thought: true}, {Text: "Hello "}},
+				},
+				GroundingMetadata: &GroundingMetadata{
+					GroundingChunks: []*GroundingChunk{
+						{Image: &GroundingChunkImage{ImageURI: "https://image-foo.example", Title: "zero"}},
+						{Image: &GroundingChunkImage{ImageURI: "https://image-bar.example", Title: "three"}},
+					},
+					GroundingSupports: []*GroundingSupport{
+						{
+							GroundingChunkIndices: []int32{0, 1},
+							Segment:               &Segment{PartIndex: 1, StartIndex: 0, EndIndex: 5, Text: "Hello"},
+						},
+						{
+							GroundingChunkIndices: []int32{1},
+						},
+					},
+					ImageSearchQueries: []string{"image-query1"},
+				},
+				FinishReason:      FinishReasonContinuation,
+				ContinuationToken: []byte("tok-1"),
+			},
+		},
+	}
+
+	hop2 := &GenerateContentResponse{
+		Candidates: []*Candidate{
+			{
+				Content: &Content{
+					Role:  RoleModel,
+					Parts: []*Part{{Text: "world"}},
+				},
+				GroundingMetadata: &GroundingMetadata{
+					GroundingChunks: []*GroundingChunk{
+						{Web: &GroundingChunkWeb{URI: "https://foo.example", Title: "one"}},
+						{Web: &GroundingChunkWeb{URI: "https://bar.example", Title: "two"}},
+					},
+					GroundingSupports: []*GroundingSupport{
+						{
+							GroundingChunkIndices: []int32{0, 1},
+							Segment:               &Segment{PartIndex: 0, StartIndex: 0, EndIndex: 5, Text: "world"},
+						},
+						{
+							GroundingChunkIndices: []int32{1},
+						},
+					},
+					WebSearchQueries: []string{"web-query1"},
+				},
+				FinishReason: FinishReasonStop,
+			},
+		},
+	}
+
+	merged, err := mergeContinuationResponses([]*GenerateContentResponse{hop1, hop2})
+	if err != nil {
+		t.Fatalf("unexpected merge error: %v", err)
+	}
+
+	cand := merged.Candidates[0]
+	gm := cand.GroundingMetadata
+	if gm == nil {
+		t.Fatal("expected non-nil GroundingMetadata")
+	}
+	if len(gm.GroundingChunks) != 4 {
+		t.Fatalf("expected 4 GroundingChunks, got %d", len(gm.GroundingChunks))
+	}
+	if len(gm.GroundingSupports) != 4 {
+		t.Fatalf("expected 4 GroundingSupports, got %d", len(gm.GroundingSupports))
+	}
+
+	// Hop 1 supports remain at [0, 1] and [1], PartIndex 1
+	if got := gm.GroundingSupports[0].GroundingChunkIndices; len(got) != 2 || got[0] != 0 || got[1] != 1 {
+		t.Errorf("support[0].GroundingChunkIndices = %v, want [0 1]", got)
+	}
+	if got := gm.GroundingSupports[0].Segment.PartIndex; got != 1 {
+		t.Errorf("support[0].Segment.PartIndex = %d, want 1", got)
+	}
+	if got := gm.GroundingSupports[1].GroundingChunkIndices; len(got) != 1 || got[0] != 1 {
+		t.Errorf("support[1].GroundingChunkIndices = %v, want [1]", got)
+	}
+
+	// Hop 2 supports are shifted by +2 for chunks ([2, 3] and [3]) and +2 for parts (PartIndex 2)
+	if got := gm.GroundingSupports[2].GroundingChunkIndices; len(got) != 2 || got[0] != 2 || got[1] != 3 {
+		t.Errorf("support[2].GroundingChunkIndices = %v, want [2 3]", got)
+	}
+	if got := gm.GroundingSupports[2].Segment.PartIndex; got != 2 {
+		t.Errorf("support[2].Segment.PartIndex = %d, want 2", got)
+	}
+	if got := cand.Content.Parts[gm.GroundingSupports[2].Segment.PartIndex].Text; got != "world" {
+		t.Errorf("support[2] part text = %q, want %q", got, "world")
+	}
+	if got := gm.GroundingSupports[3].GroundingChunkIndices; len(got) != 1 || got[0] != 3 {
+		t.Errorf("support[3].GroundingChunkIndices = %v, want [3]", got)
+	}
+	if got := gm.GroundingChunks[gm.GroundingSupports[3].GroundingChunkIndices[0]].Web.URI; got != "https://bar.example" {
+		t.Errorf("support[3] resolves to %q, want %q", got, "https://bar.example")
+	}
+
+	// Verify hop2's original struct was not mutated
+	if got := hop2.Candidates[0].GroundingMetadata.GroundingSupports[0].GroundingChunkIndices[0]; got != 0 {
+		t.Errorf("hop2 original GroundingChunkIndices[0] was mutated to %d, want 0", got)
+	}
+	if got := hop2.Candidates[0].GroundingMetadata.GroundingSupports[0].Segment.PartIndex; got != 0 {
+		t.Errorf("hop2 original Segment.PartIndex was mutated to %d, want 0", got)
+	}
+}
+
+func TestMergeContinuationResponses_GroundingSupportsCornerCases(t *testing.T) {
+	// Corner cases:
+	// 1. 3-hop cumulative shifting
+	// 2. Hop 1 has Content.Parts (2 parts) and nil GroundingMetadata; Hop 2 has 1 part, 2 GroundingChunks, and no GroundingSupports; Hop 3 has 1 part, 1 GroundingChunk, and supports with:
+	//    - nil Segment (only GroundingChunkIndices shifted by 0+2 = 2)
+	//    - empty GroundingChunkIndices (only Segment.PartIndex shifted by 2+1 = 3)
+	//    - both GroundingChunkIndices and Segment.PartIndex shifted
+	// 3. Multiple candidates (Candidates[0] and Candidates[1]) shifting independently by their own part and chunk counts.
+	hop1 := &GenerateContentResponse{
+		Candidates: []*Candidate{
+			{
+				Index: 0,
+				Content: &Content{
+					Role:  "model",
+					Parts: []*Part{{Text: "c0-h1-p0 "}, {Text: "c0-h1-p1 "}},
+				},
+				GroundingMetadata: nil,
+				FinishReason:      FinishReasonContinuation,
+				ContinuationToken: []byte("t1"),
+			},
+			{
+				Index: 1,
+				Content: &Content{
+					Role:  "model",
+					Parts: []*Part{{Text: "c1-h1-p0 "}},
+				},
+				GroundingMetadata: &GroundingMetadata{
+					GroundingChunks: []*GroundingChunk{
+						{Web: &GroundingChunkWeb{URI: "https://c1-s0.example"}},
+					},
+				},
+				FinishReason:      FinishReasonContinuation,
+				ContinuationToken: []byte("t1-c1"),
+			},
+		},
+	}
+
+	hop2 := &GenerateContentResponse{
+		Candidates: []*Candidate{
+			{
+				Index: 0,
+				Content: &Content{
+					Role:  "model",
+					Parts: []*Part{{Text: "c0-h2-p0 "}},
+				},
+				GroundingMetadata: &GroundingMetadata{
+					GroundingChunks: []*GroundingChunk{
+						{Web: &GroundingChunkWeb{URI: "https://c0-s0.example"}},
+						{Web: &GroundingChunkWeb{URI: "https://c0-s1.example"}},
+					},
+					GroundingSupports: nil,
+				},
+				FinishReason:      FinishReasonContinuation,
+				ContinuationToken: []byte("t2"),
+			},
+			{
+				Index: 1,
+				Content: &Content{
+					Role:  "model",
+					Parts: []*Part{{Text: "c1-h2-p0 "}},
+				},
+				GroundingMetadata: &GroundingMetadata{
+					GroundingChunks: []*GroundingChunk{
+						{Web: &GroundingChunkWeb{URI: "https://c1-s1.example"}},
+					},
+					GroundingSupports: []*GroundingSupport{
+						{
+							GroundingChunkIndices: []int32{0},
+							Segment:               &Segment{PartIndex: 0, Text: "c1-h2-p0 "},
+						},
+					},
+				},
+				FinishReason: FinishReasonStop,
+			},
+		},
+	}
+
+	hop3 := &GenerateContentResponse{
+		Candidates: []*Candidate{
+			{
+				Index: 0,
+				Content: &Content{
+					Role:  "model",
+					Parts: []*Part{{Text: "c0-h3-p0."}},
+				},
+				GroundingMetadata: &GroundingMetadata{
+					GroundingChunks: []*GroundingChunk{
+						{Web: &GroundingChunkWeb{URI: "https://c0-s2.example"}},
+					},
+					GroundingSupports: []*GroundingSupport{
+						{
+							// nil Segment: only GroundingChunkIndices shifted by +2 (from hop2)
+							GroundingChunkIndices: []int32{0},
+							Segment:               nil,
+						},
+						{
+							// empty GroundingChunkIndices: only Segment.PartIndex shifted by +3 (2 from hop1 + 1 from hop2)
+							GroundingChunkIndices: nil,
+							Segment:               &Segment{PartIndex: 0, Text: "c0-h3-p0."},
+						},
+						{
+							// Both shifted: chunk index 0 -> 2, partIndex 0 -> 3
+							GroundingChunkIndices: []int32{0},
+							Segment:               &Segment{PartIndex: 0, Text: "c0-h3-p0."},
+						},
+					},
+				},
+				FinishReason: FinishReasonStop,
+			},
+		},
+	}
+
+	merged, err := mergeContinuationResponses([]*GenerateContentResponse{hop1, hop2, hop3})
+	if err != nil {
+		t.Fatalf("mergeContinuationResponses failed: %v", err)
+	}
+
+	// Candidate 0 checks (3 hops: 2 + 1 + 1 = 4 parts; 0 + 2 + 1 = 3 chunks)
+	cand0 := merged.Candidates[0]
+	if got := len(cand0.Content.Parts); got != 4 {
+		t.Fatalf("len(cand0.Content.Parts) = %d, want 4", got)
+	}
+	gm0 := cand0.GroundingMetadata
+	if got := len(gm0.GroundingChunks); got != 3 {
+		t.Fatalf("len(gm0.GroundingChunks) = %d, want 3", got)
+	}
+	if got := len(gm0.GroundingSupports); got != 3 {
+		t.Fatalf("len(gm0.GroundingSupports) = %d, want 3", got)
+	}
+	// Support 0: nil Segment, chunk index 0 -> 2
+	if gm0.GroundingSupports[0].Segment != nil {
+		t.Errorf("gm0.GroundingSupports[0].Segment = %v, want nil", gm0.GroundingSupports[0].Segment)
+	}
+	if got := gm0.GroundingSupports[0].GroundingChunkIndices; len(got) != 1 || got[0] != 2 {
+		t.Errorf("gm0.GroundingSupports[0].GroundingChunkIndices = %v, want [2]", got)
+	}
+	// Support 1: empty GroundingChunkIndices, partIndex 0 -> 3
+	if len(gm0.GroundingSupports[1].GroundingChunkIndices) != 0 {
+		t.Errorf("gm0.GroundingSupports[1].GroundingChunkIndices = %v, want empty", gm0.GroundingSupports[1].GroundingChunkIndices)
+	}
+	if got := gm0.GroundingSupports[1].Segment.PartIndex; got != 3 {
+		t.Errorf("gm0.GroundingSupports[1].Segment.PartIndex = %d, want 3", got)
+	}
+	// Support 2: chunk index 2 -> https://c0-s2.example, partIndex 3 -> "c0-h3-p0."
+	s2 := gm0.GroundingSupports[2]
+	if gotURI := gm0.GroundingChunks[s2.GroundingChunkIndices[0]].Web.URI; gotURI != "https://c0-s2.example" {
+		t.Errorf("cand0 support 2 URI = %q, want https://c0-s2.example", gotURI)
+	}
+	if gotPart := cand0.Content.Parts[s2.Segment.PartIndex].Text; gotPart != "c0-h3-p0." {
+		t.Errorf("cand0 support 2 part = %q, want c0-h3-p0.", gotPart)
+	}
+
+	// Candidate 1 checks (shifted independently: 1 + 1 = 2 parts; 1 + 1 = 2 chunks)
+	cand1 := merged.Candidates[1]
+	gm1 := cand1.GroundingMetadata
+	if got := gm1.GroundingSupports[0].GroundingChunkIndices; len(got) != 1 || got[0] != 1 {
+		t.Errorf("cand1 GroundingChunkIndices = %v, want [1]", got)
+	}
+	if got := gm1.GroundingSupports[0].Segment.PartIndex; got != 1 {
+		t.Errorf("cand1 Segment.PartIndex = %d, want 1", got)
+	}
+	if gotURI := gm1.GroundingChunks[gm1.GroundingSupports[0].GroundingChunkIndices[0]].Web.URI; gotURI != "https://c1-s1.example" {
+		t.Errorf("cand1 support URI = %q, want https://c1-s1.example", gotURI)
+	}
+	if gotPart := cand1.Content.Parts[gm1.GroundingSupports[0].Segment.PartIndex].Text; gotPart != "c1-h2-p0 " {
+		t.Errorf("cand1 support part = %q, want c1-h2-p0 ", gotPart)
+	}
+}
+
+func TestModelsGenerateContent_MergedGroundingSupportsResolveToCorrectChunkAndPart(t *testing.T) {
+	ctx := context.Background()
+	var n atomic.Int64
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.Copy(io.Discard, r.Body)
+		i := n.Add(1)
+		cand := map[string]any{
+			"content": map[string]any{
+				"role":  "model",
+				"parts": []any{map[string]any{"text": fmt.Sprintf("part %d ", i)}},
+			},
+			"groundingMetadata": map[string]any{
+				"groundingChunks": []any{
+					map[string]any{"web": map[string]any{"uri": fmt.Sprintf("https://source%d.example", i)}},
+				},
+				"groundingSupports": []any{
+					map[string]any{
+						"groundingChunkIndices": []any{0},
+						"segment":               map[string]any{"partIndex": 0},
+					},
+				},
+			},
+		}
+		if i == 1 {
+			cand["finishReason"], cand["continuationToken"] = "CONTINUATION", "dDE="
+		} else {
+			cand["finishReason"] = "STOP"
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"candidates": []any{cand}})
+	}))
+	defer ts.Close()
+
+	c, err := NewClient(ctx, &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		envVarProvider: func() map[string]string {
+			return map[string]string{"GOOGLE_API_KEY": "test-key"}
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	resp, err := c.Models.GenerateContent(ctx, "gemini-2.5-flash", Text("hi"), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cand := resp.Candidates[0]
+	gm := cand.GroundingMetadata
+	s := gm.GroundingSupports[len(gm.GroundingSupports)-1]
+	gotURI := gm.GroundingChunks[s.GroundingChunkIndices[0]].Web.URI
+	if gotURI != "https://source2.example" {
+		t.Errorf("support from the second response cites %s, want https://source2.example", gotURI)
+	}
+	gotPart := cand.Content.Parts[s.Segment.PartIndex].Text
+	if gotPart != "part 2 " {
+		t.Errorf("support from the second response points to part %q (index %d), want %q", gotPart, s.Segment.PartIndex, "part 2 ")
+	}
+}
+
+func TestModelsGenerateContentStream_GroundingMetadataAcrossHopsAndMerged(t *testing.T) {
+	ctx := context.Background()
+	var n atomic.Int64
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.Copy(io.Discard, r.Body)
+		i := n.Add(1)
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+
+		// Chunk 1 of hop i: text part without groundingMetadata
+		chunk1 := map[string]any{
+			"candidates": []any{
+				map[string]any{
+					"content": map[string]any{
+						"role":  "model",
+						"parts": []any{map[string]any{"text": fmt.Sprintf("hop %d intro, ", i)}},
+					},
+				},
+			},
+		}
+		// Chunk 2 (final chunk of hop i): text part + hop's GroundingMetadata
+		cand2 := map[string]any{
+			"content": map[string]any{
+				"role":  "model",
+				"parts": []any{map[string]any{"text": fmt.Sprintf("hop %d grounded. ", i)}},
+			},
+			"groundingMetadata": map[string]any{
+				"groundingChunks": []any{
+					map[string]any{"web": map[string]any{"uri": fmt.Sprintf("https://source%d.example", i)}},
+				},
+				"groundingSupports": []any{
+					map[string]any{
+						"groundingChunkIndices": []any{0},
+						"segment":               map[string]any{"partIndex": 0, "text": fmt.Sprintf("hop %d grounded. ", i)},
+					},
+				},
+			},
+		}
+		if i == 1 {
+			cand2["finishReason"] = "CONTINUATION"
+			cand2["continuationToken"] = "dDE="
+		} else {
+			cand2["finishReason"] = "STOP"
+		}
+		chunk2 := map[string]any{"candidates": []any{cand2}}
+
+		b1, _ := json.Marshal(chunk1)
+		b2, _ := json.Marshal(chunk2)
+		fmt.Fprintf(w, "data: %s\n\n", b1)
+		fmt.Fprintf(w, "data: %s\n\n", b2)
+	}))
+	defer ts.Close()
+
+	c, err := NewClient(ctx, &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		envVarProvider: func() map[string]string {
+			return map[string]string{"GOOGLE_API_KEY": "test-key"}
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	var chunks []*GenerateContentResponse
+	for chunk, err := range c.Models.GenerateContentStream(ctx, "gemini-2.5-flash", Text("hi"), nil) {
+		if err != nil {
+			t.Fatalf("unexpected stream error: %v", err)
+		}
+		chunks = append(chunks, chunk)
+	}
+
+	if len(chunks) != 4 {
+		t.Fatalf("len(chunks) = %d, want 4", len(chunks))
+	}
+	// Verify each yielded terminal hop chunk (chunks[1] and chunks[3]) preserves its per-chunk GroundingMetadata
+	for idx, hopNum := range []int{1, 2} {
+		chunk := chunks[idx*2+1]
+		gm := chunk.Candidates[0].GroundingMetadata
+		if gm == nil || len(gm.GroundingSupports) != 1 {
+			t.Fatalf("chunk %d missing GroundingSupports: %+v", idx*2+1, gm)
+		}
+		s := gm.GroundingSupports[0]
+		wantURI := fmt.Sprintf("https://source%d.example", hopNum)
+		if gotURI := gm.GroundingChunks[s.GroundingChunkIndices[0]].Web.URI; gotURI != wantURI {
+			t.Errorf("stream chunk %d support cites %q, want %q", idx*2+1, gotURI, wantURI)
+		}
+		wantPart := fmt.Sprintf("hop %d grounded. ", hopNum)
+		if gotPart := chunk.Candidates[0].Content.Parts[s.Segment.PartIndex].Text; gotPart != wantPart {
+			t.Errorf("stream chunk %d support points to part %q, want %q", idx*2+1, gotPart, wantPart)
+		}
+	}
+	// Intermediate CONTINUATION finishReason is cleared on chunks[1], and STOP is preserved on chunks[3]
+	if chunks[1].Candidates[0].FinishReason != "" {
+		t.Errorf("chunks[1] FinishReason = %q, want empty", chunks[1].Candidates[0].FinishReason)
+	}
+	if chunks[3].Candidates[0].FinishReason != FinishReasonStop {
+		t.Errorf("chunks[3] FinishReason = %q, want STOP", chunks[3].Candidates[0].FinishReason)
+	}
+
+	// Verify merging the streamed chunks shifts GroundingSupports across all 4 chunks (parts at indices 1 and 3, chunks at indices 0 and 1)
+	merged, err := mergeContinuationResponses(chunks)
+	if err != nil {
+		t.Fatalf("mergeContinuationResponses failed: %v", err)
+	}
+	cand := merged.Candidates[0]
+	gm := cand.GroundingMetadata
+	if len(gm.GroundingSupports) != 2 {
+		t.Fatalf("len(merged GroundingSupports) = %d, want 2", len(gm.GroundingSupports))
+	}
+	// First grounded chunk was chunks[1] (preceded by chunks[0] which had 1 part and 0 groundingChunks)
+	s0 := gm.GroundingSupports[0]
+	if gotURI := gm.GroundingChunks[s0.GroundingChunkIndices[0]].Web.URI; gotURI != "https://source1.example" {
+		t.Errorf("merged support 0 cites %q, want https://source1.example", gotURI)
+	}
+	if gotPart := cand.Content.Parts[s0.Segment.PartIndex].Text; gotPart != "hop 1 grounded. " {
+		t.Errorf("merged support 0 points to part %q (index %d), want %q", gotPart, s0.Segment.PartIndex, "hop 1 grounded. ")
+	}
+	// Second grounded chunk was chunks[3] (preceded by 3 parts and 1 groundingChunk)
+	s1 := gm.GroundingSupports[1]
+	if gotURI := gm.GroundingChunks[s1.GroundingChunkIndices[0]].Web.URI; gotURI != "https://source2.example" {
+		t.Errorf("merged support 1 cites %q, want https://source2.example", gotURI)
+	}
+	if gotPart := cand.Content.Parts[s1.Segment.PartIndex].Text; gotPart != "hop 2 grounded. " {
+		t.Errorf("merged support 1 points to part %q (index %d), want %q", gotPart, s1.Segment.PartIndex, "hop 2 grounded. ")
+	}
+}
+
 func TestModelsGenerateContent_AutomaticContinuationLoop(t *testing.T) {
 	ctx := context.Background()
 
@@ -1740,4 +2208,3 @@ func TestGenerateContentStream_StaleCheckpointTokenDiscardedOnStop(t *testing.T)
 		t.Errorf("requestCount = %d, want 1", requestCount)
 	}
 }
-

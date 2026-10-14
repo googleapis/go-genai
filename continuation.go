@@ -15,6 +15,9 @@
 package genai
 
 import (
+	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -61,16 +64,25 @@ func isResumableFinishReason(finishReason FinishReason) bool {
 	return finishReason == "" || finishReason == FinishReasonUnspecified || finishReason == FinishReasonContinuation
 }
 
-func canResumeStream(enableContinuation bool, continuationToken []byte, finishReason FinishReason) bool {
+func canResumeStream(enableContinuation bool, continuationToken []byte, finishReason FinishReason, hasPromptFeedback bool) bool {
+	if hasPromptFeedback {
+		return false
+	}
 	return enableContinuation && len(continuationToken) > 0 && isResumableFinishReason(finishReason)
 }
+
+// Maximum number of consecutive streaming reconnects that do not receive a new
+// checkpoint continuation token before the latest error since the stream last
+// made progress is surfaced to the caller (or, if there was none, the stream
+// ends normally).
+const maxStreamReconnectsWithoutProgress = 3
 
 func clearIntermediateFinishReason(chunk *GenerateContentResponse, enableContinuation bool, continuationToken []byte) *GenerateContentResponse {
 	if chunk == nil || len(chunk.Candidates) == 0 || chunk.Candidates[0] == nil {
 		return chunk
 	}
 	cand := chunk.Candidates[0]
-	if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && canResumeStream(enableContinuation, continuationToken, cand.FinishReason) {
+	if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && canResumeStream(enableContinuation, continuationToken, cand.FinishReason, chunk.PromptFeedback != nil) {
 		candCopy := *cand
 		candCopy.FinishReason = ""
 		candidatesCopy := make([]*Candidate, len(chunk.Candidates))
@@ -81,6 +93,236 @@ func clearIntermediateFinishReason(chunk *GenerateContentResponse, enableContinu
 		return &chunkCopy
 	}
 	return chunk
+}
+
+// streamContinuation owns the state of one automatically continued
+// GenerateContentStream run, which is made of one or more streaming requests
+// ("hops").
+//
+// Loop state lives for the whole run: whether continuation is enabled, the
+// usage metadata accumulated across finished hops, the token to resume the
+// next hop with, the number of consecutive reconnects without progress, and
+// the latest error since the run last made progress.
+//
+// Usage metadata: within a hop, each chunk's usage metadata is the server's
+// running total for that hop, so the latest one is the hop's usage (chunks are
+// not summed). Across hops, the hops' usage is summed, since each hop is a
+// separate request. Each yielded chunk that has usage metadata carries the
+// usage of all previous hops plus its own.
+//
+// endHop decides whether to resume. An [APIError] raised before a hop received
+// any chunk (a rejected request) is surfaced at once and left to the HTTP
+// retry options; transport drops and clean empty closes are retried. When the
+// run gives up, the latest error since it last made progress is surfaced, so
+// a drop followed by clean empty closes is not lost.
+//
+// Per-hop state (the hop field) records what the current hop resumed from and
+// what it has observed. It is replaced wholesale by startHop, so nothing leaks
+// from one hop into the next.
+//
+// Usage:
+//
+//	state := newStreamContinuation(config, enableContinuation)
+//	for {
+//		callConfig := state.startHop()
+//		var hopErr error
+//		for chunk, err := range stream(callConfig) {
+//			if err != nil {
+//				hopErr = err
+//				break
+//			}
+//			yield(state.observe(chunk), nil)
+//		}
+//		if resume, err := state.endHop(ctx, hopErr); !resume {
+//			// yield err if non-nil, then stop.
+//		}
+//	}
+type streamContinuation struct {
+	config             *GenerateContentConfig
+	enableContinuation bool
+
+	// accumulatedUsageAcrossHops is the usage metadata of all finished hops,
+	// summed. Each hop is a separate request whose usage the server reports
+	// independently, so hop totals are added (unlike chunks within a hop; see
+	// streamHop.usage).
+	accumulatedUsageAcrossHops *GenerateContentResponseUsageMetadata
+	// resumeToken is the token the next hop resumes from (nil before the first hop).
+	resumeToken               []byte
+	reconnectsWithoutProgress int
+	// lastError is the latest hop error since the run last made progress (a
+	// hop yielded content or observed a new checkpoint token).
+	lastError error
+
+	// hop is the state of the current hop.
+	hop streamHop
+}
+
+// streamHop is the per-hop part of a streamContinuation.
+type streamHop struct {
+	// startToken is the continuation token this hop resumed from (nil for the first hop).
+	startToken []byte
+	// token is the latest checkpoint continuation token observed in this hop.
+	token []byte
+	// receivedAnyChunk reports whether this hop received any chunk.
+	receivedAnyChunk  bool
+	finishReason      FinishReason
+	hasPromptFeedback bool
+	hasYieldedContent bool
+	// usage is the usage for the whole run so far: the usage of all previous
+	// hops plus this hop's latest usage metadata. Within a hop, each chunk's
+	// usage metadata is the server's running total for the hop, so it replaces
+	// the previous value (it is not summed); a chunk without usage metadata
+	// leaves it unchanged.
+	usage *GenerateContentResponseUsageMetadata
+}
+
+// newStreamContinuation returns the state for a new streaming run with config.
+func newStreamContinuation(config *GenerateContentConfig, enableContinuation bool) *streamContinuation {
+	return &streamContinuation{config: config, enableContinuation: enableContinuation}
+}
+
+// startHop starts a new hop and returns the config to send its request with:
+// the original config for the first hop, or a copy carrying the resume token.
+func (s *streamContinuation) startHop() *GenerateContentConfig {
+	s.hop = streamHop{startToken: s.resumeToken}
+	if s.hop.startToken == nil {
+		return s.config
+	}
+	return prepareContinuationConfig(s.config, s.hop.startToken)
+}
+
+// observe records the prompt feedback, content, finish reason and continuation
+// token of one chunk, and returns the chunk to yield: with an intermediate
+// finish reason cleared and its usage metadata (if any) set to this hop's
+// latest usage plus the usage of all previous hops.
+func (s *streamContinuation) observe(chunk *GenerateContentResponse) *GenerateContentResponse {
+	if chunk == nil {
+		return chunk
+	}
+	h := &s.hop
+	h.receivedAnyChunk = true
+	if chunk.PromptFeedback != nil {
+		h.hasPromptFeedback = true
+	}
+	if len(chunk.Candidates) > 0 {
+		cand := chunk.Candidates[0]
+		if cand != nil && cand.Content != nil && len(cand.Content.Parts) > 0 {
+			h.hasYieldedContent = true
+		}
+		if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified {
+			h.finishReason = cand.FinishReason
+		}
+		if len(cand.ContinuationToken) > 0 {
+			h.token = cand.ContinuationToken
+		} else if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && !isResumableFinishReason(cand.FinishReason) {
+			h.token = nil
+		}
+		chunk = clearIntermediateFinishReason(chunk, s.enableContinuation, h.token)
+	}
+	if chunk.UsageMetadata != nil {
+		if s.accumulatedUsageAcrossHops != nil {
+			mergedUsage := mergeUsageMetadata(s.accumulatedUsageAcrossHops, chunk.UsageMetadata)
+			chunkCopy := *chunk
+			chunkCopy.UsageMetadata = mergedUsage
+			chunk = &chunkCopy
+			h.usage = mergedUsage
+		} else {
+			h.usage = chunk.UsageMetadata
+		}
+	}
+	return chunk
+}
+
+// endHop finishes the current hop, which ended with hopErr (nil if the stream
+// ended without an error). It reports whether the run should resume with
+// another hop. If not, it returns the error to surface to the caller, or nil if
+// the stream should end normally.
+//
+// Two rules decide which errors are retried and which error is surfaced:
+//
+//   - Rejected requests are left to the HTTP retry layer. An [APIError] (from an
+//     HTTP error status or an error event in the stream) that ends the hop
+//     before it received any chunk is returned immediately, without a
+//     continuation retry: retrying requests that the API rejected is the job
+//     of [HTTPOptions.RetryOptions], which backs off and can be turned off.
+//     Transport errors (connection resets, unexpected EOF, malformed chunks)
+//     and clean empty closes are still retried from the hop's start token,
+//     bounded by maxStreamReconnectsWithoutProgress. Errors after the hop
+//     received a chunk are handled like any other failed hop.
+//   - Real errors are not lost across retries. The latest error since the run
+//     last made progress is remembered, and returned when the run gives up
+//     without an error of its own (e.g. a drop followed by clean empty closes
+//     until the retry budget runs out). It is never returned when the API ended
+//     the hop with a finish reason or prompt feedback.
+//
+// A failed hop is not resumed once ctx is done; its error is returned as is.
+func (s *streamContinuation) endHop(ctx context.Context, hopErr error) (bool, error) {
+	if s.hop.usage != nil {
+		s.accumulatedUsageAcrossHops = s.hop.usage
+	}
+	if hopErr != nil && ctx.Err() != nil {
+		return false, hopErr
+	}
+	if hopErr != nil && !s.hop.receivedAnyChunk && isAPIError(hopErr) {
+		// The request was rejected; leave it to the HTTP retry options.
+		return false, hopErr
+	}
+
+	h := &s.hop
+	madeProgress := h.hasYieldedContent || (len(h.token) > 0 && !bytes.Equal(h.token, h.startToken))
+	if hopErr != nil {
+		s.lastError = hopErr
+	} else if madeProgress {
+		s.lastError = nil
+	}
+
+	s.resumeToken, s.reconnectsWithoutProgress = s.nextResumeToken()
+	if canResumeStream(s.enableContinuation, s.resumeToken, h.finishReason, h.hasPromptFeedback) {
+		return true, nil
+	}
+	if hopErr != nil {
+		return false, hopErr
+	}
+	gaveUp := (h.finishReason == "" || h.finishReason == FinishReasonUnspecified) && !h.hasPromptFeedback
+	if gaveUp && s.lastError != nil {
+		return false, s.lastError
+	}
+	return false, nil
+}
+
+// isAPIError reports whether err is (or wraps) an [APIError], i.e. an error
+// response from the API rather than a transport or decoding failure.
+func isAPIError(err error) bool {
+	var apiErr APIError
+	if errors.As(err, &apiErr) {
+		return true
+	}
+	var apiErrPtr *APIError
+	return errors.As(err, &apiErrPtr)
+}
+
+// nextResumeToken returns the token to resume the stream with after the
+// current hop (nil if it should not be resumed) and the updated count of
+// reconnects without progress.
+func (s *streamContinuation) nextResumeToken() ([]byte, int) {
+	h := &s.hop
+	reconnects := s.reconnectsWithoutProgress
+	if h.hasPromptFeedback {
+		return nil, 0
+	}
+	if h.finishReason != "" && h.finishReason != FinishReasonUnspecified {
+		if h.finishReason == FinishReasonContinuation && len(h.token) > 0 && !bytes.Equal(h.token, h.startToken) {
+			return h.token, 0
+		}
+		return nil, reconnects
+	}
+	if len(h.token) > 0 && !bytes.Equal(h.token, h.startToken) {
+		return h.token, 0
+	}
+	if h.hasYieldedContent || reconnects >= maxStreamReconnectsWithoutProgress {
+		return nil, reconnects
+	}
+	return h.startToken, reconnects + 1
 }
 
 func shouldContinueGeneration(response *GenerateContentResponse) []byte {
@@ -108,6 +350,64 @@ func prepareContinuationConfig(config *GenerateContentConfig, continuationToken 
 	return &cloned
 }
 
+func clearStaleContinuationOnCandidate(cand *Candidate) *Candidate {
+	if cand == nil || (len(cand.ContinuationToken) == 0 && cand.FinishReason != FinishReasonContinuation) {
+		return cand
+	}
+	cp := *cand
+	cp.ContinuationToken = nil
+	if cp.FinishReason == FinishReasonContinuation {
+		cp.FinishReason = ""
+		cp.FinishMessage = ""
+	}
+	return &cp
+}
+
+func mergeCandidates(prevCandidates, currCandidates []*Candidate) []*Candidate {
+	if len(currCandidates) == 0 {
+		if prevCandidates == nil {
+			return nil
+		}
+		out := make([]*Candidate, len(prevCandidates))
+		for i, prevCand := range prevCandidates {
+			var copied *Candidate
+			if prevCand != nil {
+				copied = deepCopyValue(reflect.ValueOf(prevCand)).Interface().(*Candidate)
+			}
+			out[i] = clearStaleContinuationOnCandidate(copied)
+		}
+		return out
+	}
+
+	maxLen := len(prevCandidates)
+	if len(currCandidates) > maxLen {
+		maxLen = len(currCandidates)
+	}
+	out := make([]*Candidate, maxLen)
+	for i := 0; i < maxLen; i++ {
+		var prevCand, currCand *Candidate
+		if i < len(prevCandidates) {
+			prevCand = prevCandidates[i]
+		}
+		if i < len(currCandidates) {
+			currCand = currCandidates[i]
+		}
+		if currCand == nil {
+			var copied *Candidate
+			if prevCand != nil {
+				copied = deepCopyValue(reflect.ValueOf(prevCand)).Interface().(*Candidate)
+			}
+			out[i] = clearStaleContinuationOnCandidate(copied)
+			continue
+		}
+		mergedElem := mergeValuesReflect(reflect.ValueOf(prevCand), reflect.ValueOf(currCand), "candidate", false)
+		if mergedElem.IsValid() && !mergedElem.IsNil() {
+			out[i] = mergedElem.Interface().(*Candidate)
+		}
+	}
+	return out
+}
+
 func mergeContinuationResponses(responses []*GenerateContentResponse) (*GenerateContentResponse, error) {
 	if len(responses) == 0 {
 		return &GenerateContentResponse{}, nil
@@ -118,11 +418,16 @@ func mergeContinuationResponses(responses []*GenerateContentResponse) (*Generate
 
 	merged := responses[0]
 	for i := 1; i < len(responses); i++ {
-		res := mergeValuesReflect(reflect.ValueOf(merged), reflect.ValueOf(responses[i]), "", false)
+		curr := responses[i]
+		res := mergeValuesReflect(reflect.ValueOf(merged), reflect.ValueOf(curr), "", false)
 		if !res.IsValid() {
 			return nil, fmt.Errorf("failed to merge continuation responses at index %d", i)
 		}
+		prevCandidates := merged.Candidates
 		merged = res.Interface().(*GenerateContentResponse)
+		if len(prevCandidates) > 0 && (curr == nil || len(curr.Candidates) == 0) {
+			merged.Candidates = mergeCandidates(prevCandidates, nil)
+		}
 	}
 
 	// Always retain SDKHTTPResponse from the latest hop
@@ -283,6 +588,11 @@ func mergeValuesReflect(prev, curr reflect.Value, fieldName string, isInsideUsag
 	if prev.Kind() == reflect.Slice && curr.Kind() == reflect.Slice {
 		// Keyed-list exception 1: candidates: merge element-wise
 		if isCandidatesField(fieldName) {
+			if prevCands, ok := prev.Interface().([]*Candidate); ok {
+				if currCands, ok := curr.Interface().([]*Candidate); ok {
+					return reflect.ValueOf(mergeCandidates(prevCands, currCands))
+				}
+			}
 			maxLen := prev.Len()
 			if curr.Len() > maxLen {
 				maxLen = curr.Len()

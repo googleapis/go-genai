@@ -5608,64 +5608,32 @@ func (m Models) GenerateContentStream(ctx context.Context, model string, content
 		config.setDefaults()
 	}
 	enableContinuation := shouldEnableAutomaticContinuation(config)
-	callConfig := config
 
 	return func(yield func(*GenerateContentResponse, error) bool) {
-		var accumulatedUsage *GenerateContentResponseUsageMetadata
-
+		state := newStreamContinuation(config, enableContinuation)
 		for {
-			var hopFinishReason FinishReason
-			var hopContinuationToken []byte
-			var hopUsage *GenerateContentResponseUsageMetadata
-
+			callConfig := state.startHop()
+			var hopErr error
 			for chunk, err := range m.generateContentStream(ctx, model, contents, callConfig) {
 				if err != nil {
-					// If a mid-stream error occurs after an intermediate checkpoint
-					// continuation token was received, resume from that checkpoint.
-					if ctx.Err() == nil && canResumeStream(enableContinuation, hopContinuationToken, hopFinishReason) {
-						break
-					}
-					yield(nil, err)
-					return
+					hopErr = err
+					break
 				}
-				if chunk != nil {
-					if len(chunk.Candidates) > 0 {
-						cand := chunk.Candidates[0]
-						if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified {
-							hopFinishReason = cand.FinishReason
-						}
-						if len(cand.ContinuationToken) > 0 {
-							hopContinuationToken = cand.ContinuationToken
-						} else if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified && !isResumableFinishReason(cand.FinishReason) {
-							hopContinuationToken = nil
-						}
-						chunk = clearIntermediateFinishReason(chunk, enableContinuation, hopContinuationToken)
-					}
-					if chunk.UsageMetadata != nil {
-						if accumulatedUsage != nil {
-							mergedUsage := mergeUsageMetadata(accumulatedUsage, chunk.UsageMetadata)
-							chunkCopy := *chunk
-							chunkCopy.UsageMetadata = mergedUsage
-							chunk = &chunkCopy
-							hopUsage = mergedUsage
-						} else {
-							hopUsage = chunk.UsageMetadata
-						}
-					}
-				}
-				if !yield(chunk, nil) {
+				if !yield(state.observe(chunk), nil) {
 					return
 				}
 			}
 
-			if canResumeStream(enableContinuation, hopContinuationToken, hopFinishReason) {
-				if hopUsage != nil {
-					accumulatedUsage = hopUsage
-				}
-				callConfig = prepareContinuationConfig(config, hopContinuationToken)
+			resume, err := state.endHop(ctx, hopErr)
+			if resume {
 				continue
 			}
-			break
+			if err != nil {
+				yield(nil, err)
+			}
+			// Otherwise the API returned no error, so end the stream normally; the
+			// caller keeps every chunk already yielded.
+			return
 		}
 	}
 }

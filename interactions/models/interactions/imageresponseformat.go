@@ -17,9 +17,6 @@
 package interactions
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
@@ -116,18 +113,16 @@ const (
 func (e ImageResponseFormatMimeType) ToPointer() *ImageResponseFormatMimeType {
 	return &e
 }
-func (e *ImageResponseFormatMimeType) UnmarshalJSON(data []byte) error {
-	var v string
-	if err := json.Unmarshal(data, &v); err != nil {
-		return err
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *ImageResponseFormatMimeType) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "image/jpeg":
+			return true
+		}
 	}
-	switch v {
-	case "image/jpeg":
-		*e = ImageResponseFormatMimeType(v)
-		return nil
-	default:
-		return fmt.Errorf("invalid value for ImageResponseFormatMimeType: %v", v)
-	}
+	return false
 }
 
 // ImageResponseFormat - Configuration for image output format.

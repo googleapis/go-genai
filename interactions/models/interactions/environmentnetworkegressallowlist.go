@@ -33,18 +33,16 @@ const (
 func (e Disabled) ToPointer() *Disabled {
 	return &e
 }
-func (e *Disabled) UnmarshalJSON(data []byte) error {
-	var v string
-	if err := json.Unmarshal(data, &v); err != nil {
-		return err
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *Disabled) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "disabled":
+			return true
+		}
 	}
-	switch v {
-	case "disabled":
-		*e = Disabled(v)
-		return nil
-	default:
-		return fmt.Errorf("invalid value for Disabled: %v", v)
-	}
+	return false
 }
 
 type AllowlistType string

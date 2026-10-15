@@ -53,7 +53,8 @@ func (h *GoogleGenAIAuthHook) BeforeRequest(hookCtx BeforeRequestContext, req *h
 
 	// Apply default headers
 	for key, value := range security.DefaultHeaders {
-		if req.Header.Get(key) == "" {
+		existing := req.Header.Get(key)
+		if existing == "" || (strings.EqualFold(key, "User-Agent") && existing == hookCtx.SDKConfiguration.UserAgent) {
 			req.Header.Set(key, value)
 		}
 	}

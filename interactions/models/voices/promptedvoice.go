@@ -20,9 +20,23 @@ package voices
 // Required in `CreateVoice` when `type` is `"prompted"`. Returned in
 // `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
 type PromptedVoice struct {
+	// Optional. The name or ID of an existing base voice to edit or remix.
+	// Use the voice name for prebuilt voices (e.g., `Puck`) or the voice ID for
+	// previously created voices (e.g., `voice_abc123`). This can be any
+	// prompted or replicated voice that the user has access to.
+	// When present, `input` describes relative alterations to make to the base
+	// voice.
+	BaseVoice *string `json:"base_voice,omitzero"`
 	// Required. The natural-language prompt describing the desired voice, e.g.
 	// "A deep, booming male voice of a massive evil ogre in his middle years."
 	Input string `json:"input"`
+}
+
+func (p *PromptedVoice) GetBaseVoice() *string {
+	if p == nil {
+		return nil
+	}
+	return p.BaseVoice
 }
 
 func (p *PromptedVoice) GetInput() string {

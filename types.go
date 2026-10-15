@@ -2852,6 +2852,16 @@ type ImageConfig struct {
 	ImageOutputOptions *ImageConfigImageOutputOptions `json:"imageOutputOptions,omitempty"`
 }
 
+// Configuration for persisting output assets to external storage.
+type GenerationOutputConfig struct {
+	// Optional. The Cloud Storage URI prefix or directory where
+	// generated media assets should be written (e.g. "gs://my-bucket/prefix/").
+	// Supported URI schemes: "gs://". When set, media bytes are written directly
+	// to this location and returned as FileData with a file_uri instead of raw
+	// inline bytes.
+	OutputURIPrefix string `json:"outputUriPrefix,omitempty"`
+}
+
 // The configuration for automated routing. When automated routing is specified, the
 // routing will be determined by the pretrained routing model and customer provided
 // model routing preference. This data type is not supported in Gemini API.
@@ -3129,6 +3139,9 @@ type GenerateContentConfig struct {
 	// continuation token until the model finishes. Timeouts, retries and
 	// billing apply to each request. Set to false to turn this off.
 	AutomaticContinuation *bool `json:"automaticContinuation,omitempty"`
+	// Optional. Configuration for persisting output assets to external
+	// storage.
+	GenerationOutputConfig *GenerationOutputConfig `json:"generationOutputConfig,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {

@@ -562,6 +562,138 @@ func TestLiveConnect(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("SendContextUpdate and Receive", func(t *testing.T) {
+		sendReceiveTests := []struct {
+			desc                  string
+			client                *Client
+			contextUpdate         LiveClientContextUpdate
+			wantRequestBodySlice  []string
+			fakeResponseBodySlice []string
+			wantErr               bool
+		}{
+			{
+				desc:   "send systemInstruction contextUpdate to Google AI",
+				client: mldevClient,
+				contextUpdate: LiveClientContextUpdate{
+					SystemInstruction: &Content{Parts: []*Part{{Text: "You are a helpful assistant."}}},
+				},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"contextUpdate":{"systemInstruction":{"parts":[{"text":"You are a helpful assistant."}]}}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:   "send systemInstruction contextUpdate to Vertex AI",
+				client: vertexClient,
+				contextUpdate: LiveClientContextUpdate{
+					SystemInstruction: &Content{Parts: []*Part{{Text: "You are a helpful assistant."}}},
+				},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"projects/test-project/locations/test-location/publishers/google/models/test-model"}}`, `{"contextUpdate":{"systemInstruction":{"parts":[{"text":"You are a helpful assistant."}]}}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:   "send clear tools contextUpdate to Google AI",
+				client: mldevClient,
+				contextUpdate: LiveClientContextUpdate{
+					Tools: &LiveClientContextUpdateTools{Tools: []*Tool{}},
+				},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"contextUpdate":{"tools":{}}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:   "send function declaration tools contextUpdate to Google AI",
+				client: mldevClient,
+				contextUpdate: LiveClientContextUpdate{
+					Tools: &LiveClientContextUpdateTools{
+						Tools: []*Tool{
+							{
+								FunctionDeclarations: []*FunctionDeclaration{
+									{Name: "get_current_weather"},
+								},
+							},
+						},
+					},
+				},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"contextUpdate":{"tools":{"tools":[{"functionDeclarations":[{"name":"get_current_weather"}]}]}}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:   "send function declaration tools contextUpdate to Vertex AI",
+				client: vertexClient,
+				contextUpdate: LiveClientContextUpdate{
+					Tools: &LiveClientContextUpdateTools{
+						Tools: []*Tool{
+							{
+								FunctionDeclarations: []*FunctionDeclaration{
+									{Name: "get_current_weather"},
+								},
+							},
+						},
+					},
+				},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"projects/test-project/locations/test-location/publishers/google/models/test-model"}}`, `{"contextUpdate":{"tools":{"tools":[{"functionDeclarations":[{"name":"get_current_weather"}]}]}}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+			{
+				desc:   "send both systemInstruction and tools contextUpdate to Google AI",
+				client: mldevClient,
+				contextUpdate: LiveClientContextUpdate{
+					SystemInstruction: &Content{Parts: []*Part{{Text: "Updated instruction."}}},
+					Tools: &LiveClientContextUpdateTools{
+						Tools: []*Tool{
+							{
+								FunctionDeclarations: []*FunctionDeclaration{
+									{Name: "get_current_weather"},
+								},
+							},
+						},
+					},
+				},
+				wantRequestBodySlice:  []string{`{"setup":{"model":"models/test-model"}}`, `{"contextUpdate":{"systemInstruction":{"parts":[{"text":"Updated instruction."}]},"tools":{"tools":[{"functionDeclarations":[{"name":"get_current_weather"}]}]}}}`},
+				fakeResponseBodySlice: []string{`{"setupComplete":{}}`, `{"serverContent":{"modelTurn":{"parts":[{"text":"server test message"}],"role":"user"}}}`},
+			},
+		}
+
+		for _, tt := range sendReceiveTests {
+			t.Run(tt.desc, func(t *testing.T) {
+				ts := setupTestWebsocketServer(t, tt.wantRequestBodySlice, tt.fakeResponseBodySlice)
+				defer ts.Close()
+
+				tt.client.Live.apiClient.clientConfig.HTTPOptions.BaseURL = strings.Replace(ts.URL, "http", "ws", 1)
+				tt.client.Live.apiClient.clientConfig.HTTPClient = ts.Client()
+
+				session, err := tt.client.Live.Connect(ctx, "test-model", &LiveConnectConfig{})
+				if err != nil {
+					t.Fatalf("Connect failed: %v", err)
+				}
+				defer session.Close()
+
+				if session.SetupComplete == nil {
+					t.Errorf("SetupComplete is nil after Connect")
+				}
+
+				err = session.SendContextUpdate(tt.contextUpdate)
+				if err != nil {
+					t.Errorf("SendContextUpdate failed: %v", err)
+				}
+
+				serverMessage := &LiveServerMessage{ServerContent: &LiveServerContent{ModelTurn: Text("server test message")[0]}}
+				_, err = session.Receive()
+				if err != nil {
+					t.Errorf("Receive failed: %v", err)
+				}
+				gotMessage, err := session.Receive()
+				if err != nil {
+					if tt.wantErr {
+						return
+					}
+					t.Errorf("Receive failed: %v", err)
+				}
+				if diff := cmp.Diff(gotMessage, serverMessage); diff != "" {
+					t.Errorf("Response message mismatch (-want +got):\n%s", diff)
+				}
+			})
+		}
+	})
 }
 
 // Helper function to set up a test websocket server.

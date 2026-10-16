@@ -488,6 +488,15 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 						return
 					}
 				}
+				if respRaw["error"] != nil {
+					var respWithError responseWithError
+					if err := json.Unmarshal(data, &respWithError); err == nil && respWithError.ErrorInfo != nil {
+						if !yield(nil, *respWithError.ErrorInfo) {
+							return
+						}
+						continue
+					}
+				}
 				// Step 2: The toStruct function calls fromConverter(handle Vertex and MLDev schema
 				// difference and get a unified response). Then toStruct function converts the unified
 				// response from map[string]any to struct type.

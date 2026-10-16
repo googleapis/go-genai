@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.76.0](https://github.com/googleapis/go-genai/compare/v1.75.0...v1.76.0) (2026-10-16)
+
+
+### Features
+
+* add base_voice to PromptedVoice in GAOS SDK ([bfc9e1c](https://github.com/googleapis/go-genai/commit/bfc9e1c348b93793bac48de99321e80f459ef01b))
+* Add Live API in-session context updates (`send_context_update`) and types across GenAI SDKs. ([f1d0c6c](https://github.com/googleapis/go-genai/commit/f1d0c6ce6e75ad0ef9fcc8bc7c15d73b56c28a79))
+* **interactions:** populate output_text and output media helpers in the Go SDK ([db2b842](https://github.com/googleapis/go-genai/commit/db2b842c58533634cc59e4b457b82c89ab5cad2a))
+* **sdks:** enable `fixes.openSingleValueEnumsOct2026` across all SDKs ([3892a92](https://github.com/googleapis/go-genai/commit/3892a9260032c48ed1bcb9bbf6a6899b7b5e33ee))
+
+
+### Bug Fixes
+
+* **interactions:** sync InteractionSseEventInteractionStatus enum with InteractionStatus ([7c129ed](https://github.com/googleapis/go-genai/commit/7c129edec2e43790405cfe9031d973c4fd4c6f0f))
+
 ## [1.75.0](https://github.com/googleapis/go-genai/compare/v1.74.0...v1.75.0) (2026-10-14)
 
 

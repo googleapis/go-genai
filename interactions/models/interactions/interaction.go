@@ -558,6 +558,7 @@ func (i *Interaction) UnmarshalJSON(data []byte) error {
 	if err := utils.UnmarshalJSON(data, &i, "", false, nil); err != nil {
 		return err
 	}
+	i.populateOutputProperties()
 	return nil
 }
 

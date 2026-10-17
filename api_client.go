@@ -440,7 +440,7 @@ func deserializeUnaryResponse(resp *http.Response) (map[string]any, error) {
 
 	output := make(map[string]any)
 	if len(respBody) > 0 {
-		err = json.Unmarshal(respBody, &output)
+		err = unmarshalJSONWithNumbers(respBody, &output)
 		if err != nil {
 			return nil, fmt.Errorf("deserializeUnaryResponse: error unmarshalling response: %w\n%s", err, respBody)
 		}
@@ -482,7 +482,7 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 				// Step 1: Unmarshal the JSON into a map[string]any so that we can call fromConverter
 				// in Step 2.
 				respRaw := make(map[string]any)
-				if err := json.Unmarshal(data, &respRaw); err != nil {
+				if err := unmarshalJSONWithNumbers(data, &respRaw); err != nil {
 					err = fmt.Errorf("iterateResponseStream: error unmarshalling data %s:%s. error: %w", string(prefix), string(data), err)
 					if !yield(nil, err) {
 						return

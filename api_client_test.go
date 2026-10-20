@@ -368,6 +368,101 @@ func TestSendStreamRequest(t *testing.T) {
 			wantErrorMessage: "iterateResponseStream: invalid stream chunk: error:{\"key2\":\"value2\"}",
 		},
 		{
+			name:           "SSE Comment Event Between Data Events",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\n: heartbeat\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "SSE Comment Line Before Data In Same Event",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   ": ping\ndata:{\"key1\":\"value1\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "SSE Comment Line After Data In Same Event",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n: ping\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "SSE Comment With Windows Newlines",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\r\n\r\n: keepalive\r\n\r\ndata:{\"key2\":\"value2\"}\r\n\r\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "SSE Only Comments",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   ": first\n\n: second\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse:   nil,
+			wantErr:        false,
+		},
+		{
+			name:           "SSE Comment At End Without Terminator",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\n: bye",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+			},
+			wantErr: false,
+		},
+		{
+			name:           "SSE Extra Blank Line Between Events",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   "data:{\"key1\":\"value1\"}\n\n\ndata:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			wantErr: false,
+		},
+		{
+			name:             "SSE Comment Does Not Hide Unknown Field",
+			method:           "POST",
+			path:             "test",
+			body:             map[string]any{"key": "value"},
+			mockResponse:     ": ping\nerror:{\"key2\":\"value2\"}\n\n",
+			mockStatusCode:   http.StatusOK,
+			wantErr:          true,
+			wantErrorMessage: "iterateResponseStream: invalid stream chunk: error:{\"key2\":\"value2\"}",
+		},
+		{
 			name:             "Error Response",
 			method:           "POST",
 			path:             "test",
@@ -2392,4 +2487,3 @@ func TestDownloadFileTimeout(t *testing.T) {
 		}
 	})
 }
-

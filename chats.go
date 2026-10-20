@@ -75,6 +75,42 @@ func validateContent(content *Content) bool {
 	return true
 }
 
+// partHasData reports whether part sets one of the API's data fields. Thought,
+// ThoughtSignature, VideoMetadata, MediaResolution and PartMetadata are metadata.
+func partHasData(part *Part) bool {
+	return part.Text != "" ||
+		part.InlineData != nil ||
+		part.FileData != nil ||
+		part.FunctionCall != nil ||
+		part.FunctionResponse != nil ||
+		part.ExecutableCode != nil ||
+		part.CodeExecutionResult != nil ||
+		part.ToolCall != nil ||
+		part.ToolResponse != nil
+}
+
+// historyContent returns the content to record for a streamed chunk, without
+// the empty-text and signature-only placeholder parts. It returns nil when the
+// chunk holds only placeholders.
+func historyContent(content *Content) *Content {
+	if len(content.Parts) == 0 {
+		return content
+	}
+	var kept []*Part
+	for _, part := range content.Parts {
+		if part == nil || partHasData(part) {
+			kept = append(kept, part)
+		}
+	}
+	if len(kept) == 0 {
+		return nil
+	}
+	if len(kept) == len(content.Parts) {
+		return content
+	}
+	return &Content{Role: content.Role, Parts: kept}
+}
+
 func validateResponse(response *GenerateContentResponse) bool {
 	if response == nil || len(response.Candidates) == 0 {
 		return false
@@ -251,7 +287,7 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 	// Generate Content
 	response := c.GenerateContentStream(ctx, c.model, contents, c.config)
 
-	// Return a new iterator that will yield the responses and record history with merged response.
+	// Return a new iterator that will yield the responses and record history with the streamed contents.
 	return func(yield func(*GenerateContentResponse, error) bool) {
 		var outputContents []*Content
 		isValid := true
@@ -264,13 +300,15 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 				yield(nil, err)
 				return
 			}
-			if !validateResponse(chunk) {
+			if len(chunk.Candidates) == 0 || chunk.Candidates[0].Content == nil {
 				isValid = false
+			} else if content := historyContent(chunk.Candidates[0].Content); content != nil {
+				if !validateContent(content) {
+					isValid = false
+				}
+				outputContents = append(outputContents, content)
 			}
 			if len(chunk.Candidates) > 0 {
-				if chunk.Candidates[0].Content != nil {
-					outputContents = append(outputContents, chunk.Candidates[0].Content)
-				}
 				if chunk.Candidates[0].FinishReason != "" && chunk.Candidates[0].FinishReason != FinishReasonUnspecified {
 					finishReason = chunk.Candidates[0].FinishReason
 				}
@@ -280,7 +318,7 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 			}
 		}
 		// Record history. By default, use the first candidate for history.
-		finalIsValid := isValid && finishReason != FinishReasonUnspecified
+		finalIsValid := isValid && len(outputContents) > 0 && finishReason != FinishReasonUnspecified
 		c.recordHistory(ctx, inputContent, outputContents, finalIsValid)
 	}
 }

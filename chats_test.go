@@ -16,10 +16,13 @@ package genai
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 
 	"cloud.google.com/go/auth"
@@ -740,4 +743,219 @@ data:{
 		}
 
 	})
+}
+
+// newStreamTestChat returns a chat backed by a server that streams the events
+// in responses[i] for the i-th request, and a func that returns the request bodies.
+func newStreamTestChat(t *testing.T, responses ...[]string) (*Chat, func() [][]byte) {
+	t.Helper()
+	var mu sync.Mutex
+	var bodies [][]byte
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("io.ReadAll() failed: %v", err)
+		}
+		mu.Lock()
+		bodies = append(bodies, body)
+		n := len(bodies)
+		mu.Unlock()
+		if n > len(responses) {
+			t.Errorf("Unexpected request %d", n)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		for _, event := range responses[n-1] {
+			fmt.Fprintf(w, "data:%s\n\n", event)
+		}
+	}))
+	t.Cleanup(ts.Close)
+
+	cc := &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		HTTPClient:  ts.Client(),
+		Credentials: &auth.Credentials{},
+	}
+	ac := &apiClient{clientConfig: cc}
+	client := &Client{clientConfig: *cc, Chats: &Chats{apiClient: ac}}
+	chat, err := client.Chats.Create(context.Background(), "gemini-2.5-flash", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return chat, func() [][]byte {
+		mu.Lock()
+		defer mu.Unlock()
+		return bodies
+	}
+}
+
+// TestChatsStreamFunctionCallHistory pins that streamed function calls stay in
+// curated history when the stream ends with an empty-text chunk, so the next
+// turn sends the function responses right after the calls.
+func TestChatsStreamFunctionCallHistory(t *testing.T) {
+	ctx := context.Background()
+	chat, requests := newStreamTestChat(t,
+		[]string{
+			`{"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"fridgeContent","args":{"date":"2026-01-01"}},"thoughtSignature":"c2lnMQ=="}]}}]}`,
+			`{"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"fridgeContent","args":{"date":"2026-01-02"}}}]}}]}`,
+			`{"candidates":[{"content":{"role":"model","parts":[{"text":""}]},"finishReason":"STOP"}]}`,
+		},
+		[]string{
+			`{"candidates":[{"content":{"role":"model","parts":[{"text":"Pizza on both days."}]},"finishReason":"STOP"}]}`,
+		},
+	)
+
+	question := &Content{Role: RoleUser, Parts: []*Part{{Text: "What's in the fridge on 2026-01-01 and 2026-01-02?"}}}
+	call1 := &Content{Role: RoleModel, Parts: []*Part{{
+		FunctionCall:     &FunctionCall{Name: "fridgeContent", Args: map[string]any{"date": "2026-01-01"}},
+		ThoughtSignature: []byte("sig1"),
+	}}}
+	call2 := &Content{Role: RoleModel, Parts: []*Part{{
+		FunctionCall: &FunctionCall{Name: "fridgeContent", Args: map[string]any{"date": "2026-01-02"}},
+	}}}
+	answers := &Content{Role: RoleUser, Parts: []*Part{
+		NewPartFromFunctionResponse("fridgeContent", map[string]any{"content": "pizza"}),
+		NewPartFromFunctionResponse("fridgeContent", map[string]any{"content": "pizza"}),
+	}}
+
+	var chunks []*GenerateContentResponse
+	for chunk, err := range chat.SendStream(ctx, NewPartFromText(question.Parts[0].Text)) {
+		if err != nil {
+			t.Fatalf("SendStream() round 1 failed: %v", err)
+		}
+		chunks = append(chunks, chunk)
+	}
+	if len(chunks) != 3 {
+		t.Fatalf("len(chunks) = %d, want 3", len(chunks))
+	}
+	if parts := chunks[2].Candidates[0].Content.Parts; len(parts) != 1 || parts[0].Text != "" {
+		t.Errorf("last chunk parts = %v, want one empty-text part", parts)
+	}
+	if diff := cmp.Diff([]*Content{question, call1, call2}, chat.History(true)); diff != "" {
+		t.Errorf("History(true) after round 1 mismatch (-want +got):\n%s", diff)
+	}
+
+	for _, err := range chat.SendStream(ctx, answers.Parts...) {
+		if err != nil {
+			t.Fatalf("SendStream() round 2 failed: %v", err)
+		}
+	}
+	bodies := requests()
+	if len(bodies) != 2 {
+		t.Fatalf("len(requests) = %d, want 2", len(bodies))
+	}
+	var req struct {
+		Contents []*Content `json:"contents"`
+	}
+	if err := json.Unmarshal(bodies[1], &req); err != nil {
+		t.Fatalf("json.Unmarshal(request 2) failed: %v", err)
+	}
+	if diff := cmp.Diff([]*Content{question, call1, call2, answers}, req.Contents); diff != "" {
+		t.Errorf("request 2 contents mismatch (-want +got):\n%s", diff)
+	}
+	if got := len(chat.History(true)); got != 5 {
+		t.Errorf("len(History(true)) after round 2 = %d, want 5", got)
+	}
+}
+
+// TestChatsStreamPlaceholderParts pins how SendStream records chunks that carry
+// empty-text or signature-only parts, and that it leaves the yielded chunks as received.
+func TestChatsStreamPlaceholderParts(t *testing.T) {
+	user := &Content{Role: RoleUser, Parts: []*Part{{Text: "Tell me a joke."}}}
+	call := &FunctionCall{Name: "fridgeContent", Args: map[string]any{"date": "2026-01-01"}}
+	tests := []struct {
+		desc   string
+		events []string
+		// wantModel is the model output in comprehensive history.
+		wantModel     []*Content
+		wantCurated   bool
+		wantLastChunk *Content
+	}{
+		{
+			desc: "signature-only final chunk",
+			events: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Why did"}]}}]}`,
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":" the chicken..."}]}}]}`,
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"","thoughtSignature":"c2ln"}]},"finishReason":"STOP"}]}`,
+			},
+			wantModel: []*Content{
+				{Role: RoleModel, Parts: []*Part{{Text: "Why did"}}},
+				{Role: RoleModel, Parts: []*Part{{Text: " the chicken..."}}},
+			},
+			wantCurated:   true,
+			wantLastChunk: &Content{Role: RoleModel, Parts: []*Part{{ThoughtSignature: []byte("sig")}}},
+		},
+		{
+			desc: "empty text and function call in one chunk",
+			events: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":""},{"functionCall":{"name":"fridgeContent","args":{"date":"2026-01-01"}}}]},"finishReason":"STOP"}]}`,
+			},
+			wantModel:     []*Content{{Role: RoleModel, Parts: []*Part{{FunctionCall: call}}}},
+			wantCurated:   true,
+			wantLastChunk: &Content{Role: RoleModel, Parts: []*Part{{}, {FunctionCall: call}}},
+		},
+		{
+			desc: "no finish reason",
+			events: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Why did"}]}}]}`,
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":""}]}}]}`,
+			},
+			wantModel: []*Content{{Role: RoleModel, Parts: []*Part{{Text: "Why did"}}}},
+		},
+		{
+			desc: "tool call and tool response parts are kept",
+			events: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"toolCall":{"id":"1"}},{"toolResponse":{"id":"1"}},{"text":""}]},"finishReason":"STOP"}]}`,
+			},
+			wantModel: []*Content{{Role: RoleModel, Parts: []*Part{{ToolCall: &ToolCall{ID: "1"}}, {ToolResponse: &ToolResponse{ID: "1"}}}}},
+		},
+		{
+			desc: "chunk without parts",
+			events: []string{
+				`{"candidates":[{"content":{"role":"model"}}]}`,
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Why did"}]},"finishReason":"STOP"}]}`,
+			},
+			wantModel: []*Content{
+				{Role: RoleModel},
+				{Role: RoleModel, Parts: []*Part{{Text: "Why did"}}},
+			},
+		},
+		{
+			desc: "chunk without content",
+			events: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Why did"}]}}]}`,
+				`{"candidates":[{"finishReason":"STOP"}]}`,
+			},
+			wantModel: []*Content{{Role: RoleModel, Parts: []*Part{{Text: "Why did"}}}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			chat, _ := newStreamTestChat(t, tt.events)
+			var last *GenerateContentResponse
+			for chunk, err := range chat.SendStream(context.Background(), user.Parts...) {
+				if err != nil {
+					t.Fatalf("SendStream() failed: %v", err)
+				}
+				last = chunk
+			}
+
+			want := append([]*Content{user}, tt.wantModel...)
+			if diff := cmp.Diff(want, chat.History(false)); diff != "" {
+				t.Errorf("History(false) mismatch (-want +got):\n%s", diff)
+			}
+			if !tt.wantCurated {
+				want = []*Content{}
+			}
+			if diff := cmp.Diff(want, chat.History(true)); diff != "" {
+				t.Errorf("History(true) mismatch (-want +got):\n%s", diff)
+			}
+			if tt.wantLastChunk != nil {
+				if diff := cmp.Diff(tt.wantLastChunk, last.Candidates[0].Content); diff != "" {
+					t.Errorf("last chunk content mismatch (-want +got):\n%s", diff)
+				}
+			}
+		})
+	}
 }

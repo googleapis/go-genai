@@ -57,18 +57,33 @@ func validateContent(content *Content) bool {
 	}
 
 	for _, part := range content.Parts {
-		if part == nil {
+		if part == nil || !partHasData(part) {
 			return false
 		}
-		if part.Text != "" {
-			continue
-		}
-		if part.InlineData == nil &&
-			part.FileData == nil &&
-			part.FunctionCall == nil &&
-			part.FunctionResponse == nil &&
-			part.ExecutableCode == nil &&
-			part.CodeExecutionResult == nil {
+	}
+	return true
+}
+
+// partHasData reports whether part carries text or another data field.
+func partHasData(part *Part) bool {
+	return part.Text != "" ||
+		part.InlineData != nil ||
+		part.FileData != nil ||
+		part.FunctionCall != nil ||
+		part.FunctionResponse != nil ||
+		part.ExecutableCode != nil ||
+		part.CodeExecutionResult != nil
+}
+
+// isEmptyContent reports whether every part of content carries no data.
+// The API ends some streamed turns with such a chunk. These contents are left out of
+// curated history because omitempty would send each part back as {}.
+func isEmptyContent(content *Content) bool {
+	if content == nil || len(content.Parts) == 0 {
+		return false
+	}
+	for _, part := range content.Parts {
+		if part == nil || partHasData(part) {
 			return false
 		}
 	}
@@ -107,14 +122,17 @@ func extractCuratedHistory(comprehensiveHistory []*Content) ([]*Content, error) 
 			isValid := true
 			for i < length && comprehensiveHistory[i].Role == RoleModel {
 				modelOutput := comprehensiveHistory[i]
+				i++
+				if isEmptyContent(modelOutput) {
+					continue
+				}
 				modelOutputs = append(modelOutputs, modelOutput)
 				if isValid && !validateContent(modelOutput) {
 					isValid = false
 				}
-				i++
 			}
 
-			if isValid {
+			if isValid && len(modelOutputs) > 0 {
 				curatedHistory = append(curatedHistory, modelOutputs...)
 			} else {
 				// Remove the corresponding user input
@@ -166,7 +184,11 @@ func (c *Chat) recordHistory(ctx context.Context, inputContent *Content, outputC
 		if len(outputContents) == 0 {
 			c.curatedHistory = append(c.curatedHistory, &Content{Role: RoleModel, Parts: []*Part{}})
 		} else {
-			c.curatedHistory = append(c.curatedHistory, outputContents...)
+			for _, content := range outputContents {
+				if !isEmptyContent(content) {
+					c.curatedHistory = append(c.curatedHistory, content)
+				}
+			}
 		}
 	}
 }
@@ -255,6 +277,7 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 	return func(yield func(*GenerateContentResponse, error) bool) {
 		var outputContents []*Content
 		isValid := true
+		hasData := false
 		finishReason := FinishReasonUnspecified
 		for chunk, err := range response {
 			if err == io.EOF {
@@ -264,7 +287,9 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 				yield(nil, err)
 				return
 			}
-			if !validateResponse(chunk) {
+			if validateResponse(chunk) {
+				hasData = true
+			} else if len(chunk.Candidates) == 0 || !isEmptyContent(chunk.Candidates[0].Content) {
 				isValid = false
 			}
 			if len(chunk.Candidates) > 0 {
@@ -280,7 +305,7 @@ func (c *Chat) SendStream(ctx context.Context, parts ...*Part) iter.Seq2[*Genera
 			}
 		}
 		// Record history. By default, use the first candidate for history.
-		finalIsValid := isValid && finishReason != FinishReasonUnspecified
+		finalIsValid := isValid && hasData && finishReason != FinishReasonUnspecified
 		c.recordHistory(ctx, inputContent, outputContents, finalIsValid)
 	}
 }

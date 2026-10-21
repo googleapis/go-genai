@@ -90,6 +90,8 @@ jobs:
         fi
         # Ignore struct comparability changes, as they are common and accepted.
         sed -i '/: old is comparable, new is not/d' ./diff.txt
+        # Ignore union type-set expansions breaking coincidental subset relationships between *Member constraint interfaces.
+        sed -i '/Member: no longer implements .*Member$/d' ./diff.txt
         sed -i '/VideoGenerationMask.MaskMode: changed from string to VideoGenerationMaskMode/d' ./diff.txt
         sed -i '/ToolComputerUse: removed/d' ./diff.txt
         sed -i '/DistillationHyperParameters.LearningRateMultiplier: changed from float64 to float32/d' ./diff.txt

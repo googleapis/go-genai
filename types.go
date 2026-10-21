@@ -156,35 +156,35 @@ const (
 type SafetyPolicy string
 
 const (
-	// Unspecified safety policy. This value should not be used.
+	// The safety policy is unspecified.
 	SafetyPolicyUnspecified SafetyPolicy = "SAFETY_POLICY_UNSPECIFIED"
-	// Financial transactions safety policy.
+	// Policy that restricts financial transactions.
 	SafetyPolicyFinancialTransactions SafetyPolicy = "FINANCIAL_TRANSACTIONS"
-	// Sensitive data modification safety policy.
+	// Policy that restricts modification of sensitive data.
 	SafetyPolicySensitiveDataModification SafetyPolicy = "SENSITIVE_DATA_MODIFICATION"
-	// Communication tool safety policy.
+	// Policy that restricts the use of communication tools.
 	SafetyPolicyCommunicationTool SafetyPolicy = "COMMUNICATION_TOOL"
-	// Account creation safety policy.
+	// Policy that restricts the creation of accounts.
 	SafetyPolicyAccountCreation SafetyPolicy = "ACCOUNT_CREATION"
-	// Data modification safety policy.
+	// Policy that restricts general data modification.
 	SafetyPolicyDataModification SafetyPolicy = "DATA_MODIFICATION"
-	// User consent management safety policy.
+	// Policy that restricts user consent management.
 	SafetyPolicyUserConsentManagement SafetyPolicy = "USER_CONSENT_MANAGEMENT"
-	// Legal terms and agreements safety policy.
+	// Policy that restricts interaction with legal terms and agreements.
 	SafetyPolicyLegalTermsAndAgreements SafetyPolicy = "LEGAL_TERMS_AND_AGREEMENTS"
 )
 
-// The environment being operated.
+// The target environment where the computer use tool operates.
 type Environment string
 
 const (
-	// Defaults to browser.
+	// The environment is unspecified.
 	EnvironmentUnspecified Environment = "ENVIRONMENT_UNSPECIFIED"
-	// Operates in a web browser.
+	// The tool operates in a web browser.
 	EnvironmentBrowser Environment = "ENVIRONMENT_BROWSER"
-	// Operates in a mobile environment.
+	// The tool operates in a mobile environment.
 	EnvironmentMobile Environment = "ENVIRONMENT_MOBILE"
-	// Operates in a desktop environment.
+	// The tool operates in a desktop environment.
 	EnvironmentDesktop Environment = "ENVIRONMENT_DESKTOP"
 )
 
@@ -2376,19 +2376,19 @@ type Retrieval struct {
 	VertexRAGStore *VertexRAGStore `json:"vertexRagStore,omitempty"`
 }
 
-// Tool to support computer use.
+// A tool that enables the model to interact directly with a computer environment.
 type ComputerUse struct {
-	// Required. The environment being operated.
+	// Required. The target environment where the computer use tool operates.
 	Environment Environment `json:"environment,omitempty"`
-	// Optional. By default, [predefined functions](https://cloud.google.com/vertex-ai/generative-ai/docs/computer-use#supported-actions)
-	// are included in the final model call. Some of them can be explicitly excluded from
-	// being automatically included. This can serve two purposes: 1. Using a more restricted
-	// / different action space. 2. Improving the definitions / instructions of predefined
-	// functions.
+	// Optional. A list of predefined functions to explicitly exclude from the model call.
+	// By default, [predefined functions](https://cloud.google.com/vertex-ai/generative-ai/docs/computer-use#supported-actions)
+	// are included. Excluding functions allows for a more restricted action space or custom
+	// definitions for predefined functions.
 	ExcludedPredefinedFunctions []string `json:"excludedPredefinedFunctions,omitempty"`
-	// Optional. Enables the prompt injection detection check on computer-use request.
+	// Optional. Whether to enable the prompt injection detection check on the computer
+	// use request.
 	EnablePromptInjectionDetection *bool `json:"enablePromptInjectionDetection,omitempty"`
-	// Optional. Disabled safety policies for computer use.
+	// Optional. A list of safety policies to disable for the computer use tool.
 	DisabledSafetyPolicies []SafetyPolicy `json:"disabledSafetyPolicies,omitempty"`
 }
 
@@ -2852,6 +2852,16 @@ type ImageConfig struct {
 	ImageOutputOptions *ImageConfigImageOutputOptions `json:"imageOutputOptions,omitempty"`
 }
 
+// Configuration for persisting output assets to external storage.
+type GenerationOutputConfig struct {
+	// Optional. The Cloud Storage URI prefix or directory where
+	// generated media assets should be written (e.g. "gs://my-bucket/prefix/").
+	// Supported URI schemes: "gs://". When set, media bytes are written directly
+	// to this location and returned as FileData with a file_uri instead of raw
+	// inline bytes.
+	OutputURIPrefix string `json:"outputUriPrefix,omitempty"`
+}
+
 // The configuration for automated routing. When automated routing is specified, the
 // routing will be determined by the pretrained routing model and customer provided
 // model routing preference. This data type is not supported in Gemini API.
@@ -3129,6 +3139,9 @@ type GenerateContentConfig struct {
 	// continuation token until the model finishes. Timeouts, retries and
 	// billing apply to each request. Set to false to turn this off.
 	AutomaticContinuation *bool `json:"automaticContinuation,omitempty"`
+	// Optional. Configuration for persisting output assets to external
+	// storage.
+	GenerationOutputConfig *GenerationOutputConfig `json:"generationOutputConfig,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {
@@ -3689,8 +3702,9 @@ type Candidate struct {
 	// Output only. Metadata returned when the model uses the `url_context` tool to get
 	// information from a user-provided URL.
 	URLContextMetadata *URLContextMetadata `json:"urlContextMetadata,omitempty"`
-	// Optional. An opaque continuation token returned when `finish_reason` is
-	// `CONTINUATION`. Pass it in a subsequent request to continue generation.
+	// Output only. An optional opaque continuation token returned when `finish_reason`
+	// is `CONTINUATION`. Clients can pass this token in a subsequent `GenerateContentRequest`
+	// to continue generation.
 	ContinuationToken []byte `json:"continuationToken,omitempty"`
 }
 

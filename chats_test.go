@@ -16,6 +16,7 @@ package genai
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -77,6 +78,7 @@ func TestExtractCuratedHistory(t *testing.T) {
 	validUser2 := &Content{Role: RoleUser, Parts: []*Part{{Text: "User 2"}}}
 	invalidModel := &Content{Role: RoleModel, Parts: []*Part{{Text: ""}}}
 	validModel2 := &Content{Role: RoleModel, Parts: []*Part{{Text: "Model 2"}}}
+	modelFunctionCall := &Content{Role: RoleModel, Parts: []*Part{{FunctionCall: &FunctionCall{Name: "f"}}}}
 
 	tests := []struct {
 		name    string
@@ -94,6 +96,13 @@ func TestExtractCuratedHistory(t *testing.T) {
 		{"ConsecutiveModel", []*Content{validUser1, validModel1, validModel2}, []*Content{validUser1, validModel1, validModel2}, false},
 		{"EndsWithUser", []*Content{validUser1, validModel1, validUser2}, []*Content{validUser1, validModel1, validUser2}, false},
 		{"InvalidRole", []*Content{{Role: "invalid", Parts: []*Part{{Text: "test"}}}}, nil, true},
+		{"TrailingEmptyModelContent", []*Content{validUser1, modelFunctionCall, {Role: RoleModel, Parts: []*Part{{Text: ""}}}}, []*Content{validUser1, modelFunctionCall}, false},
+		{"TrailingThoughtSignatureContent", []*Content{validUser1, validModel1, {Role: RoleModel, Parts: []*Part{{ThoughtSignature: []byte("sig")}}}}, []*Content{validUser1, validModel1}, false},
+		{"EmptyThenInvalidModel", []*Content{validUser1, {Role: RoleModel, Parts: []*Part{{Text: ""}}}, {Role: RoleModel, Parts: []*Part{}}}, []*Content{}, false},
+		{"TrailingEmptyThoughtContent", []*Content{validUser1, validModel1, {Role: RoleModel, Parts: []*Part{{Text: "", Thought: true}}}}, []*Content{validUser1, validModel1}, false},
+		{"TrailingNilPartContent", []*Content{validUser1, validModel1, {Role: RoleModel, Parts: []*Part{nil}}}, []*Content{}, false},
+		{"TrailingTextAndEmptyPartContent", []*Content{validUser1, validModel1, {Role: RoleModel, Parts: []*Part{{Text: "a"}, {}}}}, []*Content{}, false},
+		{"EmptyBetweenValidModels", []*Content{validUser1, validModel1, {Role: RoleModel, Parts: []*Part{{Text: ""}}}, validModel2}, []*Content{validUser1, validModel1, validModel2}, false},
 	}
 
 	for _, tt := range tests {
@@ -486,6 +495,203 @@ func TestChatsStreamInvalidResponse(t *testing.T) {
 	curatedHistory := chat.History(true)
 	if len(curatedHistory) != 0 {
 		t.Errorf("Expected 0 curated history entries, got %d", len(curatedHistory))
+	}
+}
+
+// newTestChat returns a chat whose requests go to handler.
+func newTestChat(t *testing.T, handler http.HandlerFunc) *Chat {
+	t.Helper()
+	ts := httptest.NewServer(handler)
+	t.Cleanup(ts.Close)
+	cc := &ClientConfig{
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		HTTPClient:  ts.Client(),
+		Credentials: &auth.Credentials{},
+	}
+	client := &Client{clientConfig: *cc, Chats: &Chats{apiClient: &apiClient{clientConfig: cc}}}
+	chat, err := client.Chats.Create(context.Background(), "gemini-3.1-pro-preview", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return chat
+}
+
+// TestChatsStreamTrailingEmptyChunk pins that a function call turn that ends with an
+// empty-text STOP chunk goes into curated history and is sent with the next request.
+func TestChatsStreamTrailingEmptyChunk(t *testing.T) {
+	ctx := context.Background()
+	var requests []struct{ Contents []map[string]any }
+	chat := newTestChat(t, func(w http.ResponseWriter, r *http.Request) {
+		var req struct{ Contents []map[string]any }
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Errorf("decoding request body: %v", err)
+		}
+		requests = append(requests, req)
+		w.WriteHeader(http.StatusOK)
+		if len(requests) == 1 {
+			fmt.Fprintf(w, "data: %s\n\n", `{"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"get_weather","args":{"city":"Paris"}},"thoughtSignature":"c2lnLTE="}]}}]}`)
+			fmt.Fprintf(w, "data: %s\n\n", `{"candidates":[{"content":{"role":"model","parts":[{"text":""}]},"finishReason":"STOP"}]}`)
+			return
+		}
+		fmt.Fprintf(w, "data: %s\n\n", `{"candidates":[{"content":{"role":"model","parts":[{"text":"It is sunny."}]},"finishReason":"STOP"}]}`)
+	})
+
+	for _, err := range chat.SendMessageStream(ctx, Part{Text: "Weather in Paris?"}) {
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	curated := chat.History(true)
+	if len(curated) != 2 {
+		t.Fatalf("len(History(true)) = %d, want 2", len(curated))
+	}
+	if curated[0].Role != RoleUser || curated[0].Parts[0].Text != "Weather in Paris?" {
+		t.Errorf("History(true)[0] = %+v, want the user message", curated[0])
+	}
+	if curated[1].Role != RoleModel || len(curated[1].Parts) != 1 {
+		t.Fatalf("History(true)[1] = %+v, want one model part", curated[1])
+	}
+	gotPart := curated[1].Parts[0]
+	if gotPart.FunctionCall == nil || gotPart.FunctionCall.Name != "get_weather" {
+		t.Errorf("History(true)[1].Parts[0].FunctionCall = %+v, want get_weather", gotPart.FunctionCall)
+	}
+	if string(gotPart.ThoughtSignature) != "sig-1" {
+		t.Errorf("History(true)[1].Parts[0].ThoughtSignature = %q, want %q", gotPart.ThoughtSignature, "sig-1")
+	}
+	if got := len(chat.History(false)); got != 3 {
+		t.Errorf("len(History(false)) = %d, want 3", got)
+	}
+
+	functionResponse := Part{FunctionResponse: &FunctionResponse{Name: "get_weather", Response: map[string]any{"forecast": "sunny"}}}
+	for _, err := range chat.SendMessageStream(ctx, functionResponse) {
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if len(requests) != 2 {
+		t.Fatalf("server got %d requests, want 2", len(requests))
+	}
+	contents := requests[1].Contents
+	var roles []any
+	for _, c := range contents {
+		roles = append(roles, c["role"])
+	}
+	if diff := cmp.Diff([]any{"user", "model", "user"}, roles); diff != "" {
+		t.Fatalf("second request roles mismatch (-want +got):\n%s", diff)
+	}
+	for i, c := range contents {
+		parts, _ := c["parts"].([]any)
+		if len(parts) == 0 {
+			t.Errorf("second request contents[%d] has no parts", i)
+		}
+		for j, p := range parts {
+			if m, _ := p.(map[string]any); len(m) == 0 {
+				t.Errorf("second request contents[%d].parts[%d] is empty", i, j)
+			}
+		}
+	}
+	modelParts, _ := contents[1]["parts"].([]any)
+	if len(modelParts) > 0 {
+		modelPart, _ := modelParts[0].(map[string]any)
+		if _, ok := modelPart["functionCall"]; !ok {
+			t.Errorf("second request contents[1].parts[0] = %v, want a functionCall", modelPart)
+		}
+		if _, ok := modelPart["thoughtSignature"]; !ok {
+			t.Errorf("second request contents[1].parts[0] = %v, want a thoughtSignature", modelPart)
+		}
+	}
+}
+
+// TestChatsStreamCuratedHistory pins which streamed turns go into curated history
+// when the last chunk carries no data.
+func TestChatsStreamCuratedHistory(t *testing.T) {
+	tests := []struct {
+		desc        string
+		chunks      []string
+		wantCurated []*Content
+		wantCompLen int
+	}{
+		{
+			desc: "TrailingThoughtSignatureChunk",
+			chunks: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Hello"}]}}]}`,
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"","thoughtSignature":"c2lnLTI="}]},"finishReason":"STOP"}]}`,
+			},
+			wantCurated: []*Content{
+				{Role: RoleUser, Parts: []*Part{{Text: "Hi"}}},
+				{Role: RoleModel, Parts: []*Part{{Text: "Hello"}}},
+			},
+			wantCompLen: 3,
+		},
+		{
+			desc: "TrailingNoPartsChunk",
+			chunks: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Hello"}]}}]}`,
+				`{"candidates":[{"content":{"role":"model","parts":[]},"finishReason":"STOP"}]}`,
+			},
+			wantCurated: []*Content{},
+			wantCompLen: 3,
+		},
+		{
+			desc: "TrailingNoContentChunk",
+			chunks: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Hello"}]}}]}`,
+				`{"candidates":[{"finishReason":"STOP"}]}`,
+			},
+			wantCurated: []*Content{},
+			wantCompLen: 2,
+		},
+		{
+			desc: "NoCandidatesChunk",
+			chunks: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Hello"}]},"finishReason":"STOP"}]}`,
+				`{"candidates":[]}`,
+			},
+			wantCurated: []*Content{},
+			wantCompLen: 2,
+		},
+		{
+			desc: "OnlyEmptyChunks",
+			chunks: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"","thoughtSignature":"c2lnLTI="}]}}]}`,
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":""}]},"finishReason":"STOP"}]}`,
+			},
+			wantCurated: []*Content{},
+			wantCompLen: 3,
+		},
+		{
+			desc: "EmptyChunkWithoutFinishReason",
+			chunks: []string{
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":"Hello"}]}}]}`,
+				`{"candidates":[{"content":{"role":"model","parts":[{"text":""}]}}]}`,
+			},
+			wantCurated: []*Content{},
+			wantCompLen: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			chat := newTestChat(t, func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				for _, c := range tt.chunks {
+					fmt.Fprintf(w, "data: %s\n\n", c)
+				}
+			})
+			for _, err := range chat.SendMessageStream(context.Background(), Part{Text: "Hi"}) {
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			if diff := cmp.Diff(tt.wantCurated, chat.History(true)); diff != "" {
+				t.Errorf("History(true) mismatch (-want +got):\n%s", diff)
+			}
+			if got := len(chat.History(false)); got != tt.wantCompLen {
+				t.Errorf("len(History(false)) = %d, want %d", got, tt.wantCompLen)
+			}
+		})
 	}
 }
 

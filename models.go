@@ -1273,6 +1273,10 @@ func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]a
 		InternalSetValueByPath(parentObject, []string{"continuationToken"}, fromContinuationToken)
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"generationOutputConfig"}) != nil {
+		return nil, fmt.Errorf("generationOutputConfig parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
+	}
+
 	return toObject, nil
 }
 
@@ -1501,6 +1505,11 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 	fromContinuationToken := InternalGetValueByPath(fromObject, []string{"continuationToken"})
 	if fromContinuationToken != nil {
 		InternalSetValueByPath(parentObject, []string{"continuationToken"}, fromContinuationToken)
+	}
+
+	fromGenerationOutputConfig := InternalGetValueByPath(fromObject, []string{"generationOutputConfig"})
+	if fromGenerationOutputConfig != nil {
+		InternalSetValueByPath(parentObject, []string{"outputConfig"}, fromGenerationOutputConfig)
 	}
 
 	return toObject, nil

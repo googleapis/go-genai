@@ -27,25 +27,43 @@ import (
 type FunctionResultSubcontentType string
 
 const (
-	FunctionResultSubcontentTypeImage   FunctionResultSubcontentType = "image"
-	FunctionResultSubcontentTypeText    FunctionResultSubcontentType = "text"
-	FunctionResultSubcontentTypeUnknown FunctionResultSubcontentType = "UNKNOWN"
+	FunctionResultSubcontentTypeAudio    FunctionResultSubcontentType = "audio"
+	FunctionResultSubcontentTypeDocument FunctionResultSubcontentType = "document"
+	FunctionResultSubcontentTypeImage    FunctionResultSubcontentType = "image"
+	FunctionResultSubcontentTypeText     FunctionResultSubcontentType = "text"
+	FunctionResultSubcontentTypeVideo    FunctionResultSubcontentType = "video"
+	FunctionResultSubcontentTypeUnknown  FunctionResultSubcontentType = "UNKNOWN"
 )
 
 type FunctionResultSubcontent struct {
-	ImageContent *ImageContent   `queryParam:"inline" union:"member"`
-	TextContent  *TextContent    `queryParam:"inline" union:"member"`
-	UnknownRaw   json.RawMessage `json:"-" union:"unknown"`
+	AudioContent    *AudioContent    `queryParam:"inline" union:"member"`
+	DocumentContent *DocumentContent `queryParam:"inline" union:"member"`
+	ImageContent    *ImageContent    `queryParam:"inline" union:"member"`
+	TextContent     *TextContent     `queryParam:"inline" union:"member"`
+	VideoContent    *VideoContent    `queryParam:"inline" union:"member"`
+	UnknownRaw      json.RawMessage  `json:"-" union:"unknown"`
 
 	Type FunctionResultSubcontentType
 }
 
 type FunctionResultSubcontentMember interface {
-	ImageContent | TextContent
+	AudioContent | DocumentContent | ImageContent | TextContent | VideoContent
 }
 
 func NewFunctionResultSubcontent[T FunctionResultSubcontentMember](val T) FunctionResultSubcontent {
 	switch v := any(val).(type) {
+	case AudioContent:
+		typ := FunctionResultSubcontentTypeAudio
+		return FunctionResultSubcontent{
+			AudioContent: &v,
+			Type:         typ,
+		}
+	case DocumentContent:
+		typ := FunctionResultSubcontentTypeDocument
+		return FunctionResultSubcontent{
+			DocumentContent: &v,
+			Type:            typ,
+		}
 	case ImageContent:
 		typ := FunctionResultSubcontentTypeImage
 		return FunctionResultSubcontent{
@@ -57,6 +75,12 @@ func NewFunctionResultSubcontent[T FunctionResultSubcontentMember](val T) Functi
 		return FunctionResultSubcontent{
 			TextContent: &v,
 			Type:        typ,
+		}
+	case VideoContent:
+		typ := FunctionResultSubcontentTypeVideo
+		return FunctionResultSubcontent{
+			VideoContent: &v,
+			Type:         typ,
 		}
 	}
 	panic(fmt.Sprintf("unreachable: %T is not a member of union FunctionResultSubcontent", val))
@@ -106,6 +130,24 @@ func (u *FunctionResultSubcontent) UnmarshalJSON(data []byte) (err error) {
 	}
 
 	switch dis.Type {
+	case "audio":
+		audioContent := new(AudioContent)
+		if err := utils.UnmarshalJSON(data, &audioContent, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == audio) type AudioContent within FunctionResultSubcontent: %w", string(data), err)
+		}
+
+		u.AudioContent = audioContent
+		u.Type = FunctionResultSubcontentTypeAudio
+		return nil
+	case "document":
+		documentContent := new(DocumentContent)
+		if err := utils.UnmarshalJSON(data, &documentContent, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == document) type DocumentContent within FunctionResultSubcontent: %w", string(data), err)
+		}
+
+		u.DocumentContent = documentContent
+		u.Type = FunctionResultSubcontentTypeDocument
+		return nil
 	case "image":
 		imageContent := new(ImageContent)
 		if err := utils.UnmarshalJSON(data, &imageContent, "", true, nil); err != nil {
@@ -124,6 +166,15 @@ func (u *FunctionResultSubcontent) UnmarshalJSON(data []byte) (err error) {
 		u.TextContent = textContent
 		u.Type = FunctionResultSubcontentTypeText
 		return nil
+	case "video":
+		videoContent := new(VideoContent)
+		if err := utils.UnmarshalJSON(data, &videoContent, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == video) type VideoContent within FunctionResultSubcontent: %w", string(data), err)
+		}
+
+		u.VideoContent = videoContent
+		u.Type = FunctionResultSubcontentTypeVideo
+		return nil
 	default:
 		u.UnknownRaw = json.RawMessage(data)
 		u.Type = FunctionResultSubcontentTypeUnknown
@@ -133,12 +184,24 @@ func (u *FunctionResultSubcontent) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (u FunctionResultSubcontent) MarshalJSON() ([]byte, error) {
+	if u.AudioContent != nil {
+		return utils.MarshalJSON(u.AudioContent, "", true)
+	}
+
+	if u.DocumentContent != nil {
+		return utils.MarshalJSON(u.DocumentContent, "", true)
+	}
+
 	if u.ImageContent != nil {
 		return utils.MarshalJSON(u.ImageContent, "", true)
 	}
 
 	if u.TextContent != nil {
 		return utils.MarshalJSON(u.TextContent, "", true)
+	}
+
+	if u.VideoContent != nil {
+		return utils.MarshalJSON(u.VideoContent, "", true)
 	}
 
 	if u.UnknownRaw != nil {

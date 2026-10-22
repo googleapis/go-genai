@@ -645,6 +645,11 @@ func liveConnectConfigToMldev(fromObject map[string]any, parentObject map[string
 		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "translationConfig"}, fromTranslationConfig)
 	}
 
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		InternalSetValueByPath(parentObject, []string{"setup", "labels"}, fromLabels)
+	}
+
 	return toObject, nil
 }
 
@@ -794,6 +799,11 @@ func liveConnectConfigToVertex(fromObject map[string]any, parentObject map[strin
 	fromTranslationConfig := InternalGetValueByPath(fromObject, []string{"translationConfig"})
 	if fromTranslationConfig != nil {
 		InternalSetValueByPath(parentObject, []string{"setup", "generationConfig", "translationConfig"}, fromTranslationConfig)
+	}
+
+	fromLabels := InternalGetValueByPath(fromObject, []string{"labels"})
+	if fromLabels != nil {
+		InternalSetValueByPath(parentObject, []string{"setup", "labels"}, fromLabels)
 	}
 
 	return toObject, nil

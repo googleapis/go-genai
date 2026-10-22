@@ -27,6 +27,10 @@ type Function struct {
 	// The name of the function.
 	Name *string `json:"name,omitzero"`
 	// The JSON Schema for the function's parameters.
+	//
+	// Supports a subset of JSON Schema. `minLength`, `maxLength`,
+	// `minProperties`, `maxProperties`, `uniqueItems`, `contains`,
+	// `minContains`, and `maxContains` are ignored and not enforced.
 	Parameters any `json:"parameters,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
 	type_ string `const:"function" json:"type"`

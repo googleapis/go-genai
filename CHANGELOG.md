@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.76.0](https://github.com/googleapis/go-genai/compare/v1.75.0...v1.76.0) (2026-10-22)
+
+
+### Features
+
+* Add `store` to `GenerateContentConfig` (Gemini Developer API only) and `labels` to `LiveConnectConfig`. ([2ca47f8](https://github.com/googleapis/go-genai/commit/2ca47f86440cb7bb02dbc874f5a9cdc8fe42f29c))
+* add base_voice to PromptedVoice in GAOS SDK ([bfc9e1c](https://github.com/googleapis/go-genai/commit/bfc9e1c348b93793bac48de99321e80f459ef01b))
+* Add generation_output_config to GenerateContentConfig ([6ae1299](https://github.com/googleapis/go-genai/commit/6ae1299c17e67b39b623e58302185caa8896db25))
+* Add Live API in-session context updates (`send_context_update`) and types across GenAI SDKs. ([f1d0c6c](https://github.com/googleapis/go-genai/commit/f1d0c6ce6e75ad0ef9fcc8bc7c15d73b56c28a79))
+* include AudioContent, DocumentContent, and VideoContent in FunctionResultSubContent ([68f1351](https://github.com/googleapis/go-genai/commit/68f13513f8cc25482383c44736f38712a50a059b))
+* **interactions:** populate output_text and output media helpers in the Go SDK ([db2b842](https://github.com/googleapis/go-genai/commit/db2b842c58533634cc59e4b457b82c89ab5cad2a))
+* **sdks:** enable `fixes.openSingleValueEnumsOct2026` across all SDKs ([3892a92](https://github.com/googleapis/go-genai/commit/3892a9260032c48ed1bcb9bbf6a6899b7b5e33ee))
+* update discovery doc ([525f275](https://github.com/googleapis/go-genai/commit/525f275a5a7e7c475569d6df811752e178b28b79))
+
+
+### Bug Fixes
+
+* **genai:** raise mid-stream SSE errors and dropped connections consistently across SDKs; add continuation conformance tests ([9aa2634](https://github.com/googleapis/go-genai/commit/9aa2634889343d6d0b64d0d73c6a73e1e6685221))
+* **interactions:** sync InteractionSseEventInteractionStatus enum with InteractionStatus ([7c129ed](https://github.com/googleapis/go-genai/commit/7c129edec2e43790405cfe9031d973c4fd4c6f0f))
+* keep streamed chat turns in curated history when the stream ends with an empty chunk ([4dd02c1](https://github.com/googleapis/go-genai/commit/4dd02c11596d4ecb333cf56618097c6b4211965c)), refs [#795](https://github.com/googleapis/go-genai/issues/795)
+
 ## [1.75.0](https://github.com/googleapis/go-genai/compare/v1.74.0...v1.75.0) (2026-10-14)
 
 

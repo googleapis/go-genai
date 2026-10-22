@@ -29,6 +29,7 @@ type FunctionResultSubcontentType string
 const (
 	FunctionResultSubcontentTypeAudio    FunctionResultSubcontentType = "audio"
 	FunctionResultSubcontentTypeDocument FunctionResultSubcontentType = "document"
+	FunctionResultSubcontentTypeFunction FunctionResultSubcontentType = "function"
 	FunctionResultSubcontentTypeImage    FunctionResultSubcontentType = "image"
 	FunctionResultSubcontentTypeText     FunctionResultSubcontentType = "text"
 	FunctionResultSubcontentTypeVideo    FunctionResultSubcontentType = "video"
@@ -38,6 +39,7 @@ const (
 type FunctionResultSubcontent struct {
 	AudioContent    *AudioContent    `queryParam:"inline" union:"member"`
 	DocumentContent *DocumentContent `queryParam:"inline" union:"member"`
+	Function        *Function        `queryParam:"inline" union:"member"`
 	ImageContent    *ImageContent    `queryParam:"inline" union:"member"`
 	TextContent     *TextContent     `queryParam:"inline" union:"member"`
 	VideoContent    *VideoContent    `queryParam:"inline" union:"member"`
@@ -47,7 +49,7 @@ type FunctionResultSubcontent struct {
 }
 
 type FunctionResultSubcontentMember interface {
-	AudioContent | DocumentContent | ImageContent | TextContent | VideoContent
+	AudioContent | DocumentContent | Function | ImageContent | TextContent | VideoContent
 }
 
 func NewFunctionResultSubcontent[T FunctionResultSubcontentMember](val T) FunctionResultSubcontent {
@@ -63,6 +65,12 @@ func NewFunctionResultSubcontent[T FunctionResultSubcontentMember](val T) Functi
 		return FunctionResultSubcontent{
 			DocumentContent: &v,
 			Type:            typ,
+		}
+	case Function:
+		typ := FunctionResultSubcontentTypeFunction
+		return FunctionResultSubcontent{
+			Function: &v,
+			Type:     typ,
 		}
 	case ImageContent:
 		typ := FunctionResultSubcontentTypeImage
@@ -148,6 +156,15 @@ func (u *FunctionResultSubcontent) UnmarshalJSON(data []byte) (err error) {
 		u.DocumentContent = documentContent
 		u.Type = FunctionResultSubcontentTypeDocument
 		return nil
+	case "function":
+		function := new(Function)
+		if err := utils.UnmarshalJSON(data, &function, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == function) type Function within FunctionResultSubcontent: %w", string(data), err)
+		}
+
+		u.Function = function
+		u.Type = FunctionResultSubcontentTypeFunction
+		return nil
 	case "image":
 		imageContent := new(ImageContent)
 		if err := utils.UnmarshalJSON(data, &imageContent, "", true, nil); err != nil {
@@ -190,6 +207,10 @@ func (u FunctionResultSubcontent) MarshalJSON() ([]byte, error) {
 
 	if u.DocumentContent != nil {
 		return utils.MarshalJSON(u.DocumentContent, "", true)
+	}
+
+	if u.Function != nil {
+		return utils.MarshalJSON(u.Function, "", true)
 	}
 
 	if u.ImageContent != nil {

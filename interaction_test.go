@@ -38,7 +38,7 @@ import (
 func TestInteractionsWorkflow(t *testing.T) {
 	// Create a mock server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/v1beta/interactions" {
+		if r.URL.Path != "/v1/interactions" {
 			t.Errorf("Path unexpected: %s", r.URL.Path)
 		}
 		if r.Method != "POST" {
@@ -346,7 +346,7 @@ func TestCredentialsLifecycle(t *testing.T) {
 		captured = append(captured, r.Method+" "+r.URL.Path)
 		w.Header().Set("Content-Type", "application/json")
 
-		if r.Method == "GET" && r.URL.Path == "/v1beta/credentials" {
+		if r.Method == "GET" && r.URL.Path == "/v1/credentials" {
 			resp := map[string]any{
 				"credentials": []map[string]any{
 					{
@@ -529,15 +529,15 @@ func TestCredentialsLifecycle(t *testing.T) {
 
 	// Verify captured endpoints
 	expectedCaptured := []string{
-		"POST /v1beta/credentials",
-		"POST /v1beta/credentials",
-		"POST /v1beta/credentials",
-		"GET /v1beta/credentials",
-		"GET /v1beta/credentials/cred_bearer_123",
-		"PATCH /v1beta/credentials/cred_bearer_123",
-		"PATCH /v1beta/credentials/cred_env_123",
-		"PATCH /v1beta/credentials/cred_oauth_123",
-		"DELETE /v1beta/credentials/cred_bearer_123",
+		"POST /v1/credentials",
+		"POST /v1/credentials",
+		"POST /v1/credentials",
+		"GET /v1/credentials",
+		"GET /v1/credentials/cred_bearer_123",
+		"PATCH /v1/credentials/cred_bearer_123",
+		"PATCH /v1/credentials/cred_env_123",
+		"PATCH /v1/credentials/cred_oauth_123",
+		"DELETE /v1/credentials/cred_bearer_123",
 	}
 	if len(captured) != len(expectedCaptured) {
 		t.Fatalf("Expected %d requests, got %d: %v", len(expectedCaptured), len(captured), captured)
@@ -814,6 +814,9 @@ func TestEnvironmentsFilesUploadAndDownload(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPut && strings.Contains(r.URL.Path, "/files/") {
+			if !strings.HasPrefix(r.URL.Path, "/upload/v1/") {
+				t.Errorf("Expected PUT path to start with /upload/v1/, got %s", r.URL.Path)
+			}
 			w.Header().Set("X-Goog-Upload-URL", uploadURL)
 			w.Header().Set("X-Goog-Upload-Status", "active")
 			w.WriteHeader(http.StatusOK)
@@ -826,6 +829,9 @@ func TestEnvironmentsFilesUploadAndDownload(t *testing.T) {
 			return
 		}
 		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/files/test.txt") {
+			if !strings.HasPrefix(r.URL.Path, "/v1/") {
+				t.Errorf("Expected GET path to start with /v1/, got %s", r.URL.Path)
+			}
 			if r.URL.Query().Get("alt") != "media" {
 				t.Errorf("Query alt = %s; want media", r.URL.Query().Get("alt"))
 			}

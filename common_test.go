@@ -624,3 +624,54 @@ func TestMoveValueByPath(t *testing.T) {
 		})
 	}
 }
+
+func TestApplyConverterToSliceWithRootRejectsNonMapElements(t *testing.T) {
+	identity := func(from map[string]any, _ map[string]any, _ map[string]any) (map[string]any, error) {
+		return from, nil
+	}
+	identityWithClient := func(_ *apiClient, from map[string]any, _ map[string]any, _ map[string]any) (map[string]any, error) {
+		return from, nil
+	}
+	tests := []struct {
+		name    string
+		inputs  []any
+		want    []map[string]any
+		wantErr bool
+	}{
+		{
+			name:   "AllMaps",
+			inputs: []any{map[string]any{"a": 1}, map[string]any{"b": 2}},
+			want:   []map[string]any{{"a": 1}, {"b": 2}},
+		},
+		{
+			name:    "NilElement",
+			inputs:  []any{map[string]any{"a": 1}, nil},
+			wantErr: true,
+		},
+		{
+			name:    "StringElement",
+			inputs:  []any{"not a map"},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := applyConverterToSliceWithRoot(tt.inputs, identity, nil)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("applyConverterToSliceWithRoot() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("applyConverterToSliceWithRoot() mismatch (-want +got):\n%s", diff)
+			}
+
+			got, err = applyConverterToSliceWithClientWithRoot(nil, tt.inputs, identityWithClient, nil)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("applyConverterToSliceWithClientWithRoot() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("applyConverterToSliceWithClientWithRoot() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

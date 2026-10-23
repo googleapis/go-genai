@@ -327,8 +327,12 @@ func formatMap(template string, variables map[string]any) (string, error) {
 //nolint:unused
 func applyConverterToSliceWithClientWithRoot(ac *apiClient, inputs []any, converter converterFuncWithClientWithRoot, rootObject map[string]any) ([]map[string]any, error) {
 	var outputs []map[string]any
-	for _, object := range inputs {
-		object, err := converter(ac, object.(map[string]any), nil, rootObject)
+	for i, object := range inputs {
+		objectMap, ok := object.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("applyConverterToSliceWithClientWithRoot: expected map[string]any at index %d, got %T", i, object)
+		}
+		object, err := converter(ac, objectMap, nil, rootObject)
 		if err != nil {
 			return nil, err
 		}
@@ -349,8 +353,12 @@ func InternalApplyConverterToSliceWithRoot(inputs []any, converter converterFunc
 //nolint:unused
 func applyConverterToSliceWithRoot(inputs []any, converter converterFuncWithRoot, rootObject map[string]any) ([]map[string]any, error) {
 	var outputs []map[string]any
-	for _, object := range inputs {
-		object, err := converter(object.(map[string]any), nil, rootObject)
+	for i, object := range inputs {
+		objectMap, ok := object.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("applyConverterToSliceWithRoot: expected map[string]any at index %d, got %T", i, object)
+		}
+		object, err := converter(objectMap, nil, rootObject)
 		if err != nil {
 			return nil, err
 		}

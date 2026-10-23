@@ -1025,3 +1025,67 @@ func TestModelsAllEmptyResponse(t *testing.T) {
 		})
 	}
 }
+
+// A `null` entry in `candidates` from the Gemini API must surface as an error
+// rather than a panic in the Mldev response converter.
+func TestModelsGenerateContentNullCandidateReturnsError(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name        string
+		contentType string
+		body        string
+		call        func(ctx context.Context, client *Client) (*GenerateContentResponse, error)
+	}{
+		{
+			name:        "GenerateContent",
+			contentType: "application/json",
+			body:        `{"candidates":[null]}`,
+			call: func(ctx context.Context, client *Client) (*GenerateContentResponse, error) {
+				return client.Models.GenerateContent(ctx, "gemini-2.5-flash", Text("hi"), nil)
+			},
+		},
+		{
+			name:        "GenerateContentStream",
+			contentType: "text/event-stream",
+			body:        "data: {\"candidates\":[null]}\n\n",
+			call: func(ctx context.Context, client *Client) (*GenerateContentResponse, error) {
+				for chunk, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-flash", Text("hi"), nil) {
+					return chunk, err
+				}
+				return nil, nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", tt.contentType)
+				w.WriteHeader(http.StatusOK)
+				if _, err := w.Write([]byte(tt.body)); err != nil {
+					t.Errorf("Failed to write response: %v", err)
+				}
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend:     BackendGeminiAPI,
+				HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+				envVarProvider: func() map[string]string {
+					return map[string]string{"GOOGLE_API_KEY": "test-api-key"}
+				},
+			})
+			if err != nil {
+				t.Fatalf("Failed to create client: %v", err)
+			}
+
+			resp, err := tt.call(ctx, client)
+			if err == nil {
+				t.Fatalf("%s() with null candidate: expected error, got response %+v", tt.name, resp)
+			}
+			if resp != nil {
+				t.Errorf("%s() with null candidate: expected nil response on error, got %+v", tt.name, resp)
+			}
+		})
+	}
+}

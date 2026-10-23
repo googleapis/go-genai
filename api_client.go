@@ -472,7 +472,7 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 			}
 		}()
 		for rs.r.Scan() {
-			line := rs.r.Bytes()
+			line := stripIgnoredSSELines(rs.r.Bytes())
 			if len(line) == 0 {
 				continue
 			}
@@ -631,6 +631,24 @@ func dropCR(data []byte) []byte {
 		return data[0 : len(data)-1]
 	}
 	return data
+}
+
+// stripIgnoredSSELines removes empty and comment lines from an SSE event.
+// The SSE spec requires clients to ignore comment lines, which proxies send as
+// heartbeats.
+func stripIgnoredSSELines(event []byte) []byte {
+	lines := bytes.Split(event, []byte("\n"))
+	kept := make([][]byte, 0, len(lines))
+	for _, l := range lines {
+		if t := dropCR(l); len(t) == 0 || t[0] == ':' {
+			continue
+		}
+		kept = append(kept, l)
+	}
+	if len(kept) == len(lines) {
+		return event
+	}
+	return bytes.Join(kept, []byte("\n"))
 }
 
 func scan(data []byte, atEOF bool) (advance int, token []byte, err error) {

@@ -382,7 +382,7 @@ func InternalDeepMarshal(input any, output *map[string]any) error {
 func deepMarshal(input any, output *map[string]any) error {
 	if inputBytes, err := json.Marshal(input); err != nil {
 		return fmt.Errorf("deepMarshal: unable to marshal input: %w", err)
-	} else if err := json.Unmarshal(inputBytes, output); err != nil {
+	} else if err := unmarshalJSONWithNumbers(inputBytes, output); err != nil {
 		return fmt.Errorf("deepMarshal: unable to unmarshal input: %w", err)
 	}
 	return nil
@@ -407,7 +407,7 @@ func InternalCreateURLQuery(query map[string]any) (string, error) {
 
 // createURLQuery creates a URL query string from a map of key-value pairs.
 // The keys are sorted alphabetically before being encoded.
-// Supported value types are string, int, float64, bool, and []string.
+// Supported value types are string, int, float64, json.Number, bool, and []string.
 // An error is returned if an unsupported type is encountered.
 func createURLQuery(query map[string]any) (string, error) {
 	v := url.Values{}
@@ -425,6 +425,8 @@ func createURLQuery(query map[string]any) (string, error) {
 			v.Add(key, strconv.Itoa(value))
 		case float64:
 			v.Add(key, strconv.FormatFloat(value, 'f', -1, 64))
+		case json.Number:
+			v.Add(key, value.String())
 		case bool:
 			v.Add(key, strconv.FormatBool(value))
 		case []string:

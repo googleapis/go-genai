@@ -26,6 +26,8 @@ type Usage struct {
 	CachedTokensByModality []ModalityTokens `json:"cached_tokens_by_modality,omitzero"`
 	// Grounding tool count.
 	GroundingToolCount []GroundingToolCount `json:"grounding_tool_count,omitzero"`
+	// Number of input tokens used in the first turn of this interaction.
+	InitialInputTokens *int `json:"initial_input_tokens,omitzero"`
 	// A breakdown of input token usage by modality.
 	InputTokensByModality []ModalityTokens `json:"input_tokens_by_modality,omitzero"`
 	// A breakdown of output token usage by modality.
@@ -70,6 +72,13 @@ func (u *Usage) GetGroundingToolCount() []GroundingToolCount {
 		return nil
 	}
 	return u.GroundingToolCount
+}
+
+func (u *Usage) GetInitialInputTokens() *int {
+	if u == nil {
+		return nil
+	}
+	return u.InitialInputTokens
 }
 
 func (u *Usage) GetInputTokensByModality() []ModalityTokens {

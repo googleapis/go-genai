@@ -25,6 +25,7 @@ type Language string
 
 const (
 	LanguagePython Language = "python"
+	LanguageBash   Language = "bash"
 )
 
 func (e Language) ToPointer() *Language {
@@ -35,7 +36,7 @@ func (e Language) ToPointer() *Language {
 func (e *Language) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "python":
+		case "python", "bash":
 			return true
 		}
 	}

@@ -3142,6 +3142,10 @@ type GenerateContentConfig struct {
 	// Optional. Configuration for persisting output assets to external
 	// storage.
 	GenerationOutputConfig *GenerationOutputConfig `json:"generationOutputConfig,omitempty"`
+	// Optional. Configures the logging behavior for a given request. If set, it
+	// takes precedence over the project-level logging config. This field is not
+	// supported in Gemini Enterprise Agent Platform.
+	Store *bool `json:"store,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {
@@ -8682,6 +8686,9 @@ type LiveConnectConfig struct {
 	SafetySettings []*SafetySetting `json:"safetySettings,omitempty"`
 	// Optional. Config for translation.
 	TranslationConfig *TranslationConfig `json:"translationConfig,omitempty"`
+	// Optional. Labels with user-defined metadata for the session. In Gemini
+	// Enterprise Agent Platform, they are used for billing and reporting.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // Parameters for sending client content to the live API.

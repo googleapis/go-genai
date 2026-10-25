@@ -49,6 +49,13 @@ type TextResponseFormat struct {
 	MimeType *TextResponseFormatMimeType `json:"mime_type,omitzero"`
 	// The JSON schema that the output should conform to. Only applicable when
 	// mime_type is application/json.
+	//
+	// Supports a subset of JSON Schema. `minLength`, `maxLength`,
+	// `minProperties`, `maxProperties`, `uniqueItems`, `contains`,
+	// `minContains`, and `maxContains` are ignored and not enforced; validate
+	// these in your application. `minItems` and `maxItems` are enforced. Schemas
+	// that are too complex to enforce (for example, large `maxItems` on nested
+	// arrays) return a 400 INVALID_ARGUMENT error.
 	Schema map[string]any `json:"schema,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
 	type_ string `const:"text" json:"type"`

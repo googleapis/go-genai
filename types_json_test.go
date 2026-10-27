@@ -764,6 +764,59 @@ func TestMarshalJSON(t *testing.T) {
 	}
 }
 
+// TestFunctionCallArgsJSONRoundTrip pins that a non-nil empty Args map survives
+// a JSON round trip, while a nil Args map stays omitted.
+func TestFunctionCallArgsJSONRoundTrip(t *testing.T) {
+	tests := []struct {
+		desc  string
+		input any
+		want  string
+	}{
+		{
+			desc:  "nil_args",
+			input: &FunctionCall{Name: "list_tools"},
+			want:  `{"name":"list_tools"}`,
+		},
+		{
+			desc:  "empty_args",
+			input: &FunctionCall{Name: "list_tools", Args: map[string]any{}},
+			want:  `{"args":{},"name":"list_tools"}`,
+		},
+		{
+			desc:  "populated_args",
+			input: &FunctionCall{Name: "get_weather", Args: map[string]any{"city": "Paris"}},
+			want:  `{"args":{"city":"Paris"},"name":"get_weather"}`,
+		},
+		{
+			desc: "empty_args_in_content",
+			input: &Content{
+				Role:  RoleModel,
+				Parts: []*Part{{FunctionCall: &FunctionCall{Name: "list_tools", Args: map[string]any{}}}},
+			},
+			want: `{"parts":[{"functionCall":{"args":{},"name":"list_tools"}}],"role":"model"}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			got, err := json.Marshal(tt.input)
+			if err != nil {
+				t.Fatalf("json.Marshal() error = %v", err)
+			}
+			if string(got) != tt.want {
+				t.Errorf("json.Marshal() = %s, want %s", got, tt.want)
+			}
+
+			roundTrip := reflect.New(reflect.TypeOf(tt.input).Elem()).Interface()
+			if err := json.Unmarshal(got, roundTrip); err != nil {
+				t.Fatalf("json.Unmarshal() error = %v", err)
+			}
+			if diff := cmp.Diff(tt.input, roundTrip); diff != "" {
+				t.Errorf("mismatch after marshal/unmarshal (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestJSONCustomTypes(t *testing.T) {
 
 	t.Run("int64SliceJSON", func(t *testing.T) {

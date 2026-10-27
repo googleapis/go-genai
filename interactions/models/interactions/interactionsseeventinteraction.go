@@ -24,14 +24,15 @@ import (
 type InteractionSseEventInteractionStatus string
 
 const (
-	InteractionSseEventInteractionStatusInProgress     InteractionSseEventInteractionStatus = "in_progress"
-	InteractionSseEventInteractionStatusRequiresAction InteractionSseEventInteractionStatus = "requires_action"
-	InteractionSseEventInteractionStatusCompleted      InteractionSseEventInteractionStatus = "completed"
-	InteractionSseEventInteractionStatusFailed         InteractionSseEventInteractionStatus = "failed"
-	InteractionSseEventInteractionStatusCancelled      InteractionSseEventInteractionStatus = "cancelled"
-	InteractionSseEventInteractionStatusIncomplete     InteractionSseEventInteractionStatus = "incomplete"
-	InteractionSseEventInteractionStatusBudgetExceeded InteractionSseEventInteractionStatus = "budget_exceeded"
-	InteractionSseEventInteractionStatusQueued         InteractionSseEventInteractionStatus = "queued"
+	InteractionSseEventInteractionStatusInProgress           InteractionSseEventInteractionStatus = "in_progress"
+	InteractionSseEventInteractionStatusRequiresAction       InteractionSseEventInteractionStatus = "requires_action"
+	InteractionSseEventInteractionStatusCompleted            InteractionSseEventInteractionStatus = "completed"
+	InteractionSseEventInteractionStatusFailed               InteractionSseEventInteractionStatus = "failed"
+	InteractionSseEventInteractionStatusCancelled            InteractionSseEventInteractionStatus = "cancelled"
+	InteractionSseEventInteractionStatusIncomplete           InteractionSseEventInteractionStatus = "incomplete"
+	InteractionSseEventInteractionStatusBudgetExceeded       InteractionSseEventInteractionStatus = "budget_exceeded"
+	InteractionSseEventInteractionStatusQueued               InteractionSseEventInteractionStatus = "queued"
+	InteractionSseEventInteractionStatusRequiresContinuation InteractionSseEventInteractionStatus = "requires_continuation"
 )
 
 func (e InteractionSseEventInteractionStatus) ToPointer() *InteractionSseEventInteractionStatus {
@@ -42,7 +43,7 @@ func (e InteractionSseEventInteractionStatus) ToPointer() *InteractionSseEventIn
 func (e *InteractionSseEventInteractionStatus) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded", "queued":
+		case "in_progress", "requires_action", "completed", "failed", "cancelled", "incomplete", "budget_exceeded", "queued", "requires_continuation":
 			return true
 		}
 	}

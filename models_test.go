@@ -1025,3 +1025,86 @@ func TestModelsAllEmptyResponse(t *testing.T) {
 		})
 	}
 }
+
+// TestModelsGenerateContentNullCandidate pins that a null element in a Gemini
+// API candidates array becomes an empty Candidate instead of panicking.
+func TestModelsGenerateContentNullCandidate(t *testing.T) {
+	ctx := context.Background()
+	newClient := func(t *testing.T, body string) *Client {
+		t.Helper()
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			if _, err := w.Write([]byte(body)); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
+		}))
+		t.Cleanup(ts.Close)
+		client, err := NewClient(ctx, &ClientConfig{
+			Backend:     BackendGeminiAPI,
+			HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			envVarProvider: func() map[string]string {
+				return map[string]string{"GOOGLE_API_KEY": "test-api-key"}
+			},
+		})
+		if err != nil {
+			t.Fatalf("Failed to create client: %v", err)
+		}
+		return client
+	}
+
+	t.Run("GenerateContent", func(t *testing.T) {
+		client := newClient(t, `{"candidates":[null]}`)
+		resp, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", Text("hi"), nil)
+		if err != nil {
+			t.Fatalf("GenerateContent() err = %v, want nil", err)
+		}
+		if len(resp.Candidates) != 1 {
+			t.Fatalf("len(resp.Candidates) = %d, want 1", len(resp.Candidates))
+		}
+		if resp.Candidates[0] == nil {
+			t.Errorf("resp.Candidates[0] = nil, want an empty Candidate")
+		}
+		if got := resp.Text(); got != "" {
+			t.Errorf("resp.Text() = %q, want empty", got)
+		}
+	})
+
+	t.Run("GenerateContentStream", func(t *testing.T) {
+		client := newClient(t, "data:{\"candidates\":[null]}\n\n")
+		var responses []*GenerateContentResponse
+		for resp, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-flash", Text("hi"), nil) {
+			if err != nil {
+				t.Fatalf("GenerateContentStream() err = %v, want nil", err)
+			}
+			responses = append(responses, resp)
+		}
+		if len(responses) != 1 {
+			t.Fatalf("len(responses) = %d, want 1", len(responses))
+		}
+		if len(responses[0].Candidates) != 1 || responses[0].Candidates[0] == nil {
+			t.Errorf("responses[0].Candidates = %v, want one non-nil candidate", responses[0].Candidates)
+		}
+	})
+
+	t.Run("NullBeforeRealCandidate", func(t *testing.T) {
+		client := newClient(t, `{"candidates":[null,{"content":{"role":"model","parts":[{"text":"ok"}]}}]}`)
+		resp, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", Text("hi"), nil)
+		if err != nil {
+			t.Fatalf("GenerateContent() err = %v, want nil", err)
+		}
+		if len(resp.Candidates) != 2 {
+			t.Fatalf("len(resp.Candidates) = %d, want 2", len(resp.Candidates))
+		}
+		if diff := cmp.Diff(&Candidate{}, resp.Candidates[0]); diff != "" {
+			t.Errorf("resp.Candidates[0] mismatch (-want +got):\n%s", diff)
+		}
+		c := resp.Candidates[1]
+		if c == nil || c.Content == nil || len(c.Content.Parts) == 0 {
+			t.Fatalf("resp.Candidates[1] = %+v, want content with parts", c)
+		}
+		if got := c.Content.Parts[0].Text; got != "ok" {
+			t.Errorf("resp.Candidates[1].Content.Parts[0].Text = %q, want %q", got, "ok")
+		}
+	})
+}

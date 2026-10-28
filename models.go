@@ -1049,6 +1049,65 @@ func functionCallingConfigToMldev(fromObject map[string]any, parentObject map[st
 	return toObject, nil
 }
 
+func functionResponsePartToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromInlineData := InternalGetValueByPath(fromObject, []string{"inlineData"})
+	if fromInlineData != nil {
+		InternalSetValueByPath(toObject, []string{"inlineData"}, fromInlineData)
+	}
+
+	fromFileData := InternalGetValueByPath(fromObject, []string{"fileData"})
+	if fromFileData != nil {
+		InternalSetValueByPath(toObject, []string{"fileData"}, fromFileData)
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"mediaProcessing"}) != nil {
+		return nil, fmt.Errorf("mediaProcessing parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
+func functionResponseToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+	if InternalGetValueByPath(fromObject, []string{"willContinue"}) != nil {
+		return nil, fmt.Errorf("willContinue parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	fromScheduling := InternalGetValueByPath(fromObject, []string{"scheduling"})
+	if fromScheduling != nil {
+		InternalSetValueByPath(toObject, []string{"scheduling"}, fromScheduling)
+	}
+
+	fromParts := InternalGetValueByPath(fromObject, []string{"parts"})
+	if fromParts != nil {
+		fromParts, err = InternalApplyConverterToSliceWithRoot(fromParts.([]any), functionResponsePartToVertex, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"parts"}, fromParts)
+	}
+
+	fromId := InternalGetValueByPath(fromObject, []string{"id"})
+	if fromId != nil {
+		InternalSetValueByPath(toObject, []string{"id"}, fromId)
+	}
+
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	fromResponse := InternalGetValueByPath(fromObject, []string{"response"})
+	if fromResponse != nil {
+		InternalSetValueByPath(toObject, []string{"response"}, fromResponse)
+	}
+
+	return toObject, nil
+}
+
 func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -3289,6 +3348,11 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 
 	fromFunctionResponse := InternalGetValueByPath(fromObject, []string{"functionResponse"})
 	if fromFunctionResponse != nil {
+		fromFunctionResponse, err = functionResponseToVertex(fromFunctionResponse.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"functionResponse"}, fromFunctionResponse)
 	}
 

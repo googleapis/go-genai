@@ -252,6 +252,11 @@ func liveClientMessageToVertex(fromObject map[string]any, parentObject map[strin
 
 	fromToolResponse := InternalGetValueByPath(fromObject, []string{"toolResponse"})
 	if fromToolResponse != nil {
+		fromToolResponse, err = liveClientToolResponseToVertex(fromToolResponse.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
 		InternalSetValueByPath(toObject, []string{"toolResponse"}, fromToolResponse)
 	}
 
@@ -488,6 +493,22 @@ func liveClientSetupToVertex(fromObject map[string]any, parentObject map[string]
 
 	if InternalGetValueByPath(fromObject, []string{"labels"}) != nil {
 		return nil, fmt.Errorf("labels parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	return toObject, nil
+}
+
+func liveClientToolResponseToVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromFunctionResponses := InternalGetValueByPath(fromObject, []string{"functionResponses"})
+	if fromFunctionResponses != nil {
+		fromFunctionResponses, err = InternalApplyConverterToSliceWithRoot(fromFunctionResponses.([]any), functionResponseToVertex, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"functionResponses"}, fromFunctionResponses)
 	}
 
 	return toObject, nil

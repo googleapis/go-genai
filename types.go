@@ -1438,12 +1438,11 @@ type FunctionResponseBlob struct {
 	// Optional. Display name of the blob. Used to provide a label or filename to distinguish
 	// blobs. This field is only returned in PromptMessage for prompt management. It is
 	// currently used in the Gemini GenerateContent calls only when server side tools (code_execution,
-	// google_search, and url_context) are enabled. This field is not supported in Gemini
-	// API.
+	// google_search, and url_context) are enabled.
 	DisplayName string `json:"displayName,omitempty"`
 }
 
-// URI based data for function response. This data type is not supported in Gemini API.
+// URI based data for function response.
 type FunctionResponseFileData struct {
 	// Required. URI.
 	FileURI string `json:"fileUri,omitempty"`
@@ -1464,8 +1463,12 @@ type FunctionResponseFileData struct {
 type FunctionResponsePart struct {
 	// Inline media bytes.
 	InlineData *FunctionResponseBlob `json:"inlineData,omitempty"`
-	// URI based data. This field is not supported in Gemini API.
+	// URI based data.
 	FileData *FunctionResponseFileData `json:"fileData,omitempty"`
+	// Optional. How the model processes this part's media for understanding. Only meaningful
+	// for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore
+	// this field. This field is not supported in Vertex AI.
+	MediaProcessing MediaProcessing `json:"mediaProcessing,omitempty"`
 }
 
 // NewFunctionResponsePartFromURI builds a FunctionResponsePart from a given file URI and mime type.
@@ -2606,8 +2609,8 @@ type ToolParallelAISearch struct {
 type URLContext struct {
 }
 
-// A transport that can stream HTTP requests and responses. Next ID: 6. This data type
-// is not supported in Vertex AI.
+// A transport that can stream HTTP requests and responses. This data type is not supported
+// in Vertex AI.
 type StreamableHTTPTransport struct {
 	// Optional. Optional: Fields for authentication headers, timeouts, etc., if needed.
 	Headers map[string]string `json:"headers,omitempty"`
@@ -2668,8 +2671,8 @@ func (s *StreamableHTTPTransport) MarshalJSON() ([]byte, error) {
 }
 
 // A MCPServer is a server that can be called by the model to perform actions. It is
-// a server that implements the MCP protocol. Next ID: 7. This data type is not supported
-// in Vertex AI.
+// a server that implements the MCP protocol. This data type is not supported in Vertex
+// AI.
 type MCPServer struct {
 	// The name of the MCPServer.
 	Name string `json:"name,omitempty"`

@@ -28,6 +28,7 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/auth"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -1021,6 +1022,161 @@ func TestModelsAllEmptyResponse(t *testing.T) {
 
 			if len(gotModels) != 0 {
 				t.Errorf("Models.All() expected empty list, got: %v", gotModels)
+			}
+		})
+	}
+}
+
+// TestPartConvertersKeepEmptyTextOnThoughtSignature pins that a Part carrying only
+// a thought signature is sent with empty text, and that other Parts are unchanged.
+func TestPartConvertersKeepEmptyTextOnThoughtSignature(t *testing.T) {
+	tests := []struct {
+		desc string
+		part map[string]any
+		want map[string]any
+	}{
+		{
+			desc: "signature_only",
+			part: map[string]any{"thoughtSignature": "c2ln"},
+			want: map[string]any{"text": "", "thoughtSignature": "c2ln"},
+		},
+		{
+			desc: "thought_with_signature",
+			part: map[string]any{"thought": true, "thoughtSignature": "c2ln"},
+			want: map[string]any{"text": "", "thought": true, "thoughtSignature": "c2ln"},
+		},
+		{
+			desc: "text_with_signature",
+			part: map[string]any{"text": "hi", "thoughtSignature": "c2ln"},
+			want: map[string]any{"text": "hi", "thoughtSignature": "c2ln"},
+		},
+		{
+			desc: "function_call_with_signature",
+			part: map[string]any{"functionCall": map[string]any{"name": "f", "args": map[string]any{"a": 1}}, "thoughtSignature": "c2ln"},
+			want: map[string]any{"functionCall": map[string]any{"name": "f", "args": map[string]any{"a": 1}}, "thoughtSignature": "c2ln"},
+		},
+		{
+			desc: "inline_data_with_signature",
+			part: map[string]any{"inlineData": map[string]any{"data": "AA==", "mimeType": "image/png"}, "thoughtSignature": "c2ln"},
+			want: map[string]any{"inlineData": map[string]any{"data": "AA==", "mimeType": "image/png"}, "thoughtSignature": "c2ln"},
+		},
+		{
+			desc: "file_data_with_signature",
+			part: map[string]any{"fileData": map[string]any{"fileUri": "gs://b/f", "mimeType": "image/png"}, "thoughtSignature": "c2ln"},
+			want: map[string]any{"fileData": map[string]any{"fileUri": "gs://b/f", "mimeType": "image/png"}, "thoughtSignature": "c2ln"},
+		},
+		{
+			desc: "executable_code_with_signature",
+			part: map[string]any{"executableCode": map[string]any{"code": "x", "language": "PYTHON"}, "thoughtSignature": "c2ln"},
+			want: map[string]any{"executableCode": map[string]any{"code": "x", "language": "PYTHON"}, "thoughtSignature": "c2ln"},
+		},
+		{
+			desc: "empty_part",
+			part: map[string]any{},
+			want: map[string]any{},
+		},
+		{
+			desc: "thought_without_signature",
+			part: map[string]any{"thought": true},
+			want: map[string]any{"thought": true},
+		},
+	}
+
+	converters := []struct {
+		name    string
+		convert func(map[string]any, map[string]any, map[string]any) (map[string]any, error)
+	}{
+		{name: "mldev", convert: partToMldev},
+		{name: "vertex", convert: partToVertex},
+	}
+
+	for _, c := range converters {
+		for _, tt := range tests {
+			t.Run(c.name+"/"+tt.desc, func(t *testing.T) {
+				got, err := c.convert(tt.part, nil, nil)
+				if err != nil {
+					t.Fatalf("%s(%v) returned error: %v", c.name, tt.part, err)
+				}
+				if diff := cmp.Diff(tt.want, got); diff != "" {
+					t.Errorf("%s(%v) mismatch (-want +got):\n%s", c.name, tt.part, diff)
+				}
+			})
+		}
+	}
+}
+
+// TestGenerateContentSendsEmptyTextOnThoughtSignaturePart pins that a model Part
+// holding only a thought signature reaches the request body with "text": "".
+func TestGenerateContentSendsEmptyTextOnThoughtSignaturePart(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		desc   string
+		config func(baseURL string) *ClientConfig
+	}{
+		{
+			desc: "mldev",
+			config: func(baseURL string) *ClientConfig {
+				return &ClientConfig{
+					HTTPOptions: HTTPOptions{BaseURL: baseURL},
+					envVarProvider: func() map[string]string {
+						return map[string]string{"GOOGLE_API_KEY": "test-api-key"}
+					},
+				}
+			},
+		},
+		{
+			desc: "vertex",
+			config: func(baseURL string) *ClientConfig {
+				return &ClientConfig{
+					Backend:        BackendVertexAI,
+					Project:        "test-project",
+					Location:       "us-central1",
+					Credentials:    newStaticCredentials(&auth.Token{Value: "test-token"}, ""),
+					HTTPOptions:    HTTPOptions{BaseURL: baseURL},
+					envVarProvider: func() map[string]string { return map[string]string{} },
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			var body map[string]any
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					t.Errorf("Failed to decode request body: %v", err)
+				}
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{"candidates":[{"content":{"role":"model","parts":[{"text":"ok"}]}}]}`))
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(ctx, tt.config(ts.URL))
+			if err != nil {
+				t.Fatalf("Failed to create client: %v", err)
+			}
+			contents := []*Content{
+				{Role: RoleUser, Parts: []*Part{{Text: "hi"}}},
+				{Role: RoleModel, Parts: []*Part{{Text: "answer"}, {ThoughtSignature: []byte("sig")}}},
+				{Role: RoleUser, Parts: []*Part{{Text: "next"}}},
+			}
+			if _, err := client.Models.GenerateContent(ctx, "gemini-3-flash", contents, nil); err != nil {
+				t.Fatalf("GenerateContent() returned error: %v", err)
+			}
+
+			gotContents, ok := body["contents"].([]any)
+			if !ok || len(gotContents) != 3 {
+				t.Fatalf("request contents = %v, want 3 entries", body["contents"])
+			}
+			gotParts, ok := gotContents[1].(map[string]any)["parts"].([]any)
+			if !ok || len(gotParts) != 2 {
+				t.Fatalf("request contents[1].parts = %v, want 2 entries", gotContents[1])
+			}
+			if diff := cmp.Diff(map[string]any{"text": "answer"}, gotParts[0]); diff != "" {
+				t.Errorf("contents[1].parts[0] mismatch (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(map[string]any{"text": "", "thoughtSignature": "c2ln"}, gotParts[1]); diff != "" {
+				t.Errorf("contents[1].parts[1] mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}

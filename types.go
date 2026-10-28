@@ -1825,6 +1825,23 @@ func NewPartFromCodeExecutionResult(outcome Outcome, output string) *Part {
 	}
 }
 
+// keepEmptyTextOnThoughtSignaturePart restores the "text": "" that omitempty drops,
+// since the API may reject a signature-only Part with no data field.
+func keepEmptyTextOnThoughtSignaturePart(part map[string]any) {
+	if _, ok := part["thoughtSignature"]; !ok {
+		return
+	}
+	for key := range part {
+		switch key {
+		case "thought", "thoughtSignature", "mediaResolution", "videoMetadata", "partMetadata", "audioTranscription",
+			"mediaProcessing", "speechMetadata":
+		default:
+			return
+		}
+	}
+	part["text"] = ""
+}
+
 // Contains the multi-part content of a message.
 type Content struct {
 	// Optional. List of parts that constitute a single message. Each part may have

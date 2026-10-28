@@ -327,12 +327,16 @@ func formatMap(template string, variables map[string]any) (string, error) {
 //nolint:unused
 func applyConverterToSliceWithClientWithRoot(ac *apiClient, inputs []any, converter converterFuncWithClientWithRoot, rootObject map[string]any) ([]map[string]any, error) {
 	var outputs []map[string]any
-	for _, object := range inputs {
-		object, err := converter(ac, object.(map[string]any), nil, rootObject)
+	for i, object := range inputs {
+		fromObject, err := sliceElementToMap("applyConverterToSliceWithClientWithRoot", i, object)
 		if err != nil {
 			return nil, err
 		}
-		outputs = append(outputs, object)
+		output, err := converter(ac, fromObject, nil, rootObject)
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, output)
 	}
 	return outputs, nil
 }
@@ -349,14 +353,31 @@ func InternalApplyConverterToSliceWithRoot(inputs []any, converter converterFunc
 //nolint:unused
 func applyConverterToSliceWithRoot(inputs []any, converter converterFuncWithRoot, rootObject map[string]any) ([]map[string]any, error) {
 	var outputs []map[string]any
-	for _, object := range inputs {
-		object, err := converter(object.(map[string]any), nil, rootObject)
+	for i, object := range inputs {
+		fromObject, err := sliceElementToMap("applyConverterToSliceWithRoot", i, object)
 		if err != nil {
 			return nil, err
 		}
-		outputs = append(outputs, object)
+		output, err := converter(fromObject, nil, rootObject)
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, output)
 	}
 	return outputs, nil
+}
+
+// sliceElementToMap returns the slice element at index i as a converter input.
+func sliceElementToMap(fn string, i int, object any) (map[string]any, error) {
+	switch v := object.(type) {
+	case map[string]any:
+		return v, nil
+	case nil:
+		// Matches the Python SDK, which converts null to an empty object.
+		return map[string]any{}, nil
+	default:
+		return nil, fmt.Errorf("%s: element %d has type %T, want an object", fn, i, object)
+	}
 }
 
 // applyItemTransformerToSlice calls item transformer function to each element of the slice.

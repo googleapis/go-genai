@@ -31,6 +31,7 @@ const (
 	TaskReferenceToVideo Task = "reference_to_video"
 	TaskEdit             Task = "edit"
 	TaskExtend           Task = "extend"
+	TaskUpscale          Task = "upscale"
 )
 
 func (e Task) ToPointer() *Task {
@@ -41,7 +42,7 @@ func (e Task) ToPointer() *Task {
 func (e *Task) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "text_to_video", "image_to_video", "reference_to_video", "edit", "extend":
+		case "text_to_video", "image_to_video", "reference_to_video", "edit", "extend", "upscale":
 			return true
 		}
 	}

@@ -23,8 +23,11 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"sync/atomic"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestShouldEnableAutomaticContinuation(t *testing.T) {
@@ -3213,4 +3216,126 @@ func TestStreamContinuationEndHop_ErrorRules(t *testing.T) {
 			t.Errorf("endHop = (%v, %v), want (false, context.Canceled)", resume, err)
 		}
 	})
+}
+
+// TestModelsGenerateContent_RepeatedContinuationTokenStops pins that unary
+// continuation stops, without error, once a response repeats the token its
+// request was sent with, and returns the hops received so far merged.
+func TestModelsGenerateContent_RepeatedContinuationTokenStops(t *testing.T) {
+	ctx := context.Background()
+	const (
+		token0 = "dG9rZW4tMA==" // token-0
+		token1 = "dG9rZW4tMQ==" // token-1
+		token2 = "dG9rZW4tMg==" // token-2
+	)
+
+	tests := []struct {
+		desc string
+		// config is passed to GenerateContent.
+		config *GenerateContentConfig
+		// responseToken returns the base64 token the server answers request n with.
+		responseToken     func(n int32) string
+		wantRequestTokens []string
+		wantText          string
+		wantToken         []byte
+	}{
+		{
+			desc:              "server repeats the token it was sent",
+			responseToken:     func(int32) string { return token1 },
+			wantRequestTokens: []string{"", token1},
+			wantText:          "hop 1. hop 2. ",
+			wantToken:         []byte("token-1"),
+		},
+		{
+			desc: "server repeats a later token",
+			responseToken: func(n int32) string {
+				if n == 1 {
+					return token1
+				}
+				return token2
+			},
+			wantRequestTokens: []string{"", token1, token2},
+			wantText:          "hop 1. hop 2. hop 3. ",
+			wantToken:         []byte("token-2"),
+		},
+		{
+			desc:              "server repeats the caller's token",
+			config:            &GenerateContentConfig{ContinuationToken: []byte("token-0")},
+			responseToken:     func(int32) string { return token0 },
+			wantRequestTokens: []string{token0},
+			wantText:          "hop 1. ",
+			wantToken:         []byte("token-0"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			var (
+				requestCount  int32
+				mu            sync.Mutex
+				requestTokens []string
+			)
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				n := atomic.AddInt32(&requestCount, 1)
+				body, _ := io.ReadAll(r.Body)
+				var reqMap map[string]any
+				if err := json.Unmarshal(body, &reqMap); err != nil {
+					t.Errorf("request %d: json.Unmarshal() = %v", n, err)
+				}
+				tok, _ := reqMap["continuationToken"].(string)
+				mu.Lock()
+				requestTokens = append(requestTokens, tok)
+				mu.Unlock()
+
+				w.Header().Set("Content-Type", "application/json")
+				// Ends the unfixed loop so the test fails instead of hanging.
+				if n > 10 {
+					fmt.Fprintf(w, `{"candidates": [{"content": {"role": "model", "parts": [{"text": "hop %d. "}]}, "finishReason": "STOP"}]}`, n)
+					return
+				}
+				fmt.Fprintf(w, `{"candidates": [{"content": {"role": "model", "parts": [{"text": "hop %d. "}]}, "finishReason": "CONTINUATION", "continuationToken": %q}]}`, n, tt.responseToken(n))
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(ctx, &ClientConfig{
+				HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+				envVarProvider: func() map[string]string {
+					return map[string]string{"GOOGLE_API_KEY": "test-key"}
+				},
+			})
+			if err != nil {
+				t.Fatalf("NewClient() = %v", err)
+			}
+
+			resp, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", []*Content{
+				NewContentFromText("Tell me a story", RoleUser),
+			}, tt.config)
+			if err != nil {
+				t.Fatalf("GenerateContent() error = %v, want nil", err)
+			}
+
+			if got, want := atomic.LoadInt32(&requestCount), int32(len(tt.wantRequestTokens)); got != want {
+				t.Errorf("requests = %d, want %d", got, want)
+			}
+			mu.Lock()
+			gotTokens := requestTokens
+			mu.Unlock()
+			if diff := cmp.Diff(tt.wantRequestTokens, gotTokens); diff != "" {
+				t.Errorf("request tokens mismatch (-want +got):\n%s", diff)
+			}
+			if got := resp.Text(); got != tt.wantText {
+				t.Errorf("Text() = %q, want %q", got, tt.wantText)
+			}
+			if len(resp.Candidates) == 0 {
+				t.Fatalf("Candidates is empty, want 1 candidate")
+			}
+			cand := resp.Candidates[0]
+			if cand.FinishReason != FinishReasonContinuation {
+				t.Errorf("FinishReason = %q, want %q", cand.FinishReason, FinishReasonContinuation)
+			}
+			if !bytes.Equal(cand.ContinuationToken, tt.wantToken) {
+				t.Errorf("ContinuationToken = %q, want %q", cand.ContinuationToken, tt.wantToken)
+			}
+		})
+	}
 }

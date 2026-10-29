@@ -339,6 +339,17 @@ func shouldContinueGeneration(response *GenerateContentResponse) []byte {
 	return nil
 }
 
+// nextUnaryContinuationToken returns the token for the next unary request, or
+// nil to stop. It also stops when the response repeats sentToken, the token
+// its request was sent with, because resending it would repeat the request.
+func nextUnaryContinuationToken(response *GenerateContentResponse, sentToken []byte) []byte {
+	token := shouldContinueGeneration(response)
+	if len(token) == 0 || bytes.Equal(token, sentToken) {
+		return nil
+	}
+	return token
+}
+
 func prepareContinuationConfig(config *GenerateContentConfig, continuationToken []byte) *GenerateContentConfig {
 	if config == nil {
 		return &GenerateContentConfig{

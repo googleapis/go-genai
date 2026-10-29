@@ -5641,8 +5641,10 @@ var deprecationWarningGenerateVideosFromSource sync.Once
 // A response that stops before the model finishes is continued automatically: the same request is
 // sent again with the response's continuation token until the model finishes. The responses are
 // returned merged into one, with their parts concatenated and their usage metadata summed. Each
-// request is billed, including any that succeeded before a later one failed. Set
-// [GenerateContentConfig.AutomaticContinuation] to false to turn this off.
+// request is billed, including any that succeeded before a later one failed. Continuation also
+// stops when a response repeats the token its request was sent with; the merged response then keeps
+// finish reason CONTINUATION and that token. Set [GenerateContentConfig.AutomaticContinuation] to
+// false to turn this off.
 func (m Models) GenerateContent(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) (*GenerateContentResponse, error) {
 	if config != nil {
 		config.setDefaults()
@@ -5657,12 +5659,17 @@ func (m Models) GenerateContent(ctx context.Context, model string, contents []*C
 	}
 
 	hopResponses := []*GenerateContentResponse{response}
+	var sentToken []byte
+	if config != nil {
+		sentToken = config.ContinuationToken
+	}
 	for {
-		nextToken := shouldContinueGeneration(response)
+		nextToken := nextUnaryContinuationToken(response, sentToken)
 		if len(nextToken) == 0 {
 			break
 		}
 
+		sentToken = nextToken
 		callConfig := prepareContinuationConfig(config, nextToken)
 		response, err = m.generateContent(ctx, model, contents, callConfig)
 		if err != nil {

@@ -16,6 +16,15 @@ package interactions
 
 import "strings"
 
+// PopulateOutputProperties derives the SDK-only convenience fields
+// (OutputText, OutputImage, OutputAudio and OutputVideo) from Steps, as done
+// after deserialization. It is for SDK code that assembles an Interaction
+// itself (e.g. by merging automatic continuation hops); fields are only set
+// when a matching output is found, so clear them first to recompute.
+func (i *Interaction) PopulateOutputProperties() {
+	i.populateOutputProperties()
+}
+
 // populateOutputProperties derives the SDK-only convenience fields
 // (OutputText, OutputImage, OutputAudio and OutputVideo) from Steps.
 //

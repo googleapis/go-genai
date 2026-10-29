@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.77.0](https://github.com/googleapis/go-genai/compare/v1.76.0...v1.77.0) (2026-10-29)
+
+
+### Features
+
+* Add support for continuation_token and requires_continuation status ([51d761f](https://github.com/googleapis/go-genai/commit/51d761f10a0c6198fba3672be3314edb53501839))
+* add video upscale task parameter ([cab8bf7](https://github.com/googleapis/go-genai/commit/cab8bf7c11e98ae59fff764a028b4ddc39f15bd5))
+* **interactions:** add AutomaticContinuation to Interactions.Create in the Go SDK ([0a6da26](https://github.com/googleapis/go-genai/commit/0a6da26714d2f7ecd48802948e80ed2c4c131f9b))
+* **interactions:** declare continuation_ids on Interaction ([5b54979](https://github.com/googleapis/go-genai/commit/5b54979d4525f140a0409c095e7b88f358ef1cd7))
+* support video understanding in Gemini Developer API ([5407437](https://github.com/googleapis/go-genai/commit/5407437c41c1854cb6235395b8e4abfa46be1626))
+
+
+### Bug Fixes
+
+* **interactions:** align SDK User-Agent and x-goog-api-client headers ([58187ad](https://github.com/googleapis/go-genai/commit/58187ad9eba686df700d701195b4db936784ec1e))
+
 ## [1.76.0](https://github.com/googleapis/go-genai/compare/v1.75.0...v1.76.0) (2026-10-22)
 
 

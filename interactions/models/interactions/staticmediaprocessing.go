@@ -20,7 +20,32 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
+type StaticMediaProcessingContentLayer string
+
+const (
+	StaticMediaProcessingContentLayerFrames     StaticMediaProcessingContentLayer = "frames"
+	StaticMediaProcessingContentLayerAudio      StaticMediaProcessingContentLayer = "audio"
+	StaticMediaProcessingContentLayerTranscript StaticMediaProcessingContentLayer = "transcript"
+)
+
+func (e StaticMediaProcessingContentLayer) ToPointer() *StaticMediaProcessingContentLayer {
+	return &e
+}
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *StaticMediaProcessingContentLayer) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "frames", "audio", "transcript":
+			return true
+		}
+	}
+	return false
+}
+
 type StaticMediaProcessing struct {
+	// Optional. Content layers to extract from the video.
+	ContentLayers []StaticMediaProcessingContentLayer `json:"content_layers,omitzero"`
 	// Optional. Segment end time. Specified as a decimal number of seconds followed
 	// by an 's' suffix, e.g., "30s". Must be non-negative and greater than
 	// `start_offset` if `start_offset` is set.
@@ -43,6 +68,13 @@ func (s *StaticMediaProcessing) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (s *StaticMediaProcessing) GetContentLayers() []StaticMediaProcessingContentLayer {
+	if s == nil {
+		return nil
+	}
+	return s.ContentLayers
 }
 
 func (s *StaticMediaProcessing) GetEndOffset() *string {

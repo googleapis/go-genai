@@ -17,6 +17,10 @@
 package interactions
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
@@ -54,6 +58,151 @@ func (e *AudioContentMimeType) IsExact() bool {
 	return false
 }
 
+type AudioProcessingEnum string
+
+const (
+	AudioProcessingEnumStatic AudioProcessingEnum = "static"
+)
+
+func (e AudioProcessingEnum) ToPointer() *AudioProcessingEnum {
+	return &e
+}
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *AudioProcessingEnum) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "static":
+			return true
+		}
+	}
+	return false
+}
+
+type AudioProcessingType string
+
+const (
+	AudioProcessingTypeAudioMediaProcessing AudioProcessingType = "AudioMediaProcessing"
+	AudioProcessingTypeAudioProcessingEnum  AudioProcessingType = "audio_processing_enum"
+	AudioProcessingTypeUnknown              AudioProcessingType = "Unknown"
+)
+
+// AudioProcessing - How the model processes this audio for understanding.
+type AudioProcessing struct {
+	AudioMediaProcessing *AudioMediaProcessing `queryParam:"inline" union:"member"`
+	AudioProcessingEnum  *AudioProcessingEnum  `queryParam:"inline" union:"member"`
+	UnknownRaw           json.RawMessage       `json:"-" union:"unknown"`
+
+	Type AudioProcessingType
+}
+
+type AudioProcessingMember interface {
+	AudioMediaProcessing | AudioProcessingEnum
+}
+
+func NewAudioProcessing[T AudioProcessingMember](val T) AudioProcessing {
+	switch v := any(val).(type) {
+	case AudioMediaProcessing:
+		return AudioProcessing{
+			AudioMediaProcessing: &v,
+			Type:                 AudioProcessingTypeAudioMediaProcessing,
+		}
+	case AudioProcessingEnum:
+		return AudioProcessing{
+			AudioProcessingEnum: &v,
+			Type:                AudioProcessingTypeAudioProcessingEnum,
+		}
+	}
+	panic(fmt.Sprintf("unreachable: %T is not a member of union AudioProcessing", val))
+}
+func NewAudioProcessingUnknown(raw json.RawMessage) AudioProcessing {
+	return AudioProcessing{
+		UnknownRaw: raw,
+		Type:       AudioProcessingTypeUnknown,
+	}
+}
+
+func (u AudioProcessing) GetUnknownRaw() json.RawMessage {
+	return u.UnknownRaw
+}
+
+func (u AudioProcessing) IsUnknown() bool {
+	return u.Type == AudioProcessingTypeUnknown
+}
+
+func (u *AudioProcessing) UnmarshalJSON(data []byte) error {
+	*u = AudioProcessing{}
+
+	var candidates []utils.UnionCandidate
+
+	// Collect all valid candidates
+	var audioMediaProcessing AudioMediaProcessing = AudioMediaProcessing{}
+	if err := utils.UnmarshalJSON(data, &audioMediaProcessing, "", true, nil); err == nil {
+		candidates = append(candidates, utils.UnionCandidate{
+			Type:  AudioProcessingTypeAudioMediaProcessing,
+			Value: &audioMediaProcessing,
+		})
+	}
+
+	var audioProcessingEnum AudioProcessingEnum = AudioProcessingEnum("")
+	if err := utils.UnmarshalJSON(data, &audioProcessingEnum, "", true, nil); err == nil {
+		candidates = append(candidates, utils.UnionCandidate{
+			Type:  AudioProcessingTypeAudioProcessingEnum,
+			Value: &audioProcessingEnum,
+		})
+	}
+
+	if len(candidates) == 0 {
+		if !json.Valid(data) {
+			return fmt.Errorf("could not unmarshal `%s` into any supported union types for AudioProcessing", string(data))
+		}
+		u.UnknownRaw = json.RawMessage(data)
+		u.Type = AudioProcessingTypeUnknown
+		return nil
+	}
+
+	// Pick the best candidate using multi-stage filtering
+	best := utils.PickBestUnionCandidate(candidates, data)
+	if best == nil {
+		u.UnknownRaw = json.RawMessage(data)
+		u.Type = AudioProcessingTypeUnknown
+		return nil
+	}
+
+	// Set the union type and value based on the best candidate
+	u.Type = best.Type.(AudioProcessingType)
+	switch best.Type {
+	case AudioProcessingTypeAudioMediaProcessing:
+		u.AudioMediaProcessing = best.Value.(*AudioMediaProcessing)
+		return nil
+	case AudioProcessingTypeAudioProcessingEnum:
+		u.AudioProcessingEnum = best.Value.(*AudioProcessingEnum)
+		return nil
+	}
+
+	if !json.Valid(data) {
+		return fmt.Errorf("could not unmarshal `%s` into any supported union types for AudioProcessing", string(data))
+	}
+	u.UnknownRaw = json.RawMessage(data)
+	u.Type = AudioProcessingTypeUnknown
+	return nil
+}
+
+func (u AudioProcessing) MarshalJSON() ([]byte, error) {
+	if u.AudioMediaProcessing != nil {
+		return utils.MarshalJSON(u.AudioMediaProcessing, "", true)
+	}
+
+	if u.AudioProcessingEnum != nil {
+		return utils.MarshalJSON(u.AudioProcessingEnum, "", true)
+	}
+
+	if u.UnknownRaw != nil {
+		return json.RawMessage(u.UnknownRaw), nil
+	}
+	return nil, errors.New("could not marshal union type AudioProcessing: all fields are null")
+}
+
 // AudioContent - An audio content block.
 type AudioContent struct {
 	// The number of audio channels.
@@ -62,6 +211,8 @@ type AudioContent struct {
 	Data *string `json:"data,omitzero"`
 	// The mime type of the audio.
 	MimeType *AudioContentMimeType `json:"mime_type,omitzero"`
+	// How the model processes this audio for understanding.
+	Processing *AudioProcessing `json:"processing,omitzero"`
 	// The sample rate of the audio.
 	SampleRate *int `json:"sample_rate,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
@@ -100,6 +251,13 @@ func (a *AudioContent) GetMimeType() *AudioContentMimeType {
 		return nil
 	}
 	return a.MimeType
+}
+
+func (a *AudioContent) GetProcessing() *AudioProcessing {
+	if a == nil {
+		return nil
+	}
+	return a.Processing
 }
 
 func (a *AudioContent) GetSampleRate() *int {

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.78.0](https://github.com/googleapis/go-genai/compare/v1.77.0...v1.78.0) (2026-10-30)
+
+
+### Features
+
+* **cli:** use gemini-3.5-transcribe as default model for transcribe command ([968e135](https://github.com/googleapis/go-genai/commit/968e13580a53b19b47ee6c8f10c4f2c52da319a3))
+* Disable GenerateVideos for Gemini API, update tests/READMEs ([9cf04de](https://github.com/googleapis/go-genai/commit/9cf04deac32f2418781170b3cd41c09abf060564))
+
 ## [1.77.0](https://github.com/googleapis/go-genai/compare/v1.76.0...v1.77.0) (2026-10-29)
 
 

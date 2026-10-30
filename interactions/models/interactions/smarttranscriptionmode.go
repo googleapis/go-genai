@@ -22,6 +22,10 @@ import (
 
 // SmartTranscriptionMode - Configuration for smart transcription mode.
 type SmartTranscriptionMode struct {
+	// The source text to be edited or rewritten via voice instructions.
+	// When provided, the model performs voice-driven editing and outputs the
+	// finalized replacement text.
+	SourceText *string `json:"source_text,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
 	type_ string `const:"smart" json:"type"`
 }
@@ -35,6 +39,13 @@ func (s *SmartTranscriptionMode) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (s *SmartTranscriptionMode) GetSourceText() *string {
+	if s == nil {
+		return nil
+	}
+	return s.SourceText
 }
 
 func (s *SmartTranscriptionMode) GetType() string {

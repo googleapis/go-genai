@@ -34,14 +34,13 @@ func run(ctx context.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if client.ClientConfig().Backend == genai.BackendVertexAI {
-		fmt.Println("Calling VertexAI GenerateVideo API...")
-	} else {
-		fmt.Println("Calling GeminiAI GenerateVideo API...")
+	if client.ClientConfig().Backend != genai.BackendVertexAI {
+		log.Fatal("GenerateVideos is only supported in the Vertex AI backend.")
 	}
-	var config genai.GenerateVideosConfig
-	if client.ClientConfig().Backend == genai.BackendVertexAI {
-		config.OutputGCSURI = "gs://unified-genai-tests/tmp/genai/video/outputs"
+
+	fmt.Println("Calling VertexAI GenerateVideo API...")
+	config := genai.GenerateVideosConfig{
+		OutputGCSURI: "gs://unified-genai-tests/tmp/genai/video/outputs",
 	}
 	// Call the GenerateVideo method.
 	source := &genai.GenerateVideosSource{
@@ -68,18 +67,6 @@ func run(ctx context.Context) {
 	}
 	// Log the output.
 	fmt.Println(string(response))
-
-	// Download the video file.
-	if client.ClientConfig().Backend != genai.BackendVertexAI {
-		for _, v := range operation.Response.GeneratedVideos {
-			data, err := client.Files.Download(ctx, genai.NewDownloadURIFromGeneratedVideo(v), nil)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			fmt.Printf("Video file %s downloaded. Data size: %d. \n", v.Video.URI, len(data))
-		}
-	}
 }
 
 func main() {

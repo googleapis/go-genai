@@ -66,8 +66,8 @@ client, err := genai.NewClient(ctx, nil)
     -   **Low Latency & High Volume Tasks:** `gemini-2.5-flash-lite`
     -   **Fast Image Generation and Editing:** `gemini-2.5-flash-image`
     -   **High-Quality Image Generation and Editing:** `gemini-3-pro-image-preview`
-    -   **High-Fidelity Video Generation:** `veo-3.0-generate-001` or `veo-3.1-generate-preview`
-    -   **Fast Video Generation:** `veo-3.0-fast-generate-001` or `veo-3.1-fast-generate-preview`
+    -   **High-Fidelity Video Generation:** `veo-3.0-generate-001` or `veo-3.1-generate-001`
+    -   **Fast Video Generation:** `veo-3.0-fast-generate-001`
 
 -   It is also acceptable to use following models if explicitly requested by the
     user:

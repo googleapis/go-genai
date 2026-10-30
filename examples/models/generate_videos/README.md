@@ -1,19 +1,13 @@
 # Running the example:
 
-## Set up the environment variables:
+GenerateVideos is only supported on the Vertex AI backend.
 
-### For VertexAI Backend
+## Set up the environment variables:
 
 ```
 export GOOGLE_GENAI_USE_VERTEXAI=true
 export GOOGLE_CLOUD_PROJECT={YOUR_PROJECT_ID}
 export GOOGLE_CLOUD_LOCATION={YOUR_LOCATION}
-```
-
-### For GeminiAPI Backend
-```
-export GOOGLE_GENAI_USE_VERTEXAI=false
-export GOOGLE_API_KEY={YOUR_API_KEY}
 ```
 
 Once you setup the environment variables, you can download, build and run the

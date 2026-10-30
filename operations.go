@@ -40,6 +40,84 @@ func fetchPredictOperationParametersToVertex(fromObject map[string]any, parentOb
 	return toObject, nil
 }
 
+func generateVideosOperationFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromName := InternalGetValueByPath(fromObject, []string{"name"})
+	if fromName != nil {
+		InternalSetValueByPath(toObject, []string{"name"}, fromName)
+	}
+
+	fromMetadata := InternalGetValueByPath(fromObject, []string{"metadata"})
+	if fromMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+
+	fromDone := InternalGetValueByPath(fromObject, []string{"done"})
+	if fromDone != nil {
+		InternalSetValueByPath(toObject, []string{"done"}, fromDone)
+	}
+
+	fromError := InternalGetValueByPath(fromObject, []string{"error"})
+	if fromError != nil {
+		InternalSetValueByPath(toObject, []string{"error"}, fromError)
+	}
+
+	fromResponse := InternalGetValueByPath(fromObject, []string{"response", "generateVideoResponse"})
+	if fromResponse != nil {
+		fromResponse, err = generateVideosResponseFromMldev(fromResponse.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"response"}, fromResponse)
+	}
+
+	return toObject, nil
+}
+
+func generateVideosResponseFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromGeneratedVideos := InternalGetValueByPath(fromObject, []string{"generatedSamples"})
+	if fromGeneratedVideos != nil {
+		fromGeneratedVideos, err = InternalApplyConverterToSliceWithRoot(fromGeneratedVideos.([]any), generatedVideoFromMldev, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"generatedVideos"}, fromGeneratedVideos)
+	}
+
+	fromRaiMediaFilteredCount := InternalGetValueByPath(fromObject, []string{"raiMediaFilteredCount"})
+	if fromRaiMediaFilteredCount != nil {
+		InternalSetValueByPath(toObject, []string{"raiMediaFilteredCount"}, fromRaiMediaFilteredCount)
+	}
+
+	fromRaiMediaFilteredReasons := InternalGetValueByPath(fromObject, []string{"raiMediaFilteredReasons"})
+	if fromRaiMediaFilteredReasons != nil {
+		InternalSetValueByPath(toObject, []string{"raiMediaFilteredReasons"}, fromRaiMediaFilteredReasons)
+	}
+
+	return toObject, nil
+}
+
+func generatedVideoFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromVideo := InternalGetValueByPath(fromObject, []string{"video"})
+	if fromVideo != nil {
+		fromVideo, err = videoFromMldev(fromVideo.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"video"}, fromVideo)
+	}
+
+	return toObject, nil
+}
+
 func getOperationParametersToMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
 	toObject = make(map[string]any)
 
@@ -114,6 +192,32 @@ func uploadToFileSearchStoreResponseFromMldev(fromObject map[string]any, parentO
 	fromDocumentName := InternalGetValueByPath(fromObject, []string{"documentName"})
 	if fromDocumentName != nil {
 		InternalSetValueByPath(toObject, []string{"documentName"}, fromDocumentName)
+	}
+
+	return toObject, nil
+}
+
+func videoFromMldev(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromUri := InternalGetValueByPath(fromObject, []string{"uri"})
+	if fromUri != nil {
+		InternalSetValueByPath(toObject, []string{"uri"}, fromUri)
+	}
+
+	fromVideoBytes := InternalGetValueByPath(fromObject, []string{"encodedVideo"})
+	if fromVideoBytes != nil {
+		fromVideoBytes, err = InternalTBytes(fromVideoBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"videoBytes"}, fromVideoBytes)
+	}
+
+	fromMimeType := InternalGetValueByPath(fromObject, []string{"encoding"})
+	if fromMimeType != nil {
+		InternalSetValueByPath(toObject, []string{"mimeType"}, fromMimeType)
 	}
 
 	return toObject, nil

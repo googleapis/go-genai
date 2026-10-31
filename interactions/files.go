@@ -40,6 +40,8 @@ import (
 	"google.golang.org/genai/interactions/retry"
 )
 
+const googleAIAPIDefaultVersion = "v1"
+
 type Files struct {
 	rootSDK          *GenAI
 	sdkConfiguration config.SDKConfiguration
@@ -351,7 +353,7 @@ func (s *Files) Upload(ctx context.Context, request operations.UploadEnvironment
 	if request.APIVersion != nil {
 		globals.APIVersion = request.APIVersion
 	}
-	apiVersion := "v1beta"
+	apiVersion := googleAIAPIDefaultVersion
 	if globals.APIVersion != nil && *globals.APIVersion != "" {
 		apiVersion = *globals.APIVersion
 	}
@@ -621,7 +623,7 @@ func (s *Files) DownloadStream(ctx context.Context, environment string, path str
 	}
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
-	apiVersion := "v1beta"
+	apiVersion := googleAIAPIDefaultVersion
 	if s.sdkConfiguration.Globals.APIVersion != nil && *s.sdkConfiguration.Globals.APIVersion != "" {
 		apiVersion = *s.sdkConfiguration.Globals.APIVersion
 	}

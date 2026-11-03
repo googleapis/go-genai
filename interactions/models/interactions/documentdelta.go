@@ -23,8 +23,18 @@ import (
 type DocumentDeltaMimeType string
 
 const (
-	DocumentDeltaMimeTypeApplicationPdf DocumentDeltaMimeType = "application/pdf"
-	DocumentDeltaMimeTypeTextCsv        DocumentDeltaMimeType = "text/csv"
+	DocumentDeltaMimeTypeApplicationPdf                                                       DocumentDeltaMimeType = "application/pdf"
+	DocumentDeltaMimeTypeTextCsv                                                              DocumentDeltaMimeType = "text/csv"
+	DocumentDeltaMimeTypeApplicationVndOpenxmlformatsOfficedocumentPresentationmlPresentation DocumentDeltaMimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+	DocumentDeltaMimeTypeApplicationVndMsPowerpoint                                           DocumentDeltaMimeType = "application/vnd.ms-powerpoint"
+	DocumentDeltaMimeTypeApplicationVndOasisOpendocumentPresentation                          DocumentDeltaMimeType = "application/vnd.oasis.opendocument.presentation"
+	DocumentDeltaMimeTypeApplicationVndOpenxmlformatsOfficedocumentWordprocessingmlDocument   DocumentDeltaMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	DocumentDeltaMimeTypeApplicationMsword                                                    DocumentDeltaMimeType = "application/msword"
+	DocumentDeltaMimeTypeApplicationVndOpenxmlformatsOfficedocumentWordprocessingmlTemplate   DocumentDeltaMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+	DocumentDeltaMimeTypeApplicationVndOasisOpendocumentText                                  DocumentDeltaMimeType = "application/vnd.oasis.opendocument.text"
+	DocumentDeltaMimeTypeApplicationVndOpenxmlformatsOfficedocumentSpreadsheetmlSheet         DocumentDeltaMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	DocumentDeltaMimeTypeApplicationVndMsExcel                                                DocumentDeltaMimeType = "application/vnd.ms-excel"
+	DocumentDeltaMimeTypeApplicationVndOasisOpendocumentSpreadsheet                           DocumentDeltaMimeType = "application/vnd.oasis.opendocument.spreadsheet"
 )
 
 func (e DocumentDeltaMimeType) ToPointer() *DocumentDeltaMimeType {
@@ -35,7 +45,7 @@ func (e DocumentDeltaMimeType) ToPointer() *DocumentDeltaMimeType {
 func (e *DocumentDeltaMimeType) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "application/pdf", "text/csv":
+		case "application/pdf", "text/csv", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint", "application/vnd.oasis.opendocument.presentation", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.template", "application/vnd.oasis.opendocument.text", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel", "application/vnd.oasis.opendocument.spreadsheet":
 			return true
 		}
 	}

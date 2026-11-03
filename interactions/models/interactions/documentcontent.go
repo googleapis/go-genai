@@ -24,8 +24,18 @@ import (
 type DocumentContentMimeType string
 
 const (
-	DocumentContentMimeTypeApplicationPdf DocumentContentMimeType = "application/pdf"
-	DocumentContentMimeTypeTextCsv        DocumentContentMimeType = "text/csv"
+	DocumentContentMimeTypeApplicationPdf                                                       DocumentContentMimeType = "application/pdf"
+	DocumentContentMimeTypeTextCsv                                                              DocumentContentMimeType = "text/csv"
+	DocumentContentMimeTypeApplicationVndOpenxmlformatsOfficedocumentPresentationmlPresentation DocumentContentMimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+	DocumentContentMimeTypeApplicationVndMsPowerpoint                                           DocumentContentMimeType = "application/vnd.ms-powerpoint"
+	DocumentContentMimeTypeApplicationVndOasisOpendocumentPresentation                          DocumentContentMimeType = "application/vnd.oasis.opendocument.presentation"
+	DocumentContentMimeTypeApplicationVndOpenxmlformatsOfficedocumentWordprocessingmlDocument   DocumentContentMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	DocumentContentMimeTypeApplicationMsword                                                    DocumentContentMimeType = "application/msword"
+	DocumentContentMimeTypeApplicationVndOpenxmlformatsOfficedocumentWordprocessingmlTemplate   DocumentContentMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+	DocumentContentMimeTypeApplicationVndOasisOpendocumentText                                  DocumentContentMimeType = "application/vnd.oasis.opendocument.text"
+	DocumentContentMimeTypeApplicationVndOpenxmlformatsOfficedocumentSpreadsheetmlSheet         DocumentContentMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	DocumentContentMimeTypeApplicationVndMsExcel                                                DocumentContentMimeType = "application/vnd.ms-excel"
+	DocumentContentMimeTypeApplicationVndOasisOpendocumentSpreadsheet                           DocumentContentMimeType = "application/vnd.oasis.opendocument.spreadsheet"
 )
 
 func (e DocumentContentMimeType) ToPointer() *DocumentContentMimeType {
@@ -36,7 +46,7 @@ func (e DocumentContentMimeType) ToPointer() *DocumentContentMimeType {
 func (e *DocumentContentMimeType) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "application/pdf", "text/csv":
+		case "application/pdf", "text/csv", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.ms-powerpoint", "application/vnd.oasis.opendocument.presentation", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.template", "application/vnd.oasis.opendocument.text", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel", "application/vnd.oasis.opendocument.spreadsheet":
 			return true
 		}
 	}

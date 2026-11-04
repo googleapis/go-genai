@@ -2496,14 +2496,15 @@ func TestClientAPIVersionBetaFromEnv(t *testing.T) {
 	}
 }
 
-// Upload paths carry their own version segment (e.g. "upload/v1beta/files")
-// and must not be prefixed with the client API version.
+// Paths templated with "{api_version}" (such as upload endpoints) have the
+// placeholder substituted with the resolved API version instead of prepending
+// the version at the front.
 func TestCreateAPIURLUploadPathWithNonDefaultAPIVersion(t *testing.T) {
 	ctx := context.Background()
 	client, err := NewClient(ctx, &ClientConfig{
 		Backend:     BackendGeminiAPI,
 		APIKey:      "test-api-key",
-		HTTPOptions: HTTPOptions{APIVersion: "v1"},
+		HTTPOptions: HTTPOptions{APIVersion: "v1alpha"},
 	})
 	if err != nil {
 		t.Fatalf("NewClient failed: %v", err)
@@ -2513,10 +2514,10 @@ func TestCreateAPIURLUploadPathWithNonDefaultAPIVersion(t *testing.T) {
 		path     string
 		wantPath string
 	}{
-		{path: "upload/v1beta/files", wantPath: "/upload/v1beta/files"},
-		{path: "upload/v1beta/fileSearchStores/store:uploadToFileSearchStore", wantPath: "/upload/v1beta/fileSearchStores/store:uploadToFileSearchStore"},
-		{path: "models/gemini-pro:generateContent", wantPath: "/v1/models/gemini-pro:generateContent"},
-		{path: "files", wantPath: "/v1/files"},
+		{path: "upload/{api_version}/files", wantPath: "/upload/v1alpha/files"},
+		{path: "upload/{api_version}/fileSearchStores/store:uploadToFileSearchStore", wantPath: "/upload/v1alpha/fileSearchStores/store:uploadToFileSearchStore"},
+		{path: "models/gemini-pro:generateContent", wantPath: "/v1alpha/models/gemini-pro:generateContent"},
+		{path: "files", wantPath: "/v1alpha/files"},
 	}
 	for _, tt := range tests {
 		u, err := ac.createAPIURL(tt.path, http.MethodPost, &client.clientConfig.HTTPOptions)

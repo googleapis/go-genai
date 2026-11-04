@@ -302,7 +302,7 @@ func NewMockUploadServer(t *testing.T) *MockUploadServer {
 
 func (s *MockUploadServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.t.Logf("Mock server received request: %s %s Headers: %v", r.Method, r.URL.Path, r.Header)
-	if strings.HasPrefix(r.URL.Path, "/upload/v1beta/files") && r.Header.Get("X-Goog-Upload-Protocol") == "resumable" && r.Header.Get("X-Goog-Upload-Command") == "start" {
+	if strings.HasPrefix(r.URL.Path, "/upload/"+googleAIAPIDefaultVersion+"/files") && r.Header.Get("X-Goog-Upload-Protocol") == "resumable" && r.Header.Get("X-Goog-Upload-Command") == "start" {
 		s.createHandler(w, r)
 	} else if strings.HasPrefix(r.URL.Path, "/upload-session/") {
 		s.uploadHandler(w, r)
@@ -935,4 +935,76 @@ type staticPropertyProvider string
 
 func (s staticPropertyProvider) GetProperty(ctx context.Context) (string, error) {
 	return string(s), nil
+}
+
+// TestUploadUsesClientAPIVersion checks that the resumable upload start request
+// for Files.Upload and FileSearchStores.UploadToFileSearchStore goes to
+// upload/<resolved client API version>/... rather than a hardcoded version.
+func TestUploadUsesClientAPIVersion(t *testing.T) {
+	tests := []struct {
+		name             string
+		apiVersion       string
+		envVersion       string
+		perReqAPIVersion string
+		wantVersion      string
+	}{
+		{name: "default", wantVersion: googleAIAPIDefaultVersion},
+		{name: "explicit APIVersion", apiVersion: "v1alpha", wantVersion: "v1alpha"},
+		{name: "GOOGLE_GENAI_API_VERSION env var", envVersion: "v1alpha", wantVersion: "v1alpha"},
+		{name: "explicit APIVersion overrides env var", apiVersion: "v1", envVersion: "v1alpha", wantVersion: "v1"},
+		{name: "per-request HTTPOptions.APIVersion overrides client", apiVersion: "v1", perReqAPIVersion: "v1alpha", wantVersion: "v1alpha"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("GOOGLE_GENAI_API_VERSION", tt.envVersion)
+			var startPaths []string
+			var ts *httptest.Server
+			ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Header.Get("X-Goog-Upload-Command") == "start" {
+					startPaths = append(startPaths, r.URL.Path)
+					w.Header().Set("X-Goog-Upload-URL", ts.URL+"/upload-session/1")
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, `{}`)
+					return
+				}
+				w.Header().Set("X-Goog-Upload-Status", "final")
+				w.WriteHeader(http.StatusOK)
+				if strings.Contains(startPaths[len(startPaths)-1], "fileSearchStores") {
+					fmt.Fprint(w, `{"name": "fileSearchStores/store/upload/operations/op"}`)
+				} else {
+					fmt.Fprint(w, `{"file": {"name": "files/test"}}`)
+				}
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(context.Background(), &ClientConfig{
+				Backend:     BackendGeminiAPI,
+				APIKey:      "test-api-key",
+				HTTPOptions: HTTPOptions{BaseURL: ts.URL, APIVersion: tt.apiVersion},
+				HTTPClient:  ts.Client(),
+			})
+			if err != nil {
+				t.Fatalf("NewClient failed: %v", err)
+			}
+
+			var reqHTTPOpts *HTTPOptions
+			if tt.perReqAPIVersion != "" {
+				reqHTTPOpts = &HTTPOptions{APIVersion: tt.perReqAPIVersion}
+			}
+			if _, err := client.Files.Upload(context.Background(), strings.NewReader("data"), &UploadFileConfig{MIMEType: "text/plain", HTTPOptions: reqHTTPOpts}); err != nil {
+				t.Fatalf("Files.Upload failed: %v", err)
+			}
+			if _, err := client.FileSearchStores.UploadToFileSearchStore(context.Background(), strings.NewReader("data"), "fileSearchStores/store", &UploadToFileSearchStoreConfig{MIMEType: "text/plain", HTTPOptions: reqHTTPOpts}); err != nil {
+				t.Fatalf("FileSearchStores.UploadToFileSearchStore failed: %v", err)
+			}
+
+			want := []string{
+				"/upload/" + tt.wantVersion + "/files",
+				"/upload/" + tt.wantVersion + "/fileSearchStores/store:uploadToFileSearchStore",
+			}
+			if diff := cmp.Diff(want, startPaths); diff != "" {
+				t.Errorf("upload start request paths mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
 }

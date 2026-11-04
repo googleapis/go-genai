@@ -653,7 +653,7 @@ func (m FileSearchStores) uploadToFileSearchStore(ctx context.Context, fileSearc
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		path, err = InternalFormatMap("None", urlParams)
 	} else {
-		path, err = InternalFormatMap("upload/v1beta/{file_search_store_name}:uploadToFileSearchStore", urlParams)
+		path, err = InternalFormatMap("upload/{api_version}/{file_search_store_name}:uploadToFileSearchStore", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
@@ -827,7 +827,6 @@ func (m FileSearchStores) UploadToFileSearchStore(ctx context.Context, r io.Read
 		httpOptions.Headers = http.Header{}
 	}
 
-	httpOptions.APIVersion = ""
 	httpOptions.Headers.Add("Content-Type", "application/json")
 	httpOptions.Headers.Add("X-Goog-Upload-Protocol", "resumable")
 	httpOptions.Headers.Add("X-Goog-Upload-Command", "start")

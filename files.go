@@ -292,7 +292,7 @@ func (m Files) create(ctx context.Context, file *File, config *CreateFileConfig)
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
 		path, err = InternalFormatMap("None", urlParams)
 	} else {
-		path, err = InternalFormatMap("upload/v1beta/files", urlParams)
+		path, err = InternalFormatMap("upload/{api_version}/files", urlParams)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("invalid url params: %#v.\n%w", urlParams, err)
@@ -633,7 +633,6 @@ func (m Files) Upload(ctx context.Context, r io.Reader, config *UploadFileConfig
 		httpOptions.Headers = http.Header{}
 	}
 
-	httpOptions.APIVersion = ""
 	httpOptions.Headers.Add("Content-Type", "application/json")
 	httpOptions.Headers.Add("X-Goog-Upload-Protocol", "resumable")
 	httpOptions.Headers.Add("X-Goog-Upload-Command", "start")

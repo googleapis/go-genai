@@ -183,7 +183,9 @@ func (ac *apiClient) createAPIURL(suffix, method string, httpOptions *HTTPOption
 		}
 		finalURL = u.JoinPath(httpOptions.APIVersion, path)
 	} else {
-		if !strings.HasPrefix(path, "upload/") && !strings.Contains(path, fmt.Sprintf("/%s/", httpOptions.APIVersion)) {
+		if strings.Contains(path, apiVersionPlaceholder) {
+			path = resolveAPIVersionInPath(path, httpOptions.APIVersion)
+		} else if !strings.Contains(path, fmt.Sprintf("/%s/", httpOptions.APIVersion)) {
 			path = fmt.Sprintf("%s/%s", httpOptions.APIVersion, path)
 		}
 		finalURL = u.JoinPath(path)
@@ -191,6 +193,20 @@ func (ac *apiClient) createAPIURL(suffix, method string, httpOptions *HTTPOption
 
 	finalURL.RawQuery = query
 	return finalURL, nil
+}
+
+const apiVersionPlaceholder = "{api_version}"
+
+// resolveAPIVersionInPath substitutes "{api_version}" in a path template such
+// as "upload/{api_version}/files". When apiVersion is empty, the placeholder
+// segment is omitted without leaving a double slash (e.g. "upload/files").
+func resolveAPIVersionInPath(path, apiVersion string) string {
+	if apiVersion != "" {
+		return strings.ReplaceAll(path, apiVersionPlaceholder, apiVersion)
+	}
+	path = strings.ReplaceAll(path, apiVersionPlaceholder+"/", "")
+	path = strings.ReplaceAll(path, "/"+apiVersionPlaceholder, "")
+	return strings.ReplaceAll(path, apiVersionPlaceholder, "")
 }
 
 // patchHTTPOptions merges two HttpOptions objects, creating a new one.

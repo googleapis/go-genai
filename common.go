@@ -312,6 +312,8 @@ func formatMap(template string, variables map[string]any) (string, error) {
 					default:
 						return "", errors.New("formatMap: nested interface or unsupported type found")
 					}
+				} else if key == "api_version" {
+					buffer.WriteString(template[i : j+1])
 				}
 				i = j
 			}

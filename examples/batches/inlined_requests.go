@@ -110,7 +110,7 @@ func run(ctx context.Context) {
 
 	fmt.Printf("Created batch job: %s\n", inlineBatchJob.Name)
 
-	model := "models/gemini-embedding-2-preview"
+	model := "models/gemini-embedding-2"
 	embedBatchJob, err := client.Batches.CreateEmbeddings(
 		ctx,
 		&model,

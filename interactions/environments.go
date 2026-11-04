@@ -102,6 +102,7 @@ func (s *Environments) ListEnvironments(ctx context.Context, request operations.
 		defer cancel()
 	}
 
+	ctx = utils.WithOperation(ctx, "ListEnvironments")
 	req, err := http.NewRequestWithContext(ctx, "GET", opURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
@@ -323,6 +324,7 @@ func (s *Environments) CreateEnvironment(ctx context.Context, request operations
 		defer cancel()
 	}
 
+	ctx = utils.WithOperation(ctx, "CreateEnvironment")
 	req, err := http.NewRequestWithContext(ctx, "POST", opURL, bodyReader)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
@@ -752,6 +754,7 @@ func (s *Environments) GetEnvironment(ctx context.Context, request operations.Ge
 		defer cancel()
 	}
 
+	ctx = utils.WithOperation(ctx, "GetEnvironment")
 	req, err := http.NewRequestWithContext(ctx, "GET", opURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)

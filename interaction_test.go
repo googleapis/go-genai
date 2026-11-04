@@ -38,7 +38,7 @@ import (
 func TestInteractionsWorkflow(t *testing.T) {
 	// Create a mock server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/v1beta/interactions" {
+		if r.URL.Path != "/"+googleAIAPIDefaultVersion+"/interactions" {
 			t.Errorf("Path unexpected: %s", r.URL.Path)
 		}
 		if r.Method != "POST" {
@@ -101,6 +101,46 @@ func TestInteractionsWorkflow(t *testing.T) {
 
 	if res.Interaction.ID == nil || *res.Interaction.ID != "mock_interaction_id" {
 		t.Errorf("Expected ID 'mock_interaction_id', got '%v'", res.Interaction.ID)
+	}
+}
+
+func TestInteractionsWorkflow_ExplicitAPIVersion(t *testing.T) {
+	var gotPath string
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(map[string]any{
+			"id":      "mock_interaction_id",
+			"created": "2026-03-30T22:20:00Z",
+			"updated": "2026-03-30T22:20:00Z",
+			"status":  "completed",
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(context.Background(), &ClientConfig{
+		Backend:     BackendGeminiAPI,
+		APIKey:      "dummy_key",
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL, APIVersion: "v1alpha"},
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	modelInput := interactions.NewInteractionsInput([]interactions.Content{{
+		TextContent: &interactions.TextContent{Text: "Hello"},
+	}})
+	body := operations.NewCreateInteractionRequestBody(interactions.CreateModelInteraction{
+		Model: interactions.Model("gemini-2.5-flash"),
+		Input: &modelInput,
+	})
+	if _, err := client.Interactions.Create(context.Background(), operations.CreateInteractionRequest{Body: body}); err != nil {
+		t.Fatalf("Failed to call Create: %v", err)
+	}
+	if want := "/v1alpha/interactions"; gotPath != want {
+		t.Errorf("Path = %q, want %q", gotPath, want)
 	}
 }
 
@@ -362,7 +402,7 @@ func TestCredentialsLifecycle(t *testing.T) {
 		captured = append(captured, r.Method+" "+r.URL.Path)
 		w.Header().Set("Content-Type", "application/json")
 
-		if r.Method == "GET" && r.URL.Path == "/v1beta/credentials" {
+		if r.Method == "GET" && r.URL.Path == "/"+googleAIAPIDefaultVersion+"/credentials" {
 			resp := map[string]any{
 				"credentials": []map[string]any{
 					{
@@ -545,15 +585,15 @@ func TestCredentialsLifecycle(t *testing.T) {
 
 	// Verify captured endpoints
 	expectedCaptured := []string{
-		"POST /v1beta/credentials",
-		"POST /v1beta/credentials",
-		"POST /v1beta/credentials",
-		"GET /v1beta/credentials",
-		"GET /v1beta/credentials/cred_bearer_123",
-		"PATCH /v1beta/credentials/cred_bearer_123",
-		"PATCH /v1beta/credentials/cred_env_123",
-		"PATCH /v1beta/credentials/cred_oauth_123",
-		"DELETE /v1beta/credentials/cred_bearer_123",
+		"POST /" + googleAIAPIDefaultVersion + "/credentials",
+		"POST /" + googleAIAPIDefaultVersion + "/credentials",
+		"POST /" + googleAIAPIDefaultVersion + "/credentials",
+		"GET /" + googleAIAPIDefaultVersion + "/credentials",
+		"GET /" + googleAIAPIDefaultVersion + "/credentials/cred_bearer_123",
+		"PATCH /" + googleAIAPIDefaultVersion + "/credentials/cred_bearer_123",
+		"PATCH /" + googleAIAPIDefaultVersion + "/credentials/cred_env_123",
+		"PATCH /" + googleAIAPIDefaultVersion + "/credentials/cred_oauth_123",
+		"DELETE /" + googleAIAPIDefaultVersion + "/credentials/cred_bearer_123",
 	}
 	if len(captured) != len(expectedCaptured) {
 		t.Fatalf("Expected %d requests, got %d: %v", len(expectedCaptured), len(captured), captured)
@@ -827,9 +867,16 @@ func TestEnvironmentsLifecycle(t *testing.T) {
 
 func TestEnvironmentsFilesUploadAndDownload(t *testing.T) {
 	var uploadURL string
+	// This test constructs the interactions client directly (not via NewClient),
+	// so it uses the interactions package's own default API version rather than
+	// googleAIAPIDefaultVersion.
+	const apiVersion = "v1beta"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPut && strings.Contains(r.URL.Path, "/files/") {
+			if !strings.HasPrefix(r.URL.Path, "/upload/"+apiVersion+"/") {
+				t.Errorf("Expected PUT path to start with /upload/%s/, got %s", apiVersion, r.URL.Path)
+			}
 			w.Header().Set("X-Goog-Upload-URL", uploadURL)
 			w.Header().Set("X-Goog-Upload-Status", "active")
 			w.WriteHeader(http.StatusOK)
@@ -842,6 +889,9 @@ func TestEnvironmentsFilesUploadAndDownload(t *testing.T) {
 			return
 		}
 		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/files/test.txt") {
+			if !strings.HasPrefix(r.URL.Path, "/"+apiVersion+"/") {
+				t.Errorf("Expected GET path to start with /%s/, got %s", apiVersion, r.URL.Path)
+			}
 			if r.URL.Query().Get("alt") != "media" {
 				t.Errorf("Query alt = %s; want media", r.URL.Query().Get("alt"))
 			}

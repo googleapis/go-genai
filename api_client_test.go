@@ -2393,3 +2393,138 @@ func TestDownloadFileTimeout(t *testing.T) {
 	})
 }
 
+func TestClientAPIVersionFromEnv(t *testing.T) {
+	ctx := context.Background()
+	t.Setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+
+	client, err := NewClient(ctx, &ClientConfig{
+		APIKey: "test-api-key",
+	})
+	if err != nil {
+		t.Fatalf("NewClient failed: %v", err)
+	}
+	if got := client.ClientConfig().HTTPOptions.APIVersion; got != "v1alpha" {
+		t.Errorf("got APIVersion %q, want %q", got, "v1alpha")
+	}
+
+	// Explicit HTTPOptions.APIVersion overrides GOOGLE_GENAI_API_VERSION without error.
+	clientHTTPOpts, err := NewClient(ctx, &ClientConfig{
+		APIKey: "test-api-key",
+		HTTPOptions: HTTPOptions{
+			APIVersion: "v1",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewClient with HTTPOptions.APIVersion failed: %v", err)
+	}
+	if got := clientHTTPOpts.ClientConfig().HTTPOptions.APIVersion; got != "v1" {
+		t.Errorf("got APIVersion %q, want %q", got, "v1")
+	}
+}
+
+// GOOGLE_GENAI_API_VERSION applies to both the Gemini API and Vertex AI
+// backends unless an explicit version is set.
+func TestClientAPIVersionFromEnvForVertex(t *testing.T) {
+	ctx := context.Background()
+	t.Setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+
+	geminiClient, err := NewClient(ctx, &ClientConfig{
+		Backend: BackendGeminiAPI,
+		APIKey:  "test-api-key",
+	})
+	if err != nil {
+		t.Fatalf("NewClient (Gemini API) failed: %v", err)
+	}
+	if got := geminiClient.ClientConfig().HTTPOptions.APIVersion; got != "v1alpha" {
+		t.Errorf("Gemini API: got APIVersion %q, want %q", got, "v1alpha")
+	}
+
+	vertexClient, err := NewClient(ctx, &ClientConfig{
+		Backend:     BackendVertexAI,
+		Project:     "test-project",
+		Location:    "us-central1",
+		Credentials: &auth.Credentials{},
+	})
+	if err != nil {
+		t.Fatalf("NewClient (Vertex AI) failed: %v", err)
+	}
+	if got := vertexClient.ClientConfig().HTTPOptions.APIVersion; got != "v1alpha" {
+		t.Errorf("Vertex AI: got APIVersion %q, want %q", got, "v1alpha")
+	}
+
+	vertexExplicit, err := NewClient(ctx, &ClientConfig{
+		Backend:     BackendVertexAI,
+		Project:     "test-project",
+		Location:    "us-central1",
+		Credentials: &auth.Credentials{},
+		HTTPOptions: HTTPOptions{APIVersion: "v1"},
+	})
+	if err != nil {
+		t.Fatalf("NewClient (Vertex AI, explicit APIVersion) failed: %v", err)
+	}
+	if got := vertexExplicit.ClientConfig().HTTPOptions.APIVersion; got != "v1" {
+		t.Errorf("Vertex AI explicit: got APIVersion %q, want %q", got, "v1")
+	}
+}
+
+func TestClientAPIVersionBetaFromEnv(t *testing.T) {
+	ctx := context.Background()
+	t.Setenv("GOOGLE_GENAI_API_VERSION", "beta")
+
+	geminiClient, err := NewClient(ctx, &ClientConfig{
+		Backend: BackendGeminiAPI,
+		APIKey:  "test-api-key",
+	})
+	if err != nil {
+		t.Fatalf("NewClient (Gemini API) failed: %v", err)
+	}
+	if got := geminiClient.ClientConfig().HTTPOptions.APIVersion; got != "v1beta" {
+		t.Errorf("Gemini API: got APIVersion %q, want %q", got, "v1beta")
+	}
+
+	vertexClient, err := NewClient(ctx, &ClientConfig{
+		Backend:     BackendVertexAI,
+		Project:     "test-project",
+		Location:    "us-central1",
+		Credentials: &auth.Credentials{},
+	})
+	if err != nil {
+		t.Fatalf("NewClient (Vertex AI) failed: %v", err)
+	}
+	if got := vertexClient.ClientConfig().HTTPOptions.APIVersion; got != "v1beta1" {
+		t.Errorf("Vertex AI: got APIVersion %q, want %q", got, "v1beta1")
+	}
+}
+
+// Upload paths carry their own version segment (e.g. "upload/v1beta/files")
+// and must not be prefixed with the client API version.
+func TestCreateAPIURLUploadPathWithNonDefaultAPIVersion(t *testing.T) {
+	ctx := context.Background()
+	client, err := NewClient(ctx, &ClientConfig{
+		Backend:     BackendGeminiAPI,
+		APIKey:      "test-api-key",
+		HTTPOptions: HTTPOptions{APIVersion: "v1"},
+	})
+	if err != nil {
+		t.Fatalf("NewClient failed: %v", err)
+	}
+	ac := client.Models.apiClient
+	tests := []struct {
+		path     string
+		wantPath string
+	}{
+		{path: "upload/v1beta/files", wantPath: "/upload/v1beta/files"},
+		{path: "upload/v1beta/fileSearchStores/store:uploadToFileSearchStore", wantPath: "/upload/v1beta/fileSearchStores/store:uploadToFileSearchStore"},
+		{path: "models/gemini-pro:generateContent", wantPath: "/v1/models/gemini-pro:generateContent"},
+		{path: "files", wantPath: "/v1/files"},
+	}
+	for _, tt := range tests {
+		u, err := ac.createAPIURL(tt.path, http.MethodPost, &client.clientConfig.HTTPOptions)
+		if err != nil {
+			t.Fatalf("createAPIURL(%q) failed: %v", tt.path, err)
+		}
+		if u.Path != tt.wantPath {
+			t.Errorf("createAPIURL(%q) path = %q, want %q", tt.path, u.Path, tt.wantPath)
+		}
+	}
+}

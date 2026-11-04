@@ -172,6 +172,9 @@ func defaultEnvVarProvider() map[string]string {
 	if v, ok := os.LookupEnv("GOOGLE_VERTEX_BASE_URL"); ok {
 		vars["GOOGLE_VERTEX_BASE_URL"] = v
 	}
+	if v, ok := os.LookupEnv("GOOGLE_GENAI_API_VERSION"); ok {
+		vars["GOOGLE_GENAI_API_VERSION"] = v
+	}
 	return vars
 }
 
@@ -187,6 +190,8 @@ func getAPIKeyFromEnv(envVars map[string]string) string {
 	return geminiAPIKey
 }
 
+const googleAIAPIDefaultVersion = "v1"
+
 // NewInternalAPIClient creates a new internal API client.
 //
 // You can configure the client by passing in a ClientConfig struct.
@@ -201,6 +206,9 @@ func getAPIKeyFromEnv(envVars map[string]string) string {
 //   - GOOGLE_API_KEY: Can also be used to specify the API key for the Gemini API.
 //     If both GOOGLE_API_KEY and GEMINI_API_KEY are set, GOOGLE_API_KEY will be used.
 //
+//   - GOOGLE_GENAI_API_VERSION: Optional. Specifies the API version to use when
+//     ClientConfig.HTTPOptions.APIVersion is not set.
+//
 //   - Environment Variables for BackendVertexAI:
 //
 //   - GOOGLE_GENAI_USE_VERTEXAI: Must be set to "1" or "true" to use the Vertex AI
@@ -210,6 +218,9 @@ func getAPIKeyFromEnv(envVars map[string]string) string {
 //
 //   - GOOGLE_CLOUD_LOCATION or GOOGLE_CLOUD_REGION: Required. Specifies the GCP
 //     location/region.
+//
+//   - GOOGLE_GENAI_API_VERSION: Optional. Specifies the API version to use when
+//     ClientConfig.HTTPOptions.APIVersion is not set.
 //
 // If using the Vertex AI backend and no credentials are provided in the
 // ClientConfig, the client will attempt to use application default credentials.
@@ -373,10 +384,22 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 		cc.Credentials = cred
 	}
 
-	if cc.HTTPOptions.APIVersion == "" && cc.Backend == BackendVertexAI {
-		cc.HTTPOptions.APIVersion = "v1beta1"
-	} else if cc.HTTPOptions.APIVersion == "" {
-		cc.HTTPOptions.APIVersion = "v1beta"
+	if cc.HTTPOptions.APIVersion == "" {
+		if apiVersion, ok := envVars["GOOGLE_GENAI_API_VERSION"]; ok && apiVersion != "" {
+			if apiVersion == "beta" {
+				if cc.Backend == BackendVertexAI {
+					cc.HTTPOptions.APIVersion = "v1beta1"
+				} else {
+					cc.HTTPOptions.APIVersion = "v1beta"
+				}
+			} else {
+				cc.HTTPOptions.APIVersion = apiVersion
+			}
+		} else if cc.Backend == BackendVertexAI {
+			cc.HTTPOptions.APIVersion = "v1beta1"
+		} else {
+			cc.HTTPOptions.APIVersion = googleAIAPIDefaultVersion
+		}
 	}
 
 	if cc.HTTPClient == nil {
@@ -460,6 +483,9 @@ func newInteractionsClient(apiClient *InternalAPIClient) *interactions.GenAI {
 //   - GOOGLE_API_KEY: Can also be used to specify the API key for the Gemini API.
 //     If both GOOGLE_API_KEY and GEMINI_API_KEY are set, GOOGLE_API_KEY will be used.
 //
+//   - GOOGLE_GENAI_API_VERSION: Optional. Specifies the API version to use when
+//     ClientConfig.HTTPOptions.APIVersion is not set.
+//
 //   - Environment Variables for BackendVertexAI:
 //
 //   - GOOGLE_GENAI_USE_VERTEXAI: Must be set to "1" or "true" to use the Vertex AI
@@ -469,6 +495,9 @@ func newInteractionsClient(apiClient *InternalAPIClient) *interactions.GenAI {
 //
 //   - GOOGLE_CLOUD_LOCATION or GOOGLE_CLOUD_REGION: Required. Specifies the GCP
 //     location/region.
+//
+//   - GOOGLE_GENAI_API_VERSION: Optional. Specifies the API version to use when
+//     ClientConfig.HTTPOptions.APIVersion is not set.
 //
 // If using the Vertex AI backend and no credentials are provided in the
 // ClientConfig, the client will attempt to use application default credentials.

@@ -877,7 +877,7 @@ func TestNewClient(t *testing.T) {
 			HTTPClient: &http.Client{},
 			HTTPOptions: HTTPOptions{
 				BaseURL:    "https://generativelanguage.googleapis.com/",
-				APIVersion: "v1beta",
+				APIVersion: googleAIAPIDefaultVersion,
 			},
 		}
 		client, err := NewClient(ctx, &ClientConfig{
@@ -963,7 +963,7 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 				},
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
-			expectedAPIVersion: "v1beta",
+			expectedAPIVersion: googleAIAPIDefaultVersion,
 		},
 		{
 			name: "Google AI Backend without API Version",
@@ -973,7 +973,7 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 				Backend:     BackendGeminiAPI,
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
-			expectedAPIVersion: "v1beta",
+			expectedAPIVersion: googleAIAPIDefaultVersion,
 		},
 		{
 			name: "Vertex AI Backend without API Version",
@@ -1046,7 +1046,114 @@ func TestClientConfigHTTPOptions(t *testing.T) {
 				HTTPClient:  &http.Client{Timeout: 5000 * time.Millisecond},
 			},
 			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
+			expectedAPIVersion: googleAIAPIDefaultVersion,
+		},
+		{
+			name: "Google AI Backend with GOOGLE_GENAI_API_VERSION env var",
+			clientConfig: ClientConfig{
+				Backend: BackendGeminiAPI,
+				APIKey:  "test-api-key",
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_GENAI_API_VERSION": "v1alpha",
+					}
+				},
+			},
+			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
+			expectedAPIVersion: "v1alpha",
+		},
+		{
+			name: "Vertex AI Backend with GOOGLE_GENAI_API_VERSION env var",
+			clientConfig: ClientConfig{
+				Backend:     BackendVertexAI,
+				Project:     "test-project",
+				Location:    "us-central1",
+				Credentials: &auth.Credentials{},
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_GENAI_API_VERSION": "v1",
+					}
+				},
+			},
+			expectedBaseURL:    "https://us-central1-aiplatform.googleapis.com/",
+			expectedAPIVersion: "v1",
+		},
+		{
+			name: "Google AI Backend with GOOGLE_GENAI_API_VERSION=beta selects v1beta",
+			clientConfig: ClientConfig{
+				Backend: BackendGeminiAPI,
+				APIKey:  "test-api-key",
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_GENAI_API_VERSION": "beta",
+					}
+				},
+			},
+			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
 			expectedAPIVersion: "v1beta",
+		},
+		{
+			name: "Vertex AI Backend with GOOGLE_GENAI_API_VERSION=beta selects v1beta1",
+			clientConfig: ClientConfig{
+				Backend:     BackendVertexAI,
+				Project:     "test-project",
+				Location:    "us-central1",
+				Credentials: &auth.Credentials{},
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_GENAI_API_VERSION": "beta",
+					}
+				},
+			},
+			expectedBaseURL:    "https://us-central1-aiplatform.googleapis.com/",
+			expectedAPIVersion: "v1beta1",
+		},
+		{
+			name: "Explicit HTTPOptions.APIVersion overrides GOOGLE_GENAI_API_VERSION env var",
+			clientConfig: ClientConfig{
+				Backend: BackendGeminiAPI,
+				APIKey:  "test-api-key",
+				HTTPOptions: HTTPOptions{
+					APIVersion: "v1",
+				},
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_GENAI_API_VERSION": "v1alpha",
+					}
+				},
+			},
+			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
+			expectedAPIVersion: "v1",
+		},
+		{
+			name: "Google AI Backend with empty GOOGLE_GENAI_API_VERSION env var uses default",
+			clientConfig: ClientConfig{
+				Backend: BackendGeminiAPI,
+				APIKey:  "test-api-key",
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_GENAI_API_VERSION": "",
+					}
+				},
+			},
+			expectedBaseURL:    "https://generativelanguage.googleapis.com/",
+			expectedAPIVersion: googleAIAPIDefaultVersion,
+		},
+		{
+			name: "Vertex AI Backend with empty GOOGLE_GENAI_API_VERSION env var uses default",
+			clientConfig: ClientConfig{
+				Backend:     BackendVertexAI,
+				Project:     "test-project",
+				Location:    "us-central1",
+				Credentials: &auth.Credentials{},
+				envVarProvider: func() map[string]string {
+					return map[string]string{
+						"GOOGLE_GENAI_API_VERSION": "",
+					}
+				},
+			},
+			expectedBaseURL:    "https://us-central1-aiplatform.googleapis.com/",
+			expectedAPIVersion: "v1beta1",
 		},
 	}
 

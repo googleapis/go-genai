@@ -1976,7 +1976,7 @@ type HTTPOptions struct {
 	// Optional. Extra parameters to add to the request body.
 	// The structure must match the backend API's request structure.
 	//   - Gemini Enterprise Agent Platform backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
-	//   - GeminiAPI backend API docs: https://ai.google.dev/api/rest
+	//   - GeminiAPI backend API docs: https://aistudio.google.com/api-reference
 	ExtraBody map[string]any `json:"extraBody,omitempty"`
 	// Optional. A function that allows for request body customization.
 	// It is executed after ExtraBody has been merged, offering more advanced
@@ -8778,7 +8778,7 @@ type AuthToken struct {
 type LiveConnectConstraints struct {
 	// Optional. ID of the model to configure in the ephemeral token for Live API.
 	// For a list of models, see `Gemini models
-	// <https://ai.google.dev/gemini-api/docs/models>`.
+	// <https://aistudio.google.com/docs/models>`.
 	Model string `json:"model,omitempty"`
 	// Optional. Configuration specific to Live API connections created using this token.
 	Config *LiveConnectConfig `json:"config,omitempty"`

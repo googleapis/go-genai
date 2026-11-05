@@ -16,8 +16,10 @@ package genai
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -727,4 +729,107 @@ func setupTestWebsocketServer(t *testing.T, wantRequestBodySlice []string, fakeR
 	}))
 
 	return ts
+}
+
+// TestLiveConnectSDKHeaders pins that the Live WebSocket handshake carries the
+// same SDK User-Agent and x-goog-api-client values as HTTP requests.
+func TestLiveConnectSDKHeaders(t *testing.T) {
+	ctx := context.Background()
+	sdkHeader := fmt.Sprintf("google-genai-sdk/%s gl-go/%s", version, runtime.Version())
+	vertexModulesHeader := fmt.Sprintf("google-genai-sdk/%s+vertex-genai-modules/0.20.0 gl-go/%s", version, runtime.Version())
+	creds := auth.NewCredentials(&auth.CredentialsOptions{
+		TokenProvider: mockCredentials{MockToken: &auth.Token{Value: "fake_access_token"}},
+	})
+
+	tests := []struct {
+		desc          string
+		config        ClientConfig
+		wantUserAgent string
+		wantAPIClient []string
+	}{
+		{
+			desc:          "gemini api",
+			config:        ClientConfig{Backend: BackendGeminiAPI, APIKey: "test-api-key"},
+			wantUserAgent: sdkHeader,
+			wantAPIClient: []string{sdkHeader},
+		},
+		{
+			desc: "vertex ai",
+			config: ClientConfig{
+				Backend:     BackendVertexAI,
+				Project:     "test-project",
+				Location:    "test-location",
+				Credentials: creds,
+			},
+			wantUserAgent: sdkHeader,
+			wantAPIClient: []string{sdkHeader},
+		},
+		{
+			// net/http writes only the first User-Agent value to the wire.
+			desc: "custom user agent",
+			config: ClientConfig{
+				Backend:     BackendGeminiAPI,
+				APIKey:      "test-api-key",
+				HTTPOptions: HTTPOptions{Headers: http.Header{"User-Agent": {"my-custom-agent/1.0"}}},
+			},
+			wantUserAgent: "my-custom-agent/1.0",
+			wantAPIClient: []string{sdkHeader},
+		},
+		{
+			desc: "vertex-genai-modules user agent",
+			config: ClientConfig{
+				Backend:     BackendGeminiAPI,
+				APIKey:      "test-api-key",
+				HTTPOptions: HTTPOptions{Headers: http.Header{"User-Agent": {"vertex-genai-modules/0.20.0"}}},
+			},
+			wantUserAgent: vertexModulesHeader,
+			wantAPIClient: []string{vertexModulesHeader},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			headers := make(chan http.Header, 1)
+			upgrader := websocket.Upgrader{}
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				headers <- r.Header.Clone()
+				conn, err := upgrader.Upgrade(w, r, nil)
+				if err != nil {
+					return
+				}
+				defer conn.Close()
+				mt, _, err := conn.ReadMessage()
+				if err != nil {
+					return
+				}
+				conn.WriteMessage(mt, []byte(`{"setupComplete":{}}`))
+			}))
+			defer ts.Close()
+
+			cfg := tt.config
+			cfg.HTTPOptions.BaseURL = "ws" + strings.TrimPrefix(ts.URL, "http")
+			client, err := NewClient(ctx, &cfg)
+			if err != nil {
+				t.Fatalf("NewClient failed: %v", err)
+			}
+			clientHeaders := client.Live.apiClient.clientConfig.HTTPOptions.Headers.Clone()
+
+			session, err := client.Live.Connect(ctx, "test-model", nil)
+			if err != nil {
+				t.Fatalf("Connect failed: %v", err)
+			}
+			session.Close()
+
+			got := <-headers
+			if diff := cmp.Diff(tt.wantUserAgent, got.Get("User-Agent")); diff != "" {
+				t.Errorf("User-Agent mismatch (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.wantAPIClient, got.Values("X-Goog-Api-Client")); diff != "" {
+				t.Errorf("X-Goog-Api-Client mismatch (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(clientHeaders, client.Live.apiClient.clientConfig.HTTPOptions.Headers); diff != "" {
+				t.Errorf("Connect mutated client headers (-before +after):\n%s", diff)
+			}
+		})
+	}
 }

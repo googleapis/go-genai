@@ -514,7 +514,7 @@ type Interaction struct {
 	// characters, underscores, and dashes. International characters are allowed.
 	// Label values are optional. Label keys must start with a letter.
 	Labels map[string]string `json:"labels,omitzero"`
-	// The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
+	// The model that will complete your prompt.\n\nSee [models](https://aistudio.google.com/docs/models) for additional details.
 	Model *Model `json:"model,omitzero"`
 	// An audio content block.
 	OutputAudio *AudioContent `json:"output_audio,omitzero"`

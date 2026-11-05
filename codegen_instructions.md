@@ -5,7 +5,7 @@ API calling the official libraries and SDKs.
 
 Please follow the following guidelines when generating code.
 
-**Official Documentation:** [ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)
+**Official Documentation:** [aistudio.google.com/docs](https://aistudio.google.com/docs)
 
 ## Golden Rule: Use the Correct and Current SDK
 
@@ -333,6 +333,6 @@ contents := []*genai.Content{
 
 ## Useful Links
 
--   Documentation: [ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)
--   API Keys: [ai.google.dev/gemini-api/docs/api-key](https://ai.google.dev/gemini-api/docs/api-key)
--   Models: [ai.google.dev/models](https://ai.google.dev/models)
+-   Documentation: [aistudio.google.com/docs](https://aistudio.google.com/docs)
+-   API Keys: [aistudio.google.com/docs/api-key](https://aistudio.google.com/docs/api-key)
+-   Models: [aistudio.google.com/docs/models](https://aistudio.google.com/docs/models)

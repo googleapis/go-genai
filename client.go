@@ -109,7 +109,7 @@ var multiRegionalLocations = map[string]bool{
 type ClientConfig struct {
 	// Optional. API Key for GenAI. Required for BackendGeminiAPI.
 	// Can also be set via the GOOGLE_API_KEY or GEMINI_API_KEY environment variable.
-	// Get a Gemini API key: https://ai.google.dev/gemini-api/docs/api-key
+	// Get a Gemini API key: https://aistudio.google.com/docs/api-key
 	APIKey string
 
 	// Optional. Backend for GenAI. See Backend constants. Defaults to BackendGeminiAPI unless explicitly set to BackendVertexAI,
@@ -366,7 +366,7 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 		}
 
 		if cc.APIKey == "" {
-			return nil, fmt.Errorf("api key is required for Google AI backend. ClientConfig: %#v.\nYou can get the API key from https://ai.google.dev/gemini-api/docs/api-key", cc)
+			return nil, fmt.Errorf("api key is required for Google AI backend. ClientConfig: %#v.\nYou can get the API key from https://aistudio.google.com/docs/api-key", cc)
 		}
 		if configProject != "" || configLocation != "" {
 			return nil, fmt.Errorf("project and location are not supported for Gemini API backend. ClientConfig: %#v", cc)

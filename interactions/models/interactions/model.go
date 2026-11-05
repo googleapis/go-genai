@@ -16,7 +16,7 @@
 
 package interactions
 
-// Model - The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
+// Model - The model that will complete your prompt.\n\nSee [models](https://aistudio.google.com/docs/models) for additional details.
 type Model string
 
 const (

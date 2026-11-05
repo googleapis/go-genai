@@ -251,7 +251,7 @@ type CreateModelInteraction struct {
 	// characters, underscores, and dashes. International characters are allowed.
 	// Label values are optional. Label keys must start with a letter.
 	Labels map[string]string `json:"labels,omitzero"`
-	// The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
+	// The model that will complete your prompt.\n\nSee [models](https://aistudio.google.com/docs/models) for additional details.
 	Model Model `json:"model"`
 	// The ID of the previous interaction, if any.
 	PreviousInteractionID *string `json:"previous_interaction_id,omitzero"`

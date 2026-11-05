@@ -426,6 +426,8 @@ const (
 	// but generation is not yet complete. The response can be continued by passing the
 	// returned `continuation_token` in a subsequent request.
 	FinishReasonContinuation FinishReason = "CONTINUATION"
+	// Token generation stopped because the response was malformed.
+	FinishReasonMalformedResponse FinishReason = "MALFORMED_RESPONSE"
 )
 
 // The probability of harm for this category.

@@ -1415,7 +1415,7 @@ type FunctionCall struct {
 	ID string `json:"id,omitempty"`
 	// Optional. The function parameters and values in JSON object format. See FunctionDeclaration.parameters
 	// for parameter details.
-	Args map[string]any `json:"args,omitempty"`
+	Args map[string]any `json:"args,omitzero"`
 	// Optional. Required. The name of the function to call. Matches [FunctionDeclaration.Name].
 	Name string `json:"name,omitempty"`
 	// Optional. The partial argument value of the function call. If provided, represents

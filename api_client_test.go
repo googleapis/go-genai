@@ -108,6 +108,14 @@ func TestSendRequest(t *testing.T) {
 			wantErr:      fmt.Errorf("deserializeUnaryResponse: error unmarshalling response: invalid character"),
 		},
 		{
+			desc:         "null response body",
+			path:         "foo",
+			method:       http.MethodPost,
+			requestBody:  map[string]any{"key": "value"},
+			responseCode: http.StatusOK,
+			responseBody: `null`,
+		},
+		{
 			desc:          "client timeout",
 			path:          "foo",
 			method:        http.MethodPost,

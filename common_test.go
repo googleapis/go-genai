@@ -15,7 +15,9 @@
 package genai
 
 import (
+	"errors"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -621,6 +623,118 @@ func TestMoveValueByPath(t *testing.T) {
 			if diff := cmp.Diff(tt.expected, tt.data); diff != "" {
 				t.Errorf("moveValueByPath() mismatch (-want +got):\n%s", diff)
 			}
+		})
+	}
+}
+
+// copyConverter returns a shallow copy of fromObject.
+func copyConverter(fromObject, _, _ map[string]any) (map[string]any, error) {
+	out := map[string]any{}
+	for k, v := range fromObject {
+		out[k] = v
+	}
+	return out, nil
+}
+
+var errTestConverter = errors.New("converter failed")
+
+func failingConverter(_, _, _ map[string]any) (map[string]any, error) {
+	return nil, errTestConverter
+}
+
+// applyConverterToSliceTests pins how each slice element reaches the converter:
+// a null element becomes an empty object at the same index, and a non-object
+// element is an error rather than a panic.
+var applyConverterToSliceTests = []struct {
+	name      string
+	inputs    []any
+	converter converterFuncWithRoot
+	want      []map[string]any
+	wantErr   []string
+	wantErrIs error
+}{
+	{
+		name:      "all objects",
+		inputs:    []any{map[string]any{"a": "b"}, map[string]any{"c": "d"}},
+		converter: copyConverter,
+		want:      []map[string]any{{"a": "b"}, {"c": "d"}},
+	},
+	{
+		name:      "nil element becomes empty object",
+		inputs:    []any{map[string]any{"a": "b"}, nil},
+		converter: copyConverter,
+		want:      []map[string]any{{"a": "b"}, {}},
+	},
+	{
+		name:      "empty input",
+		inputs:    []any{},
+		converter: copyConverter,
+		want:      nil,
+	},
+	{
+		name:      "string element returns error",
+		inputs:    []any{"x"},
+		converter: copyConverter,
+		wantErr:   []string{"element 0", "string"},
+	},
+	{
+		name:      "number element returns error",
+		inputs:    []any{map[string]any{}, float64(1)},
+		converter: copyConverter,
+		wantErr:   []string{"element 1", "float64"},
+	},
+	{
+		name:      "converter error propagates",
+		inputs:    []any{map[string]any{"a": "b"}},
+		converter: failingConverter,
+		wantErrIs: errTestConverter,
+	},
+}
+
+func checkApplyConverterToSliceResult(t *testing.T, got []map[string]any, err error, want []map[string]any, wantErr []string, wantErrIs error) {
+	t.Helper()
+	if wantErr == nil && wantErrIs == nil {
+		if err != nil {
+			t.Fatalf("err = %v, want nil", err)
+		}
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("result mismatch (-want +got):\n%s", diff)
+		}
+		return
+	}
+	if err == nil {
+		t.Fatalf("err = nil, want an error")
+	}
+	if got != nil {
+		t.Errorf("result = %v, want nil", got)
+	}
+	if wantErrIs != nil && !errors.Is(err, wantErrIs) {
+		t.Errorf("err = %v, want %v", err, wantErrIs)
+	}
+	for _, s := range wantErr {
+		if !strings.Contains(err.Error(), s) {
+			t.Errorf("err = %q, want it to contain %q", err.Error(), s)
+		}
+	}
+}
+
+func TestApplyConverterToSliceWithRoot(t *testing.T) {
+	for _, tt := range applyConverterToSliceTests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := applyConverterToSliceWithRoot(tt.inputs, tt.converter, nil)
+			checkApplyConverterToSliceResult(t, got, err, tt.want, tt.wantErr, tt.wantErrIs)
+		})
+	}
+}
+
+func TestApplyConverterToSliceWithClientWithRoot(t *testing.T) {
+	for _, tt := range applyConverterToSliceTests {
+		t.Run(tt.name, func(t *testing.T) {
+			converter := func(_ *apiClient, fromObject, parentObject, rootObject map[string]any) (map[string]any, error) {
+				return tt.converter(fromObject, parentObject, rootObject)
+			}
+			got, err := applyConverterToSliceWithClientWithRoot(nil, tt.inputs, converter, nil)
+			checkApplyConverterToSliceResult(t, got, err, tt.want, tt.wantErr, tt.wantErrIs)
 		})
 	}
 }

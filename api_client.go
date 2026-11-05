@@ -461,6 +461,10 @@ func deserializeUnaryResponse(resp *http.Response) (map[string]any, error) {
 			return nil, fmt.Errorf("deserializeUnaryResponse: error unmarshalling response: %w\n%s", err, respBody)
 		}
 	}
+	// A JSON null body unmarshals to a nil map.
+	if output == nil {
+		output = make(map[string]any)
+	}
 
 	httpResponse := map[string]any{
 		"headers": resp.Header,

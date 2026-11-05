@@ -564,6 +564,20 @@ const (
 	ModelStageRetired ModelStage = "RETIRED"
 )
 
+// Pricing and performance service tier.
+type ServiceTier string
+
+const (
+	// Default service tier, which is standard.
+	ServiceTierUnspecified ServiceTier = "unspecified"
+	// Flex service tier.
+	ServiceTierFlex ServiceTier = "flex"
+	// Standard service tier.
+	ServiceTierStandard ServiceTier = "standard"
+	// Priority service tier.
+	ServiceTierPriority ServiceTier = "priority"
+)
+
 // The media resolution to use.
 type MediaResolution string
 
@@ -878,20 +892,6 @@ const (
 	DocumentStateActive DocumentState = "STATE_ACTIVE"
 	// Some `Chunks` of the `Document` failed processing.
 	DocumentStateFailed DocumentState = "STATE_FAILED"
-)
-
-// Pricing and performance service tier.
-type ServiceTier string
-
-const (
-	// Default service tier, which is standard.
-	ServiceTierUnspecified ServiceTier = "unspecified"
-	// Flex service tier.
-	ServiceTierFlex ServiceTier = "flex"
-	// Standard service tier.
-	ServiceTierStandard ServiceTier = "standard"
-	// Priority service tier.
-	ServiceTierPriority ServiceTier = "priority"
 )
 
 // The tokenization quality used for given media.
@@ -4080,6 +4080,42 @@ type EmbedContentMetadata struct {
 	BillableCharacterCount int32 `json:"billableCharacterCount,omitempty"`
 }
 
+// Usage metadata about response(s).
+type UsageMetadata struct {
+	// The total number of tokens in the prompt. This includes any text, images, or other
+	// media provided in the request. When `cached_content` is set, this also includes the
+	// number of tokens in the cached content.
+	PromptTokenCount int32 `json:"promptTokenCount,omitempty"`
+	// Output only. The number of tokens in the cached content that was used for this request.
+	CachedContentTokenCount int32 `json:"cachedContentTokenCount,omitempty"`
+	// Optional. Total number of tokens across all the generated response candidates.
+	ResponseTokenCount int32 `json:"responseTokenCount,omitempty"`
+	// Output only. The number of tokens in the results from tool executions, which are
+	// provided back to the model as input, if applicable.
+	ToolUsePromptTokenCount int32 `json:"toolUsePromptTokenCount,omitempty"`
+	// Output only. The number of tokens that were part of the model's generated "thoughts"
+	// output, if applicable.
+	ThoughtsTokenCount int32 `json:"thoughtsTokenCount,omitempty"`
+	// The total number of tokens for the entire request. This is the sum of `prompt_token_count`,
+	// `candidates_token_count`, `tool_use_prompt_token_count`, and `thoughts_token_count`.
+	TotalTokenCount int32 `json:"totalTokenCount,omitempty"`
+	// Output only. A detailed breakdown of the token count for each modality in the prompt.
+	PromptTokensDetails []*ModalityTokenCount `json:"promptTokensDetails,omitempty"`
+	// Output only. A detailed breakdown of the token count for each modality in the cached
+	// content.
+	CacheTokensDetails []*ModalityTokenCount `json:"cacheTokensDetails,omitempty"`
+	// Optional. List of modalities that were returned in the response.
+	ResponseTokensDetails []*ModalityTokenCount `json:"responseTokensDetails,omitempty"`
+	// Output only. A detailed breakdown by modality of the token counts from the results
+	// of tool executions, which are provided back to the model as input.
+	ToolUsePromptTokensDetails []*ModalityTokenCount `json:"toolUsePromptTokensDetails,omitempty"`
+	// Output only. The traffic type for this request. This field is not supported in Gemini
+	// API.
+	TrafficType TrafficType `json:"trafficType,omitempty"`
+	// Output only. Service tier of the request. This field is not supported in Vertex AI.
+	ServiceTier ServiceTier `json:"serviceTier,omitempty"`
+}
+
 // Response for the embed_content method.
 type EmbedContentResponse struct {
 	// Optional. Used to retain the full HTTP response.
@@ -4089,6 +4125,11 @@ type EmbedContentResponse struct {
 	Embeddings []*ContentEmbedding `json:"embeddings,omitempty"`
 	// Gemini Enterprise Agent Platform only. Metadata about the request.
 	Metadata *EmbedContentMetadata `json:"metadata,omitempty"`
+	// Whether the input content was truncated before generating the embedding. This field
+	// is not supported in Gemini API.
+	Truncated bool `json:"truncated,omitempty"`
+	// Usage metadata about the response(s).
+	UsageMetadata *UsageMetadata `json:"usageMetadata,omitempty"`
 }
 
 // The configuration for generating images. You can find API default values and more
@@ -8257,42 +8298,6 @@ type LiveServerToolCall struct {
 type LiveServerToolCallCancellation struct {
 	// Optional. The IDs of the tool calls to be cancelled.
 	IDs []string `json:"ids,omitempty"`
-}
-
-// Usage metadata about response(s).
-type UsageMetadata struct {
-	// The total number of tokens in the prompt. This includes any text, images, or other
-	// media provided in the request. When `cached_content` is set, this also includes the
-	// number of tokens in the cached content.
-	PromptTokenCount int32 `json:"promptTokenCount,omitempty"`
-	// Output only. The number of tokens in the cached content that was used for this request.
-	CachedContentTokenCount int32 `json:"cachedContentTokenCount,omitempty"`
-	// Optional. Total number of tokens across all the generated response candidates.
-	ResponseTokenCount int32 `json:"responseTokenCount,omitempty"`
-	// Output only. The number of tokens in the results from tool executions, which are
-	// provided back to the model as input, if applicable.
-	ToolUsePromptTokenCount int32 `json:"toolUsePromptTokenCount,omitempty"`
-	// Output only. The number of tokens that were part of the model's generated "thoughts"
-	// output, if applicable.
-	ThoughtsTokenCount int32 `json:"thoughtsTokenCount,omitempty"`
-	// The total number of tokens for the entire request. This is the sum of `prompt_token_count`,
-	// `candidates_token_count`, `tool_use_prompt_token_count`, and `thoughts_token_count`.
-	TotalTokenCount int32 `json:"totalTokenCount,omitempty"`
-	// Output only. A detailed breakdown of the token count for each modality in the prompt.
-	PromptTokensDetails []*ModalityTokenCount `json:"promptTokensDetails,omitempty"`
-	// Output only. A detailed breakdown of the token count for each modality in the cached
-	// content.
-	CacheTokensDetails []*ModalityTokenCount `json:"cacheTokensDetails,omitempty"`
-	// Optional. List of modalities that were returned in the response.
-	ResponseTokensDetails []*ModalityTokenCount `json:"responseTokensDetails,omitempty"`
-	// Output only. A detailed breakdown by modality of the token counts from the results
-	// of tool executions, which are provided back to the model as input.
-	ToolUsePromptTokensDetails []*ModalityTokenCount `json:"toolUsePromptTokensDetails,omitempty"`
-	// Output only. The traffic type for this request. This field is not supported in Gemini
-	// API.
-	TrafficType TrafficType `json:"trafficType,omitempty"`
-	// Output only. Service tier of the request. This field is not supported in Vertex AI.
-	ServiceTier ServiceTier `json:"serviceTier,omitempty"`
 }
 
 // Server will not be able to service client soon.

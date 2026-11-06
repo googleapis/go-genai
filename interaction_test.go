@@ -17,6 +17,7 @@ package genai
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -28,6 +29,7 @@ import (
 
 	gaos "google.golang.org/genai/interactions"
 	"google.golang.org/genai/interactions/models/agents"
+	"google.golang.org/genai/interactions/models/apierrors"
 	"google.golang.org/genai/interactions/models/components"
 	"google.golang.org/genai/interactions/models/credentials"
 	"google.golang.org/genai/interactions/models/interactions"
@@ -1229,4 +1231,40 @@ func TestInteractionsDefaultClientTimeout(t *testing.T) {
 		t.Errorf("interactions.New() default client Timeout = %v, want 0 (no timeout)", got)
 	}
 }
+
+func TestAPIErrorExtractsMessageFromBody(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		// Shape returned by the live Interactions-family endpoints.
+		_, _ = w.Write([]byte(`{"error":{"message":"Model name cannot be empty.","code":"invalid_request"}}`))
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(context.Background(), &ClientConfig{
+		Backend:     BackendGeminiAPI,
+		APIKey:      "dummy_key",
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.Agents.Get(context.Background(), operations.GetAgentRequest{ID: "agent-123"})
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+
+	var apiErr *apierrors.APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("Expected *apierrors.APIError, got %T: %v", err, err)
+	}
+	if apiErr.StatusCode != http.StatusBadRequest {
+		t.Errorf("StatusCode = %d, want %d", apiErr.StatusCode, http.StatusBadRequest)
+	}
+	if want := "Model name cannot be empty."; apiErr.Message != want {
+		t.Errorf("Message = %q, want %q", apiErr.Message, want)
+	}
+}
+
 

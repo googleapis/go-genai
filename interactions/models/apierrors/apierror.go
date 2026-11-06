@@ -17,6 +17,7 @@
 package apierrors
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -33,6 +34,16 @@ type APIError struct {
 var _ error = &APIError{}
 
 func NewAPIError(message string, statusCode int, body string, httpRes *http.Response) *APIError {
+	if message == "API error occurred" && len(body) > 0 {
+		var parsed struct {
+			Error struct {
+				Message string `json:"message"`
+			} `json:"error"`
+		}
+		if err := json.Unmarshal([]byte(body), &parsed); err == nil && parsed.Error.Message != "" {
+			message = parsed.Error.Message
+		}
+	}
 	return &APIError{
 		Message:     message,
 		StatusCode:  statusCode,

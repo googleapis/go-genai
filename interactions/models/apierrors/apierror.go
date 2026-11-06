@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"google.golang.org/genai/interactions/redact"
+	"google.golang.org/genai/v2/interactions/redact"
 )
 
 type APIError struct {

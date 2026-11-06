@@ -12,7 +12,7 @@ Once you setup the environment variables, you can download, build and run the
 example using the following commands.
 
 ```
-$ go get google.golang.org/genai
-$ cd `go list -f '{{.Dir}}' google.golang.org/genai/examples/live_with_ephemeral_token`
+$ go get google.golang.org/genai/v2
+$ cd `go list -f '{{.Dir}}' google.golang.org/genai/v2/examples/live_with_ephemeral_token`
 $ go run *.go
 ```

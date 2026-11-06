@@ -33,10 +33,10 @@ import (
 	"reflect"
 	"sync"
 
-	"google.golang.org/genai/interactions/models/apierrors"
-	"google.golang.org/genai/interactions/models/interactions"
-	"google.golang.org/genai/interactions/models/operations"
-	"google.golang.org/genai/interactions/types/stream"
+	"google.golang.org/genai/v2/interactions/models/apierrors"
+	"google.golang.org/genai/v2/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/models/operations"
+	"google.golang.org/genai/v2/interactions/types/stream"
 )
 
 // MaxStreamReconnectsWithoutProgress is the maximum number of consecutive

@@ -17,7 +17,7 @@
 package environments
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // ListEnvironmentsResponse - Response for `ListEnvironments`.

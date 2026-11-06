@@ -20,7 +20,7 @@ Once you setup the environment variables, you can download, build and run the
 example using the following commands.
 
 ```
-$ go get google.golang.org/genai
-$ cd `go list -f '{{.Dir}}' google.golang.org/genai/examples/caches`
+$ go get google.golang.org/genai/v2
+$ cd `go list -f '{{.Dir}}' google.golang.org/genai/v2/examples/caches`
 $ go run create_get_delete.go
 ```

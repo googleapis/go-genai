@@ -22,7 +22,7 @@ import (
 	"log"
 
 	"cloud.google.com/go/auth/credentials"
-	"google.golang.org/genai"
+	"google.golang.org/genai/v2"
 )
 
 func run(ctx context.Context) {

@@ -30,8 +30,8 @@ import (
 	"time"
 	"unsafe"
 
-	"google.golang.org/genai/interactions/optionalnullable"
-	"google.golang.org/genai/interactions/types"
+	"google.golang.org/genai/v2/interactions/optionalnullable"
+	"google.golang.org/genai/v2/interactions/types"
 )
 
 func MarshalJSON(v interface{}, tag reflect.StructTag, topLevel bool) ([]byte, error) {

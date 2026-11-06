@@ -31,8 +31,8 @@ import (
 	"regexp"
 	"time"
 
-	"google.golang.org/genai/interactions/optionalnullable"
-	"google.golang.org/genai/interactions/types"
+	"google.golang.org/genai/v2/interactions/optionalnullable"
+	"google.golang.org/genai/v2/interactions/types"
 )
 
 const (

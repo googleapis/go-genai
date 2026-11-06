@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 type MediaProcessingType string

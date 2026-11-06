@@ -19,8 +19,8 @@ package triggers
 import (
 	"time"
 
-	"google.golang.org/genai/interactions/internal/utils"
-	"google.golang.org/genai/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/models/interactions"
 )
 
 // TriggerStatus - Output only. The current status of the trigger.

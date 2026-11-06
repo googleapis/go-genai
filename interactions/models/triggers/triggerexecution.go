@@ -19,7 +19,7 @@ package triggers
 import (
 	"time"
 
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // TriggerExecutionStatus - Output only. The status of the execution.

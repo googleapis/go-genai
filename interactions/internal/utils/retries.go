@@ -34,7 +34,7 @@ import (
 	"syscall"
 	"time"
 
-	"google.golang.org/genai/interactions/retry"
+	"google.golang.org/genai/v2/interactions/retry"
 )
 
 // Deprecated: Use retry.BackoffStrategy instead.

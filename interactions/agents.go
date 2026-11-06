@@ -22,15 +22,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"google.golang.org/genai/interactions/internal/config"
-	"google.golang.org/genai/interactions/internal/hooks"
-	"google.golang.org/genai/interactions/internal/utils"
-	"google.golang.org/genai/interactions/models/agents"
-	"google.golang.org/genai/interactions/models/apierrors"
-	"google.golang.org/genai/interactions/models/components"
-	"google.golang.org/genai/interactions/models/interactions"
-	"google.golang.org/genai/interactions/models/operations"
-	"google.golang.org/genai/interactions/retry"
+	"google.golang.org/genai/v2/interactions/internal/config"
+	"google.golang.org/genai/v2/interactions/internal/hooks"
+	"google.golang.org/genai/v2/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/models/agents"
+	"google.golang.org/genai/v2/interactions/models/apierrors"
+	"google.golang.org/genai/v2/interactions/models/components"
+	"google.golang.org/genai/v2/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/models/operations"
+	"google.golang.org/genai/v2/interactions/retry"
 )
 
 // Agents handles API calls for Agents.

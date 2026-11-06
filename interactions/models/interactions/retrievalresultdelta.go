@@ -17,7 +17,7 @@
 package interactions
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // RetrievalResultDelta - Used by Vertex Retrieval tools such as Parallel AI, Exa AI, Vertex AI Search,

@@ -19,7 +19,7 @@ package credentials
 import (
 	"time"
 
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // Status - Output only. Current status of the credential.

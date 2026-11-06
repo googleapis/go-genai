@@ -17,7 +17,7 @@
 package credentials
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // OAuth2UpdateConfig - Configuration for updating OAuth2 credentials.

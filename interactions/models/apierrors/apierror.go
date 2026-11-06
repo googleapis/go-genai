@@ -33,6 +33,7 @@ type APIError struct {
 var _ error = &APIError{}
 
 func NewAPIError(message string, statusCode int, body string, httpRes *http.Response) *APIError {
+	message = messageFromBody(message, body)
 	return &APIError{
 		Message:     message,
 		StatusCode:  statusCode,

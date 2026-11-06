@@ -21,8 +21,8 @@ import (
 	"net/http"
 	"time"
 
-	"google.golang.org/genai/interactions/internal/globals"
-	"google.golang.org/genai/interactions/retry"
+	"google.golang.org/genai/v2/interactions/internal/globals"
+	"google.golang.org/genai/v2/interactions/retry"
 )
 
 type HTTPClient interface {

@@ -19,7 +19,7 @@ package webhooks
 import (
 	"time"
 
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // SigningSecret - Represents a signing secret used to verify webhook payloads.

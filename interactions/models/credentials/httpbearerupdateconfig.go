@@ -17,7 +17,7 @@
 package credentials
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // HTTPBearerUpdateConfig - Configuration for updating HTTP Bearer token credentials.

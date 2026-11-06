@@ -19,7 +19,7 @@ package environments
 import (
 	"time"
 
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // Type - Output only. The type of the entry.

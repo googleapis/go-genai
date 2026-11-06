@@ -17,7 +17,7 @@
 package triggers
 
 import (
-	"google.golang.org/genai/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/models/interactions"
 )
 
 // TriggerCreateParams - Parameters for creating a trigger.

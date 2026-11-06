@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/genai/interactions/types"
+	"google.golang.org/genai/v2/interactions/types"
 )
 
 // UnionCandidate represents a candidate type during union deserialization

@@ -1,8 +1,11 @@
-module google.golang.org/genai
+module google.golang.org/genai/v2
 
 go 1.24
 
-retract v1.11.0 // Retracted due to breaking change on GenerateVideos
+// v1.11.0 was retracted (a breaking change on GenerateVideos). The public
+// module is major version 2 (the export appends /v2 to the module path), and
+// a v2 module cannot retract v1 versions;
+// the retraction stays in v1's go.mod.
 
 require (
 	cloud.google.com/go v0.116.0

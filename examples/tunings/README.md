@@ -20,8 +20,8 @@ Once you setup the environment variables, you can download, build and run the
 example using the following commands.
 
 ```
-$ go get google.golang.org/genai
-$ cd `go list -f '{{.Dir}}' google.golang.org/genai/examples/tunings`
+$ go get google.golang.org/genai/v2
+$ cd `go list -f '{{.Dir}}' google.golang.org/genai/v2/examples/tunings`
 $ go run list.go
 $ go run create_get.go
 

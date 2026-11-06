@@ -22,10 +22,10 @@ import (
 	"log"
 	"os"
 
-	"google.golang.org/genai"
-	"google.golang.org/genai/interactions/models/environments"
-	"google.golang.org/genai/interactions/models/interactions"
-	"google.golang.org/genai/interactions/models/operations"
+	"google.golang.org/genai/v2"
+	"google.golang.org/genai/v2/interactions/models/environments"
+	"google.golang.org/genai/v2/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/models/operations"
 )
 
 func ptr[T any](v T) *T {

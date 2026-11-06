@@ -21,7 +21,7 @@ import (
 	"errors"
 	"net/http"
 
-	"google.golang.org/genai/interactions/internal/config"
+	"google.golang.org/genai/v2/interactions/internal/config"
 )
 
 type FailEarly struct {

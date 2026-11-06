@@ -9,30 +9,30 @@ Please follow the following guidelines when generating code.
 
 ## Golden Rule: Use the Correct and Current SDK
 
-Always use the **Google GenAI SDK** (`google.golang.org/genai`), which is the unified
+Always use the **Google GenAI SDK** (`google.golang.org/genai/v2`), which is the unified
 standard library for all Gemini API requests (AI Studio/Gemini Developer API
 and Vertex AI) as of 2025. Do not use legacy libraries and SDKs.
 
 -   **Library Name:** Google GenAI SDK
--   **Go Module:** `google.golang.org/genai`
+-   **Go Module:** `google.golang.org/genai/v2`
 -   **Legacy Library**: (`github.com/google/generative-ai-go`) is deprecated.
 
 **Installation:**
 
 ```bash
-go get google.golang.org/genai
+go get google.golang.org/genai/v2
 ```
 
 **APIs and Usage:**
 
--   **Incorrect:** `import "github.com/google/generative-ai-go/genai"` -> **Correct:** `import "google.golang.org/genai"`
+-   **Incorrect:** `import "github.com/google/generative-ai-go/genai"` -> **Correct:** `import "google.golang.org/genai/v2"`
 -   **Incorrect:** `genai.NewClient(ctx, option.WithAPIKey(...))` -> **Correct:** `genai.NewClient(ctx, &genai.ClientConfig{APIKey: "...", Backend: genai.BackendGeminiAPI})`
 -   **Incorrect:** `model := client.GenerativeModel(...)`
 -   **Incorrect:** `model.GenerateContent(...)` -> **Correct:** `client.Models.GenerateContent(ctx, modelName, contents, config)`
 
 ## Initialization and API Key
 
-The `google.golang.org/genai` library requires creating a client object for all API calls.
+The `google.golang.org/genai/v2` library requires creating a client object for all API calls.
 
 -   Use `genai.NewClient(ctx, config)` to create a client object.
 -   Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) environment variable, which will be picked up
@@ -43,7 +43,7 @@ The `google.golang.org/genai` library requires creating a client object for all 
 import (
 	"context"
 
-	"google.golang.org/genai"
+	"google.golang.org/genai/v2"
 )
 
 ctx := context.Background()
@@ -60,7 +60,7 @@ client, err := genai.NewClient(ctx, nil)
 
 ## Models
 
--   By default, use the following models when using `google.golang.org/genai`:
+-   By default, use the following models when using `google.golang.org/genai/v2`:
     -   **General Text & Multimodal Tasks:** `gemini-3-flash-preview`
     -   **Coding and Complex Reasoning Tasks:** `gemini-3-pro-preview`
     -   **Low Latency & High Volume Tasks:** `gemini-2.5-flash-lite`

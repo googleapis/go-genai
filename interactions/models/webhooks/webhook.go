@@ -19,7 +19,7 @@ package webhooks
 import (
 	"time"
 
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // WebhookState - Output only. The state of the webhook.

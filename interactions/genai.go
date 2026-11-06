@@ -24,12 +24,12 @@ import (
 	"net/http"
 	"time"
 
-	"google.golang.org/genai/interactions/internal/config"
-	"google.golang.org/genai/interactions/internal/globals"
-	"google.golang.org/genai/interactions/internal/hooks"
-	"google.golang.org/genai/interactions/internal/utils"
-	"google.golang.org/genai/interactions/models/components"
-	"google.golang.org/genai/interactions/retry"
+	"google.golang.org/genai/v2/interactions/internal/config"
+	"google.golang.org/genai/v2/interactions/internal/globals"
+	"google.golang.org/genai/v2/interactions/internal/hooks"
+	"google.golang.org/genai/v2/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/models/components"
+	"google.golang.org/genai/v2/interactions/retry"
 )
 
 // ServerList contains the list of servers available to the SDK
@@ -166,7 +166,7 @@ func New(opts ...SDKOption) *GenAI {
 	sdk := &GenAI{
 		SDKVersion: "0.0.1",
 		sdkConfiguration: config.SDKConfiguration{
-			UserAgent:         "speakeasy-sdk/go 0.0.1 internal v1beta google.golang.org/genai/interactions",
+			UserAgent:         "speakeasy-sdk/go 0.0.1 internal v1beta google.golang.org/genai/v2/interactions",
 			SDKVersion:        "0.0.1",
 			GenVersion:        "internal",
 			OpenAPIDocVersion: "v1beta",

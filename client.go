@@ -22,8 +22,8 @@ import (
 	"os"
 	"strings"
 
-	"google.golang.org/genai/interactions"
-	"google.golang.org/genai/interactions/models/components"
+	"google.golang.org/genai/v2/interactions"
+	"google.golang.org/genai/v2/interactions/models/components"
 
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/auth/credentials"

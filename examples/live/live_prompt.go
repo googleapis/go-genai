@@ -25,7 +25,7 @@ import (
 	"log"
 	"os"
 
-	"google.golang.org/genai"
+	"google.golang.org/genai/v2"
 )
 
 var voiceSample = flag.String("voice-sample", "", "Path to voice sample file")

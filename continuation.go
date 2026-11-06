@@ -194,7 +194,9 @@ func (s *streamContinuation) startHop() *GenerateContentConfig {
 // observe records the prompt feedback, content, finish reason and continuation
 // token of one chunk, and returns the chunk to yield: with an intermediate
 // finish reason cleared and its usage metadata (if any) set to this hop's
-// latest usage plus the usage of all previous hops.
+// latest usage plus the usage of all previous hops. A chunk whose first
+// candidate is nil does not change the hop's finish reason, token or content
+// state.
 func (s *streamContinuation) observe(chunk *GenerateContentResponse) *GenerateContentResponse {
 	if chunk == nil {
 		return chunk
@@ -204,9 +206,9 @@ func (s *streamContinuation) observe(chunk *GenerateContentResponse) *GenerateCo
 	if chunk.PromptFeedback != nil {
 		h.hasPromptFeedback = true
 	}
-	if len(chunk.Candidates) > 0 {
+	if len(chunk.Candidates) > 0 && chunk.Candidates[0] != nil {
 		cand := chunk.Candidates[0]
-		if cand != nil && cand.Content != nil && len(cand.Content.Parts) > 0 {
+		if cand.Content != nil && len(cand.Content.Parts) > 0 {
 			h.hasYieldedContent = true
 		}
 		if cand.FinishReason != "" && cand.FinishReason != FinishReasonUnspecified {

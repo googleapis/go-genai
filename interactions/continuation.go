@@ -32,6 +32,7 @@ import (
 	"log"
 	"reflect"
 	"sync"
+	"sync/atomic"
 
 	"google.golang.org/genai/interactions/models/apierrors"
 	"google.golang.org/genai/interactions/models/interactions"
@@ -783,14 +784,20 @@ func (st *streamContinuationState) endHop(hopErr error, terminal bool) (bool, er
 // streamContinuation drives the hops of a streaming Create call and presents
 // them as one event stream.
 type streamContinuation struct {
-	s       *Interactions
-	ctx     context.Context
-	p       *continuationRequest
-	opts    []operations.Option
-	state   *streamContinuationState
-	current *stream.EventStream[sseEvent]
-	done    bool
-	mu      sync.Mutex
+	s      *Interactions
+	ctx    context.Context
+	cancel context.CancelFunc
+	p      *continuationRequest
+	opts   []operations.Option
+	state  *streamContinuationState
+	done   bool
+	// mu serializes next and guards done and state. close does not take it,
+	// so it can interrupt a next blocked on the network.
+	mu     sync.Mutex
+	closed atomic.Bool
+	// currentMu guards current only; it is never held across a blocking call.
+	currentMu sync.Mutex
+	current   *stream.EventStream[sseEvent]
 }
 
 func (s *Interactions) createStreamWithContinuation(ctx context.Context, p *continuationRequest, opts []operations.Option) (*operations.CreateInteractionResponse, error) {
@@ -801,9 +808,11 @@ func (s *Interactions) createStreamWithContinuation(ctx context.Context, p *cont
 	if res.InteractionSSEStreamEvent == nil {
 		return res, nil
 	}
+	hopCtx, cancel := context.WithCancel(ctx)
 	c := &streamContinuation{
 		s:       s,
-		ctx:     ctx,
+		ctx:     hopCtx,
+		cancel:  cancel,
 		p:       p,
 		opts:    opts,
 		state:   newStreamContinuationState(p.callerToken, p.store),
@@ -815,12 +824,24 @@ func (s *Interactions) createStreamWithContinuation(ctx context.Context, p *cont
 }
 
 // next returns the next event across hops, (nil, nil, nil) at the end of the
-// stream, or the error ending it.
+// stream or after close, or the error ending it.
 func (c *streamContinuation) next() (*sseEvent, json.RawMessage, error) {
 	c.mu.Lock()
-	defer c.mu.Unlock()
+	defer func() {
+		if c.done {
+			c.cancel()
+		}
+		c.mu.Unlock()
+	}()
 	for !c.done {
-		if c.current == nil {
+		if c.closed.Load() {
+			c.done = true
+			return nil, nil, nil
+		}
+		c.currentMu.Lock()
+		cur := c.current
+		c.currentMu.Unlock()
+		if cur == nil {
 			token, owner := c.state.startHop(false)
 			var hopErr error
 			if err := c.ctx.Err(); err != nil {
@@ -835,10 +856,17 @@ func (c *streamContinuation) next() (*sseEvent, json.RawMessage, error) {
 					c.done = true
 					return nil, nil, nil
 				default:
-					c.current = res.InteractionSSEStreamEvent
+					if !c.install(res.InteractionSSEStreamEvent) {
+						c.done = true
+						return nil, nil, nil
+					}
 					c.state.hop.opened = true
 					continue
 				}
+			}
+			if c.closed.Load() {
+				c.done = true
+				return nil, nil, nil
 			}
 			if err := c.endHop(hopErr); err != nil {
 				return nil, nil, err
@@ -846,19 +874,41 @@ func (c *streamContinuation) next() (*sseEvent, json.RawMessage, error) {
 			continue
 		}
 
-		if c.current.Next() {
-			ev := c.current.Value()
+		if cur.Next() {
+			ev := cur.Value()
 			c.state.observe(ev)
-			return ev, c.current.RawValue(), nil
+			return ev, cur.RawValue(), nil
 		}
-		hopErr := c.current.Err()
-		_ = c.current.Close()
-		c.current = nil
+		hopErr := cur.Err()
+		_ = cur.Close()
+		c.currentMu.Lock()
+		if c.current == cur {
+			c.current = nil
+		}
+		c.currentMu.Unlock()
+		if c.closed.Load() {
+			c.done = true
+			return nil, nil, nil
+		}
 		if err := c.endHop(hopErr); err != nil {
 			return nil, nil, err
 		}
 	}
 	return nil, nil, nil
+}
+
+// install makes es the current hop stream, or closes it and returns false if
+// the stream was closed meanwhile.
+func (c *streamContinuation) install(es *stream.EventStream[sseEvent]) bool {
+	c.currentMu.Lock()
+	if c.closed.Load() {
+		c.currentMu.Unlock()
+		_ = es.Close()
+		return false
+	}
+	c.current = es
+	c.currentMu.Unlock()
+	return true
 }
 
 // endHop ends the current hop; it sets done when the stream is over and
@@ -875,14 +925,16 @@ func (c *streamContinuation) endHop(hopErr error) error {
 	return nil
 }
 
+// close stops the stream; it is safe to call while next is blocked.
 func (c *streamContinuation) close() error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.done = true
-	if c.current != nil {
-		err := c.current.Close()
-		c.current = nil
-		return err
+	c.closed.Store(true)
+	c.cancel()
+	c.currentMu.Lock()
+	cur := c.current
+	c.current = nil
+	c.currentMu.Unlock()
+	if cur != nil {
+		return cur.Close()
 	}
 	return nil
 }

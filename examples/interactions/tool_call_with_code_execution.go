@@ -44,7 +44,7 @@ func main() {
 	tool := gaos_interactions.NewTool(gaos_interactions.CodeExecution{})
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
-		Model: gaos_interactions.Model("gemini-flash-latest"),
+		Model: gaos_interactions.ModelGemini38Flash,
 		Input: ptr(gaos_interactions.NewInteractionsInput("What is the sum of the first 100 integers?")),
 		Tools: []gaos_interactions.Tool{tool},
 	})

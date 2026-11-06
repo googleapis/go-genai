@@ -44,7 +44,7 @@ func main() {
 	tool := gaos_interactions.NewTool(gaos_interactions.URLContext{})
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
-		Model: gaos_interactions.Model("gemini-flash-latest"),
+		Model: gaos_interactions.ModelGemini38Flash,
 		Input: ptr(gaos_interactions.NewInteractionsInput("Compare the ingredients and cooking times from the recipes at https://www.foodnetwork.com/recipes/ina-garten/perfect-roast-chicken-recipe-1940592 and https://www.allrecipes.com/recipe/21151/simple-whole-roast-chicken/")),
 		Tools: []gaos_interactions.Tool{tool},
 	})

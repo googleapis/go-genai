@@ -42,7 +42,7 @@ func main() {
 	fmt.Println("Using Gemini Developer API")
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
-		Model:  gaos_interactions.Model("gemini-flash-latest"),
+		Model:  gaos_interactions.ModelGemini38Flash,
 		Input:  ptr(gaos_interactions.NewInteractionsInput("Tell me a story")),
 		Stream: ptr(true),
 	})

@@ -45,7 +45,7 @@ func main() {
 	fmt.Println("Using Gemini Developer API")
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
-		Model: gaos_interactions.Model("gemini-flash-latest"),
+		Model: gaos_interactions.ModelGemini38Flash,
 		Input: genai.Ptr(gaos_interactions.NewInteractionsInput("Why is the sky blue?")),
 	})
 

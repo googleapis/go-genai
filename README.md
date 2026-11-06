@@ -37,7 +37,7 @@ parts := []*genai.Part{
   {Text: "What's this image about?"},
   {InlineData: &genai.Blob{Data: imageBytes, MIMEType: "image/jpeg"}},
 }
-result, err := client.Models.GenerateContent(ctx, "gemini-flash-latest", []*genai.Content{{Parts: parts}}, nil)
+result, err := client.Models.GenerateContent(ctx, "gemini-3.8-flash", []*genai.Content{{Parts: parts}}, nil)
 ```
 
 ## Installation and usage
@@ -120,7 +120,7 @@ func main() {
 	}
 
 	body := operations.NewCreateInteractionRequestBody(interactions.CreateModelInteraction{
-		Model: interactions.Model("gemini-flash-latest"),
+		Model: interactions.Model("gemini-3.8-flash"),
 		Input: genai.Ptr(interactions.NewInteractionsInput("Tell me a short joke about programming.")),
 	})
 

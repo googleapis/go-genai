@@ -49,7 +49,7 @@ func main() {
 	tool := gaos_interactions.NewTool(mcpServer)
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
-		Model:             gaos_interactions.Model("gemini-flash-latest"),
+		Model:             gaos_interactions.ModelGemini38Flash,
 		Input:             ptr(gaos_interactions.NewInteractionsInput("What is the temperature today in London?")),
 		SystemInstruction: ptr("Today is 9-23-2025. Any dates before this are in the past, and any dates after this are in the future."),
 		Tools:             []gaos_interactions.Tool{tool},

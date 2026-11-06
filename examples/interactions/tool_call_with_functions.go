@@ -74,7 +74,7 @@ func main() {
 	tool := gaos_interactions.NewTool(function)
 
 	body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{
-		Model: gaos_interactions.Model("gemini-flash-latest"),
+		Model: gaos_interactions.ModelGemini38Flash,
 		Input: ptr(gaos_interactions.NewInteractionsInput("Schedule a meeting for 10/06/2028 at 10 am with Peter and Amir about the Next Gen API")),
 		Tools: []gaos_interactions.Tool{tool},
 	})

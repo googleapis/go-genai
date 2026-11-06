@@ -22,9 +22,9 @@ import (
 	"log"
 	"os"
 
-	"google.golang.org/genai"
-	"google.golang.org/genai/interactions/models/operations"
-	"google.golang.org/genai/interactions/models/voices"
+	"google.golang.org/genai/v2"
+	"google.golang.org/genai/v2/interactions/models/operations"
+	"google.golang.org/genai/v2/interactions/models/voices"
 )
 
 func main() {

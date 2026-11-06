@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"io"
 
-	"google.golang.org/genai/interactions/internal/utils"
-	"google.golang.org/genai/interactions/models/components"
-	"google.golang.org/genai/interactions/models/environments"
+	"google.golang.org/genai/v2/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/models/components"
+	"google.golang.org/genai/v2/interactions/models/environments"
 )
 
 type UploadEnvironmentFileGlobals struct {

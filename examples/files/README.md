@@ -20,8 +20,8 @@ Once you setup the environment variables, you can download, build and run the
 example using the following commands.
 
 ```
-$ go get google.golang.org/genai
-$ cd `go list -f '{{.Dir}}' google.golang.org/genai/examples/files`
+$ go get google.golang.org/genai/v2
+$ cd `go list -f '{{.Dir}}' google.golang.org/genai/v2/examples/files`
 $ go run list_download.go
 $ go run register_files.go
 ```

@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"log"
 
-	"google.golang.org/genai"
+	"google.golang.org/genai/v2"
 )
 
 var (

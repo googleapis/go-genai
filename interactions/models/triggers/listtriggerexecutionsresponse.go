@@ -17,7 +17,7 @@
 package triggers
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // ListTriggerExecutionsResponse - Response message for TriggerService.ListTriggerExecutions.

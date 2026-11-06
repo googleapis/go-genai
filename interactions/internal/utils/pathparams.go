@@ -24,8 +24,8 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/genai/interactions/optionalnullable"
-	"google.golang.org/genai/interactions/types"
+	"google.golang.org/genai/v2/interactions/optionalnullable"
+	"google.golang.org/genai/v2/interactions/types"
 )
 
 func GenerateURL(_ context.Context, serverURL, path string, pathParams interface{}, globals interface{}) (string, error) {

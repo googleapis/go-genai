@@ -28,8 +28,8 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/genai/interactions/optionalnullable"
-	"google.golang.org/genai/interactions/types"
+	"google.golang.org/genai/v2/interactions/optionalnullable"
+	"google.golang.org/genai/v2/interactions/types"
 )
 
 func PopulateQueryParams(_ context.Context, req *http.Request, queryParams interface{}, globals interface{}, allowEmptyValue map[string]struct{}) error {

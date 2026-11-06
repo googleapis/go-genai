@@ -17,7 +17,7 @@
 package interactions
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // A MCPServer is a server that can be called by the model to perform actions.

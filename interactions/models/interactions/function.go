@@ -17,7 +17,7 @@
 package interactions
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // Function - A tool that can be used by the model.

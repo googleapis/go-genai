@@ -17,7 +17,7 @@
 package interactions
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // ProcessingResultDelta - Streaming delta for the result of a server-initiated media processing step.

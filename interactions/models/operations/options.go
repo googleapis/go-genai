@@ -20,8 +20,8 @@ import (
 	"errors"
 	"time"
 
-	"google.golang.org/genai/interactions/internal/utils"
-	"google.golang.org/genai/interactions/retry"
+	"google.golang.org/genai/v2/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/retry"
 )
 
 var ErrUnsupportedOption = errors.New("unsupported option")

@@ -26,13 +26,13 @@ import (
 	"testing"
 	"time"
 
-	gaos "google.golang.org/genai/interactions"
-	"google.golang.org/genai/interactions/models/agents"
-	"google.golang.org/genai/interactions/models/components"
-	"google.golang.org/genai/interactions/models/credentials"
-	"google.golang.org/genai/interactions/models/interactions"
-	"google.golang.org/genai/interactions/models/operations"
-	"google.golang.org/genai/interactions/models/webhooks"
+	gaos "google.golang.org/genai/v2/interactions"
+	"google.golang.org/genai/v2/interactions/models/agents"
+	"google.golang.org/genai/v2/interactions/models/components"
+	"google.golang.org/genai/v2/interactions/models/credentials"
+	"google.golang.org/genai/v2/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/models/operations"
+	"google.golang.org/genai/v2/interactions/models/webhooks"
 )
 
 func TestInteractionsWorkflow(t *testing.T) {

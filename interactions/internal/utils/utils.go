@@ -30,8 +30,8 @@ import (
 	"sync"
 	"time"
 
-	"google.golang.org/genai/interactions/optionalnullable"
-	"google.golang.org/genai/interactions/redact"
+	"google.golang.org/genai/v2/interactions/optionalnullable"
+	"google.golang.org/genai/v2/interactions/redact"
 )
 
 const (

@@ -17,7 +17,7 @@
 package interactions
 
 import (
-	"google.golang.org/genai/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/internal/utils"
 )
 
 // ImageConfigAspectRatio - The aspect ratio of the image to generate. Supported aspect ratios: 1:1,

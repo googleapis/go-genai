@@ -20,10 +20,10 @@ import (
 	"errors"
 	"fmt"
 
-	"google.golang.org/genai/interactions/internal/utils"
-	"google.golang.org/genai/interactions/models/components"
-	"google.golang.org/genai/interactions/models/interactions"
-	"google.golang.org/genai/interactions/types/stream"
+	"google.golang.org/genai/v2/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/models/components"
+	"google.golang.org/genai/v2/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/types/stream"
 )
 
 type CreateInteractionGlobals struct {

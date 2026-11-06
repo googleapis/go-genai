@@ -30,11 +30,11 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/genai/interactions/models/apierrors"
-	"google.golang.org/genai/interactions/models/components"
-	"google.golang.org/genai/interactions/models/interactions"
-	"google.golang.org/genai/interactions/models/operations"
-	"google.golang.org/genai/interactions/retry"
+	"google.golang.org/genai/v2/interactions/models/apierrors"
+	"google.golang.org/genai/v2/interactions/models/components"
+	"google.golang.org/genai/v2/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/models/operations"
+	"google.golang.org/genai/v2/interactions/retry"
 )
 
 // scriptedHop is one scripted server answer (see scriptedServer).

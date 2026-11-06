@@ -24,8 +24,8 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/genai/interactions/optionalnullable"
-	"google.golang.org/genai/interactions/types"
+	"google.golang.org/genai/v2/interactions/optionalnullable"
+	"google.golang.org/genai/v2/interactions/types"
 )
 
 func populateForm(paramName string, explode bool, objType reflect.Type, objValue reflect.Value, delimiter string, defaultValue *string, allowEmptyValue map[string]struct{}, getFieldName func(reflect.StructField) string) url.Values {

@@ -30,7 +30,7 @@ import (
 	_ "embed"
 
 	"github.com/gorilla/websocket"
-	"google.golang.org/genai"
+	"google.golang.org/genai/v2"
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")

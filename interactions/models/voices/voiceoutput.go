@@ -19,8 +19,8 @@ package voices
 import (
 	"time"
 
-	"google.golang.org/genai/interactions/internal/utils"
-	"google.golang.org/genai/interactions/models/interactions"
+	"google.golang.org/genai/v2/interactions/internal/utils"
+	"google.golang.org/genai/v2/interactions/models/interactions"
 )
 
 // VoiceOutput - A voice resource representing either a custom voice (created via

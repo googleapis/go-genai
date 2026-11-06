@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.0.0](https://github.com/googleapis/go-genai/compare/v1.77.0...v2.0.0) (2026-11-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* **interactions:** In the typed SDKs, `CodeExecutionResultStep.result` changes from `string` to the `CodeExecutionResultStepResult` union. Code that reads `result` as a string must now check which variant is present and read the string from it. The JSON for text-only results is unchanged.
+* default Gemini API version to v1 instead of v1beta across SDKs
+
+### Features
+
+* Add `source_text` to `AudioTranscriptionConfig` and `SmartTranscriptionMode`. ([2b4e897](https://github.com/googleapis/go-genai/commit/2b4e8972459b4b39819e4d12702ae1a573ccef2a))
+* Add MALFORMED_RESPONSE to FinishReason ([6ba4b48](https://github.com/googleapis/go-genai/commit/6ba4b4807e721486a535a7f6c3ad0f2fec3da84f)), refs [#2937](https://github.com/googleapis/go-genai/issues/2937)
+* **cli:** use gemini-3.5-transcribe as default model for transcribe command ([968e135](https://github.com/googleapis/go-genai/commit/968e13580a53b19b47ee6c8f10c4f2c52da319a3))
+* default Gemini API version to v1 instead of v1beta across SDKs ([402dc81](https://github.com/googleapis/go-genai/commit/402dc815443e6eab4a7c4d11f8b4db6bdbc1a30a))
+* Disable GenerateVideos for Gemini API, update tests/READMEs ([9cf04de](https://github.com/googleapis/go-genai/commit/9cf04deac32f2418781170b3cd41c09abf060564))
+* **interactions:** add Office and OpenDocument MIME types ([36ba34e](https://github.com/googleapis/go-genai/commit/36ba34e477423db3260f320d42c7dd10cf30bf0f))
+* **interactions:** support multimodal content in CodeExecutionResultStep.result ([0872815](https://github.com/googleapis/go-genai/commit/087281541b864840a1ff51a14d16eea23f0d8d83))
+* support GOOGLE_GENAI_API_VERSION environment variable across SDKs ([402dc81](https://github.com/googleapis/go-genai/commit/402dc815443e6eab4a7c4d11f8b4db6bdbc1a30a))
+* update discovery doc ([8653ef7](https://github.com/googleapis/go-genai/commit/8653ef7de2c5490cd7fa42578399617586adcaac))
+
+
+### Bug Fixes
+
+* do not panic on a null element in a converted response slice or a null response body ([c7c9c43](https://github.com/googleapis/go-genai/commit/c7c9c430f459994cba0d22291cfabd97080c7f37)), refs [#899](https://github.com/googleapis/go-genai/issues/899)
+* **overlays:** fail CLI commands on failed interactions, redact tool headers, narrow ModelInteraction.required ([34be134](https://github.com/googleapis/go-genai/commit/34be13453949d4c12d38dab1276fe3cfb963146d))
+* respect configured and default API version for Gemini API file uploads across SDKs ([da10e09](https://github.com/googleapis/go-genai/commit/da10e090599ecacb00a7e247debe6a8912ca3149))
+
 ## [1.77.0](https://github.com/googleapis/go-genai/compare/v1.76.0...v1.77.0) (2026-10-29)
 
 

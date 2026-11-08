@@ -24,8 +24,9 @@ import (
 // replaces rather than extends.
 const maxRedirects = 10
 
-// stripCredentialsOnCrossDomainRedirect is the redirect policy of the
-// http.Client that NewClient builds when ClientConfig.HTTPClient is nil.
+// stripCredentialsOnCrossDomainRedirect is the redirect policy of the plain
+// http.Client that NewClient builds when ClientConfig.HTTPClient is nil and
+// the request carries an API key.
 //
 // It follows up to ten redirects, as net/http's default policy does, but
 // removes the x-goog-api-key header from a redirect that leaves the domain
@@ -42,18 +43,48 @@ func stripCredentialsOnCrossDomainRedirect(req *http.Request, via []*http.Reques
 	if len(via) >= maxRedirects {
 		return errors.New("stopped after 10 redirects")
 	}
-	domain := strings.ToLower(via[0].URL.Hostname())
-	cross := !isDomainOrSubdomain(strings.ToLower(req.URL.Hostname()), domain)
-	for _, r := range via[1:] {
-		if cross {
-			break
-		}
-		cross = !isDomainOrSubdomain(strings.ToLower(r.URL.Hostname()), domain)
-	}
-	if cross {
+	if leftDomain(req, via) {
 		req.Header.Del("x-goog-api-key")
 	}
 	return nil
+}
+
+// stopAtCrossDomainRedirect is the redirect policy of the http.Client that
+// NewClient builds through httptransport.NewClient for Vertex AI credentials.
+//
+// That client's transport sets the Authorization header from the credentials
+// inside RoundTrip, on every request it sends, so a header deleted here would
+// be put back on the redirected request and the access token would still
+// reach the other domain. The policy therefore does not follow a redirect
+// that leaves the domain of the original request (or a subdomain of it): it
+// returns http.ErrUseLastResponse, and the caller gets the redirect response
+// itself, which the SDK reports as an APIError. Redirects within the domain
+// are followed, up to net/http's limit of ten.
+func stopAtCrossDomainRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) >= maxRedirects {
+		return errors.New("stopped after 10 redirects")
+	}
+	if leftDomain(req, via) {
+		return http.ErrUseLastResponse
+	}
+	return nil
+}
+
+// leftDomain reports whether req, or any redirect before it, is outside the
+// domain of the original request (or a subdomain of it). The original request
+// is the reference, not the previous hop, so a chain that leaves the domain
+// and comes back still counts as having left it.
+func leftDomain(req *http.Request, via []*http.Request) bool {
+	domain := strings.ToLower(via[0].URL.Hostname())
+	if !isDomainOrSubdomain(strings.ToLower(req.URL.Hostname()), domain) {
+		return true
+	}
+	for _, r := range via[1:] {
+		if !isDomainOrSubdomain(strings.ToLower(r.URL.Hostname()), domain) {
+			return true
+		}
+	}
+	return false
 }
 
 // isDomainOrSubdomain reports whether sub is a subdomain (or exact match) of

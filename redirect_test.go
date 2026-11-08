@@ -21,6 +21,9 @@ import (
 	"net/url"
 	"sync"
 	"testing"
+
+	"cloud.google.com/go/auth"
+	"cloud.google.com/go/auth/httptransport"
 )
 
 // TestAPIKeyNotForwardedOnCrossDomainRedirect checks where the API key goes
@@ -153,5 +156,104 @@ func TestStripCredentialsOnCrossDomainRedirectLimit(t *testing.T) {
 	req := &http.Request{URL: first, Header: http.Header{}}
 	if err := stripCredentialsOnCrossDomainRedirect(req, via); err == nil {
 		t.Error("the policy followed more redirects than net/http's default would")
+	}
+}
+
+// TestVertexClientStopsAtCrossDomainRedirect covers the client that NewClient
+// builds through httptransport.NewClient for Vertex AI credentials. Its
+// transport sets Authorization from the credentials on every request it
+// sends, including a redirected one, so deleting the header in CheckRedirect
+// does not keep the access token off another domain; the control request
+// shows the token reaching server B through such a client with net/http's
+// default policy. The SDK's client does not follow that redirect at all.
+func TestVertexClientStopsAtCrossDomainRedirect(t *testing.T) {
+	const token = "ACCESS_TOKEN_MUST_NOT_LEAK"
+	t.Setenv("GOOGLE_API_KEY", "")
+	t.Setenv("GEMINI_API_KEY", "")
+
+	var mu sync.Mutex
+	got := map[string]string{} // path -> Authorization received there
+	record := func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		got[r.URL.Path] = r.Header.Get("Authorization")
+	}
+	received := func(path string) (string, bool) {
+		mu.Lock()
+		defer mu.Unlock()
+		v, ok := got[path]
+		return v, ok
+	}
+
+	var addrA string // server A, addressed as localhost
+	serverB := httptest.NewServer(http.HandlerFunc(record))
+	defer serverB.Close()
+	serverA := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/same":
+			http.Redirect(w, r, addrA+"/stayed", http.StatusFound)
+		case "/cross", "/control":
+			http.Redirect(w, r, serverB.URL+"/landed"+r.URL.Path, http.StatusFound)
+		default:
+			record(w, r)
+		}
+	}))
+	defer serverA.Close()
+	u, err := url.Parse(serverA.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	addrA = "http://localhost:" + u.Port()
+
+	creds := auth.NewCredentials(&auth.CredentialsOptions{
+		TokenProvider: &staticTokenProvider{token: &auth.Token{Value: token}},
+	})
+	get := func(client *http.Client, path string) *http.Response {
+		t.Helper()
+		resp, err := client.Get(addrA + path)
+		if err != nil {
+			t.Fatalf("GET %s: %v", path, err)
+		}
+		resp.Body.Close()
+		return resp
+	}
+
+	// Control: the transport signs the redirected request too, so with
+	// net/http's default policy the token crosses the domain.
+	control, err := httptransport.NewClient(&httptransport.Options{Credentials: creds})
+	if err != nil {
+		t.Fatal(err)
+	}
+	get(control, "/control")
+	if a, _ := received("/landed/control"); a != "Bearer "+token {
+		t.Fatalf("control: the redirect target received Authorization %q, want the bearer token; the hop is not cross-domain on this machine", a)
+	}
+
+	client, err := NewClient(context.Background(), &ClientConfig{
+		Backend:     BackendVertexAI,
+		Project:     "project",
+		Location:    "us-central1",
+		Credentials: creds,
+	})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+	hc := client.clientConfig.HTTPClient
+
+	// A redirect within the domain is followed, token and all.
+	if resp := get(hc, "/same"); resp.StatusCode != http.StatusOK {
+		t.Errorf("GET /same: status %d, want 200; a redirect within the domain must be followed", resp.StatusCode)
+	}
+	if a, _ := received("/stayed"); a != "Bearer "+token {
+		t.Errorf("GET /same: the redirect target received Authorization %q, want the bearer token", a)
+	}
+
+	// A redirect to another domain is not followed: the caller gets the
+	// redirect response and server B gets no request.
+	if resp := get(hc, "/cross"); resp.StatusCode != http.StatusFound {
+		t.Errorf("GET /cross: status %d, want 302; a redirect to another domain must not be followed", resp.StatusCode)
+	}
+	if a, ok := received("/landed/cross"); ok {
+		t.Errorf("GET /cross: the other domain was reached, with Authorization %q", a)
 	}
 }

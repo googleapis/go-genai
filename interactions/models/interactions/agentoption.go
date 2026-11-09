@@ -28,6 +28,8 @@ const (
 	AgentOptionDeepResearchMaxPreview042026 AgentOption = "deep-research-max-preview-04-2026"
 	// AgentOptionAntigravityPreview052026 Use the Antigravity managed agent to perform multi-step tasks that require reasoning, file operations, and tool use.
 	AgentOptionAntigravityPreview052026 AgentOption = "antigravity-preview-05-2026"
+	// AgentOptionAntigravityPreview092026 Use the Antigravity managed agent to perform multi-step tasks that require reasoning, file operations, and tool use.
+	AgentOptionAntigravityPreview092026 AgentOption = "antigravity-preview-09-2026"
 )
 
 func (e AgentOption) ToPointer() *AgentOption {
@@ -38,7 +40,7 @@ func (e AgentOption) ToPointer() *AgentOption {
 func (e *AgentOption) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "deep-research-pro-preview-12-2025", "deep-research-preview-04-2026", "deep-research-max-preview-04-2026", "antigravity-preview-05-2026":
+		case "deep-research-pro-preview-12-2025", "deep-research-preview-04-2026", "deep-research-max-preview-04-2026", "antigravity-preview-05-2026", "antigravity-preview-09-2026":
 			return true
 		}
 	}

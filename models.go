@@ -932,6 +932,11 @@ func embedContentResponseFromMldev(fromObject map[string]any, parentObject map[s
 		InternalSetValueByPath(toObject, []string{"metadata"}, fromMetadata)
 	}
 
+	fromUsageMetadata := InternalGetValueByPath(fromObject, []string{"usageMetadata"})
+	if fromUsageMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
+	}
+
 	return toObject, nil
 }
 
@@ -956,6 +961,21 @@ func embedContentResponseFromVertex(fromObject map[string]any, parentObject map[
 	fromMetadata := InternalGetValueByPath(fromObject, []string{"metadata"})
 	if fromMetadata != nil {
 		InternalSetValueByPath(toObject, []string{"metadata"}, fromMetadata)
+	}
+
+	fromTruncated := InternalGetValueByPath(fromObject, []string{"truncated"})
+	if fromTruncated != nil {
+		InternalSetValueByPath(toObject, []string{"truncated"}, fromTruncated)
+	}
+
+	fromUsageMetadata := InternalGetValueByPath(fromObject, []string{"usageMetadata"})
+	if fromUsageMetadata != nil {
+		fromUsageMetadata, err = usageMetadataFromVertex(fromUsageMetadata.(map[string]any), toObject, rootObject)
+		if err != nil {
+			return nil, err
+		}
+
+		InternalSetValueByPath(toObject, []string{"usageMetadata"}, fromUsageMetadata)
 	}
 
 	if rootObject != nil && getValueByPath(rootObject, []string{"embeddingApiType"}) != nil && getValueByPath(rootObject, []string{"embeddingApiType"}).(string) == "EMBED_CONTENT" {
@@ -4003,6 +4023,67 @@ func upscaleImageResponseFromVertex(fromObject map[string]any, parentObject map[
 		}
 
 		InternalSetValueByPath(toObject, []string{"generatedImages"}, fromGeneratedImages)
+	}
+
+	return toObject, nil
+}
+
+func usageMetadataFromVertex(fromObject map[string]any, parentObject map[string]any, rootObject map[string]any) (toObject map[string]any, err error) {
+	toObject = make(map[string]any)
+
+	fromPromptTokenCount := InternalGetValueByPath(fromObject, []string{"promptTokenCount"})
+	if fromPromptTokenCount != nil {
+		InternalSetValueByPath(toObject, []string{"promptTokenCount"}, fromPromptTokenCount)
+	}
+
+	fromCachedContentTokenCount := InternalGetValueByPath(fromObject, []string{"cachedContentTokenCount"})
+	if fromCachedContentTokenCount != nil {
+		InternalSetValueByPath(toObject, []string{"cachedContentTokenCount"}, fromCachedContentTokenCount)
+	}
+
+	fromResponseTokenCount := InternalGetValueByPath(fromObject, []string{"candidatesTokenCount"})
+	if fromResponseTokenCount != nil {
+		InternalSetValueByPath(toObject, []string{"responseTokenCount"}, fromResponseTokenCount)
+	}
+
+	fromToolUsePromptTokenCount := InternalGetValueByPath(fromObject, []string{"toolUsePromptTokenCount"})
+	if fromToolUsePromptTokenCount != nil {
+		InternalSetValueByPath(toObject, []string{"toolUsePromptTokenCount"}, fromToolUsePromptTokenCount)
+	}
+
+	fromThoughtsTokenCount := InternalGetValueByPath(fromObject, []string{"thoughtsTokenCount"})
+	if fromThoughtsTokenCount != nil {
+		InternalSetValueByPath(toObject, []string{"thoughtsTokenCount"}, fromThoughtsTokenCount)
+	}
+
+	fromTotalTokenCount := InternalGetValueByPath(fromObject, []string{"totalTokenCount"})
+	if fromTotalTokenCount != nil {
+		InternalSetValueByPath(toObject, []string{"totalTokenCount"}, fromTotalTokenCount)
+	}
+
+	fromPromptTokensDetails := InternalGetValueByPath(fromObject, []string{"promptTokensDetails"})
+	if fromPromptTokensDetails != nil {
+		InternalSetValueByPath(toObject, []string{"promptTokensDetails"}, fromPromptTokensDetails)
+	}
+
+	fromCacheTokensDetails := InternalGetValueByPath(fromObject, []string{"cacheTokensDetails"})
+	if fromCacheTokensDetails != nil {
+		InternalSetValueByPath(toObject, []string{"cacheTokensDetails"}, fromCacheTokensDetails)
+	}
+
+	fromResponseTokensDetails := InternalGetValueByPath(fromObject, []string{"candidatesTokensDetails"})
+	if fromResponseTokensDetails != nil {
+		InternalSetValueByPath(toObject, []string{"responseTokensDetails"}, fromResponseTokensDetails)
+	}
+
+	fromToolUsePromptTokensDetails := InternalGetValueByPath(fromObject, []string{"toolUsePromptTokensDetails"})
+	if fromToolUsePromptTokensDetails != nil {
+		InternalSetValueByPath(toObject, []string{"toolUsePromptTokensDetails"}, fromToolUsePromptTokensDetails)
+	}
+
+	fromTrafficType := InternalGetValueByPath(fromObject, []string{"trafficType"})
+	if fromTrafficType != nil {
+		InternalSetValueByPath(toObject, []string{"trafficType"}, fromTrafficType)
 	}
 
 	return toObject, nil

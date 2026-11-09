@@ -5500,7 +5500,7 @@ func (m Models) All(ctx context.Context) iter.Seq2[*Model, error] {
 // GenerateImages generates images based on the provided model, prompt, and configuration.
 func (m Models) GenerateImages(ctx context.Context, model string, prompt string, config *GenerateImagesConfig) (*GenerateImagesResponse, error) {
 	deprecationWarningGenerateImages.Do(func() {
-		log.Println("The GenerateImages method is deprecated and will be removed in the next major release (not before Jan. 1 2027). Please use the GenerateContent method with image models instead. See https://ai.google.dev/gemini-api/docs/deprecations#imagen-models and https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images")
+		log.Println("The GenerateImages method is deprecated and will be removed in the next major release (not before Jan. 1 2027). Please use the GenerateContent method with image models instead. See https://aistudio.google.com/docs/deprecations#imagen-models and https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images")
 	})
 	apiResponse, err := m.generateImages(ctx, model, prompt, config)
 	if err != nil {

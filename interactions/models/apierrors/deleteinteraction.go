@@ -18,6 +18,7 @@ package apierrors
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"google.golang.org/genai/interactions/models/components"
 	"google.golang.org/genai/interactions/models/interactions"
@@ -33,6 +34,15 @@ type DeleteInteractionServerError struct {
 var _ error = &DeleteInteractionServerError{}
 
 func (e *DeleteInteractionServerError) Error() string {
+	if e != nil {
+		if e.Error_.Message != nil && *e.Error_.Message != "" {
+			if e.Error_.Code != nil && *e.Error_.Code != "" {
+				return fmt.Sprintf("%v: %s", *e.Error_.Code, *e.Error_.Message)
+			}
+			return *e.Error_.Message
+		}
+	}
+
 	data, _ := json.Marshal(e)
 	return string(data)
 }
@@ -47,6 +57,15 @@ type DeleteInteractionClientError struct {
 var _ error = &DeleteInteractionClientError{}
 
 func (e *DeleteInteractionClientError) Error() string {
+	if e != nil {
+		if e.Error_.Message != nil && *e.Error_.Message != "" {
+			if e.Error_.Code != nil && *e.Error_.Code != "" {
+				return fmt.Sprintf("%v: %s", *e.Error_.Code, *e.Error_.Message)
+			}
+			return *e.Error_.Message
+		}
+	}
+
 	data, _ := json.Marshal(e)
 	return string(data)
 }

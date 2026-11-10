@@ -23,7 +23,6 @@ const (
 	ThinkingLevelLow     ThinkingLevel = "low"
 	ThinkingLevelMedium  ThinkingLevel = "medium"
 	ThinkingLevelHigh    ThinkingLevel = "high"
-	ThinkingLevelXhigh   ThinkingLevel = "xhigh"
 )
 
 func (e ThinkingLevel) ToPointer() *ThinkingLevel {
@@ -34,7 +33,7 @@ func (e ThinkingLevel) ToPointer() *ThinkingLevel {
 func (e *ThinkingLevel) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "minimal", "low", "medium", "high", "xhigh":
+		case "minimal", "low", "medium", "high":
 			return true
 		}
 	}

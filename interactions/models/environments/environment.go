@@ -25,6 +25,29 @@ import (
 	"google.golang.org/genai/interactions/models/interactions"
 )
 
+// EnvironmentMode - Output only. The compute lifecycle mode for this environment.
+type EnvironmentMode string
+
+const (
+	EnvironmentModeOnDemand   EnvironmentMode = "on_demand"
+	EnvironmentModeSelfHosted EnvironmentMode = "self_hosted"
+)
+
+func (e EnvironmentMode) ToPointer() *EnvironmentMode {
+	return &e
+}
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *EnvironmentMode) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "on_demand", "self_hosted":
+			return true
+		}
+	}
+	return false
+}
+
 type EnvironmentNetworkEnum string
 
 const (
@@ -198,6 +221,12 @@ type Environment struct {
 	// Output only. The time at which the environment was created in ISO 8601 format
 	// (YYYY-MM-DDThh:mm:ssZ).
 	Created *string `json:"created,omitzero"`
+	// Output only. OUTPUT_ONLY. Secret token generated upon environment creation for
+	// self_hosted environments. Used by the sandbox daemon to authenticate
+	// LeaseInteractions and CreateInteractionBidiStream. Only returned in the
+	// response of CreateEnvironment; never exposed in subsequent GetEnvironment
+	// calls.
+	EnvironmentKey *string `json:"environment_key,omitzero"`
 	// Output only. The number of files in the environment, output only.
 	FileCount *int64 `integer:"string" json:"file_count,omitzero"`
 	// Required. Output only. The ID of the environment.
@@ -205,6 +234,8 @@ type Environment struct {
 	// Output only. The time at which the environment was last accessed in ISO 8601 format
 	// (YYYY-MM-DDThh:mm:ssZ).
 	LastAccessed *string `json:"last_accessed,omitzero"`
+	// Output only. The compute lifecycle mode for this environment.
+	Mode *EnvironmentMode `json:"mode,omitzero"`
 	// Network configuration for the environment.
 	Network *EnvironmentNetworkUnion `json:"network,omitzero"`
 	// Output only. The total size of the environment files in bytes, output only.
@@ -236,6 +267,13 @@ func (e *Environment) GetCreated() *string {
 	return e.Created
 }
 
+func (e *Environment) GetEnvironmentKey() *string {
+	if e == nil {
+		return nil
+	}
+	return e.EnvironmentKey
+}
+
 func (e *Environment) GetFileCount() *int64 {
 	if e == nil {
 		return nil
@@ -255,6 +293,13 @@ func (e *Environment) GetLastAccessed() *string {
 		return nil
 	}
 	return e.LastAccessed
+}
+
+func (e *Environment) GetMode() *EnvironmentMode {
+	if e == nil {
+		return nil
+	}
+	return e.Mode
 }
 
 func (e *Environment) GetNetwork() *EnvironmentNetworkUnion {

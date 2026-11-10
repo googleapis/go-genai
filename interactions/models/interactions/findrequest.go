@@ -20,20 +20,20 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// Mode - The mode of the find session.
-type Mode string
+// FindRequestMode - The mode of the find session.
+type FindRequestMode string
 
 const (
-	ModeScan   Mode = "scan"
-	ModeVerify Mode = "verify"
+	FindRequestModeScan   FindRequestMode = "scan"
+	FindRequestModeVerify FindRequestMode = "verify"
 )
 
-func (e Mode) ToPointer() *Mode {
+func (e FindRequestMode) ToPointer() *FindRequestMode {
 	return &e
 }
 
 // IsExact returns true if the value matches a known enum value, false otherwise.
-func (e *Mode) IsExact() bool {
+func (e *FindRequestMode) IsExact() bool {
 	if e != nil {
 		switch *e {
 		case "scan", "verify":
@@ -54,7 +54,7 @@ type FindRequest struct {
 	// vulnerability.
 	FindingID *string `json:"finding_id,omitzero"`
 	// The mode of the find session.
-	Mode *Mode `json:"mode,omitzero"`
+	Mode *FindRequestMode `json:"mode,omitzero"`
 	// A list of source files to provide as context for the scan.
 	SourceFiles []FileContent `json:"source_files,omitzero"`
 }
@@ -84,7 +84,7 @@ func (f *FindRequest) GetFindingID() *string {
 	return f.FindingID
 }
 
-func (f *FindRequest) GetMode() *Mode {
+func (f *FindRequest) GetMode() *FindRequestMode {
 	if f == nil {
 		return nil
 	}

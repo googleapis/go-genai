@@ -25,6 +25,33 @@ import (
 	"google.golang.org/genai/interactions/models/interactions"
 )
 
+// CreateEnvironmentRequestMode - The compute lifecycle mode for this environment.
+type CreateEnvironmentRequestMode string
+
+const (
+	CreateEnvironmentRequestModeOnDemand   CreateEnvironmentRequestMode = "on_demand"
+	CreateEnvironmentRequestModeSelfHosted CreateEnvironmentRequestMode = "self_hosted"
+)
+
+func (e CreateEnvironmentRequestMode) ToPointer() *CreateEnvironmentRequestMode {
+	return &e
+}
+func (e *CreateEnvironmentRequestMode) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "on_demand":
+		fallthrough
+	case "self_hosted":
+		*e = CreateEnvironmentRequestMode(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for CreateEnvironmentRequestMode: %v", v)
+	}
+}
+
 type CreateEnvironmentRequestNetworkEnum string
 
 const (
@@ -153,10 +180,16 @@ type CreateEnvironmentRequest struct {
 	// Format: `environments/{environment_id}` or `{environment_id}`.
 	// When specified, `sources` and `env` must be empty.
 	FromEnvironment *string `json:"from_environment,omitzero"`
+	// The compute lifecycle mode for this environment.
+	Mode *CreateEnvironmentRequestMode `json:"mode,omitzero"`
 	// Network configuration for the environment.
 	Network *CreateEnvironmentRequestNetworkUnion `json:"network,omitzero"`
 	// Sources to be mounted into the environment.
 	Sources []interactions.Source `json:"sources,omitzero"`
+	// Optional. System instruction applied to interactions running in this
+	// environment. Only supported for `SELF_HOSTED` environments, where it is
+	// recommended.
+	SystemInstruction *string `json:"system_instruction,omitzero"`
 }
 
 func (c CreateEnvironmentRequest) MarshalJSON() ([]byte, error) {
@@ -177,6 +210,13 @@ func (c *CreateEnvironmentRequest) GetFromEnvironment() *string {
 	return c.FromEnvironment
 }
 
+func (c *CreateEnvironmentRequest) GetMode() *CreateEnvironmentRequestMode {
+	if c == nil {
+		return nil
+	}
+	return c.Mode
+}
+
 func (c *CreateEnvironmentRequest) GetNetwork() *CreateEnvironmentRequestNetworkUnion {
 	if c == nil {
 		return nil
@@ -189,4 +229,11 @@ func (c *CreateEnvironmentRequest) GetSources() []interactions.Source {
 		return nil
 	}
 	return c.Sources
+}
+
+func (c *CreateEnvironmentRequest) GetSystemInstruction() *string {
+	if c == nil {
+		return nil
+	}
+	return c.SystemInstruction
 }

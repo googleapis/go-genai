@@ -147,6 +147,29 @@ func (u Env) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("could not marshal union type Env: all fields are null")
 }
 
+// EnvironmentMode - The compute lifecycle mode for this environment.
+type EnvironmentMode string
+
+const (
+	EnvironmentModeOnDemand   EnvironmentMode = "on_demand"
+	EnvironmentModeSelfHosted EnvironmentMode = "self_hosted"
+)
+
+func (e EnvironmentMode) ToPointer() *EnvironmentMode {
+	return &e
+}
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *EnvironmentMode) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "on_demand", "self_hosted":
+			return true
+		}
+	}
+	return false
+}
+
 type NetworkEnum string
 
 const (
@@ -299,6 +322,8 @@ type Environment struct {
 	// Optional. The environment ID for the interaction. If specified, the request will
 	// update the existing environment instead of creating a new one.
 	EnvironmentID *string `json:"environment_id,omitzero"`
+	// The compute lifecycle mode for this environment.
+	Mode *EnvironmentMode `json:"mode,omitzero"`
 	// Network configuration for the environment.
 	Network *Network `json:"network,omitzero"`
 	Sources []Source `json:"sources,omitzero"`
@@ -329,6 +354,13 @@ func (e *Environment) GetEnvironmentID() *string {
 		return nil
 	}
 	return e.EnvironmentID
+}
+
+func (e *Environment) GetMode() *EnvironmentMode {
+	if e == nil {
+		return nil
+	}
+	return e.Mode
 }
 
 func (e *Environment) GetNetwork() *Network {

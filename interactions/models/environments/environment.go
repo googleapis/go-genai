@@ -198,6 +198,16 @@ type Environment struct {
 	// Output only. The time at which the environment was created in ISO 8601 format
 	// (YYYY-MM-DDThh:mm:ssZ).
 	Created *string `json:"created,omitzero"`
+	// Output only. Arbitrary customer-defined JSON configuration passed through to the
+	// self-hosted environment poller. Only populated for `self_hosted`
+	// environments when configured.
+	CustomConfig map[string]any `json:"custom_config,omitzero"`
+	// Output only. Secret token generated upon environment creation for self_hosted
+	// environments. Used by the self-hosted sandbox daemon to authenticate
+	// polling and streaming requests. Only returned in the CreateEnvironment
+	// response; omitted from subsequent GetEnvironment and ListEnvironments
+	// calls.
+	EnvironmentKey *string `json:"environment_key,omitzero"`
 	// Output only. The number of files in the environment, output only.
 	FileCount *int64 `integer:"string" json:"file_count,omitzero"`
 	// Required. Output only. The ID of the environment.
@@ -205,6 +215,8 @@ type Environment struct {
 	// Output only. The time at which the environment was last accessed in ISO 8601 format
 	// (YYYY-MM-DDThh:mm:ssZ).
 	LastAccessed *string `json:"last_accessed,omitzero"`
+	// The compute lifecycle mode for an environment.
+	Mode *interactions.EnvironmentMode `json:"mode,omitzero"`
 	// Network configuration for the environment.
 	Network *EnvironmentNetworkUnion `json:"network,omitzero"`
 	// Output only. The total size of the environment files in bytes, output only.
@@ -236,6 +248,20 @@ func (e *Environment) GetCreated() *string {
 	return e.Created
 }
 
+func (e *Environment) GetCustomConfig() map[string]any {
+	if e == nil {
+		return nil
+	}
+	return e.CustomConfig
+}
+
+func (e *Environment) GetEnvironmentKey() *string {
+	if e == nil {
+		return nil
+	}
+	return e.EnvironmentKey
+}
+
 func (e *Environment) GetFileCount() *int64 {
 	if e == nil {
 		return nil
@@ -255,6 +281,13 @@ func (e *Environment) GetLastAccessed() *string {
 		return nil
 	}
 	return e.LastAccessed
+}
+
+func (e *Environment) GetMode() *interactions.EnvironmentMode {
+	if e == nil {
+		return nil
+	}
+	return e.Mode
 }
 
 func (e *Environment) GetNetwork() *EnvironmentNetworkUnion {

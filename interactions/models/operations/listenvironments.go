@@ -20,7 +20,6 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 	"google.golang.org/genai/interactions/models/components"
 	"google.golang.org/genai/interactions/models/environments"
-	"google.golang.org/genai/interactions/models/interactions"
 )
 
 type ListEnvironmentsGlobals struct {
@@ -38,8 +37,6 @@ func (l *ListEnvironmentsGlobals) GetAPIVersion() *string {
 type ListEnvironmentsRequest struct {
 	// API version for request routing.
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
-	// Optional. Filter environments by compute lifecycle mode.
-	Mode *interactions.EnvironmentMode `queryParam:"style=form,explode=true,name=mode"`
 	// Optional. Maximum number of environments to return.
 	// If unspecified, defaults to 50. Maximum is 1000.
 	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
@@ -52,13 +49,6 @@ func (l *ListEnvironmentsRequest) GetAPIVersion() *string {
 		return nil
 	}
 	return l.APIVersion
-}
-
-func (l *ListEnvironmentsRequest) GetMode() *interactions.EnvironmentMode {
-	if l == nil {
-		return nil
-	}
-	return l.Mode
 }
 
 func (l *ListEnvironmentsRequest) GetPageSize() *int {

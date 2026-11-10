@@ -149,24 +149,14 @@ func (u CreateEnvironmentRequestNetworkUnion) MarshalJSON() ([]byte, error) {
 
 // CreateEnvironmentRequest - Request for `CreateEnvironment`.
 type CreateEnvironmentRequest struct {
-	// Optional. Arbitrary customer-defined JSON configuration passed through
-	// to the self-hosted environment poller. Only supported when `mode` is
-	// `SELF_HOSTED`.
-	CustomConfig map[string]any `json:"custom_config,omitzero"`
 	// Optional. The source environment to copy/fork from.
 	// Format: `environments/{environment_id}` or `{environment_id}`.
 	// When specified, `sources` and `env` must be empty.
 	FromEnvironment *string `json:"from_environment,omitzero"`
-	// The compute lifecycle mode for an environment.
-	Mode *interactions.EnvironmentMode `json:"mode,omitzero"`
 	// Network configuration for the environment.
 	Network *CreateEnvironmentRequestNetworkUnion `json:"network,omitzero"`
 	// Sources to be mounted into the environment.
 	Sources []interactions.Source `json:"sources,omitzero"`
-	// Optional. System instruction applied to interactions running in this
-	// environment. Only supported for `SELF_HOSTED` environments, where it is
-	// recommended.
-	SystemInstruction *string `json:"system_instruction,omitzero"`
 }
 
 func (c CreateEnvironmentRequest) MarshalJSON() ([]byte, error) {
@@ -180,25 +170,11 @@ func (c *CreateEnvironmentRequest) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *CreateEnvironmentRequest) GetCustomConfig() map[string]any {
-	if c == nil {
-		return nil
-	}
-	return c.CustomConfig
-}
-
 func (c *CreateEnvironmentRequest) GetFromEnvironment() *string {
 	if c == nil {
 		return nil
 	}
 	return c.FromEnvironment
-}
-
-func (c *CreateEnvironmentRequest) GetMode() *interactions.EnvironmentMode {
-	if c == nil {
-		return nil
-	}
-	return c.Mode
 }
 
 func (c *CreateEnvironmentRequest) GetNetwork() *CreateEnvironmentRequestNetworkUnion {
@@ -213,11 +189,4 @@ func (c *CreateEnvironmentRequest) GetSources() []interactions.Source {
 		return nil
 	}
 	return c.Sources
-}
-
-func (c *CreateEnvironmentRequest) GetSystemInstruction() *string {
-	if c == nil {
-		return nil
-	}
-	return c.SystemInstruction
 }

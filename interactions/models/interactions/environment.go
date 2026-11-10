@@ -294,17 +294,11 @@ func (u Network) MarshalJSON() ([]byte, error) {
 
 // Environment - Configuration for a custom environment.
 type Environment struct {
-	// Optional. Arbitrary customer-defined JSON configuration passed through
-	// to the self-hosted environment poller. Only supported when `mode` is
-	// `SELF_HOSTED`.
-	CustomConfig map[string]any `json:"custom_config,omitzero"`
 	// Environment variables to set in the sandbox environment.
 	Env map[string]Env `json:"env,omitzero"`
 	// Optional. The environment ID for the interaction. If specified, the request will
 	// update the existing environment instead of creating a new one.
 	EnvironmentID *string `json:"environment_id,omitzero"`
-	// The compute lifecycle mode for an environment.
-	Mode *EnvironmentMode `json:"mode,omitzero"`
 	// Network configuration for the environment.
 	Network *Network `json:"network,omitzero"`
 	Sources []Source `json:"sources,omitzero"`
@@ -323,13 +317,6 @@ func (e *Environment) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (e *Environment) GetCustomConfig() map[string]any {
-	if e == nil {
-		return nil
-	}
-	return e.CustomConfig
-}
-
 func (e *Environment) GetEnv() map[string]Env {
 	if e == nil {
 		return nil
@@ -342,13 +329,6 @@ func (e *Environment) GetEnvironmentID() *string {
 		return nil
 	}
 	return e.EnvironmentID
-}
-
-func (e *Environment) GetMode() *EnvironmentMode {
-	if e == nil {
-		return nil
-	}
-	return e.Mode
 }
 
 func (e *Environment) GetNetwork() *Network {

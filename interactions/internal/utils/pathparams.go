@@ -28,6 +28,14 @@ import (
 	"google.golang.org/genai/interactions/types"
 )
 
+type InvalidPathParameterError struct {
+	Name string
+}
+
+func (e *InvalidPathParameterError) Error() string {
+	return fmt.Sprintf("path parameter %q contains a dot segment", e.Name)
+}
+
 func GenerateURL(_ context.Context, serverURL, path string, pathParams interface{}, globals interface{}) (string, error) {
 	uri := strings.TrimSuffix(serverURL, "/") + path
 
@@ -47,7 +55,7 @@ func GenerateURL(_ context.Context, serverURL, path string, pathParams interface
 	for name, value := range parsedParameters {
 		for _, segment := range strings.Split(value, "/") {
 			if segment == "." || segment == ".." {
-				return "", fmt.Errorf("path parameter %q contains a dot segment", name)
+				return "", &InvalidPathParameterError{Name: name}
 			}
 		}
 	}

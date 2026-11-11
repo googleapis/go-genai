@@ -33,7 +33,9 @@ import (
 
 func main() {
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, nil)
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		HTTPOptions: genai.HTTPOptions{APIVersion: "v1beta"},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

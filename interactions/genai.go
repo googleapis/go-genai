@@ -71,6 +71,7 @@ type GenAI struct {
 	Environments *Environments
 	Agents       *Agents
 	Credentials  *Credentials
+	Decisions    *Decisions
 	Interactions *Interactions
 	Triggers     *Triggers
 	Voices       *Voices
@@ -189,6 +190,7 @@ func New(opts ...SDKOption) *GenAI {
 	sdk.Environments = newEnvironments(sdk, sdk.sdkConfiguration, sdk.hooks)
 	sdk.Agents = newAgents(sdk, sdk.sdkConfiguration, sdk.hooks)
 	sdk.Credentials = newCredentials(sdk, sdk.sdkConfiguration, sdk.hooks)
+	sdk.Decisions = newDecisions(sdk, sdk.sdkConfiguration, sdk.hooks)
 	sdk.Interactions = newInteractions(sdk, sdk.sdkConfiguration, sdk.hooks)
 	sdk.Triggers = newTriggers(sdk, sdk.sdkConfiguration, sdk.hooks)
 	sdk.Voices = newVoices(sdk, sdk.sdkConfiguration, sdk.hooks)

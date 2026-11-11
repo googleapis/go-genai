@@ -58,6 +58,8 @@ type Client struct {
 	Interactions *interactions.Interactions
 	// Voices provides access to the Voices service.
 	Voices *interactions.Voices
+	// Decisions provides access to the Decisions service.
+	Decisions *interactions.Decisions
 	// Webhooks provides access to the Webhooks service.
 	Webhooks *interactions.Webhooks
 	// Agents provides access to the Agents service.
@@ -524,6 +526,7 @@ func NewClient(ctx context.Context, cc *ClientConfig) (*Client, error) {
 		AuthTokens:       &Tokens{apiClient: ac},
 		Interactions:     interactionsClient.Interactions,
 		Voices:           interactionsClient.Voices,
+		Decisions:        interactionsClient.Decisions,
 		Webhooks:         interactionsClient.Webhooks,
 		Agents:           interactionsClient.Agents,
 		Credentials:      interactionsClient.Credentials,

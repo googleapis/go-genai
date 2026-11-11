@@ -250,6 +250,8 @@ const (
 	ThinkingLevelMedium ThinkingLevel = "MEDIUM"
 	// High thinking level.
 	ThinkingLevelHigh ThinkingLevel = "HIGH"
+	// XHIGH thinking level.
+	ThinkingLevelXhigh ThinkingLevel = "XHIGH"
 )
 
 // Enum that controls the generation of people.

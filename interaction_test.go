@@ -17,6 +17,7 @@ package genai
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -28,11 +29,13 @@ import (
 
 	gaos "google.golang.org/genai/interactions"
 	"google.golang.org/genai/interactions/models/agents"
+	"google.golang.org/genai/interactions/models/apierrors"
 	"google.golang.org/genai/interactions/models/components"
 	"google.golang.org/genai/interactions/models/credentials"
 	"google.golang.org/genai/interactions/models/interactions"
 	"google.golang.org/genai/interactions/models/operations"
 	"google.golang.org/genai/interactions/models/webhooks"
+	"google.golang.org/genai/interactions/retry"
 )
 
 func TestInteractionsWorkflow(t *testing.T) {
@@ -1230,3 +1233,187 @@ func TestInteractionsDefaultClientTimeout(t *testing.T) {
 	}
 }
 
+func TestAPIErrorMessageFromBody(t *testing.T) {
+	directTests := []struct {
+		name     string
+		status   int
+		inputMsg string
+		body     string
+		want     string
+	}{
+		{
+			name:     "interactions error",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     `{"error":{"message":"Model name cannot be empty.","code":"invalid_request"}}`,
+			want:     "Model name cannot be empty.",
+		},
+		{
+			name:     "oneplatform error",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     `{"error":{"code":400,"message":"Bad thing","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID"}]}}`,
+			want:     "Bad thing",
+		},
+		{
+			name:     "array-wrapped error",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     `[{"error":{"code":400,"message":"Stream request is invalid.","status":"INVALID_ARGUMENT"}}]`,
+			want:     "Stream request is invalid.",
+		},
+		{
+			name:     "multi-element array",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     `[{"error":{"message":"first"}},{"error":{"message":"second"}}]`,
+			want:     "API error occurred",
+		},
+		{
+			name:     "flat string error",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     `{"error":"flat string"}`,
+			want:     "API error occurred",
+		},
+		{
+			name:     "non-JSON body",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     "<html>Bad Request</html>",
+			want:     "API error occurred",
+		},
+		{
+			name:     "malformed JSON body",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     `{"error":`,
+			want:     "API error occurred",
+		},
+		{
+			name:     "no error message",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     `{"error":{"code":"invalid_request"}}`,
+			want:     "API error occurred",
+		},
+		{
+			name:     "empty body",
+			status:   http.StatusBadRequest,
+			inputMsg: "API error occurred",
+			body:     "",
+			want:     "API error occurred",
+		},
+		{
+			name:     "specific message kept",
+			status:   http.StatusOK,
+			inputMsg: "unknown content-type received: text/plain",
+			body:     `{"error":{"message":"Model name cannot be empty."}}`,
+			want:     "unknown content-type received: text/plain",
+		},
+	}
+	for _, tt := range directTests {
+		t.Run("direct/"+tt.name, func(t *testing.T) {
+			apiErr := apierrors.NewAPIError(tt.inputMsg, tt.status, tt.body, &http.Response{StatusCode: tt.status})
+			if apiErr.StatusCode != tt.status {
+				t.Errorf("StatusCode = %d, want %d", apiErr.StatusCode, tt.status)
+			}
+			if apiErr.Message != tt.want {
+				t.Errorf("Message = %q, want %q", apiErr.Message, tt.want)
+			}
+		})
+	}
+
+	httpTests := []struct {
+		name        string
+		status      int
+		contentType string
+		body        string
+		want        string
+	}{
+		{
+			name:        "interactions 400",
+			status:      http.StatusBadRequest,
+			contentType: "application/json",
+			body:        `{"error":{"message":"Model name cannot be empty.","code":"invalid_request"}}`,
+			want:        "Model name cannot be empty.",
+		},
+		{
+			name:        "oneplatform 400",
+			status:      http.StatusBadRequest,
+			contentType: "application/json",
+			body:        `{"error":{"code":400,"message":"Bad thing","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID"}]}}`,
+			want:        "Bad thing",
+		},
+		{
+			name:        "oneplatform 502",
+			status:      http.StatusBadGateway,
+			contentType: "application/json",
+			body:        `{"error":{"code":502,"message":"Upstream unavailable","status":"UNAVAILABLE"}}`,
+			want:        "Upstream unavailable",
+		},
+		{
+			name:        "array-wrapped 400",
+			status:      http.StatusBadRequest,
+			contentType: "application/json",
+			body:        `[{"error":{"code":400,"message":"Stream request is invalid.","status":"INVALID_ARGUMENT"}}]`,
+			want:        "Stream request is invalid.",
+		},
+		{
+			name:        "html 502",
+			status:      http.StatusBadGateway,
+			contentType: "text/html",
+			body:        "<html>Bad Gateway</html>",
+			want:        "API error occurred",
+		},
+		{
+			name:        "malformed json 400",
+			status:      http.StatusBadRequest,
+			contentType: "application/json",
+			body:        `{"error":`,
+			want:        "API error occurred",
+		},
+		{
+			name:        "specific message kept on 200 text/plain",
+			status:      http.StatusOK,
+			contentType: "text/plain",
+			body:        `{"error":{"message":"Model name cannot be empty."}}`,
+			want:        "unknown content-type received: text/plain",
+		},
+	}
+	for _, tt := range httpTests {
+		t.Run("http/"+tt.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", tt.contentType)
+				w.WriteHeader(tt.status)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(context.Background(), &ClientConfig{
+				Backend:     BackendGeminiAPI,
+				APIKey:      "dummy_key",
+				HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			})
+			if err != nil {
+				t.Fatalf("Failed to create client: %v", err)
+			}
+
+			_, err = client.Agents.Get(
+				context.Background(),
+				operations.GetAgentRequest{ID: "agent-123"},
+				operations.WithRetries(retry.Config{Strategy: "none"}),
+			)
+			var apiErr *apierrors.APIError
+			if !errors.As(err, &apiErr) {
+				t.Fatalf("Expected *apierrors.APIError, got %T: %v", err, err)
+			}
+			if apiErr.StatusCode != tt.status {
+				t.Errorf("StatusCode = %d, want %d", apiErr.StatusCode, tt.status)
+			}
+			if apiErr.Message != tt.want {
+				t.Errorf("Message = %q, want %q", apiErr.Message, tt.want)
+			}
+		})
+	}
+}

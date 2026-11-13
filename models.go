@@ -5664,10 +5664,18 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 	}
 	if tIsVertexEmbedContentModel(model) {
 		if len(contents) > 1 {
-			return nil, fmt.Errorf("the embedContent API for this model only supports one content at a time")
+			if tIsVertexMaasModel(model) {
+				return nil, fmt.Errorf("the embedContent API for this model only supports one content at a time")
+			}
+			eab := EmbeddingAPITypeBatchEmbedContents
+			return m.embedContent(ctx, model, nil, nil, &eab, contents, config)
+		}
+		var firstContent *Content
+		if len(contents) > 0 {
+			firstContent = contents[0]
 		}
 		eac := EmbeddingAPITypeEmbedContent
-		return m.embedContent(ctx, model, contents, contents[0], &eac, nil, config)
+		return m.embedContent(ctx, model, nil, firstContent, &eac, nil, config)
 	} else {
 		eap := EmbeddingAPITypePredict
 		return m.embedContent(ctx, model, contents, nil, &eap, nil, config)

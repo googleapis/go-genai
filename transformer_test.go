@@ -280,3 +280,35 @@ func TestSchemaTransformer(t *testing.T) {
 		})
 	}
 }
+
+func TestTIsVertexEmbedContentModel(t *testing.T) {
+	tests := []struct {
+		model string
+		want  bool
+	}{
+		{"gemini-embedding-001", true},
+		{"gemini-embedding-2", true},
+		{"publishers/google/models/gemini-embedding-001", true},
+		{"publishers/intfloat/models/multilingual-e5-large-instruct-maas", true},
+		{"text-embedding-005", false},
+		{"text-embedding-004", false},
+		{"text-multilingual-embedding-002", false},
+		{"textembedding-gecko@003", false},
+		{"projects/my-gemini-app/locations/us-central1/publishers/google/models/text-embedding-005", false},
+		{"projects/my-gemini-app/locations/us-central1/endpoints/12345", false},
+	}
+	for _, tt := range tests {
+		if got := tIsVertexEmbedContentModel(tt.model); got != tt.want {
+			t.Errorf("tIsVertexEmbedContentModel(%q) = %v, want %v", tt.model, got, tt.want)
+		}
+	}
+	if !tIsVertexMaasModel("publishers/intfloat/models/multilingual-e5-large-instruct-maas") {
+		t.Errorf("tIsVertexMaasModel(maas) = false, want true")
+	}
+	if tIsVertexMaasModel("gemini-embedding-001") {
+		t.Errorf("tIsVertexMaasModel(gemini-embedding-001) = true, want false")
+	}
+	if tIsVertexMaasModel("projects/my-maas-app/locations/us-central1/publishers/google/models/gemini-embedding-001") {
+		t.Errorf("tIsVertexMaasModel(project with maas) = true, want false")
+	}
+}

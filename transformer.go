@@ -573,11 +573,19 @@ func InternalTIsVertexEmbedContentModel(model string) bool {
 // tIsVertexEmbedContentModel checks if a model is a Vertex AI embed content model.
 // This is the equivalent of t_is_vertex_embed_content_model in the Python SDK.
 func tIsVertexEmbedContentModel(model string) bool {
-	// Gemini Embeddings except gemini-embedding-001.
-	isGeminiEmbed := strings.Contains(model, "gemini") && model != "gemini-embedding-001"
-	// Open-source MaaS embedding models.
-	isMaaS := strings.Contains(model, "maas")
-	return isGeminiEmbed || isMaaS
+	modelID := model
+	if idx := strings.LastIndex(model, "/"); idx >= 0 {
+		modelID = model[idx+1:]
+	}
+	return strings.Contains(modelID, "gemini") || strings.Contains(modelID, "maas")
+}
+
+func tIsVertexMaasModel(model string) bool {
+	modelID := model
+	if idx := strings.LastIndex(model, "/"); idx >= 0 {
+		modelID = model[idx+1:]
+	}
+	return strings.Contains(modelID, "maas")
 }
 
 // InternalTTuningJobStatus is an internal function used for transforming tuning job status.

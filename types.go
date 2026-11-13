@@ -964,6 +964,32 @@ const (
 	ToolTypeMediaProcessing ToolType = "MEDIA_PROCESSING"
 )
 
+// Content layers to extract from a document.
+type DocumentMetadataContentLayer string
+
+const (
+	// Default value.
+	DocumentMetadataContentLayerUnspecified DocumentMetadataContentLayer = "CONTENT_LAYER_UNSPECIFIED"
+	// Rendered page images.
+	DocumentMetadataContentLayerPageImage DocumentMetadataContentLayer = "PAGE_IMAGE"
+	// Extracted page text.
+	DocumentMetadataContentLayerPageText DocumentMetadataContentLayer = "PAGE_TEXT"
+)
+
+// Content layers to extract from a spreadsheet.
+type SpreadsheetMetadataContentLayer string
+
+const (
+	// Default value.
+	SpreadsheetMetadataContentLayerUnspecified SpreadsheetMetadataContentLayer = "CONTENT_LAYER_UNSPECIFIED"
+	// Cell values, merges, and formats.
+	SpreadsheetMetadataContentLayerData SpreadsheetMetadataContentLayer = "DATA"
+	// Formula expressions and their computed results.
+	SpreadsheetMetadataContentLayerFormulas SpreadsheetMetadataContentLayer = "FORMULAS"
+	// A rendered image of the sheet.
+	SpreadsheetMetadataContentLayerVisual SpreadsheetMetadataContentLayer = "VISUAL"
+)
+
 // Resource scope.
 type ResourceScope string
 
@@ -1336,6 +1362,20 @@ const (
 	TurnCoverageTurnIncludesAudioActivityAndAllVideo TurnCoverage = "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO"
 )
 
+// Content layers to extract from a video.
+type VideoMetadataContentLayer string
+
+const (
+	// Default value.
+	VideoMetadataContentLayerUnspecified VideoMetadataContentLayer = "CONTENT_LAYER_UNSPECIFIED"
+	// Extract video frames.
+	VideoMetadataContentLayerFrames VideoMetadataContentLayer = "FRAMES"
+	// Extract audio track.
+	VideoMetadataContentLayerAudio VideoMetadataContentLayer = "AUDIO"
+	// Extract audio transcript.
+	VideoMetadataContentLayerTranscript VideoMetadataContentLayer = "TRANSCRIPT"
+)
+
 // Media resolution for the input media.
 type PartMediaResolution struct {
 	// Optional. The tokenization quality used for given media.
@@ -1382,6 +1422,96 @@ type SpeechMetadata struct {
 	// Optional. The style instruction for how the voice should be synthesized
 	// (e.g. "excited, fast-paced").
 	Style string `json:"style,omitempty"`
+}
+
+// Metadata describes the input document content.
+// Set this in `Part.document_metadata` or
+// `FunctionResponsePart.document_metadata` when `inline_data` or `file_data`
+// contains a document to configure static document preprocessing.
+type DocumentMetadata struct {
+	// Optional. 1-indexed inclusive start page.
+	StartPage *int32 `json:"startPage,omitempty"`
+	// Optional. 1-indexed inclusive end page.
+	EndPage *int32 `json:"endPage,omitempty"`
+	// Optional. Content layers to return. If empty, defaults to [PAGE_IMAGE] when
+	// DocumentMetadata is set. When DocumentMetadata is not set, default
+	// document processing is used (for example, page images for PDFs).
+	ContentLayers []DocumentMetadataContentLayer `json:"contentLayers,omitempty"`
+}
+
+// Metadata describes the input spreadsheet content.
+// Set this in `Part.spreadsheet_metadata` or
+// `FunctionResponsePart.spreadsheet_metadata` when `inline_data` or `file_data`
+// contains a spreadsheet to configure static spreadsheet preprocessing.
+type SpreadsheetMetadata struct {
+	// Optional. The range of cells to extract, in A1 notation (e.g. "A1:D10").
+	// If not set, the full occupied area of the sheet is used.
+	VisibleCells string `json:"visibleCells,omitempty"`
+	// Optional. The 1-indexed index of the sheet to extract, in workbook order. If
+	// not set, the first sheet is used.
+	SheetIndex *int32 `json:"sheetIndex,omitempty"`
+	// Optional. Content layers to return. If empty, defaults to [DATA, FORMULAS]
+	// when SpreadsheetMetadata is set.
+	ContentLayers []SpreadsheetMetadataContentLayer `json:"contentLayers,omitempty"`
+}
+
+// Metadata describes the input audio content.
+// Set this in `Part.audio_metadata` or `FunctionResponsePart.audio_metadata`
+// when `inline_data` or `file_data` contains audio to configure static audio
+// preprocessing.
+type AudioMetadata struct {
+	// Optional. The start offset of the audio, relative to the start of the audio
+	// stream.
+	StartOffset time.Duration `json:"startOffset,omitempty"`
+	// Optional. The end offset of the audio, relative to the start of the audio
+	// stream.
+	EndOffset time.Duration `json:"endOffset,omitempty"`
+}
+
+func (a *AudioMetadata) UnmarshalJSON(data []byte) error {
+	type Alias AudioMetadata
+	aux := &struct {
+		StartOffset *InternalDurationJSON `json:"startOffset,omitempty"`
+		EndOffset   *InternalDurationJSON `json:"endOffset,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(a),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if !reflect.ValueOf(aux.StartOffset).IsZero() {
+		a.StartOffset = time.Duration(*aux.StartOffset)
+	}
+
+	if !reflect.ValueOf(aux.EndOffset).IsZero() {
+		a.EndOffset = time.Duration(*aux.EndOffset)
+	}
+
+	return nil
+}
+
+func (a *AudioMetadata) MarshalJSON() ([]byte, error) {
+	type Alias AudioMetadata
+	aux := &struct {
+		StartOffset *InternalDurationJSON `json:"startOffset,omitempty"`
+		EndOffset   *InternalDurationJSON `json:"endOffset,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(a),
+	}
+
+	if !reflect.ValueOf(a.StartOffset).IsZero() {
+		aux.StartOffset = (*InternalDurationJSON)(&a.StartOffset)
+	}
+
+	if !reflect.ValueOf(a.EndOffset).IsZero() {
+		aux.EndOffset = (*InternalDurationJSON)(&a.EndOffset)
+	}
+
+	return json.Marshal(aux)
 }
 
 // Result of executing the ExecutableCode. Generated only when the `CodeExecution` tool
@@ -1493,11 +1623,82 @@ type FunctionResponseFileData struct {
 	DisplayName string `json:"displayName,omitempty"`
 }
 
-// A datatype containing media that is part of a `FunctionResponse` message. A `FunctionResponsePart`
-// consists of data which has an associated datatype. A `FunctionResponsePart` can only
-// contain one of the accepted types in `FunctionResponsePart.data`. A `FunctionResponsePart`
-// must have a fixed IANA MIME type identifying the type and subtype of the media if
-// the `inline_data` field is filled with raw bytes.
+// Provides metadata for a video, including the start and end offsets for clipping and
+// the frame rate.
+type VideoMetadata struct {
+	// Optional. The end offset of the video.
+	EndOffset time.Duration `json:"endOffset,omitempty"`
+	// Optional. The frame rate of the video sent to the model. If not specified, the default
+	// value is 1.0. The valid range is (0.0, 24.0].
+	FPS *float64 `json:"fps,omitempty"`
+	// Optional. The start offset of the video.
+	StartOffset time.Duration `json:"startOffset,omitempty"`
+	// Optional. Content layers to return. If empty, defaults to [FRAMES, AUDIO].
+	ContentLayers []VideoMetadataContentLayer `json:"contentLayers,omitempty"`
+}
+
+func (c *VideoMetadata) UnmarshalJSON(data []byte) error {
+	type Alias VideoMetadata
+	aux := &struct {
+		EndOffset   string `json:"endOffset,omitempty"`
+		StartOffset string `json:"startOffset,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(c),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	if aux.EndOffset != "" {
+		d, err := time.ParseDuration(aux.EndOffset)
+		if err != nil {
+			return err
+		}
+		c.EndOffset = d
+	}
+
+	if aux.StartOffset != "" {
+		d, err := time.ParseDuration(aux.StartOffset)
+		if err != nil {
+			return err
+		}
+		c.StartOffset = d
+	}
+
+	return nil
+}
+
+func (c *VideoMetadata) MarshalJSON() ([]byte, error) {
+	type Alias VideoMetadata
+	aux := &struct {
+		EndOffset   string `json:"endOffset,omitempty"`
+		StartOffset string `json:"startOffset,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(c),
+	}
+
+	if c.StartOffset != 0 {
+		aux.StartOffset = fmt.Sprintf("%.0fs", c.StartOffset.Seconds())
+	}
+	if c.EndOffset != 0 {
+		aux.EndOffset = fmt.Sprintf("%.0fs", c.EndOffset.Seconds())
+		if aux.StartOffset == "" {
+			aux.StartOffset = "0s"
+		}
+	}
+
+	return json.Marshal(aux)
+}
+
+// A datatype containing media that is part of a `FunctionResponse` message.
+// A `FunctionResponsePart` consists of data which has an associated datatype. A
+// `FunctionResponsePart` can only contain one of the accepted types in
+// `FunctionResponsePart.data`. A `FunctionResponsePart` must have a fixed IANA
+// MIME type identifying the type and subtype of the media if the `inline_data`
+// field is filled with raw bytes.
 type FunctionResponsePart struct {
 	// Inline media bytes.
 	InlineData *FunctionResponseBlob `json:"inlineData,omitempty"`
@@ -1507,6 +1708,20 @@ type FunctionResponsePart struct {
 	// for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore
 	// this field. This field is not supported in Vertex AI.
 	MediaProcessing MediaProcessing `json:"mediaProcessing,omitempty"`
+	// Optional. Media resolution for the input media.
+	MediaResolution *PartMediaResolution `json:"mediaResolution,omitempty"`
+	// Optional. Video metadata. The metadata should only be specified while the
+	// video data is presented in inline_data or file_data.
+	VideoMetadata *VideoMetadata `json:"videoMetadata,omitempty"`
+	// Optional. Document metadata. The metadata should only be specified while the
+	// document data is presented in inline_data or file_data.
+	DocumentMetadata *DocumentMetadata `json:"documentMetadata,omitempty"`
+	// Optional. Spreadsheet metadata. The metadata should only be specified while
+	// the spreadsheet data is presented in inline_data or file_data.
+	SpreadsheetMetadata *SpreadsheetMetadata `json:"spreadsheetMetadata,omitempty"`
+	// Optional. Audio metadata. The metadata should only be specified while the
+	// audio data is presented in inline_data or file_data.
+	AudioMetadata *AudioMetadata `json:"audioMetadata,omitempty"`
 }
 
 // NewFunctionResponsePartFromURI builds a FunctionResponsePart from a given file URI and mime type.
@@ -1572,74 +1787,6 @@ type Blob struct {
 	DisplayName string `json:"displayName,omitempty"`
 	// Required. The IANA standard MIME type of the source data.
 	MIMEType string `json:"mimeType,omitempty"`
-}
-
-// Provides metadata for a video, including the start and end offsets for clipping and
-// the frame rate.
-type VideoMetadata struct {
-	// Optional. The end offset of the video.
-	EndOffset time.Duration `json:"endOffset,omitempty"`
-	// Optional. The frame rate of the video sent to the model. If not specified, the default
-	// value is 1.0. The valid range is (0.0, 24.0].
-	FPS *float64 `json:"fps,omitempty"`
-	// Optional. The start offset of the video.
-	StartOffset time.Duration `json:"startOffset,omitempty"`
-}
-
-func (c *VideoMetadata) UnmarshalJSON(data []byte) error {
-	type Alias VideoMetadata
-	aux := &struct {
-		EndOffset   string `json:"endOffset,omitempty"`
-		StartOffset string `json:"startOffset,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	if aux.EndOffset != "" {
-		d, err := time.ParseDuration(aux.EndOffset)
-		if err != nil {
-			return err
-		}
-		c.EndOffset = d
-	}
-
-	if aux.StartOffset != "" {
-		d, err := time.ParseDuration(aux.StartOffset)
-		if err != nil {
-			return err
-		}
-		c.StartOffset = d
-	}
-
-	return nil
-}
-
-func (c *VideoMetadata) MarshalJSON() ([]byte, error) {
-	type Alias VideoMetadata
-	aux := &struct {
-		EndOffset   string `json:"endOffset,omitempty"`
-		StartOffset string `json:"startOffset,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	if c.StartOffset != 0 {
-		aux.StartOffset = fmt.Sprintf("%.0fs", c.StartOffset.Seconds())
-	}
-	if c.EndOffset != 0 {
-		aux.EndOffset = fmt.Sprintf("%.0fs", c.EndOffset.Seconds())
-		if aux.StartOffset == "" {
-			aux.StartOffset = "0s"
-		}
-	}
-
-	return json.Marshal(aux)
 }
 
 // Information about a single recognized word.
@@ -1775,6 +1922,15 @@ type Part struct {
 	// Optional. Extra metadata associated with the part for speech synthesis, such
 	// as speaker and style. Only valid when `Part.data` is set to `text`.
 	SpeechMetadata *SpeechMetadata `json:"speechMetadata,omitempty"`
+	// Optional. Document metadata. The metadata should only be specified while the
+	// document data is presented in inline_data or file_data.
+	DocumentMetadata *DocumentMetadata `json:"documentMetadata,omitempty"`
+	// Optional. Spreadsheet metadata. The metadata should only be specified while
+	// the spreadsheet data is presented in inline_data or file_data.
+	SpreadsheetMetadata *SpreadsheetMetadata `json:"spreadsheetMetadata,omitempty"`
+	// Optional. Audio metadata. The metadata should only be specified while the
+	// audio data is presented in inline_data or file_data.
+	AudioMetadata *AudioMetadata `json:"audioMetadata,omitempty"`
 }
 
 // NewPartFromURI builds a Part from a given file URI and mime type.

@@ -718,6 +718,11 @@ func embedContentConfigToVertex(fromObject map[string]any, parentObject map[stri
 		if fromTaskType != nil {
 			InternalSetValueByPath(parentObject, []string{"embedContentConfig", "taskType"}, fromTaskType)
 		}
+	} else if discriminatorTaskType.(string) == "BATCH_EMBED_CONTENTS" {
+		fromTaskType := InternalGetValueByPath(fromObject, []string{"taskType"})
+		if fromTaskType != nil {
+			InternalSetValueByPath(parentObject, []string{"requests[]", "embedContentConfig", "taskType"}, fromTaskType)
+		}
 	}
 
 	var discriminatorTitle any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
@@ -734,6 +739,11 @@ func embedContentConfigToVertex(fromObject map[string]any, parentObject map[stri
 		if fromTitle != nil {
 			InternalSetValueByPath(parentObject, []string{"embedContentConfig", "title"}, fromTitle)
 		}
+	} else if discriminatorTitle.(string) == "BATCH_EMBED_CONTENTS" {
+		fromTitle := InternalGetValueByPath(fromObject, []string{"title"})
+		if fromTitle != nil {
+			InternalSetValueByPath(parentObject, []string{"requests[]", "embedContentConfig", "title"}, fromTitle)
+		}
 	}
 
 	var discriminatorOutputDimensionality any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
@@ -749,6 +759,11 @@ func embedContentConfigToVertex(fromObject map[string]any, parentObject map[stri
 		fromOutputDimensionality := InternalGetValueByPath(fromObject, []string{"outputDimensionality"})
 		if fromOutputDimensionality != nil {
 			InternalSetValueByPath(parentObject, []string{"embedContentConfig", "outputDimensionality"}, fromOutputDimensionality)
+		}
+	} else if discriminatorOutputDimensionality.(string) == "BATCH_EMBED_CONTENTS" {
+		fromOutputDimensionality := InternalGetValueByPath(fromObject, []string{"outputDimensionality"})
+		if fromOutputDimensionality != nil {
+			InternalSetValueByPath(parentObject, []string{"requests[]", "embedContentConfig", "outputDimensionality"}, fromOutputDimensionality)
 		}
 	}
 
@@ -777,6 +792,11 @@ func embedContentConfigToVertex(fromObject map[string]any, parentObject map[stri
 		if fromAutoTruncate != nil {
 			InternalSetValueByPath(parentObject, []string{"embedContentConfig", "autoTruncate"}, fromAutoTruncate)
 		}
+	} else if discriminatorAutoTruncate.(string) == "BATCH_EMBED_CONTENTS" {
+		fromAutoTruncate := InternalGetValueByPath(fromObject, []string{"autoTruncate"})
+		if fromAutoTruncate != nil {
+			InternalSetValueByPath(parentObject, []string{"requests[]", "embedContentConfig", "autoTruncate"}, fromAutoTruncate)
+		}
 	}
 
 	var discriminatorDocumentOcr any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
@@ -788,6 +808,11 @@ func embedContentConfigToVertex(fromObject map[string]any, parentObject map[stri
 		if fromDocumentOcr != nil {
 			InternalSetValueByPath(parentObject, []string{"embedContentConfig", "documentOcr"}, fromDocumentOcr)
 		}
+	} else if discriminatorDocumentOcr.(string) == "BATCH_EMBED_CONTENTS" {
+		fromDocumentOcr := InternalGetValueByPath(fromObject, []string{"documentOcr"})
+		if fromDocumentOcr != nil {
+			InternalSetValueByPath(parentObject, []string{"requests[]", "embedContentConfig", "documentOcr"}, fromDocumentOcr)
+		}
 	}
 
 	var discriminatorAudioTrackExtraction any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
@@ -798,6 +823,11 @@ func embedContentConfigToVertex(fromObject map[string]any, parentObject map[stri
 		fromAudioTrackExtraction := InternalGetValueByPath(fromObject, []string{"audioTrackExtraction"})
 		if fromAudioTrackExtraction != nil {
 			InternalSetValueByPath(parentObject, []string{"embedContentConfig", "audioTrackExtraction"}, fromAudioTrackExtraction)
+		}
+	} else if discriminatorAudioTrackExtraction.(string) == "BATCH_EMBED_CONTENTS" {
+		fromAudioTrackExtraction := InternalGetValueByPath(fromObject, []string{"audioTrackExtraction"})
+		if fromAudioTrackExtraction != nil {
+			InternalSetValueByPath(parentObject, []string{"requests[]", "embedContentConfig", "audioTrackExtraction"}, fromAudioTrackExtraction)
 		}
 	}
 
@@ -838,6 +868,10 @@ func embedContentParametersPrivateToMldev(ac *InternalAPIClient, fromObject map[
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if InternalGetValueByPath(fromObject, []string{"batchContents"}) != nil {
+		return nil, fmt.Errorf("batchContents parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.")
 	}
 
 	fromConfig := InternalGetValueByPath(fromObject, []string{"config"})
@@ -900,6 +934,27 @@ func embedContentParametersPrivateToVertex(ac *InternalAPIClient, fromObject map
 			}
 
 			InternalSetValueByPath(toObject, []string{"content"}, fromContent)
+		}
+	}
+
+	var discriminatorBatchContents any = InternalGetValueByPath(rootObject, []string{"embeddingApiType"})
+	if discriminatorBatchContents == nil {
+		discriminatorBatchContents = "PREDICT"
+	}
+	if discriminatorBatchContents.(string) == "BATCH_EMBED_CONTENTS" {
+		fromBatchContents := InternalGetValueByPath(fromObject, []string{"batchContents"})
+		if fromBatchContents != nil {
+			fromBatchContents, err = InternalTContents(fromBatchContents)
+			if err != nil {
+				return nil, err
+			}
+
+			fromBatchContents, err = InternalApplyConverterToSliceWithRoot(fromBatchContents.([]any), contentToVertex, rootObject)
+			if err != nil {
+				return nil, err
+			}
+
+			InternalSetValueByPath(toObject, []string{"requests[]", "content"}, fromBatchContents)
 		}
 	}
 
@@ -998,6 +1053,15 @@ func embedContentResponseFromVertex(fromObject map[string]any, parentObject map[
 			}
 			embedding.(map[string]any)["statistics"] = stats
 			setValueByPath(toObject, []string{"embeddings"}, []any{embedding})
+		}
+	} else if rootObject != nil && getValueByPath(rootObject, []string{"embeddingApiType"}) != nil && getValueByPath(rootObject, []string{"embeddingApiType"}).(string) == "BATCH_EMBED_CONTENTS" {
+		embeddings := getValueByPath(fromObject, []string{"embeddings"})
+		if embeddingsSlice, ok := embeddings.([]any); ok {
+			converted, err := InternalApplyConverterToSliceWithRoot(embeddingsSlice, contentEmbeddingFromVertex, rootObject)
+			if err != nil {
+				return nil, err
+			}
+			setValueByPath(toObject, []string{"embeddings"}, converted)
 		}
 	}
 
@@ -4345,10 +4409,10 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 }
 
 // EmbedContent generates embeddings for the provided contents using the specified model.
-func (m Models) embedContent(ctx context.Context, model string, contents []*Content, content *Content, embeddingApiType *EmbeddingAPIType, config *EmbedContentConfig) (*EmbedContentResponse, error) {
+func (m Models) embedContent(ctx context.Context, model string, contents []*Content, content *Content, embeddingApiType *EmbeddingAPIType, batchContents []*Content, config *EmbedContentConfig) (*EmbedContentResponse, error) {
 	parameterMap := make(map[string]any)
 
-	kwargs := map[string]any{"model": model, "contents": contents, "content": content, "embeddingApiType": embeddingApiType, "config": config}
+	kwargs := map[string]any{"model": model, "contents": contents, "content": content, "embeddingApiType": embeddingApiType, "batchContents": batchContents, "config": config}
 	InternalDeepMarshal(kwargs, &parameterMap)
 
 	var httpOptions *HTTPOptions
@@ -4384,9 +4448,13 @@ func (m Models) embedContent(ctx context.Context, model string, contents []*Cont
 		delete(body, "_url")
 	}
 	if m.apiClient.ClientConfig().Backend == BackendVertexAI {
-		if tIsVertexEmbedContentModel(parameterMap["model"].(string)) {
+		apiType, _ := parameterMap["embeddingApiType"].(string)
+		switch apiType {
+		case "BATCH_EMBED_CONTENTS":
+			path, err = InternalFormatMap("{model}:batchEmbedContents", urlParams)
+		case "EMBED_CONTENT":
 			path, err = InternalFormatMap("{model}:embedContent", urlParams)
-		} else {
+		default:
 			path, err = InternalFormatMap("{model}:predict", urlParams)
 		}
 	} else {
@@ -5592,16 +5660,16 @@ func (m Models) GenerateVideosFromSource(ctx context.Context, model string, sour
 func (m Models) EmbedContent(ctx context.Context, model string, contents []*Content, config *EmbedContentConfig) (*EmbedContentResponse, error) {
 	// if not Vertex, call embedContent normally
 	if m.apiClient.clientConfig.Backend != BackendVertexAI {
-		return m.embedContent(ctx, model, contents, nil, nil, config)
+		return m.embedContent(ctx, model, contents, nil, nil, nil, config)
 	}
 	if tIsVertexEmbedContentModel(model) {
 		if len(contents) > 1 {
 			return nil, fmt.Errorf("the embedContent API for this model only supports one content at a time")
 		}
 		eac := EmbeddingAPITypeEmbedContent
-		return m.embedContent(ctx, model, contents, contents[0], &eac, config)
+		return m.embedContent(ctx, model, contents, contents[0], &eac, nil, config)
 	} else {
 		eap := EmbeddingAPITypePredict
-		return m.embedContent(ctx, model, contents, nil, &eap, config)
+		return m.embedContent(ctx, model, contents, nil, &eap, nil, config)
 	}
 }

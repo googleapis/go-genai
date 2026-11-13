@@ -994,6 +994,8 @@ const (
 	EmbeddingAPITypePredict EmbeddingAPIType = "PREDICT"
 	// embedContent API Endpoint
 	EmbeddingAPITypeEmbedContent EmbeddingAPIType = "EMBED_CONTENT"
+	// batchEmbedContents API Endpoint
+	EmbeddingAPITypeBatchEmbedContents EmbeddingAPIType = "BATCH_EMBED_CONTENTS"
 )
 
 // Enum that controls the safety filter level for objectionable content.

@@ -134,6 +134,11 @@ type ClientConfig struct {
 	Credentials *auth.Credentials
 
 	// Optional HTTP client to use. If nil, a default client will be created.
+	// The default client does not forward the API key on a redirect to
+	// another domain, and the default client built for Vertex AI credentials
+	// does not follow such a redirect at all, since its transport would sign
+	// the redirected request again; a supplied client is used as given,
+	// including its redirect policy.
 	// For Vertex AI, this client must handle authentication appropriately.
 	// Otherwise, call [UseDefaultCredentials] convenience method to add default credentials to the
 	// client.
@@ -420,9 +425,15 @@ func NewInternalAPIClient(ctx context.Context, cc *ClientConfig) (*InternalAPICl
 			if err != nil {
 				return nil, fmt.Errorf("failed to create HTTP client: %w", err)
 			}
+			// The transport sets Authorization on every request it sends,
+			// so a redirect to another domain must not be followed at all;
+			// deleting the header in CheckRedirect would not keep it off.
+			if client.CheckRedirect == nil {
+				client.CheckRedirect = stopAtCrossDomainRedirect
+			}
 			cc.HTTPClient = client
 		} else {
-			cc.HTTPClient = &http.Client{}
+			cc.HTTPClient = &http.Client{CheckRedirect: stripCredentialsOnCrossDomainRedirect}
 		}
 	}
 	return &apiClient{clientConfig: cc}, nil

@@ -851,6 +851,9 @@ func TestNewClient(t *testing.T) {
 		}
 		opts := []cmp.Option{
 			cmpopts.IgnoreUnexported(ClientConfig{}),
+			// cmp treats any non-nil func as unequal; the default client's
+			// redirect policy is checked in TestNewClientInstallsRedirectPolicy.
+			cmpopts.IgnoreFields(http.Client{}, "CheckRedirect"),
 		}
 		if diff := cmp.Diff(*client.Models.apiClient.clientConfig, client.clientConfig, opts...); diff != "" {
 			t.Errorf("Models.apiClient.clientConfig mismatch (-want +got):\n%s", diff)
@@ -895,6 +898,9 @@ func TestNewClient(t *testing.T) {
 		}
 		opts := []cmp.Option{
 			cmpopts.IgnoreUnexported(ClientConfig{}),
+			// cmp treats any non-nil func as unequal; the default client's
+			// redirect policy is checked in TestNewClientInstallsRedirectPolicy.
+			cmpopts.IgnoreFields(http.Client{}, "CheckRedirect"),
 		}
 		if diff := cmp.Diff(want, *client.Models.apiClient.clientConfig, opts...); diff != "" {
 			t.Errorf("Models.apiClient.clientConfig mismatch (-want +got):\n%s", diff)

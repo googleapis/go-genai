@@ -3350,6 +3350,9 @@ type GenerateContentConfig struct {
 	// takes precedence over the project-level logging config. This field is not
 	// supported in Gemini Enterprise Agent Platform.
 	Store *bool `json:"store,omitempty"`
+	// Optional. Temporary test field to trigger Copybara GitHub PRs and verify
+	// GitHub Actions.
+	TestGithubActionsField string `json:"testGithubActionsField,omitempty"`
 }
 
 func (c GenerateContentConfig) ToGenerationConfig(backend Backend) (*GenerationConfig, error) {

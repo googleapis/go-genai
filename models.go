@@ -1450,6 +1450,11 @@ func generateContentConfigToMldev(ac *InternalAPIClient, fromObject map[string]a
 		InternalSetValueByPath(parentObject, []string{"store"}, fromStore)
 	}
 
+	fromTestGithubActionsField := InternalGetValueByPath(fromObject, []string{"testGithubActionsField"})
+	if fromTestGithubActionsField != nil {
+		InternalSetValueByPath(parentObject, []string{"testGithubActionsField"}, fromTestGithubActionsField)
+	}
+
 	return toObject, nil
 }
 
@@ -1687,6 +1692,11 @@ func generateContentConfigToVertex(ac *InternalAPIClient, fromObject map[string]
 
 	if InternalGetValueByPath(fromObject, []string{"store"}) != nil {
 		return nil, fmt.Errorf("store parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
+	fromTestGithubActionsField := InternalGetValueByPath(fromObject, []string{"testGithubActionsField"})
+	if fromTestGithubActionsField != nil {
+		InternalSetValueByPath(parentObject, []string{"testGithubActionsField"}, fromTestGithubActionsField)
 	}
 
 	return toObject, nil

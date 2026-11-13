@@ -3214,3 +3214,144 @@ func TestStreamContinuationEndHop_ErrorRules(t *testing.T) {
 		}
 	})
 }
+
+// TestStreamContinuationObserve_NilCandidate pins that a chunk whose first
+// candidate is nil is returned unchanged and leaves the hop's candidate state
+// alone, while prompt feedback and usage metadata are still recorded.
+func TestStreamContinuationObserve_NilCandidate(t *testing.T) {
+	t.Run("nil candidate is yielded unchanged", func(t *testing.T) {
+		s := newStreamContinuation(nil, true)
+		s.startHop()
+		chunk := &GenerateContentResponse{Candidates: []*Candidate{nil}}
+		got := s.observe(chunk)
+		if got != chunk {
+			t.Errorf("observe() = %p, want the input chunk %p", got, chunk)
+		}
+		if len(got.Candidates) != 1 || got.Candidates[0] != nil {
+			t.Errorf("got.Candidates = %v, want [nil]", got.Candidates)
+		}
+		if !s.hop.receivedAnyChunk {
+			t.Errorf("hop.receivedAnyChunk = false, want true")
+		}
+		if s.hop.hasYieldedContent {
+			t.Errorf("hop.hasYieldedContent = true, want false")
+		}
+		if s.hop.finishReason != "" {
+			t.Errorf("hop.finishReason = %q, want empty", s.hop.finishReason)
+		}
+		if s.hop.token != nil {
+			t.Errorf("hop.token = %q, want nil", s.hop.token)
+		}
+	})
+
+	t.Run("nil candidate keeps the checkpoint token", func(t *testing.T) {
+		s := newStreamContinuation(nil, true)
+		s.startHop()
+		s.observe(&GenerateContentResponse{Candidates: []*Candidate{{
+			Content:           &Content{Role: RoleModel, Parts: []*Part{{Text: "a"}}},
+			ContinuationToken: []byte("tok-1"),
+		}}})
+		s.observe(&GenerateContentResponse{Candidates: []*Candidate{nil}})
+		if string(s.hop.token) != "tok-1" {
+			t.Errorf("hop.token = %q, want %q", s.hop.token, "tok-1")
+		}
+		if !s.hop.hasYieldedContent {
+			t.Errorf("hop.hasYieldedContent = false, want true")
+		}
+		if resume, err := s.endHop(context.Background(), nil); !resume || err != nil {
+			t.Errorf("endHop = (%v, %v), want (true, nil)", resume, err)
+		}
+		if string(s.resumeToken) != "tok-1" {
+			t.Errorf("resumeToken = %q, want %q", s.resumeToken, "tok-1")
+		}
+	})
+
+	t.Run("nil candidate chunk still records usage metadata", func(t *testing.T) {
+		s := newStreamContinuation(nil, true)
+		s.startHop()
+		usage := &GenerateContentResponseUsageMetadata{PromptTokenCount: 3, TotalTokenCount: 3}
+		s.observe(&GenerateContentResponse{Candidates: []*Candidate{nil}, UsageMetadata: usage})
+		if s.hop.usage != usage {
+			t.Errorf("hop.usage = %v, want %v", s.hop.usage, usage)
+		}
+	})
+
+	t.Run("nil candidate with prompt feedback", func(t *testing.T) {
+		s := newStreamContinuation(nil, true)
+		s.startHop()
+		s.observe(&GenerateContentResponse{
+			Candidates:     []*Candidate{nil},
+			PromptFeedback: &GenerateContentResponsePromptFeedback{BlockReason: BlockedReasonSafety},
+		})
+		if !s.hop.hasPromptFeedback {
+			t.Errorf("hop.hasPromptFeedback = false, want true")
+		}
+	})
+}
+
+// TestGenerateContentStream_NilCandidateFrame pins that a Vertex AI stream
+// yields a frame with a null candidate instead of panicking, with automatic
+// continuation on or off.
+func TestGenerateContentStream_NilCandidateFrame(t *testing.T) {
+	tests := []struct {
+		desc   string
+		config *GenerateContentConfig
+	}{
+		{desc: "automatic continuation default", config: nil},
+		{desc: "automatic continuation disabled", config: &GenerateContentConfig{AutomaticContinuation: Ptr(false)}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			ctx := context.Background()
+			var requestCount int32
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				atomic.AddInt32(&requestCount, 1)
+				w.Header().Set("Content-Type", "text/event-stream")
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates":[null]}`)
+				fmt.Fprintf(w, "data: %s\n\n", `{"candidates":[{"content":{"role":"model","parts":[{"text":"hi"}]},"finishReason":"STOP"}]}`)
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend:     BackendVertexAI,
+				Project:     "test-project",
+				Location:    "us-central1",
+				HTTPClient:  &http.Client{},
+				HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+				envVarProvider: func() map[string]string {
+					return map[string]string{}
+				},
+			})
+			if err != nil {
+				t.Fatalf("failed to create client: %v", err)
+			}
+
+			var chunks []*GenerateContentResponse
+			for chunk, err := range client.Models.GenerateContentStream(ctx, "gemini-2.5-pro", []*Content{
+				NewContentFromText("hello", RoleUser),
+			}, tt.config) {
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				chunks = append(chunks, chunk)
+			}
+
+			if len(chunks) != 2 {
+				t.Fatalf("len(chunks) = %d, want 2", len(chunks))
+			}
+			if len(chunks[0].Candidates) != 1 || chunks[0].Candidates[0] != nil {
+				t.Errorf("chunks[0].Candidates = %v, want [nil]", chunks[0].Candidates)
+			}
+			if got := chunks[1].Candidates[0].Content.Parts[0].Text; got != "hi" {
+				t.Errorf("chunks[1] text = %q, want %q", got, "hi")
+			}
+			if got := chunks[1].Candidates[0].FinishReason; got != FinishReasonStop {
+				t.Errorf("chunks[1] FinishReason = %q, want %q", got, FinishReasonStop)
+			}
+			if got := atomic.LoadInt32(&requestCount); got != 1 {
+				t.Errorf("requestCount = %d, want 1", got)
+			}
+		})
+	}
+}

@@ -3572,23 +3572,28 @@ type GroundingSupport struct {
 	RenderedParts []int32 `json:"renderedParts,omitempty"`
 }
 
-// Metadata returned to client when grounding is enabled.
+// Metadata related to the retrieval grounding source. This is part of the `GroundingMetadata`
+// returned when grounding is enabled.
 type RetrievalMetadata struct {
-	// Optional. Score indicating how likely information from google
-	// search could help answer the prompt. The score is in the range [0, 1],
-	// where 0 is the least likely and 1 is the most likely. This score is only
-	// populated when google search grounding and dynamic retrieval is enabled.
-	// It will be compared to the threshold to determine whether to trigger
-	// Google search.
+	// Optional. A score indicating how likely it is that a Google Search query could help
+	// answer the prompt. The score is in the range of `[0, 1]`. A score of 1 means the
+	// model is confident that a search will be helpful, and 0 means it is not. This score
+	// is populated only when Google Search grounding and dynamic retrieval are enabled.
+	// The score is used to determine whether to trigger a search.
 	GoogleSearchDynamicRetrievalScore float32 `json:"googleSearchDynamicRetrievalScore,omitempty"`
 }
 
-// The entry point used to search for grounding sources.
+// An entry point for displaying Google Search results. A `SearchEntryPoint` is populated
+// when the grounding source for a model's response is Google Search. It provides information
+// that you can use to display the search results in your application.
 type SearchEntryPoint struct {
-	// Optional. Web content snippet that can be embedded in a web page
-	// or an app webview.
+	// Optional. An HTML snippet that can be embedded in a web page or an application's
+	// webview. This snippet displays a search result, including the title, URL, and a brief
+	// description of the search result.
 	RenderedContent string `json:"renderedContent,omitempty"`
-	// Optional. JSON representing array of tuples.
+	// Optional. A base64-encoded JSON object that contains a list of search queries and
+	// their corresponding search URLs. This information can be used to build a custom search
+	// UI.
 	SDKBlob []byte `json:"sdkBlob,omitempty"`
 }
 
@@ -5679,23 +5684,6 @@ type SingleReinforcementTuningRewardConfig struct {
 	CloudRunRewardScorer *ReinforcementTuningCloudRunRewardScorer `json:"cloudRunRewardScorer,omitempty"`
 }
 
-// Composite reinforcement tuning reward config weighted reward config.
-type CompositeReinforcementTuningRewardConfigWeightedRewardConfig struct {
-	// Single reward configuration.
-	RewardConfig *SingleReinforcementTuningRewardConfig `json:"rewardConfig,omitempty"`
-	// How much this single reward contributes to the total overall reward. Total reward
-	// is a linear combination of single rewards with their corresponding weights, i.e.,
-	// ``` total_reward = ( weight_a * reward_a + weight_b * reward_b + ... ) / (weight_a
-	// + weight_b + ...) ```
-	Weight *float32 `json:"weight,omitempty"`
-}
-
-// Composite reinforcement tuning reward config.
-type CompositeReinforcementTuningRewardConfig struct {
-	// List of reward function configurations with weights.
-	WeightedRewardConfigs []*CompositeReinforcementTuningRewardConfigWeightedRewardConfig `json:"weightedRewardConfigs,omitempty"`
-}
-
 // Hyperparameters for Reinforcement Tuning.
 type ReinforcementTuningHyperParameters struct {
 	// Optional. Number of training epoches for the tuning job.
@@ -5729,6 +5717,25 @@ type ReinforcementTuningHyperParameters struct {
 	ThinkingBudget int32 `json:"thinkingBudget,omitempty"`
 	// Optional. Number of steps for the tuning job (mutually exclusive with epoch_count).
 	StepCount int64 `json:"stepCount,omitempty,string"`
+}
+
+// Reward function configuration with a weight. The weight is used to combine the reward
+// with other rewards. This data type is not supported in Gemini API.
+type CompositeReinforcementTuningRewardConfigWeightedRewardConfig struct {
+	// Single reward configuration.
+	RewardConfig *SingleReinforcementTuningRewardConfig `json:"rewardConfig,omitempty"`
+	// How much this single reward contributes to the total overall reward. Total reward
+	// is a linear combination of single rewards with their corresponding weights, i.e.,
+	// ``` total_reward = ( weight_a * reward_a + weight_b * reward_b + ... ) / (weight_a
+	// + weight_b + ...) ```
+	Weight *float32 `json:"weight,omitempty"`
+}
+
+// Composite reward function configuration for reinforcement tuning. This data type
+// is not supported in Gemini API.
+type CompositeReinforcementTuningRewardConfig struct {
+	// List of reward function configurations with weights.
+	WeightedRewardConfigs []*CompositeReinforcementTuningRewardConfigWeightedRewardConfig `json:"weightedRewardConfigs,omitempty"`
 }
 
 // Reinforcement tuning spec for tuning.

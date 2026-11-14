@@ -239,6 +239,22 @@ func TestLiveConnect(t *testing.T) {
 			fakeResponseBody: `{"sessionResumptionUpdate":{"newHandle":"test_handle","resumable":true,"lastConsumedClientMessageIndex":"123456789"}}`,
 			wantRequestBody:  `{"setup":{"model":"projects/test-project/locations/test-location/publishers/google/models/test-model","sessionResumption":{"handle":"test_handle","transparent":true}}}`,
 		},
+		{
+			desc:   "successful connection with history config mldev",
+			client: mldevClient,
+			config: &LiveConnectConfig{
+				HistoryConfig: &HistoryConfig{InitialHistoryInClientContent: Ptr(true)},
+			},
+			wantRequestBody: `{"setup":{"historyConfig":{"initialHistoryInClientContent":true},"model":"models/test-model"}}`,
+		},
+		{
+			desc:   "successful connection with history config vertex",
+			client: vertexClient,
+			config: &LiveConnectConfig{
+				HistoryConfig: &HistoryConfig{InitialHistoryInClientContent: Ptr(true)},
+			},
+			wantRequestBody: `{"setup":{"historyConfig":{"initialHistoryInClientContent":true},"model":"projects/test-project/locations/test-location/publishers/google/models/test-model"}}`,
+		},
 	}
 
 	for _, tt := range connectTests {

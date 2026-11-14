@@ -15,7 +15,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24
+          go-version: 1.26
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
   #     - name: Install Go
   #       uses: actions/setup-go@v5
   #       with:
-  #         go-version: 1.24
+  #         go-version: 1.26
 
   #     - name: Check out code into the Go module directory
   #       uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24
+          go-version: 1.26
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
@@ -65,7 +65,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: 1.25
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
@@ -83,7 +83,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: 1.25
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
@@ -100,7 +100,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: 1.25
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
@@ -117,10 +117,11 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Install golangci-lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.8
+        # Build from source: the prebuilt v1.64.8 binary uses Go 1.24 and rejects go 1.25 modules.
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
       - name: Run golangci-lint
         run: golangci-lint run --max-same-issues 0 --out-format colored-line-number --exclude-dirs="examples,interactions.*,internal.*"

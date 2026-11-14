@@ -38,8 +38,8 @@ import (
 func TestInteractionsWorkflow(t *testing.T) {
 	// Create a mock server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/"+googleAIAPIDefaultVersion+"/interactions" {
-			t.Errorf("Path unexpected: %s", r.URL.Path)
+		if r.URL.EscapedPath() != "/"+googleAIAPIDefaultVersion+"/interactions" {
+			t.Errorf("Path unexpected: %s", r.URL.EscapedPath())
 		}
 		if r.Method != "POST" {
 			t.Errorf("Method unexpected: %s", r.Method)
@@ -148,8 +148,8 @@ func TestInteractionsWorkflow_Vertex(t *testing.T) {
 	// Create a mock server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		expectedPath := "/v1beta1/projects/my-project/locations/my-location/interactions"
-		if r.URL.Path != expectedPath {
-			t.Errorf("Path unexpected: got %s, want %s", r.URL.Path, expectedPath)
+		if r.URL.EscapedPath() != expectedPath {
+			t.Errorf("Path unexpected: got %s, want %s", r.URL.EscapedPath(), expectedPath)
 		}
 		if r.Method != "POST" {
 			t.Errorf("Method unexpected: %s", r.Method)
@@ -213,6 +213,46 @@ func TestInteractionsWorkflow_Vertex(t *testing.T) {
 
 	if res.Interaction.ID == nil || *res.Interaction.ID != "mock_interaction_id" {
 		t.Errorf("Expected ID 'mock_interaction_id', got '%v'", res.Interaction.ID)
+	}
+}
+
+// TestInteractionsWorkflow_VertexGetByID checks that routes with further path
+// parameters also send the Vertex resource prefix with literal slashes.
+func TestInteractionsWorkflow_VertexGetByID(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		want := "/v1beta1/projects/my-project/locations/my-location/interactions/mock_interaction_id"
+		if got := r.URL.EscapedPath(); got != want {
+			t.Errorf("EscapedPath() = %s, want %s", got, want)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(map[string]any{
+			"id":      "mock_interaction_id",
+			"created": "2026-03-30T22:20:00Z",
+			"updated": "2026-03-30T22:20:00Z",
+			"status":  "completed",
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(context.Background(), &ClientConfig{
+		Backend:     BackendVertexAI,
+		Project:     "my-project",
+		Location:    "my-location",
+		HTTPClient:  &http.Client{},
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	res, err := client.Interactions.Get(context.Background(), operations.GetInteractionByIDRequest{ID: "mock_interaction_id"})
+	if err != nil {
+		t.Fatalf("Failed to call Get: %v", err)
+	}
+	if res.Interaction == nil || res.Interaction.ID == nil || *res.Interaction.ID != "mock_interaction_id" {
+		t.Errorf("Interaction = %v, want ID mock_interaction_id", res.Interaction)
 	}
 }
 
@@ -1229,4 +1269,3 @@ func TestInteractionsDefaultClientTimeout(t *testing.T) {
 		t.Errorf("interactions.New() default client Timeout = %v, want 0 (no timeout)", got)
 	}
 }
-

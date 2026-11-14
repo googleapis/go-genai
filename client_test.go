@@ -18,6 +18,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -1580,6 +1581,83 @@ func TestNewInternalAPIClient_BackendSelection(t *testing.T) {
 			}
 			if !tt.wantWarning && hasWarning {
 				t.Errorf("Expected no warning, but got one. Log output:\n%s", logOutput)
+			}
+		})
+	}
+}
+
+// TestUnescapeAPIVersionSegment checks that only the escaped API version
+// segment gets literal slashes and every other segment keeps its encoding.
+func TestUnescapeAPIVersionSegment(t *testing.T) {
+	const apiVersion = "v1beta1/projects/p/locations/l"
+	tests := []struct {
+		desc    string
+		path    string
+		want    string
+		changed bool
+	}{
+		{
+			desc:    "root route",
+			path:    "/v1beta1%2Fprojects%2Fp%2Flocations%2Fl/interactions",
+			want:    "/v1beta1/projects/p/locations/l/interactions",
+			changed: true,
+		},
+		{
+			desc:    "route with ID",
+			path:    "/v1beta1%2Fprojects%2Fp%2Flocations%2Fl/interactions/abc/cancel",
+			want:    "/v1beta1/projects/p/locations/l/interactions/abc/cancel",
+			changed: true,
+		},
+		{
+			desc:    "upload route",
+			path:    "/upload/v1beta1%2Fprojects%2Fp%2Flocations%2Fl/environments/e/files/a/b.txt",
+			want:    "/upload/v1beta1/projects/p/locations/l/environments/e/files/a/b.txt",
+			changed: true,
+		},
+		{
+			desc:    "base URL with path prefix",
+			path:    "/proxy/v1beta1%2Fprojects%2Fp%2Flocations%2Fl/interactions",
+			want:    "/proxy/v1beta1/projects/p/locations/l/interactions",
+			changed: true,
+		},
+		{
+			desc:    "other segments keep escaping",
+			path:    "/v1beta1%2Fprojects%2Fp%2Flocations%2Fl/environments/e/files/my%20file.txt",
+			want:    "/v1beta1/projects/p/locations/l/environments/e/files/my%20file.txt",
+			changed: true,
+		},
+		{
+			desc:    "escaped segment for a different value",
+			path:    "/v1%2Fother/interactions",
+			want:    "/v1%2Fother/interactions",
+			changed: false,
+		},
+		{
+			desc:    "no match",
+			path:    "/v1beta/interactions",
+			want:    "/v1beta/interactions",
+			changed: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			u, err := url.Parse("https://example.com" + tt.path + "?alt=sse")
+			if err != nil {
+				t.Fatalf("url.Parse() failed: %v", err)
+			}
+			orig := u.String()
+			got, changed := unescapeAPIVersionSegment(u, apiVersion)
+			if changed != tt.changed {
+				t.Errorf("changed = %v, want %v", changed, tt.changed)
+			}
+			if got.EscapedPath() != tt.want {
+				t.Errorf("EscapedPath() = %s, want %s", got.EscapedPath(), tt.want)
+			}
+			if got.RawQuery != "alt=sse" || got.Host != "example.com" {
+				t.Errorf("URL = %s, want host and query unchanged", got)
+			}
+			if u.String() != orig {
+				t.Errorf("input URL = %s, want unchanged %s", u, orig)
 			}
 		})
 	}

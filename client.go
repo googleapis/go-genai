@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -451,17 +452,23 @@ func newInteractionsClient(apiClient *InternalAPIClient) *interactions.GenAI {
 		opts = append(opts, interactions.WithSecurity(sec))
 	}
 
-	if cc.HTTPClient != nil {
+	apiVersion := cc.HTTPOptions.APIVersion
+	if apiVersion != "" && cc.Backend == BackendVertexAI && cc.Project != "" && cc.Location != "" {
+		apiVersion = fmt.Sprintf("%s/projects/%s/locations/%s", apiVersion, cc.Project, cc.Location)
+	}
+	if strings.Contains(apiVersion, "/") {
+		var httpClient interactions.HTTPClient = &http.Client{}
+		if cc.HTTPClient != nil {
+			httpClient = cc.HTTPClient
+		}
+		opts = append(opts, interactions.WithClient(&vertexInteractionsPathClient{client: httpClient, apiVersion: apiVersion}))
+	} else if cc.HTTPClient != nil {
 		opts = append(opts, interactions.WithClient(cc.HTTPClient))
 	}
 	if cc.HTTPOptions.BaseURL != "" {
 		opts = append(opts, interactions.WithServerURL(cc.HTTPOptions.BaseURL))
 	}
-	if cc.HTTPOptions.APIVersion != "" {
-		apiVersion := cc.HTTPOptions.APIVersion
-		if cc.Backend == BackendVertexAI && cc.Project != "" && cc.Location != "" {
-			apiVersion = fmt.Sprintf("%s/projects/%s/locations/%s", apiVersion, cc.Project, cc.Location)
-		}
+	if apiVersion != "" {
 		opts = append(opts, interactions.WithAPIVersion(apiVersion))
 	}
 	if cc.HTTPOptions.Timeout != nil {
@@ -469,6 +476,46 @@ func newInteractionsClient(apiClient *InternalAPIClient) *interactions.GenAI {
 	}
 
 	return interactions.New(opts...)
+}
+
+// vertexInteractionsPathClient sends a multi-segment API version with literal
+// slashes, which the generated client escapes as one path parameter.
+type vertexInteractionsPathClient struct {
+	client     interactions.HTTPClient
+	apiVersion string
+}
+
+func (c *vertexInteractionsPathClient) Do(req *http.Request) (*http.Response, error) {
+	u, ok := unescapeAPIVersionSegment(req.URL, c.apiVersion)
+	if !ok {
+		return c.client.Do(req)
+	}
+	r := req.Clone(req.Context())
+	r.URL = u
+	return c.client.Do(r)
+}
+
+// unescapeAPIVersionSegment returns a copy of u whose escaped apiVersion
+// segment is re-encoded with literal slashes. It reports whether u changed.
+func unescapeAPIVersionSegment(u *url.URL, apiVersion string) (*url.URL, bool) {
+	segments := strings.Split(u.EscapedPath(), "/")
+	for i, seg := range segments {
+		if !strings.Contains(seg, "%2F") {
+			continue
+		}
+		if unescaped, err := url.PathUnescape(seg); err != nil || unescaped != apiVersion {
+			continue
+		}
+		parts := strings.Split(apiVersion, "/")
+		for j, p := range parts {
+			parts[j] = url.PathEscape(p)
+		}
+		segments[i] = strings.Join(parts, "/")
+		out := *u
+		out.RawPath = strings.Join(segments, "/")
+		return &out, true
+	}
+	return u, false
 }
 
 // NewClient creates a new GenAI client.

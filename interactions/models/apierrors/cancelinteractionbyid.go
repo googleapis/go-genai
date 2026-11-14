@@ -33,6 +33,12 @@ type CancelInteractionByIDServerError struct {
 var _ error = &CancelInteractionByIDServerError{}
 
 func (e *CancelInteractionByIDServerError) Error() string {
+	if e != nil {
+		if e.Error_.Message != nil {
+			return *e.Error_.Message
+		}
+	}
+
 	data, _ := json.Marshal(e)
 	return string(data)
 }
@@ -47,6 +53,12 @@ type CancelInteractionByIDClientError struct {
 var _ error = &CancelInteractionByIDClientError{}
 
 func (e *CancelInteractionByIDClientError) Error() string {
+	if e != nil {
+		if e.Error_.Message != nil {
+			return *e.Error_.Message
+		}
+	}
+
 	data, _ := json.Marshal(e)
 	return string(data)
 }

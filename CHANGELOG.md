@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.78.0](https://github.com/googleapis/go-genai/compare/v1.77.0...v1.78.0) (2026-11-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **interactions:** In the typed SDKs, `CodeExecutionResultStep.result` changes from `string` to the `CodeExecutionResultStepResult` union. Code that reads `result` as a string must now check which variant is present and read the string from it. The JSON for text-only results is unchanged.
+* default Gemini API version to v1 instead of v1beta across SDKs
+
+### Features
+
+* add `gemini-omni-1.2-flash` and make it the `gemini-api video` default ([04c227d](https://github.com/googleapis/go-genai/commit/04c227d25aba061d25f17ac99e544c303f8ba0d3))
+* Add `proactive_video` to `ProactivityConfig` for the Live API. ([4ac9851](https://github.com/googleapis/go-genai/commit/4ac985125e6aee2127b3ec351b4e7d80e84074b4))
+* Add `source_text` to `AudioTranscriptionConfig` and `SmartTranscriptionMode`. ([2b4e897](https://github.com/googleapis/go-genai/commit/2b4e8972459b4b39819e4d12702ae1a573ccef2a))
+* Add `XHIGH` and `xhigh` to `ThinkingLevel` across GenAI SDKs and CLI. ([78c23d6](https://github.com/googleapis/go-genai/commit/78c23d63f56c9ee499ad3f8edbefcb419e641651))
+* add `xhigh` thinking level to Interactions ThinkingLevel ([5a3af4c](https://github.com/googleapis/go-genai/commit/5a3af4c68042aea826b014c03f8d872e97608ff2))
+* Add MALFORMED_RESPONSE to FinishReason ([6ba4b48](https://github.com/googleapis/go-genai/commit/6ba4b4807e721486a535a7f6c3ad0f2fec3da84f)), refs [#2937](https://github.com/googleapis/go-genai/issues/2937)
+* Add missing enum values to FinishReason and ReinforcementTuningThinkingLevel ([9517de6](https://github.com/googleapis/go-genai/commit/9517de6ac48304ba9d0aa9914dbdc1373e7c0aae))
+* add the Decisions API (`client.decisions.create`) to the GenAI SDKs ([4e1c734](https://github.com/googleapis/go-genai/commit/4e1c734af6c8b549a3ff2b1fc188565752334483))
+* add usage_metadata (including traffic_type) and truncated to EmbedContentResponse for Gemini Enterprise API ([850cdca](https://github.com/googleapis/go-genai/commit/850cdca5ec6131156eeadb87cb38f4fc977004fe))
+* **cli:** use gemini-3.5-transcribe as default model for transcribe command ([968e135](https://github.com/googleapis/go-genai/commit/968e13580a53b19b47ee6c8f10c4f2c52da319a3))
+* default Gemini API version to v1 instead of v1beta across SDKs ([402dc81](https://github.com/googleapis/go-genai/commit/402dc815443e6eab4a7c4d11f8b4db6bdbc1a30a))
+* Disable GenerateVideos for Gemini API, update tests/READMEs ([9cf04de](https://github.com/googleapis/go-genai/commit/9cf04deac32f2418781170b3cd41c09abf060564))
+* **environments:** introduce self-hosted BYOS mode, system_instruction, custom_config, and environment_key in SDKs and CLI ([ac12b34](https://github.com/googleapis/go-genai/commit/ac12b344c9423a54dc7fb9beac45b9cf3a41cd02))
+* **interactions:** add gemini-4-carbon and gemini-omni-1.2-flash to Model enum ([e08c6be](https://github.com/googleapis/go-genai/commit/e08c6bef3ff9ac8d5035725522927e91f05b11ed))
+* **interactions:** add gemini-4-hydrogen to Model enum ([1b7b34c](https://github.com/googleapis/go-genai/commit/1b7b34c91612454a7cc614418f3df36f8e12fffc))
+* **interactions:** add Office and OpenDocument MIME types ([36ba34e](https://github.com/googleapis/go-genai/commit/36ba34e477423db3260f320d42c7dd10cf30bf0f))
+* **interactions:** support multimodal content in CodeExecutionResultStep.result ([0872815](https://github.com/googleapis/go-genai/commit/087281541b864840a1ff51a14d16eea23f0d8d83))
+* support batch inputs and usage metadata for Gemini embedding models on Gemini Enterprise API ([c1a7aa2](https://github.com/googleapis/go-genai/commit/c1a7aa2cb272bfeea4db577cf2bce877870948da))
+* support GOOGLE_GENAI_API_VERSION environment variable across SDKs ([402dc81](https://github.com/googleapis/go-genai/commit/402dc815443e6eab4a7c4d11f8b4db6bdbc1a30a))
+* update discovery doc ([8653ef7](https://github.com/googleapis/go-genai/commit/8653ef7de2c5490cd7fa42578399617586adcaac))
+
+
+### Bug Fixes
+
+* do not panic on a null element in a converted response slice or a null response body ([c7c9c43](https://github.com/googleapis/go-genai/commit/c7c9c430f459994cba0d22291cfabd97080c7f37)), refs [#899](https://github.com/googleapis/go-genai/issues/899)
+* **overlays:** fail CLI commands on failed interactions, redact tool headers, narrow ModelInteraction.required ([34be134](https://github.com/googleapis/go-genai/commit/34be13453949d4c12d38dab1276fe3cfb963146d))
+* respect configured and default API version for Gemini API file uploads across SDKs ([da10e09](https://github.com/googleapis/go-genai/commit/da10e090599ecacb00a7e247debe6a8912ca3149))
+* stop percent-encoding the Vertex resource prefix in Interactions URLs ([4348fe0](https://github.com/googleapis/go-genai/commit/4348fe0d6d37b46d1319f1309c911477a52773fc)), refs [#960](https://github.com/googleapis/go-genai/issues/960)
+
+
+### Miscellaneous Chores
+
+* set version to 1.78.0 ([bb9bfea](https://github.com/googleapis/go-genai/commit/bb9bfea417d56231d25f787e512dfe194473c5a1))
+
 ## [1.77.0](https://github.com/googleapis/go-genai/compare/v1.76.0...v1.77.0) (2026-10-29)
 
 

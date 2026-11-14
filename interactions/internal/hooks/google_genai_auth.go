@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"google.golang.org/genai/interactions/models/components"
+	"google.golang.org/genai/internal/agentmessage"
 )
 
 const (
@@ -28,6 +29,8 @@ const (
 type GoogleGenAIAuthHook struct{}
 
 var _ beforeRequestHook = (*GoogleGenAIAuthHook)(nil)
+var _ afterSuccessHook = (*GoogleGenAIAuthHook)(nil)
+var _ afterErrorHook = (*GoogleGenAIAuthHook)(nil)
 
 func (h *GoogleGenAIAuthHook) BeforeRequest(hookCtx BeforeRequestContext, req *http.Request) (*http.Request, error) {
 	if hookCtx.SecuritySource == nil {
@@ -73,6 +76,24 @@ func (h *GoogleGenAIAuthHook) BeforeRequest(hookCtx BeforeRequestContext, req *h
 	}
 
 	return req, nil
+}
+
+// AfterSuccess surfaces Agent-Message response headers as warnings.
+func (h *GoogleGenAIAuthHook) AfterSuccess(hookCtx AfterSuccessContext, res *http.Response) (*http.Response, error) {
+	if res != nil {
+		agentmessage.Warn(res.Header)
+	}
+	return res, nil
+}
+
+// AfterError surfaces Agent-Message response headers on error responses as
+// warnings. res is nil for transport errors. The response and error are
+// returned unchanged.
+func (h *GoogleGenAIAuthHook) AfterError(hookCtx AfterErrorContext, res *http.Response, err error) (*http.Response, error) {
+	if res != nil {
+		agentmessage.Warn(res.Header)
+	}
+	return res, err
 }
 
 func bearer(token string) string {

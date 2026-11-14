@@ -8840,6 +8840,8 @@ type LiveConnectConfig struct {
 	// Optional. Labels with user-defined metadata for the session. In Gemini
 	// Enterprise Agent Platform, they are used for billing and reporting.
 	Labels map[string]string `json:"labels,omitempty"`
+	// Optional. Configures the exchange of history between the client and the server.
+	HistoryConfig *HistoryConfig `json:"historyConfig,omitempty"`
 }
 
 // Parameters for sending client content to the live API.

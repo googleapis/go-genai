@@ -1704,9 +1704,9 @@ type FunctionResponsePart struct {
 	InlineData *FunctionResponseBlob `json:"inlineData,omitempty"`
 	// URI based data.
 	FileData *FunctionResponseFileData `json:"fileData,omitempty"`
-	// Optional. How the model processes this part's media for understanding. Only meaningful
-	// for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore
-	// this field. This field is not supported in Vertex AI.
+	// Optional. Processes this part's media for understanding. Only meaningful for video
+	// parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this
+	// field.
 	MediaProcessing MediaProcessing `json:"mediaProcessing,omitempty"`
 	// Optional. Media resolution for the input media.
 	MediaResolution *PartMediaResolution `json:"mediaResolution,omitempty"`
@@ -2367,8 +2367,9 @@ type AuthConfig struct {
 type GoogleMapsPlaces struct {
 }
 
-// Grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute). This
-// data type is not supported in Gemini API.
+// Grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute). Also
+// enabled by default for Gemini 4 and later models when no grounding type is specified.
+// This data type is not supported in Gemini API.
 type GoogleMapsRouting struct {
 }
 
@@ -2379,6 +2380,8 @@ type GoogleMapsGroundingTypes struct {
 	// type when no `GroundingTypes` are specified.
 	Places *GoogleMapsPlaces `json:"places,omitempty"`
 	// Optional. Enables grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute).
+	// Also enabled by default for Gemini 4 and later models when no `GroundingTypes` are
+	// specified.
 	Routing *GoogleMapsRouting `json:"routing,omitempty"`
 }
 
@@ -2393,7 +2396,9 @@ type GoogleMaps struct {
 	// the GroundingMetadata of the response.
 	EnableWidget *bool `json:"enableWidget,omitempty"`
 	// Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places`
-	// when unset. This field is not supported in Gemini API.
+	// when unset, and to `places` and `routing` for Gemini 4 and later models. When set,
+	// only the listed types are enabled; for example, setting only `places` disables routing.
+	// This field is not supported in Gemini API.
 	GroundingTypes *GoogleMapsGroundingTypes `json:"groundingTypes,omitempty"`
 }
 
@@ -6503,6 +6508,29 @@ type VeoLoraTuningSpec struct {
 	VideoOrientation VideoOrientation `json:"videoOrientation,omitempty"`
 }
 
+// Hyperparameters for Omni LoRA tuning. This data type is not supported in Gemini API.
+type OmniHyperParameters struct {
+	// Optional. Adapter size for Omni LoRA tuning.
+	AdapterSize AdapterSize `json:"adapterSize,omitempty"`
+	// Optional. Number of complete passes the model makes over the entire training dataset
+	// during training.
+	EpochCount int64 `json:"epochCount,omitempty,string"`
+	// Optional. Multiplier for adjusting the default learning rate.
+	LearningRateMultiplier float64 `json:"learningRateMultiplier,omitempty"`
+	// Optional. The tuning task for Omni LoRA tuning.
+	TuningTask TuningTask `json:"tuningTask,omitempty"`
+}
+
+// Tuning Spec for Omni LoRA Model Tuning. This data type is not supported in Gemini
+// API.
+type OmniLoraTuningSpec struct {
+	// Optional. Hyperparameters for Omni LoRA tuning.
+	HyperParameters *OmniHyperParameters `json:"hyperParameters,omitempty"`
+	// Required. Cloud Storage path to the file containing training dataset for Omni LoRA
+	// tuning. The dataset must be formatted as a JSONL file.
+	TrainingDatasetURI string `json:"trainingDatasetUri,omitempty"`
+}
+
 // A tuning job.
 type TuningJob struct {
 	// Optional. Used to retain the full HTTP response.
@@ -6595,6 +6623,8 @@ type TuningJob struct {
 	DistillationSamplingSpec *DistillationSamplingSpec `json:"distillationSamplingSpec,omitempty"`
 	// Output only. The Cloud Storage metrics URI associated with this TuningJob.
 	GCSMetricsURI string `json:"gcsMetricsUri,omitempty"`
+	// Optional. Tuning Spec for Omni LoRA Tuning.
+	OmniLoraTuningSpec *OmniLoraTuningSpec `json:"omniLoraTuningSpec,omitempty"`
 }
 
 func (t *TuningJob) UnmarshalJSON(data []byte) error {

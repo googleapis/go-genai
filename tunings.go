@@ -1290,6 +1290,11 @@ func tuningJobFromVertex(fromObject map[string]any, parentObject map[string]any,
 		InternalSetValueByPath(toObject, []string{"gcsMetricsUri"}, fromGcsMetricsUri)
 	}
 
+	fromOmniLoraTuningSpec := InternalGetValueByPath(fromObject, []string{"omniLoraTuningSpec"})
+	if fromOmniLoraTuningSpec != nil {
+		InternalSetValueByPath(toObject, []string{"omniLoraTuningSpec"}, fromOmniLoraTuningSpec)
+	}
+
 	return toObject, nil
 }
 

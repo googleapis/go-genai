@@ -298,8 +298,24 @@ func TestTIsVertexEmbedContentModel(t *testing.T) {
 		{"projects/my-gemini-app/locations/us-central1/endpoints/12345", false},
 	}
 	for _, tt := range tests {
-		if got := tIsVertexEmbedContentModel(tt.model); got != tt.want {
-			t.Errorf("tIsVertexEmbedContentModel(%q) = %v, want %v", tt.model, got, tt.want)
+		if got := tIsVertexEmbedContentModel(tt.model, ""); got != tt.want {
+			t.Errorf("tIsVertexEmbedContentModel(%q, \"\") = %v, want %v", tt.model, got, tt.want)
+		}
+	}
+	locationTests := []struct {
+		model    string
+		location string
+		want     bool
+	}{
+		{"gemini-embedding-001", "global", false},
+		{"publishers/google/models/gemini-embedding-001", "global", false},
+		{"gemini-embedding-001", "us-central1", true},
+		{"gemini-embedding-2", "global", true},
+		{"publishers/intfloat/models/multilingual-e5-large-instruct-maas", "global", true},
+	}
+	for _, tt := range locationTests {
+		if got := tIsVertexEmbedContentModel(tt.model, tt.location); got != tt.want {
+			t.Errorf("tIsVertexEmbedContentModel(%q, %q) = %v, want %v", tt.model, tt.location, got, tt.want)
 		}
 	}
 	if !tIsVertexMaasModel("publishers/intfloat/models/multilingual-e5-large-instruct-maas") {

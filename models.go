@@ -5662,7 +5662,7 @@ func (m Models) EmbedContent(ctx context.Context, model string, contents []*Cont
 	if m.apiClient.clientConfig.Backend != BackendVertexAI {
 		return m.embedContent(ctx, model, contents, nil, nil, nil, config)
 	}
-	if tIsVertexEmbedContentModel(model) {
+	if tIsVertexEmbedContentModel(model, m.apiClient.clientConfig.Location) {
 		if len(contents) > 1 {
 			if tIsVertexMaasModel(model) {
 				return nil, fmt.Errorf("the embedContent API for this model only supports one content at a time")

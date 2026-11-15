@@ -28,6 +28,7 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/auth"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -1217,5 +1218,79 @@ func TestEmbedContentEndpointRouting(t *testing.T) {
 	}
 	if gotPath != "" {
 		t.Errorf("maas batch unexpectedly called server path %q", gotPath)
+	}
+}
+
+func TestEmbedContentLocationRouting(t *testing.T) {
+	ctx := context.Background()
+	var gotPath string
+	var gotBody map[string]any
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		gotBody = nil
+		if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+			t.Fatalf("Decode body: %v", err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case strings.HasSuffix(gotPath, ":embedContent"):
+			_, _ = w.Write([]byte(`{"embedding":{"values":[0.1,0.2]}}`))
+		case strings.HasSuffix(gotPath, ":batchEmbedContents"):
+			_, _ = w.Write([]byte(`{"embeddings":[{"values":[0.1]},{"values":[0.2]}]}`))
+		default:
+			instances, _ := gotBody["instances"].([]any)
+			predictions := make([]map[string]any, len(instances))
+			for i := range predictions {
+				predictions[i] = map[string]any{"embeddings": map[string]any{"values": []float64{0.5, 0.6}}}
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"predictions": predictions})
+		}
+	}))
+	defer ts.Close()
+
+	tests := []struct {
+		name           string
+		location       string
+		model          string
+		contents       []*Content
+		wantSuffix     string
+		wantEmbeddings int
+	}{
+		{"001 global single", "global", "gemini-embedding-001", Text("hello"), "gemini-embedding-001:predict", 1},
+		{"001 global multi", "global", "gemini-embedding-001", []*Content{NewContentFromText("hello", RoleUser), NewContentFromText("world", RoleUser)}, "gemini-embedding-001:predict", 2},
+		{"001 regional single", "us-central1", "gemini-embedding-001", Text("hello"), "gemini-embedding-001:embedContent", 1},
+		{"001 regional multi", "us-central1", "gemini-embedding-001", []*Content{NewContentFromText("hello", RoleUser), NewContentFromText("world", RoleUser)}, "gemini-embedding-001:batchEmbedContents", 2},
+		{"2 global", "global", "gemini-embedding-2", Text("hello"), "gemini-embedding-2:embedContent", 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, err := NewClient(ctx, &ClientConfig{
+				Backend:     BackendVertexAI,
+				Project:     "test-project",
+				Location:    tt.location,
+				Credentials: &auth.Credentials{},
+				HTTPClient:  ts.Client(),
+				HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+			})
+			if err != nil {
+				t.Fatalf("NewClient: %v", err)
+			}
+			resp, err := client.Models.EmbedContent(ctx, tt.model, tt.contents, nil)
+			if err != nil {
+				t.Fatalf("EmbedContent: %v", err)
+			}
+			wantPath := "/locations/" + tt.location + "/publishers/google/models/" + tt.wantSuffix
+			if !strings.HasSuffix(gotPath, wantPath) {
+				t.Errorf("path = %q, want suffix %q", gotPath, wantPath)
+			}
+			if strings.HasSuffix(tt.wantSuffix, ":predict") {
+				if instances, _ := gotBody["instances"].([]any); len(instances) != tt.wantEmbeddings {
+					t.Errorf("len(instances) = %d, want %d", len(instances), tt.wantEmbeddings)
+				}
+			}
+			if len(resp.Embeddings) != tt.wantEmbeddings {
+				t.Errorf("len(resp.Embeddings) = %d, want %d", len(resp.Embeddings), tt.wantEmbeddings)
+			}
+		})
 	}
 }

@@ -567,15 +567,21 @@ func tJobState(state any) (any, error) {
 // This function is public only for internal purposes and its support is not guaranteed in future
 // versions. External consumers must not use it.
 func InternalTIsVertexEmbedContentModel(model string) bool {
-	return tIsVertexEmbedContentModel(model)
+	return tIsVertexEmbedContentModel(model, "")
 }
 
 // tIsVertexEmbedContentModel checks if a model is a Vertex AI embed content model.
 // This is the equivalent of t_is_vertex_embed_content_model in the Python SDK.
-func tIsVertexEmbedContentModel(model string) bool {
+func tIsVertexEmbedContentModel(model, location string) bool {
 	modelID := model
 	if idx := strings.LastIndex(model, "/"); idx >= 0 {
 		modelID = model[idx+1:]
+	}
+	// The global endpoint does not serve embedContent for gemini-embedding-001,
+	// so it stays on predict there. Regional endpoints serve it, and Provisioned
+	// Throughput needs it (b/580981789).
+	if location == "global" && strings.HasPrefix(modelID, "gemini-embedding-001") {
+		return false
 	}
 	return strings.Contains(modelID, "gemini") || strings.Contains(modelID, "maas")
 }

@@ -45,6 +45,8 @@ const (
 	StepTypeRetrievalCall       StepType = "retrieval_call"
 	StepTypeRetrievalResult     StepType = "retrieval_result"
 	StepTypeThought             StepType = "thought"
+	StepTypeToolSearchCall      StepType = "tool_search_call"
+	StepTypeToolSearchResult    StepType = "tool_search_result"
 	StepTypeURLContextCall      StepType = "url_context_call"
 	StepTypeURLContextResult    StepType = "url_context_result"
 	StepTypeUserInput           StepType = "user_input"
@@ -71,6 +73,8 @@ type Step struct {
 	RetrievalCallStep       *RetrievalCallStep       `queryParam:"inline" union:"member"`
 	RetrievalResultStep     *RetrievalResultStep     `queryParam:"inline" union:"member"`
 	ThoughtStep             *ThoughtStep             `queryParam:"inline" union:"member"`
+	ToolSearchCallStep      *ToolSearchCallStep      `queryParam:"inline" union:"member"`
+	ToolSearchResultStep    *ToolSearchResultStep    `queryParam:"inline" union:"member"`
 	URLContextCallStep      *URLContextCallStep      `queryParam:"inline" union:"member"`
 	URLContextResultStep    *URLContextResultStep    `queryParam:"inline" union:"member"`
 	UserInputStep           *UserInputStep           `queryParam:"inline" union:"member"`
@@ -80,7 +84,7 @@ type Step struct {
 }
 
 type StepMember interface {
-	CodeExecutionCallStep | CodeExecutionResultStep | FileSearchCallStep | FileSearchResultStep | FunctionCallStep | FunctionResultStep | GoogleMapsCallStep | GoogleMapsResultStep | GoogleSearchCallStep | GoogleSearchResultStep | MCPServerToolCallStep | MCPServerToolResultStep | ModelOutputStep | ProcessingCallStep | ProcessingResultStep | RetrievalCallStep | RetrievalResultStep | ThoughtStep | URLContextCallStep | URLContextResultStep | UserInputStep
+	CodeExecutionCallStep | CodeExecutionResultStep | FileSearchCallStep | FileSearchResultStep | FunctionCallStep | FunctionResultStep | GoogleMapsCallStep | GoogleMapsResultStep | GoogleSearchCallStep | GoogleSearchResultStep | MCPServerToolCallStep | MCPServerToolResultStep | ModelOutputStep | ProcessingCallStep | ProcessingResultStep | RetrievalCallStep | RetrievalResultStep | ThoughtStep | ToolSearchCallStep | ToolSearchResultStep | URLContextCallStep | URLContextResultStep | UserInputStep
 }
 
 func NewStep[T StepMember](val T) Step {
@@ -192,6 +196,18 @@ func NewStep[T StepMember](val T) Step {
 		return Step{
 			ThoughtStep: &v,
 			Type:        typ,
+		}
+	case ToolSearchCallStep:
+		typ := StepTypeToolSearchCall
+		return Step{
+			ToolSearchCallStep: &v,
+			Type:               typ,
+		}
+	case ToolSearchResultStep:
+		typ := StepTypeToolSearchResult
+		return Step{
+			ToolSearchResultStep: &v,
+			Type:                 typ,
 		}
 	case URLContextCallStep:
 		typ := StepTypeURLContextCall
@@ -421,6 +437,24 @@ func (u *Step) UnmarshalJSON(data []byte) (err error) {
 		u.ThoughtStep = thoughtStep
 		u.Type = StepTypeThought
 		return nil
+	case "tool_search_call":
+		toolSearchCallStep := new(ToolSearchCallStep)
+		if err := utils.UnmarshalJSON(data, &toolSearchCallStep, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == tool_search_call) type ToolSearchCallStep within Step: %w", string(data), err)
+		}
+
+		u.ToolSearchCallStep = toolSearchCallStep
+		u.Type = StepTypeToolSearchCall
+		return nil
+	case "tool_search_result":
+		toolSearchResultStep := new(ToolSearchResultStep)
+		if err := utils.UnmarshalJSON(data, &toolSearchResultStep, "", true, nil); err != nil {
+			return fmt.Errorf("could not unmarshal `%s` into expected (Type == tool_search_result) type ToolSearchResultStep within Step: %w", string(data), err)
+		}
+
+		u.ToolSearchResultStep = toolSearchResultStep
+		u.Type = StepTypeToolSearchResult
+		return nil
 	case "url_context_call":
 		urlContextCallStep := new(URLContextCallStep)
 		if err := utils.UnmarshalJSON(data, &urlContextCallStep, "", true, nil); err != nil {
@@ -527,6 +561,14 @@ func (u Step) MarshalJSON() ([]byte, error) {
 
 	if u.ThoughtStep != nil {
 		return utils.MarshalJSON(u.ThoughtStep, "", true)
+	}
+
+	if u.ToolSearchCallStep != nil {
+		return utils.MarshalJSON(u.ToolSearchCallStep, "", true)
+	}
+
+	if u.ToolSearchResultStep != nil {
+		return utils.MarshalJSON(u.ToolSearchResultStep, "", true)
 	}
 
 	if u.URLContextCallStep != nil {

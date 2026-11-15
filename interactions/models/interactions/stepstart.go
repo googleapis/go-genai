@@ -139,6 +139,14 @@ func (s *StepStart) GetStepThought() *ThoughtStep {
 	return s.GetStep().ThoughtStep
 }
 
+func (s *StepStart) GetStepToolSearchCall() *ToolSearchCallStep {
+	return s.GetStep().ToolSearchCallStep
+}
+
+func (s *StepStart) GetStepToolSearchResult() *ToolSearchResultStep {
+	return s.GetStep().ToolSearchResultStep
+}
+
 func (s *StepStart) GetStepURLContextCall() *URLContextCallStep {
 	return s.GetStep().URLContextCallStep
 }

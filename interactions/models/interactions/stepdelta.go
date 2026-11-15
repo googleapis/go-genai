@@ -142,6 +142,14 @@ func (s *StepDelta) GetDeltaThoughtSummary() *ThoughtSummaryDelta {
 	return s.GetDelta().ThoughtSummaryDelta
 }
 
+func (s *StepDelta) GetDeltaToolSearchCall() *ToolSearchCallDelta {
+	return s.GetDelta().ToolSearchCallDelta
+}
+
+func (s *StepDelta) GetDeltaToolSearchResult() *ToolSearchResultDelta {
+	return s.GetDelta().ToolSearchResultDelta
+}
+
 func (s *StepDelta) GetDeltaURLContextCall() *URLContextCallDelta {
 	return s.GetDelta().URLContextCallDelta
 }

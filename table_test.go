@@ -388,6 +388,13 @@ func TestTable(t *testing.T) {
 								// Fine-tuning is not offered on the global endpoint.
 								config.Location = "us-central1"
 							}
+							if *mode == apiMode && backend.Backend == BackendVertexAI &&
+								testTableItem.Parameters["model"] == "gemini-embedding-001" &&
+								os.Getenv("GOOGLE_CLOUD_LOCATION") == "global" {
+								// gemini-embedding-001 is not served on the Vertex global endpoint, so its
+								// Vertex case runs in us-central1.
+								config.Location = "us-central1"
+							}
 							replayClient := createReplayAPIClient(t, testTableDirectory, testTableItem, backend.name)
 							if *mode == replayMode {
 								config.HTTPOptions.BaseURL = replayClient.GetBaseURL()

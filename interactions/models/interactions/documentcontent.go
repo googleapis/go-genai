@@ -17,6 +17,10 @@
 package interactions
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
@@ -53,12 +57,160 @@ func (e *DocumentContentMimeType) IsExact() bool {
 	return false
 }
 
+type DocumentProcessingEnum string
+
+const (
+	DocumentProcessingEnumStatic DocumentProcessingEnum = "static"
+)
+
+func (e DocumentProcessingEnum) ToPointer() *DocumentProcessingEnum {
+	return &e
+}
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *DocumentProcessingEnum) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "static":
+			return true
+		}
+	}
+	return false
+}
+
+type DocumentProcessingType string
+
+const (
+	DocumentProcessingTypeDocumentMediaProcessing DocumentProcessingType = "DocumentMediaProcessing"
+	DocumentProcessingTypeDocumentProcessingEnum  DocumentProcessingType = "document_processing_enum"
+	DocumentProcessingTypeUnknown                 DocumentProcessingType = "Unknown"
+)
+
+// DocumentProcessing - How the model processes this document for understanding.
+type DocumentProcessing struct {
+	DocumentMediaProcessing *DocumentMediaProcessing `queryParam:"inline" union:"member"`
+	DocumentProcessingEnum  *DocumentProcessingEnum  `queryParam:"inline" union:"member"`
+	UnknownRaw              json.RawMessage          `json:"-" union:"unknown"`
+
+	Type DocumentProcessingType
+}
+
+type DocumentProcessingMember interface {
+	DocumentMediaProcessing | DocumentProcessingEnum
+}
+
+func NewDocumentProcessing[T DocumentProcessingMember](val T) DocumentProcessing {
+	switch v := any(val).(type) {
+	case DocumentMediaProcessing:
+		return DocumentProcessing{
+			DocumentMediaProcessing: &v,
+			Type:                    DocumentProcessingTypeDocumentMediaProcessing,
+		}
+	case DocumentProcessingEnum:
+		return DocumentProcessing{
+			DocumentProcessingEnum: &v,
+			Type:                   DocumentProcessingTypeDocumentProcessingEnum,
+		}
+	}
+	panic(fmt.Sprintf("unreachable: %T is not a member of union DocumentProcessing", val))
+}
+func NewDocumentProcessingUnknown(raw json.RawMessage) DocumentProcessing {
+	return DocumentProcessing{
+		UnknownRaw: raw,
+		Type:       DocumentProcessingTypeUnknown,
+	}
+}
+
+func (u DocumentProcessing) GetUnknownRaw() json.RawMessage {
+	return u.UnknownRaw
+}
+
+func (u DocumentProcessing) IsUnknown() bool {
+	return u.Type == DocumentProcessingTypeUnknown
+}
+
+func (u *DocumentProcessing) UnmarshalJSON(data []byte) error {
+	*u = DocumentProcessing{}
+
+	var candidates []utils.UnionCandidate
+
+	// Collect all valid candidates
+	var documentMediaProcessing DocumentMediaProcessing = DocumentMediaProcessing{}
+	if err := utils.UnmarshalJSON(data, &documentMediaProcessing, "", true, nil); err == nil {
+		candidates = append(candidates, utils.UnionCandidate{
+			Type:  DocumentProcessingTypeDocumentMediaProcessing,
+			Value: &documentMediaProcessing,
+		})
+	}
+
+	var documentProcessingEnum DocumentProcessingEnum = DocumentProcessingEnum("")
+	if err := utils.UnmarshalJSON(data, &documentProcessingEnum, "", true, nil); err == nil {
+		candidates = append(candidates, utils.UnionCandidate{
+			Type:  DocumentProcessingTypeDocumentProcessingEnum,
+			Value: &documentProcessingEnum,
+		})
+	}
+
+	if len(candidates) == 0 {
+		if !json.Valid(data) {
+			return fmt.Errorf("could not unmarshal `%s` into any supported union types for DocumentProcessing", string(data))
+		}
+		u.UnknownRaw = json.RawMessage(data)
+		u.Type = DocumentProcessingTypeUnknown
+		return nil
+	}
+
+	// Pick the best candidate using multi-stage filtering
+	best := utils.PickBestUnionCandidate(candidates, data)
+	if best == nil {
+		u.UnknownRaw = json.RawMessage(data)
+		u.Type = DocumentProcessingTypeUnknown
+		return nil
+	}
+
+	// Set the union type and value based on the best candidate
+	u.Type = best.Type.(DocumentProcessingType)
+	switch best.Type {
+	case DocumentProcessingTypeDocumentMediaProcessing:
+		u.DocumentMediaProcessing = best.Value.(*DocumentMediaProcessing)
+		return nil
+	case DocumentProcessingTypeDocumentProcessingEnum:
+		u.DocumentProcessingEnum = best.Value.(*DocumentProcessingEnum)
+		return nil
+	}
+
+	if !json.Valid(data) {
+		return fmt.Errorf("could not unmarshal `%s` into any supported union types for DocumentProcessing", string(data))
+	}
+	u.UnknownRaw = json.RawMessage(data)
+	u.Type = DocumentProcessingTypeUnknown
+	return nil
+}
+
+func (u DocumentProcessing) MarshalJSON() ([]byte, error) {
+	if u.DocumentMediaProcessing != nil {
+		return utils.MarshalJSON(u.DocumentMediaProcessing, "", true)
+	}
+
+	if u.DocumentProcessingEnum != nil {
+		return utils.MarshalJSON(u.DocumentProcessingEnum, "", true)
+	}
+
+	if u.UnknownRaw != nil {
+		return json.RawMessage(u.UnknownRaw), nil
+	}
+	return nil, errors.New("could not marshal union type DocumentProcessing: all fields are null")
+}
+
 // DocumentContent - A document content block.
 type DocumentContent struct {
 	// The document content.
 	Data *string `json:"data,omitzero"`
 	// The mime type of the document.
 	MimeType *DocumentContentMimeType `json:"mime_type,omitzero"`
+	// How the model processes this document for understanding.
+	Processing *DocumentProcessing `json:"processing,omitzero"`
+	Resolution *MediaResolution    `json:"resolution,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
 	type_ string `const:"document" json:"type"`
 	// The URI of the document.
@@ -88,6 +240,20 @@ func (d *DocumentContent) GetMimeType() *DocumentContentMimeType {
 		return nil
 	}
 	return d.MimeType
+}
+
+func (d *DocumentContent) GetProcessing() *DocumentProcessing {
+	if d == nil {
+		return nil
+	}
+	return d.Processing
+}
+
+func (d *DocumentContent) GetResolution() *MediaResolution {
+	if d == nil {
+		return nil
+	}
+	return d.Resolution
 }
 
 func (d *DocumentContent) GetType() string {

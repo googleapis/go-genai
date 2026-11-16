@@ -1150,6 +1150,31 @@ func functionResponsePartToVertex(fromObject map[string]any, parentObject map[st
 		return nil, fmt.Errorf("mediaProcessing parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
 	}
 
+	fromMediaResolution := InternalGetValueByPath(fromObject, []string{"mediaResolution"})
+	if fromMediaResolution != nil {
+		InternalSetValueByPath(toObject, []string{"mediaResolution"}, fromMediaResolution)
+	}
+
+	fromVideoMetadata := InternalGetValueByPath(fromObject, []string{"videoMetadata"})
+	if fromVideoMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"videoMetadata"}, fromVideoMetadata)
+	}
+
+	fromDocumentMetadata := InternalGetValueByPath(fromObject, []string{"documentMetadata"})
+	if fromDocumentMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"documentMetadata"}, fromDocumentMetadata)
+	}
+
+	fromSpreadsheetMetadata := InternalGetValueByPath(fromObject, []string{"spreadsheetMetadata"})
+	if fromSpreadsheetMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"spreadsheetMetadata"}, fromSpreadsheetMetadata)
+	}
+
+	fromAudioMetadata := InternalGetValueByPath(fromObject, []string{"audioMetadata"})
+	if fromAudioMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"audioMetadata"}, fromAudioMetadata)
+	}
+
 	return toObject, nil
 }
 
@@ -3107,6 +3132,21 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 		InternalSetValueByPath(toObject, []string{"speechMetadata"}, fromSpeechMetadata)
 	}
 
+	fromDocumentMetadata := InternalGetValueByPath(fromObject, []string{"documentMetadata"})
+	if fromDocumentMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"documentMetadata"}, fromDocumentMetadata)
+	}
+
+	fromSpreadsheetMetadata := InternalGetValueByPath(fromObject, []string{"spreadsheetMetadata"})
+	if fromSpreadsheetMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"spreadsheetMetadata"}, fromSpreadsheetMetadata)
+	}
+
+	fromAudioMetadata := InternalGetValueByPath(fromObject, []string{"audioMetadata"})
+	if fromAudioMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"audioMetadata"}, fromAudioMetadata)
+	}
+
 	return toObject, nil
 }
 
@@ -3198,6 +3238,21 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 	fromSpeechMetadata := InternalGetValueByPath(fromObject, []string{"speechMetadata"})
 	if fromSpeechMetadata != nil {
 		InternalSetValueByPath(toObject, []string{"speechMetadata"}, fromSpeechMetadata)
+	}
+
+	fromDocumentMetadata := InternalGetValueByPath(fromObject, []string{"documentMetadata"})
+	if fromDocumentMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"documentMetadata"}, fromDocumentMetadata)
+	}
+
+	fromSpreadsheetMetadata := InternalGetValueByPath(fromObject, []string{"spreadsheetMetadata"})
+	if fromSpreadsheetMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"spreadsheetMetadata"}, fromSpreadsheetMetadata)
+	}
+
+	fromAudioMetadata := InternalGetValueByPath(fromObject, []string{"audioMetadata"})
+	if fromAudioMetadata != nil {
+		InternalSetValueByPath(toObject, []string{"audioMetadata"}, fromAudioMetadata)
 	}
 
 	return toObject, nil

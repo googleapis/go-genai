@@ -556,6 +556,19 @@ func TestSendStreamRequest(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:           "SSE comment lines are ignored",
+			method:         "POST",
+			path:           "test",
+			body:           map[string]any{"key": "value"},
+			mockResponse:   ": ping\n\ndata:{\"key1\":\"value1\"}\n\n: ping\n\ndata:{\"key2\":\"value2\"}\n\n: ping\n\n",
+			mockStatusCode: http.StatusOK,
+			wantResponse: []map[string]any{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {

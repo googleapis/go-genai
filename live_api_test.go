@@ -37,11 +37,15 @@ type liveBackend struct {
 	// GOOGLE_CLOUD_LOCATION the Agent Platform wrapper exports. Empty means
 	// take the environment as-is.
 	location string
-	isVertex bool
+	// apiVersion overrides the default API version when the backend's Live
+	// WebSocket is not served on the default version.
+	apiVersion string
+	isVertex   bool
 }
 
 var liveBackends = []liveBackend{
-	{name: "mldev", backend: BackendGeminiAPI, model: "gemini-3.1-flash-live-preview"},
+	// The Gemini API only serves the Live WebSocket on v1beta.
+	{name: "mldev", backend: BackendGeminiAPI, model: "gemini-3.1-flash-live-preview", apiVersion: "v1beta"},
 	// gemini-live-2.5-flash-native-audio is not served on the global endpoint:
 	// a setup there is rejected with 1008 "Publisher model ... was not found".
 	// It is served in us-central1, us-east5 and europe-west4, so the client is
@@ -177,7 +181,11 @@ func sayLive(t *testing.T, session *Session, text string) {
 
 func connectLive(t *testing.T, ctx context.Context, be liveBackend, config *LiveConnectConfig) *Session {
 	t.Helper()
-	client, err := NewClient(ctx, &ClientConfig{Backend: be.backend, Location: be.location})
+	client, err := NewClient(ctx, &ClientConfig{
+		Backend:     be.backend,
+		Location:    be.location,
+		HTTPOptions: HTTPOptions{APIVersion: be.apiVersion},
+	})
 	if err != nil {
 		t.Fatalf("Error creating client: %v", err)
 	}

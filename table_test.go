@@ -381,6 +381,10 @@ func TestTable(t *testing.T) {
 							config := ClientConfig{Backend: backend.Backend}
 							if *mode == apiMode {
 								config.HTTPOptions.RetryOptions = sharedTestRetryOptions()
+								if backend.Backend == BackendGeminiAPI && strings.Contains(testName, "caches") {
+									// The Gemini API only serves cachedContents on v1beta.
+									config.HTTPOptions.APIVersion = "v1beta"
+								}
 							}
 							if *mode == apiMode && backend.Backend == BackendVertexAI &&
 								strings.Contains(testName, "tunings") &&

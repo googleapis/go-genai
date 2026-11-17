@@ -316,6 +316,18 @@ func sharedTestRetryOptions() *HTTPRetryOptions {
 	}
 }
 
+// skipIfLoadOnly skips the current test right before its SDK call when
+// GOOGLE_GENAI_TESTS_LOAD_ONLY is set. Everything up to the call (the client
+// built from the environment, the method and its arguments) still runs, so the
+// SDK presubmit can load the nightly API-mode suite with a dummy key without
+// calling the API.
+func skipIfLoadOnly(t *testing.T) {
+	t.Helper()
+	if os.Getenv("GOOGLE_GENAI_TESTS_LOAD_ONLY") != "" {
+		t.Skip("Skipping the SDK call: GOOGLE_GENAI_TESTS_LOAD_ONLY is set.")
+	}
+}
+
 // TestTable only runs in apiMode or replayMode.
 func TestTable(t *testing.T) {
 	if *mode == unitMode {
@@ -420,6 +432,7 @@ func TestTable(t *testing.T) {
 							if !strings.Contains(testTableFile.TestMethod, ".") {
 								customMethodKey := testName
 								if customMethod, ok := customTestMethods[customMethodKey]; ok {
+									skipIfLoadOnly(t)
 									response = customMethod(ctx, client, testTableItem)
 								} else {
 									t.Skipf("Custom test method %s (%s) not supported in Go yet", testTableFile.TestMethod, customMethodKey)
@@ -445,6 +458,7 @@ func TestTable(t *testing.T) {
 								if testName == "TestTable/vertex/models/generate_content" {
 									injectUnknownFields(t, replayClient)
 								}
+								skipIfLoadOnly(t)
 								response = method.Call(args)
 							}
 

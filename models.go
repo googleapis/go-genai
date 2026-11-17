@@ -79,6 +79,11 @@ func candidateFromMldev(fromObject map[string]any, parentObject map[string]any, 
 		InternalSetValueByPath(toObject, []string{"citationMetadata"}, fromCitationMetadata)
 	}
 
+	fromFinishMessage := InternalGetValueByPath(fromObject, []string{"finishMessage"})
+	if fromFinishMessage != nil {
+		InternalSetValueByPath(toObject, []string{"finishMessage"}, fromFinishMessage)
+	}
+
 	fromTokenCount := InternalGetValueByPath(fromObject, []string{"tokenCount"})
 	if fromTokenCount != nil {
 		InternalSetValueByPath(toObject, []string{"tokenCount"}, fromTokenCount)

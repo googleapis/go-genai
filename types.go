@@ -7959,8 +7959,8 @@ type BatchJob struct {
 	UpdateTime time.Time `json:"updateTime,omitempty"`
 	// The name of the model that produces the predictions via the BatchJob.
 	Model string `json:"model,omitempty"`
-	// Configuration for the input data. This field is for Gemini Enterprise Agent Platform
-	// only.
+	// Configuration for the input data. In Gemini Developer API responses, only `file_name`
+	// is populated.
 	Src *BatchJobSource `json:"src,omitempty"`
 	// Configuration for the output data.
 	Dest *BatchJobDestination `json:"dest,omitempty"`

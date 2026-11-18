@@ -24,6 +24,8 @@ import (
 type MCPServer struct {
 	// The allowed tools.
 	AllowedTools []AllowedTools `json:"allowed_tools,omitzero"`
+	// If true, loading of tools on this MCP server is deferred.
+	DeferLoading *bool `json:"defer_loading,omitzero"`
 	// Optional: Fields for authentication headers, timeouts, etc., if needed.
 	Headers map[string]string `json:"headers,omitzero"`
 	// The name of the MCPServer.
@@ -51,6 +53,13 @@ func (m *MCPServer) GetAllowedTools() []AllowedTools {
 		return nil
 	}
 	return m.AllowedTools
+}
+
+func (m *MCPServer) GetDeferLoading() *bool {
+	if m == nil {
+		return nil
+	}
+	return m.DeferLoading
 }
 
 func (m *MCPServer) GetHeaders() map[string]string {

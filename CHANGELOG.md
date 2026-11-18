@@ -5,8 +5,32 @@
 
 ### ⚠ BREAKING CHANGES
 
-* **interactions:** In the typed SDKs, `CodeExecutionResultStep.result` changes from `string` to the `CodeExecutionResultStepResult` union. Code that reads `result` as a string must now check which variant is present and read the string from it. The JSON for text-only results is unchanged.
-* default Gemini API version to v1 instead of v1beta across SDKs
+* **Default Gemini Developer API version is now `v1` (was `v1beta`)** ([402dc81](https://github.com/googleapis/go-genai/commit/402dc815443e6eab4a7c4d11f8b4db6bdbc1a30a))
+  * Clients targeting the **Gemini Developer API** (the default backend, `genai.BackendGeminiAPI`) now default to API version `v1` instead of `v1beta`.
+    > **Note for Go users:** Although this default change is a runtime breaking change, we are shipping it in a minor `v1.x` release rather than `v2.0.0` as the less disruptive of the two options. In Go, a `v2` major version bump changes the module path to `google.golang.org/genai/v2`, which breaks every user and downstream library by forcing import rewrites across the ecosystem—even though no Go types or function signatures changed. Shipping in `v1.x` keeps existing imports and builds working, leaves most code unaffected, and lets anyone who needs the previous `v1beta` behavior restore it with a single config field or environment variable (see below).
+  * **No effect on Gemini Enterprise (Vertex AI) defaults:** Clients using `genai.BackendVertexAI` (or `GOOGLE_GENAI_USE_VERTEXAI=true`) are **unaffected** by this default change and continue to default to `v1beta1`.
+  * **Some models are not available on `v1`, notably:** the `gemini-flash-latest`, `gemini-flash-lite-latest`, and `gemini-pro-latest` aliases, some `-preview` models, and models that depend on `v1beta`-only features (such as TTS models). They exist only on `v1beta`. To keep using them, use a specific stable model version, or switch back to `v1beta` as shown below.
+  * **Some APIs are not available on `v1`:** The Live API (`client.Live`), context caching (`client.Caches`), and beta platform services (`client.Agents`, `client.Decisions`, `client.Webhooks`) are served only on `v1beta` in the Gemini Developer API. To keep using them, switch back to `v1beta` as shown below.
+  * **How to configure or restore the previous default via environment variable:** Set `GOOGLE_GENAI_API_VERSION` (works for both Gemini Developer API and Enterprise / Vertex AI clients when no version is set in code):
+    ```sh
+    # Restores the beta default ('v1beta' on Gemini Developer API, 'v1beta1' on Enterprise / Vertex AI)
+    export GOOGLE_GENAI_API_VERSION=beta
+
+    # Or set an explicit API version string on either platform (e.g. 'v1', 'v1beta', 'v1beta1')
+    export GOOGLE_GENAI_API_VERSION=v1beta
+    ```
+  * **How to set the API version in code:** Set `APIVersion` in `HTTPOptions` (takes precedence over `GOOGLE_GENAI_API_VERSION`):
+    ```go
+    import (
+    	"context"
+
+    	"google.golang.org/genai"
+    )
+
+    client, err := genai.NewClient(context.Background(), &genai.ClientConfig{
+    	HTTPOptions: genai.HTTPOptions{APIVersion: "v1beta"},
+    })
+    ```
 
 ### Features
 

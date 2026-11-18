@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.79.1](https://github.com/googleapis/go-genai/compare/v1.79.0...v1.79.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* update sdk enum ([9b0a57d](https://github.com/googleapis/go-genai/commit/9b0a57dc161dca1cc1e2d5d25615fd022f3095a5))
+
 ## [1.79.0](https://github.com/googleapis/go-genai/compare/v1.78.0...v1.79.0) (2026-11-18)
 
 

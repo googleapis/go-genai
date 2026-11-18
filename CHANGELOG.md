@@ -1,5 +1,76 @@
 # Changelog
 
+## [1.78.0](https://github.com/googleapis/go-genai/compare/v1.77.0...v1.78.0) (2026-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **Default Gemini Developer API version is now `v1` (was `v1beta`)** ([402dc81](https://github.com/googleapis/go-genai/commit/402dc815443e6eab4a7c4d11f8b4db6bdbc1a30a))
+  * Clients targeting the **Gemini Developer API** (the default backend, `genai.BackendGeminiAPI`) now default to API version `v1` instead of `v1beta`.
+    > **Note for Go users:** Although this default change is a runtime breaking change, we are shipping it in a minor `v1.x` release rather than `v2.0.0` as the less disruptive of the two options. In Go, a `v2` major version bump changes the module path to `google.golang.org/genai/v2`, which breaks every user and downstream library by forcing import rewrites across the ecosystem—even though no Go types or function signatures changed. Shipping in `v1.x` keeps existing imports and builds working, leaves most code unaffected, and lets anyone who needs the previous `v1beta` behavior restore it with a single config field or environment variable (see below).
+  * **No effect on Gemini Enterprise (Vertex AI) defaults:** Clients using `genai.BackendVertexAI` (or `GOOGLE_GENAI_USE_VERTEXAI=true`) are **unaffected** by this default change and continue to default to `v1beta1`.
+  * **Some models are not available on `v1`, notably:** the `gemini-flash-latest`, `gemini-flash-lite-latest`, and `gemini-pro-latest` aliases, some `-preview` models, and models that depend on `v1beta`-only features (such as TTS models). They exist only on `v1beta`. To keep using them, use a specific stable model version, or switch back to `v1beta` as shown below.
+  * **Some APIs are not available on `v1`:** The Live API (`client.Live`), context caching (`client.Caches`), and beta platform services (`client.Agents`, `client.Decisions`, `client.Webhooks`) are served only on `v1beta` in the Gemini Developer API. To keep using them, switch back to `v1beta` as shown below.
+  * **How to configure or restore the previous default via environment variable:** Set `GOOGLE_GENAI_API_VERSION` (works for both Gemini Developer API and Enterprise / Vertex AI clients when no version is set in code):
+    ```sh
+    # Restores the beta default ('v1beta' on Gemini Developer API, 'v1beta1' on Enterprise / Vertex AI)
+    export GOOGLE_GENAI_API_VERSION=beta
+
+    # Or set an explicit API version string on either platform (e.g. 'v1', 'v1beta', 'v1beta1')
+    export GOOGLE_GENAI_API_VERSION=v1beta
+    ```
+  * **How to set the API version in code:** Set `APIVersion` in `HTTPOptions` (takes precedence over `GOOGLE_GENAI_API_VERSION`):
+    ```go
+    import (
+    	"context"
+
+    	"google.golang.org/genai"
+    )
+
+    client, err := genai.NewClient(context.Background(), &genai.ClientConfig{
+    	HTTPOptions: genai.HTTPOptions{APIVersion: "v1beta"},
+    })
+    ```
+
+### Features
+
+* add `gemini-omni-1.2-flash` and make it the `gemini-api video` default ([04c227d](https://github.com/googleapis/go-genai/commit/04c227d25aba061d25f17ac99e544c303f8ba0d3))
+* Add `proactive_video` to `ProactivityConfig` for the Live API. ([4ac9851](https://github.com/googleapis/go-genai/commit/4ac985125e6aee2127b3ec351b4e7d80e84074b4))
+* Add `source_text` to `AudioTranscriptionConfig` and `SmartTranscriptionMode`. ([2b4e897](https://github.com/googleapis/go-genai/commit/2b4e8972459b4b39819e4d12702ae1a573ccef2a))
+* Add `XHIGH` and `xhigh` to `ThinkingLevel` across GenAI SDKs and CLI. ([78c23d6](https://github.com/googleapis/go-genai/commit/78c23d63f56c9ee499ad3f8edbefcb419e641651))
+* add `xhigh` thinking level to Interactions ThinkingLevel ([5a3af4c](https://github.com/googleapis/go-genai/commit/5a3af4c68042aea826b014c03f8d872e97608ff2))
+* Add MALFORMED_RESPONSE to FinishReason ([6ba4b48](https://github.com/googleapis/go-genai/commit/6ba4b4807e721486a535a7f6c3ad0f2fec3da84f)), refs [#2937](https://github.com/googleapis/go-genai/issues/2937)
+* Add missing enum values to FinishReason and ReinforcementTuningThinkingLevel ([9517de6](https://github.com/googleapis/go-genai/commit/9517de6ac48304ba9d0aa9914dbdc1373e7c0aae))
+* add the Decisions API (`client.decisions.create`) to the GenAI SDKs ([4e1c734](https://github.com/googleapis/go-genai/commit/4e1c734af6c8b549a3ff2b1fc188565752334483))
+* Add tool search types to the Interactions SDKs ([f2b5eea](https://github.com/googleapis/go-genai/commit/f2b5eeab7537954aeb0ccd350971502f6f746338))
+* add usage_metadata (including traffic_type) and truncated to EmbedContentResponse for Gemini Enterprise API ([850cdca](https://github.com/googleapis/go-genai/commit/850cdca5ec6131156eeadb87cb38f4fc977004fe))
+* **cli:** use gemini-3.5-transcribe as default model for transcribe command ([968e135](https://github.com/googleapis/go-genai/commit/968e13580a53b19b47ee6c8f10c4f2c52da319a3))
+* default Gemini API version to v1 instead of v1beta across SDKs ([402dc81](https://github.com/googleapis/go-genai/commit/402dc815443e6eab4a7c4d11f8b4db6bdbc1a30a))
+* Disable GenerateVideos for Gemini API, update tests/READMEs ([9cf04de](https://github.com/googleapis/go-genai/commit/9cf04deac32f2418781170b3cd41c09abf060564))
+* **environments:** introduce self-hosted BYOS mode, system_instruction, custom_config, and environment_key in SDKs and CLI ([eeafe6c](https://github.com/googleapis/go-genai/commit/eeafe6c4285395ee9ba62f5a5f1a02a1a7d168aa))
+* **environments:** introduce self-hosted BYOS mode, system_instruction, custom_config, and environment_key in SDKs and CLI ([ac12b34](https://github.com/googleapis/go-genai/commit/ac12b344c9423a54dc7fb9beac45b9cf3a41cd02))
+* **interactions:** add gemini-4-carbon and gemini-omni-1.2-flash to Model enum ([e08c6be](https://github.com/googleapis/go-genai/commit/e08c6bef3ff9ac8d5035725522927e91f05b11ed))
+* **interactions:** add gemini-4-hydrogen to Model enum ([1b7b34c](https://github.com/googleapis/go-genai/commit/1b7b34c91612454a7cc614418f3df36f8e12fffc))
+* **interactions:** add Office and OpenDocument MIME types ([36ba34e](https://github.com/googleapis/go-genai/commit/36ba34e477423db3260f320d42c7dd10cf30bf0f))
+* **interactions:** expose static file processing options ([5d76cf0](https://github.com/googleapis/go-genai/commit/5d76cf06ba477a7cf04ed0b2dfee1fc1e9ee9cc5))
+* **interactions:** support multimodal content in CodeExecutionResultStep.result ([0872815](https://github.com/googleapis/go-genai/commit/087281541b864840a1ff51a14d16eea23f0d8d83))
+* support batch inputs and usage metadata for Gemini embedding models on Gemini Enterprise API ([c1a7aa2](https://github.com/googleapis/go-genai/commit/c1a7aa2cb272bfeea4db577cf2bce877870948da))
+* support GOOGLE_GENAI_API_VERSION environment variable across SDKs ([402dc81](https://github.com/googleapis/go-genai/commit/402dc815443e6eab4a7c4d11f8b4db6bdbc1a30a))
+* update discovery doc ([8653ef7](https://github.com/googleapis/go-genai/commit/8653ef7de2c5490cd7fa42578399617586adcaac))
+
+
+### Bug Fixes
+
+* do not panic on a null element in a converted response slice or a null response body ([c7c9c43](https://github.com/googleapis/go-genai/commit/c7c9c430f459994cba0d22291cfabd97080c7f37)), refs [#899](https://github.com/googleapis/go-genai/issues/899)
+* **overlays:** fail CLI commands on failed interactions, redact tool headers, narrow ModelInteraction.required ([34be134](https://github.com/googleapis/go-genai/commit/34be13453949d4c12d38dab1276fe3cfb963146d))
+* respect configured and default API version for Gemini API file uploads across SDKs ([da10e09](https://github.com/googleapis/go-genai/commit/da10e090599ecacb00a7e247debe6a8912ca3149))
+* stop percent-encoding the Vertex resource prefix in Interactions URLs ([4348fe0](https://github.com/googleapis/go-genai/commit/4348fe0d6d37b46d1319f1309c911477a52773fc)), refs [#960](https://github.com/googleapis/go-genai/issues/960)
+
+
+### Miscellaneous Chores
+
+* set version to 1.78.0 ([bb9bfea](https://github.com/googleapis/go-genai/commit/bb9bfea417d56231d25f787e512dfe194473c5a1))
+
 ## [1.77.0](https://github.com/googleapis/go-genai/compare/v1.76.0...v1.77.0) (2026-10-29)
 
 

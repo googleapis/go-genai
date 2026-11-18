@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.79.0](https://github.com/googleapis/go-genai/compare/v1.78.0...v1.79.0) (2026-11-18)
+
+
+### Features
+
+* **sdk:** Add tool retrieval and function result schemas in public SDK ([25bf4e8](https://github.com/googleapis/go-genai/commit/25bf4e82a490b9e4505a068655fd8dea4eb87ab5))
+
+
+### Bug Fixes
+
+* send SDK User-Agent and x-goog-api-client headers on the Live WebSocket handshake ([99f48a5](https://github.com/googleapis/go-genai/commit/99f48a5d2511fbd29fa7c1fbdb73c65818842ac6)), refs [#1045](https://github.com/googleapis/go-genai/issues/1045)
+
 ## [1.78.0](https://github.com/googleapis/go-genai/compare/v1.77.0...v1.78.0) (2026-11-17)
 
 

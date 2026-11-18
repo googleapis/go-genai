@@ -74,6 +74,7 @@ func (r *Live) Connect(context context.Context, model string, config *LiveConnec
 
 	var u url.URL
 	var header http.Header = mergeHeaders(&httpOptions, nil)
+	appendSDKHeaders(header)
 	if r.apiClient.clientConfig.Backend == BackendVertexAI {
 		hasStandardAuth := r.apiClient.clientConfig.Project != "" && r.apiClient.clientConfig.Location != ""
 		if r.apiClient.clientConfig.Credentials != nil {

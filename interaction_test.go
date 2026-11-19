@@ -30,6 +30,7 @@ import (
 	"google.golang.org/genai/interactions/models/agents"
 	"google.golang.org/genai/interactions/models/components"
 	"google.golang.org/genai/interactions/models/credentials"
+	"google.golang.org/genai/interactions/models/environments"
 	"google.golang.org/genai/interactions/models/interactions"
 	"google.golang.org/genai/interactions/models/operations"
 	"google.golang.org/genai/interactions/models/webhooks"
@@ -1267,5 +1268,83 @@ func TestInteractionsDefaultClientTimeout(t *testing.T) {
 	timeoutVal := clientVal.Elem().Elem().FieldByName("Timeout")
 	if got := time.Duration(timeoutVal.Int()); got != 0 {
 		t.Errorf("interactions.New() default client Timeout = %v, want 0 (no timeout)", got)
+	}
+}
+
+func TestCreateEnvironmentRequestEnv(t *testing.T) {
+	cred := "credentials/cred_123"
+	var gotBody map[string]any
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("got method %s, want POST", r.Method)
+		}
+		if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"name":"environments/env_123","displayName":"test-env"}`))
+	}))
+	defer ts.Close()
+
+	ctx := context.Background()
+	client, err := NewClient(ctx, &ClientConfig{
+		Backend:     BackendGeminiAPI,
+		APIKey:      "dummy_key",
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+	})
+	if err != nil {
+		t.Fatalf("NewClient failed: %v", err)
+	}
+
+	req := &environments.CreateEnvironmentRequest{
+		Env: map[string]environments.Env{
+			"PLAIN_VAR":  environments.NewEnv("hello"),
+			"SECRET_VAR": environments.NewEnv(interactions.EnvVar{Credential: &cred}),
+		},
+	}
+	if _, err := client.Environments.CreateEnvironment(ctx, operations.CreateEnvironmentRequest{
+		Body: *req,
+	}); err != nil {
+		t.Fatalf("CreateEnvironment failed: %v", err)
+	}
+
+	wantEnv := map[string]any{
+		"PLAIN_VAR":  "hello",
+		"SECRET_VAR": map[string]any{"credential": cred},
+	}
+	if !reflect.DeepEqual(gotBody["env"], wantEnv) {
+		t.Errorf("got env body %#v, want %#v", gotBody["env"], wantEnv)
+	}
+
+	if got := req.GetEnv(); len(got) != 2 {
+		t.Errorf("GetEnv() len = %d, want 2", len(got))
+	}
+	var nilReq *environments.CreateEnvironmentRequest
+	if got := nilReq.GetEnv(); got != nil {
+		t.Errorf("nil CreateEnvironmentRequest.GetEnv() = %#v, want nil", got)
+	}
+
+	raw, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("json.Marshal(CreateEnvironmentRequest) failed: %v", err)
+	}
+	var roundTrip environments.CreateEnvironmentRequest
+	if err := json.Unmarshal(raw, &roundTrip); err != nil {
+		t.Fatalf("json.Unmarshal(CreateEnvironmentRequest) failed: %v", err)
+	}
+	if got := roundTrip.GetEnv()["PLAIN_VAR"]; got.Type != environments.EnvTypeStr || got.Str == nil || *got.Str != "hello" {
+		t.Errorf("round-tripped PLAIN_VAR = %#v, want string \"hello\"", got)
+	}
+	if got := roundTrip.GetEnv()["SECRET_VAR"]; got.Type != environments.EnvTypeEnvVar || got.EnvVar == nil || got.EnvVar.Credential == nil || *got.EnvVar.Credential != cred {
+		t.Errorf("round-tripped SECRET_VAR = %#v, want credential %q", got, cred)
+	}
+
+	if _, err := json.Marshal(environments.Env{}); err == nil {
+		t.Error("json.Marshal(empty Env) succeeded, want error")
+	}
+	var invalid environments.Env
+	if err := json.Unmarshal([]byte(`123`), &invalid); err == nil {
+		t.Error("json.Unmarshal(123 into Env) succeeded, want error")
 	}
 }

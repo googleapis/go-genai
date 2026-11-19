@@ -301,7 +301,9 @@ type Environment struct {
 	// Environment variables to set in the sandbox environment.
 	Env map[string]Env `json:"env,omitzero"`
 	// Optional. The environment ID for the interaction. If specified, the request will
-	// update the existing environment instead of creating a new one.
+	// update the existing environment instead of creating a new one;
+	// creation-only fields (`env` and `sources`) cannot be updated when resuming
+	// an existing environment.
 	EnvironmentID *string `json:"environment_id,omitzero"`
 	// The compute lifecycle mode for an environment.
 	Mode *EnvironmentMode `json:"mode,omitzero"`

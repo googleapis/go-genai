@@ -3147,6 +3147,8 @@ func partToMldev(fromObject map[string]any, parentObject map[string]any, rootObj
 		InternalSetValueByPath(toObject, []string{"audioMetadata"}, fromAudioMetadata)
 	}
 
+	keepEmptyTextOnThoughtSignaturePart(toObject)
+
 	return toObject, nil
 }
 
@@ -3254,6 +3256,8 @@ func partToVertex(fromObject map[string]any, parentObject map[string]any, rootOb
 	if fromAudioMetadata != nil {
 		InternalSetValueByPath(toObject, []string{"audioMetadata"}, fromAudioMetadata)
 	}
+
+	keepEmptyTextOnThoughtSignaturePart(toObject)
 
 	return toObject, nil
 }

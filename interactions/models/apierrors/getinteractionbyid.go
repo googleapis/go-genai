@@ -33,6 +33,12 @@ type GetInteractionByIDServerError struct {
 var _ error = &GetInteractionByIDServerError{}
 
 func (e *GetInteractionByIDServerError) Error() string {
+	if e != nil {
+		if e.Error_.Message != nil {
+			return *e.Error_.Message
+		}
+	}
+
 	data, _ := json.Marshal(e)
 	return string(data)
 }
@@ -47,6 +53,12 @@ type GetInteractionByIDClientError struct {
 var _ error = &GetInteractionByIDClientError{}
 
 func (e *GetInteractionByIDClientError) Error() string {
+	if e != nil {
+		if e.Error_.Message != nil {
+			return *e.Error_.Message
+		}
+	}
+
 	data, _ := json.Marshal(e)
 	return string(data)
 }

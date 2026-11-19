@@ -33,6 +33,12 @@ type DeleteInteractionServerError struct {
 var _ error = &DeleteInteractionServerError{}
 
 func (e *DeleteInteractionServerError) Error() string {
+	if e != nil {
+		if e.Error_.Message != nil {
+			return *e.Error_.Message
+		}
+	}
+
 	data, _ := json.Marshal(e)
 	return string(data)
 }
@@ -47,6 +53,12 @@ type DeleteInteractionClientError struct {
 var _ error = &DeleteInteractionClientError{}
 
 func (e *DeleteInteractionClientError) Error() string {
+	if e != nil {
+		if e.Error_.Message != nil {
+			return *e.Error_.Message
+		}
+	}
+
 	data, _ := json.Marshal(e)
 	return string(data)
 }

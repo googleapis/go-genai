@@ -3719,6 +3719,10 @@ func speechConfigToVertex(fromObject map[string]any, parentObject map[string]any
 		InternalSetValueByPath(toObject, []string{"multiSpeakerVoiceConfig"}, fromMultiSpeakerVoiceConfig)
 	}
 
+	if InternalGetValueByPath(fromObject, []string{"textNormalization"}) != nil {
+		return nil, fmt.Errorf("textNormalization parameter is only supported in Gemini Developer API mode, not in Gemini Enterprise Agent Platform mode.")
+	}
+
 	return toObject, nil
 }
 

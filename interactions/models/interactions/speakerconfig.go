@@ -20,10 +20,36 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
+// TextNormalization - Controls text normalization before speech synthesis.
+type TextNormalization string
+
+const (
+	TextNormalizationAuto     TextNormalization = "auto"
+	TextNormalizationEnabled  TextNormalization = "enabled"
+	TextNormalizationDisabled TextNormalization = "disabled"
+)
+
+func (e TextNormalization) ToPointer() *TextNormalization {
+	return &e
+}
+
+// IsExact returns true if the value matches a known enum value, false otherwise.
+func (e *TextNormalization) IsExact() bool {
+	if e != nil {
+		switch *e {
+		case "auto", "enabled", "disabled":
+			return true
+		}
+	}
+	return false
+}
+
 // SpeakerConfig - Configuration for multi-speaker and speech generation.
 type SpeakerConfig struct {
 	// Individual speaker configurations.
 	Speakers []SpeechConfig `json:"speakers,omitzero"`
+	// Controls text normalization before speech synthesis.
+	TextNormalization *TextNormalization `json:"text_normalization,omitzero"`
 }
 
 func (s SpeakerConfig) MarshalJSON() ([]byte, error) {
@@ -42,4 +68,11 @@ func (s *SpeakerConfig) GetSpeakers() []SpeechConfig {
 		return nil
 	}
 	return s.Speakers
+}
+
+func (s *SpeakerConfig) GetTextNormalization() *TextNormalization {
+	if s == nil {
+		return nil
+	}
+	return s.TextNormalization
 }

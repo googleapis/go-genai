@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.80.0](https://github.com/googleapis/go-genai/compare/v1.79.1...v1.80.0) (2026-11-20)
+
+
+### Features
+
+* Add `text_normalization` to `SpeechConfig` (Gemini API). ([3454baa](https://github.com/googleapis/go-genai/commit/3454baa68563b7ca1e4ada9e84d379d972fd3899))
+* **environments:** expose CreateEnvironmentRequest.env on the gemini platform ([17f794c](https://github.com/googleapis/go-genai/commit/17f794c7a222f7d5756a1f4023d810b172e8f345))
+
+
+### Bug Fixes
+
+* guard nil first candidate in GenerateContentStream continuation bookkeeping ([3a2886e](https://github.com/googleapis/go-genai/commit/3a2886e8d7718d775f2d1a2d69c7a6d347f191aa)), refs [#1049](https://github.com/googleapis/go-genai/issues/1049)
+* keep an empty FunctionCall.Args map on JSON round trip ([1e97e56](https://github.com/googleapis/go-genai/commit/1e97e56338265c03c4f6b4b8d8e11f2e4a576ff6)), refs [#920](https://github.com/googleapis/go-genai/issues/920)
+* keep an empty FunctionCall.Args map on JSON round trip ([1636e7e](https://github.com/googleapis/go-genai/commit/1636e7e9675154c72689f049bbf12c8f56575da8)), refs [#920](https://github.com/googleapis/go-genai/issues/920)
+* send empty text on thought-signature-only Parts ([a32c6c6](https://github.com/googleapis/go-genai/commit/a32c6c68c36aaebbd26e78e231a6d49be8b7b82d)), refs [#931](https://github.com/googleapis/go-genai/issues/931)
+
 ## [1.79.1](https://github.com/googleapis/go-genai/compare/v1.79.0...v1.79.1) (2026-11-18)
 
 

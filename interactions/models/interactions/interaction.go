@@ -487,7 +487,8 @@ type Interaction struct {
 	ContinuationIds []string `json:"continuation_ids,omitzero"`
 	// Opaque token to resume a long decode. Output: set when status is
 	// REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-	// token back unchanged in CreateInteraction to continue decoding.
+	// token back unchanged when creating the next interaction to continue
+	// decoding.
 	ContinuationToken *string `json:"continuation_token,omitzero"`
 	// Required. Output only. The time at which the response was created in ISO 8601 format
 	// (YYYY-MM-DDThh:mm:ssZ).

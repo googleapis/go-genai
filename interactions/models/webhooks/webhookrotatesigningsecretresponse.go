@@ -16,7 +16,7 @@
 
 package webhooks
 
-// WebhookRotateSigningSecretResponse - Response message for WebhookService.RotateSigningSecret.
+// WebhookRotateSigningSecretResponse - Response for rotating a webhook's signing secret.
 type WebhookRotateSigningSecretResponse struct {
 	// Output only. The newly generated signing secret.
 	Secret *string `json:"secret,omitzero"`

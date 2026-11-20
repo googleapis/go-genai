@@ -16,6 +16,6 @@
 
 package voices
 
-// DeleteVoiceResponse - Response message for `VoicesService.DeleteVoice`.
+// DeleteVoiceResponse - Response for deleting a voice.
 type DeleteVoiceResponse struct {
 }

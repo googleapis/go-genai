@@ -17,8 +17,8 @@
 package voices
 
 // PromptedVoice - Parameters for prompted voice generation.
-// Required in `CreateVoice` when `type` is `"prompted"`. Returned in
-// `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
+// Required when creating a voice with `type` `"prompted"`. Returned when
+// creating, getting, or listing prompted voices.
 type PromptedVoice struct {
 	// Optional. The name or ID of an existing base voice to edit or remix.
 	// Use the voice name for prebuilt voices (e.g., `Puck`) or the voice ID for

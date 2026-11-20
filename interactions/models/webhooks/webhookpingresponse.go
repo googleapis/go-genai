@@ -16,6 +16,6 @@
 
 package webhooks
 
-// WebhookPingResponse - Response message for WebhookService.PingWebhook.
+// WebhookPingResponse - Response for pinging a webhook.
 type WebhookPingResponse struct {
 }

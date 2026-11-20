@@ -204,9 +204,8 @@ type Environment struct {
 	CustomConfig map[string]any `json:"custom_config,omitzero"`
 	// Output only. Secret token generated upon environment creation for self_hosted
 	// environments. Used by the self-hosted sandbox daemon to authenticate
-	// polling and streaming requests. Only returned in the CreateEnvironment
-	// response; omitted from subsequent GetEnvironment and ListEnvironments
-	// calls.
+	// polling and streaming requests. Only returned when the environment is
+	// created; omitted when getting or listing environments later.
 	EnvironmentKey *string `json:"environment_key,omitzero"`
 	// Output only. The number of files in the environment, output only.
 	FileCount *int64 `integer:"string" json:"file_count,omitzero"`

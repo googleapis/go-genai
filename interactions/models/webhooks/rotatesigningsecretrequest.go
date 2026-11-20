@@ -48,7 +48,7 @@ func (e *RevocationBehavior) UnmarshalJSON(data []byte) error {
 	}
 }
 
-// RotateSigningSecretRequest - Request message for WebhookService.RotateSigningSecret.
+// RotateSigningSecretRequest - Request for rotating a webhook's signing secret.
 type RotateSigningSecretRequest struct {
 	// Optional. The revocation behavior for previous signing secrets.
 	RevocationBehavior *RevocationBehavior `json:"revocation_behavior,omitzero"`

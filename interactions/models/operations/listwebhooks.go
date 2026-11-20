@@ -41,7 +41,7 @@ type ListWebhooksRequest struct {
 	// fewer than this value. If unspecified, at most 50 webhooks will be
 	// returned. The maximum value is 1000.
 	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
-	// Optional. A page token, received from a previous `ListWebhooks` call.
+	// Optional. A page token, received from a previous call to list webhooks.
 	// Provide this to retrieve the subsequent page.
 	PageToken *string `queryParam:"style=form,explode=true,name=page_token"`
 }

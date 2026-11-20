@@ -58,8 +58,8 @@ type ListVoicesRequest struct {
 	// returned. The maximum value is 1000; values above 1000 are coerced to
 	// 1000.
 	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
-	// Optional. A page token received from a previous `ListVoices` call. Provide
-	// this to retrieve the subsequent page.
+	// Optional. A page token received from a previous call to list voices.
+	// Provide this to retrieve the subsequent page.
 	//
 	// When paginating, all filter query parameters (`language_code`,
 	// `region_code`, `accent`, `persona`, `context`, `gender`, `pitch`, `type`,

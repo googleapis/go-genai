@@ -20,8 +20,8 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// VoiceInput - A voice resource representing either a custom voice (created via
-// `CreateVoice`) or a prebuilt system voice (returned by `ListVoices`).
+// VoiceInput - A voice resource representing either a custom voice that you create or a
+// prebuilt system voice (returned when listing voices).
 type VoiceInput struct {
 	// Optional. Regional accent descriptor (e.g. "American", "British").
 	Accent *string `json:"accent,omitzero"`
@@ -39,9 +39,9 @@ type VoiceInput struct {
 	// Optional. Primary BCP-47 language tag (e.g. "en-US", "fr-FR").
 	LanguageCode *string `json:"language_code,omitzero"`
 	// Optional. The model used to design or replicate the voice.
-	// If omitted in `CreateVoice`, defaults to the latest supported voice design
-	// model. Returned in `CreateVoice`, `GetVoice`, and `ListVoices` responses
-	// for custom voices (`"prompted"` and `"replicated"`); unset for `"prebuilt"`
+	// If omitted when creating a voice, defaults to the latest supported voice
+	// design model. Returned when creating, getting, or listing custom voices
+	// (`"prompted"` and `"replicated"`); unset for `"prebuilt"`
 	// voices. Created voices can be synthesized across any supported TTS
 	// synthesis model.
 	Model *string `json:"model,omitzero"`
@@ -50,8 +50,8 @@ type VoiceInput struct {
 	Persona *string `json:"persona,omitzero"`
 	Pitch   *Pitch  `json:"pitch,omitzero"`
 	// Parameters for prompted voice generation.
-	// Required in `CreateVoice` when `type` is `"prompted"`. Returned in
-	// `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
+	// Required when creating a voice with `type` `"prompted"`. Returned when
+	// creating, getting, or listing prompted voices.
 	Prompted *PromptedVoice `json:"prompted,omitzero"`
 	// Optional. ISO 3166-1 alpha-2 or UN M.49 geographic region code (e.g. "US",
 	// "GB", "001").

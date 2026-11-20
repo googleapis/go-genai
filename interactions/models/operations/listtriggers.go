@@ -41,7 +41,7 @@ type ListTriggersRequest struct {
 	Filter *string `queryParam:"style=form,explode=true,name=filter"`
 	// Optional. The maximum number of triggers to return per page.
 	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
-	// Optional. A page token from a previous ListTriggers call.
+	// Optional. A page token from a previous call to list triggers.
 	PageToken *string `queryParam:"style=form,explode=true,name=page_token"`
 }
 

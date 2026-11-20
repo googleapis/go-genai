@@ -39,7 +39,7 @@ type ListTriggerExecutionsRequest struct {
 	APIVersion *string `pathParam:"style=simple,explode=false,name=api_version"`
 	// The maximum number of executions to return per page.
 	PageSize *int `queryParam:"style=form,explode=true,name=page_size"`
-	// A page token from a previous ListTriggerExecutions call.
+	// A page token from a previous call to list trigger executions.
 	PageToken *string `queryParam:"style=form,explode=true,name=page_token"`
 	// Required. The trigger ID to list executions from.
 	TriggerID string `pathParam:"style=simple,explode=false,name=triggerId"`

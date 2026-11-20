@@ -245,7 +245,7 @@ func (u CreateEnvironmentRequestNetworkUnion) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("could not marshal union type CreateEnvironmentRequestNetworkUnion: all fields are null")
 }
 
-// CreateEnvironmentRequest - Request for `CreateEnvironment`.
+// CreateEnvironmentRequest - Request for creating an environment.
 type CreateEnvironmentRequest struct {
 	// Optional. Arbitrary customer-defined JSON configuration passed through
 	// to the self-hosted environment poller. Only supported when `mode` is

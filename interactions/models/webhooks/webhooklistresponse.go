@@ -20,7 +20,7 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// WebhookListResponse - Response message for WebhookService.ListWebhooks.
+// WebhookListResponse - Response for listing webhooks.
 type WebhookListResponse struct {
 	// A token, which can be sent as `page_token` to retrieve the next page.
 	// If this field is omitted, there are no subsequent pages.

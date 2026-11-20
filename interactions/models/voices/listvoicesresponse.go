@@ -20,7 +20,7 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// ListVoicesResponse - Response message for `VoicesService.ListVoices`.
+// ListVoicesResponse - Response for listing voices.
 type ListVoicesResponse struct {
 	// A token that can be sent as `page_token` to retrieve the next page.
 	// If empty, there are no subsequent pages.

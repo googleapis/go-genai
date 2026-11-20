@@ -16,15 +16,15 @@
 
 package voices
 
-// CreateVoiceRequest - Request message for `VoicesService.CreateVoice`.
+// CreateVoiceRequest - Request for creating a voice.
 type CreateVoiceRequest struct {
 	// Optional. Whether the created voice is persisted and managed by Google.
 	//
 	// * When `true`, Google stores the voice and returns `Voice.id` (for example,
-	//   `voice_abc123def456`), which can be managed via `GetVoice`, `ListVoices`,
-	//   and `DeleteVoice` and referenced by ID in synthesis requests. Stored
-	//   voices expire after 1 year of inactivity; using a stored voice in speech
-	//   synthesis or as a `base_voice` in `CreateVoice` extends its
+	//   `voice_abc123def456`), which you can get, list, and delete, and
+	//   reference by ID in synthesis requests. Stored voices expire after 1
+	//   year of inactivity; using a stored voice in speech synthesis or as a
+	//   `base_voice` when creating another voice extends its
 	//   `expire_time`. Projects are subject to a maximum active stored voice
 	//   quota; exceeding the quota returns `RESOURCE_EXHAUSTED`.
 	// * When `false` (default), the voice is not stored by Google and `Voice.key`
@@ -34,8 +34,8 @@ type CreateVoiceRequest struct {
 	// * Required to be `true` when `voice.type` is `"prompted"`
 	//   (otherwise fails with `INVALID_ARGUMENT`).
 	Store *bool `json:"store,omitzero"`
-	// A voice resource representing either a custom voice (created via
-	// `CreateVoice`) or a prebuilt system voice (returned by `ListVoices`).
+	// A voice resource representing either a custom voice that you create or a
+	// prebuilt system voice (returned when listing voices).
 	Voice VoiceInput `json:"voice"`
 }
 

@@ -20,7 +20,7 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// GetEnvironmentFilesResponse - Response for `GetEnvironmentFiles`.
+// GetEnvironmentFilesResponse - Response for getting an environment's files.
 type GetEnvironmentFilesResponse struct {
 	// If the requested path is a directory, this contains its contents.
 	// If the requested path is a file, this contains a single entry with the

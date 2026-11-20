@@ -699,8 +699,8 @@ func (s *Voices) Delete(ctx context.Context, request operations.DeleteVoiceReque
 }
 
 // Get - Gets a custom stored voice (`store = true`) by resource name.
-// Prebuilt catalog voices (`VOICE_TYPE_PREBUILT`) cannot be retrieved via
-// `GetVoice`; use `ListVoices` instead.
+// Prebuilt catalog voices (`VOICE_TYPE_PREBUILT`) can't be retrieved this
+// way; list voices instead.
 func (s *Voices) Get(ctx context.Context, request operations.GetVoiceRequest, opts ...operations.Option) (*operations.GetVoiceResponse, error) {
 	globals := operations.GetVoiceGlobals{
 		APIVersion: s.sdkConfiguration.Globals.APIVersion,

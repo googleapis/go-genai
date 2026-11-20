@@ -16,6 +16,6 @@
 
 package webhooks
 
-// PingWebhookRequest - Request message for WebhookService.PingWebhook.
+// PingWebhookRequest - Request for pinging a webhook.
 type PingWebhookRequest struct {
 }

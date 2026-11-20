@@ -251,7 +251,7 @@ func (u BaseEnvironment) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("could not marshal union type BaseEnvironment: all fields are null")
 }
 
-// Agent - An agent definition for the CreateAgent API.
+// Agent - An agent definition, used when creating an agent.
 // This message is the target for annotation-parser-based JSON parsing.
 // New format:
 //

@@ -20,10 +20,10 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// ListTriggersResponse - Response message for TriggerService.ListTriggers.
+// ListTriggersResponse - Response for listing triggers.
 type ListTriggersResponse struct {
-	// A page token, received from a previous `ListTriggers` call.
-	// Provide this to retrieve the subsequent page.
+	// A token to retrieve the next page of triggers. Pass it as `page_token` in
+	// the next request. If empty, there are no more pages.
 	NextPageToken *string `json:"next_page_token,omitzero"`
 	// The list of triggers.
 	Triggers []Trigger `json:"triggers,omitzero"`

@@ -20,10 +20,10 @@ import (
 	"google.golang.org/genai/interactions/internal/utils"
 )
 
-// ListTriggerExecutionsResponse - Response message for TriggerService.ListTriggerExecutions.
+// ListTriggerExecutionsResponse - Response for listing trigger executions.
 type ListTriggerExecutionsResponse struct {
-	// A page token, received from a previous `ListTriggerExecutions` call.
-	// Provide this to retrieve the subsequent page.
+	// A token to retrieve the next page of trigger executions. Pass it as
+	// `page_token` in the next request. If empty, there are no more pages.
 	NextPageToken *string `json:"next_page_token,omitzero"`
 	// The list of trigger executions.
 	TriggerExecutions []TriggerExecution `json:"trigger_executions,omitzero"`

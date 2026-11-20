@@ -4344,10 +4344,10 @@ type Models struct {
 }
 
 func (m Models) generateContent(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) (*GenerateContentResponse, error) {
-	parameterMap := make(map[string]any)
-
-	kwargs := map[string]any{"model": model, "contents": contents, "config": config}
-	InternalDeepMarshal(kwargs, &parameterMap)
+	parameterMap, err := marshalGenerateContentParameters(model, contents, config)
+	if err != nil {
+		return nil, err
+	}
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {
@@ -4412,10 +4412,10 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 }
 
 func (m Models) generateContentStream(ctx context.Context, model string, contents []*Content, config *GenerateContentConfig) iter.Seq2[*GenerateContentResponse, error] {
-	parameterMap := make(map[string]any)
-
-	kwargs := map[string]any{"model": model, "contents": contents, "config": config}
-	InternalDeepMarshal(kwargs, &parameterMap)
+	parameterMap, err := marshalGenerateContentParameters(model, contents, config)
+	if err != nil {
+		return yieldErrorAndEndIterator[GenerateContentResponse](err)
+	}
 
 	var httpOptions *HTTPOptions
 	if config == nil || config.HTTPOptions == nil {

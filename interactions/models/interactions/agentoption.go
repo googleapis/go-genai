@@ -20,8 +20,6 @@ package interactions
 type AgentOption string
 
 const (
-	// AgentOptionDeepResearchProPreview122025 Gemini Deep Research Agent
-	AgentOptionDeepResearchProPreview122025 AgentOption = "deep-research-pro-preview-12-2025"
 	// AgentOptionDeepResearchPreview042026 Gemini Deep Research Agent
 	AgentOptionDeepResearchPreview042026 AgentOption = "deep-research-preview-04-2026"
 	// AgentOptionDeepResearchMaxPreview042026 Gemini Deep Research Max Agent
@@ -40,7 +38,7 @@ func (e AgentOption) ToPointer() *AgentOption {
 func (e *AgentOption) IsExact() bool {
 	if e != nil {
 		switch *e {
-		case "deep-research-pro-preview-12-2025", "deep-research-preview-04-2026", "deep-research-max-preview-04-2026", "antigravity-preview-05-2026", "antigravity-preview-09-2026":
+		case "deep-research-preview-04-2026", "deep-research-max-preview-04-2026", "antigravity-preview-05-2026", "antigravity-preview-09-2026":
 			return true
 		}
 	}

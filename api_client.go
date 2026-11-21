@@ -496,6 +496,12 @@ func iterateResponseStream[R any](rs *responseStream[R], responseConverter func(
 			if len(line) == 0 {
 				continue
 			}
+			// A line starting with ':' is an SSE comment. The spec requires clients to
+			// ignore it; gateways in front of the API use them to keep idle streams
+			// alive, and treating one as a payload fails the whole response.
+			if line[0] == ':' {
+				continue
+			}
 			prefix, data, _ := bytes.Cut(line, []byte(":"))
 			switch string(prefix) {
 			case "data":

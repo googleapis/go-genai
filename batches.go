@@ -184,6 +184,11 @@ func batchJobFromMldev(fromObject map[string]any, parentObject map[string]any, r
 		InternalSetValueByPath(toObject, []string{"dest"}, fromDest)
 	}
 
+	fromSrcFileName := getValueByPath(fromObject, []string{"metadata", "inputConfig", "fileName"})
+	if fromSrcFileName != nil {
+		setValueByPath(toObject, []string{"src", "fileName"}, fromSrcFileName)
+	}
+
 	return toObject, nil
 }
 

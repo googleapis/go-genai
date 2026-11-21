@@ -169,3 +169,78 @@ func TestBatchesGetInlinedText(t *testing.T) {
 		}
 	}
 }
+
+// getMockGeminiAPIBatchJob serves mockResponse from a test server and returns Batches.Get's result.
+func getMockGeminiAPIBatchJob(t *testing.T, mockResponse map[string]any) *BatchJob {
+	t.Helper()
+	ctx := context.Background()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := json.NewEncoder(w).Encode(mockResponse); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
+	}))
+	t.Cleanup(ts.Close)
+
+	client, err := NewClient(ctx, &ClientConfig{
+		Backend:     BackendGeminiAPI,
+		HTTPOptions: HTTPOptions{BaseURL: ts.URL},
+		APIKey:      "test-api-key",
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	job, err := client.Batches.Get(ctx, "batches/mock-batch-job", nil)
+	if err != nil {
+		t.Fatalf("Batches.Get() failed: %v", err)
+	}
+	return job
+}
+
+// The input file name in the Gemini API response metadata populates Src.FileName.
+func TestBatchesGetSrcFileName(t *testing.T) {
+	job := getMockGeminiAPIBatchJob(t, map[string]any{
+		"name": "batches/mock-batch-job",
+		"metadata": map[string]any{
+			"state":       "BATCH_STATE_PENDING",
+			"inputConfig": map[string]any{"fileName": "files/abc"},
+		},
+	})
+
+	if job.Src == nil {
+		t.Fatalf("job.Src is nil")
+	}
+	if job.Src.FileName != "files/abc" {
+		t.Errorf("job.Src.FileName = %q, want %q", job.Src.FileName, "files/abc")
+	}
+	if len(job.Src.InlinedRequests) != 0 {
+		t.Errorf("job.Src.InlinedRequests = %v, want empty", job.Src.InlinedRequests)
+	}
+}
+
+// Inline requests in the Gemini API response are not mapped to Src.
+func TestBatchesGetInlinedRequestsLeavesSrcUnset(t *testing.T) {
+	job := getMockGeminiAPIBatchJob(t, map[string]any{
+		"name": "batches/mock-batch-job",
+		"metadata": map[string]any{
+			"state": "BATCH_STATE_PENDING",
+			"inputConfig": map[string]any{
+				"requests": map[string]any{
+					"requests": []any{
+						map[string]any{
+							"request": map[string]any{
+								"contents": []any{
+									map[string]any{"parts": []any{map[string]any{"text": "Hello"}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	if job.Src != nil {
+		t.Errorf("job.Src = %+v, want nil", job.Src)
+	}
+}

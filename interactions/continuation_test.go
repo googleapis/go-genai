@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -370,6 +371,133 @@ func TestStreamCloseStopsContinuation(t *testing.T) {
 	if n := server.requestCount(); n != 1 {
 		t.Errorf("requests = %d, want 1 (no hop after Close)", n)
 	}
+}
+
+// stallingSSEHandler sends events, flushes, and blocks until the client goes
+// away or release is closed. It counts requests in requests.
+func stallingSSEHandler(requests *atomic.Int32, release <-chan struct{}, events ...map[string]any) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		n := requests.Add(1)
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		if n == 1 {
+			for _, e := range events {
+				b, _ := json.Marshal(e)
+				fmt.Fprintf(w, "event: %s\ndata: %s\n\n", e["event_type"], b)
+			}
+		}
+		w.(http.Flusher).Flush()
+		select {
+		case <-r.Context().Done():
+		case <-release:
+		}
+	}
+}
+
+// closeWhileBlocked blocks a Next() call, then calls Close() from another
+// goroutine; both must return within 2s, Next() with false and no error.
+func closeWhileBlocked(t *testing.T, es interface {
+	Next() bool
+	Err() error
+	Close() error
+}) {
+	t.Helper()
+	nextDone := make(chan bool, 1)
+	go func() { nextDone <- es.Next() }()
+	time.Sleep(100 * time.Millisecond)
+
+	closeDone := make(chan error, 1)
+	go func() { closeDone <- es.Close() }()
+	select {
+	case <-closeDone:
+	case <-time.After(2 * time.Second):
+		t.Fatalf("Close() blocked while Next() was waiting on the stream")
+	}
+	select {
+	case got := <-nextDone:
+		if got {
+			t.Errorf("blocked Next() = true after Close(), want false")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatalf("Next() still blocked 2s after Close()")
+	}
+	if err := es.Err(); err != nil {
+		t.Errorf("Err() after Close() = %v, want nil", err)
+	}
+}
+
+func TestStreamCloseInterruptsBlockedNext(t *testing.T) {
+	// Close() from another goroutine must interrupt a Next() blocked on a
+	// stalled hop read instead of waiting for it.
+	var requests atomic.Int32
+	release := make(chan struct{})
+	ts := httptest.NewServer(stallingSSEHandler(&requests, release,
+		map[string]any{"event_type": "interaction.created", "interaction": map[string]any{"id": "i1", "status": "in_progress"}}))
+	defer ts.Close()
+	defer close(release)
+	client := newTestClient(ts)
+
+	res, err := client.Interactions.Create(context.Background(), modelRequest(true))
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	es := res.InteractionSSEStreamEvent
+	if !es.Next() {
+		t.Fatalf("Next() = false, want the interaction.created event: %v", es.Err())
+	}
+	closeWhileBlocked(t, es)
+}
+
+func TestStreamCloseDuringCheckpointedHopDoesNotReconnect(t *testing.T) {
+	// The read error caused by Close() must not be treated as a resumable
+	// mid-hop drop: no request may follow from the checkpoint token.
+	var requests atomic.Int32
+	release := make(chan struct{})
+	ts := httptest.NewServer(stallingSSEHandler(&requests, release,
+		map[string]any{"event_type": "interaction.created", "interaction": map[string]any{"id": "i1", "status": "in_progress"}},
+		map[string]any{"event_type": "interaction.status_update", "interaction_id": "i1", "status": "in_progress", "continuation_token": "t1"}))
+	defer ts.Close()
+	defer close(release)
+	client := newTestClient(ts)
+
+	res, err := client.Interactions.Create(context.Background(), modelRequest(true))
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	es := res.InteractionSSEStreamEvent
+	for i := 0; i < 2; i++ {
+		if !es.Next() {
+			t.Fatalf("Next() = false after %d events: %v", i, es.Err())
+		}
+	}
+	closeWhileBlocked(t, es)
+	time.Sleep(100 * time.Millisecond)
+	if n := requests.Load(); n != 1 {
+		t.Errorf("requests = %d, want 1 (no reconnect after Close)", n)
+	}
+}
+
+func TestStreamCloseInterruptsHopRequest(t *testing.T) {
+	// Close() must cancel a hop request that Next() is waiting on.
+	server := &scriptedServer{t: t, hops: []scriptedHop{
+		{events: streamHopEvents("i1", "requires_continuation", "t1", "A")},
+		{events: streamHopEvents("i2", "completed", "", "B"), delay: 5 * time.Second},
+	}}
+	ts := httptest.NewServer(server)
+	defer ts.Close()
+	client := newTestClient(ts)
+
+	res, err := client.Interactions.Create(context.Background(), modelRequest(true))
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	es := res.InteractionSSEStreamEvent
+	for i := 0; i < 3; i++ {
+		if !es.Next() {
+			t.Fatalf("Next() = false after %d events: %v", i, es.Err())
+		}
+	}
+	closeWhileBlocked(t, es)
 }
 
 func TestOptionsAreForwardedToEveryHop(t *testing.T) {

@@ -72,6 +72,8 @@ jobs:
         path: ${{ fromJson(needs.scan_changes.outputs.changed_dirs).changed[0] }}/${{ steps.baseline.outputs.pkg }}
         retention-days: 1
     - uses: actions/checkout@v4
+    - name: Wait for artifact indexing
+      run: sleep 5
     - name: Download baseline package data
       uses: actions/download-artifact@v4
       with:

@@ -33,6 +33,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"google.golang.org/genai/internal/agentmessage"
 )
 
 const maxChunkSize = 8 * 1024 * 1024 // 8 MB chunk size
@@ -441,6 +443,9 @@ func doRequest(ac *apiClient, req *http.Request, retryOptions *HTTPRetryOptions)
 	resp, err := retryHTTPRequest(req, retryOptions, client.Do)
 	if err != nil {
 		return nil, fmt.Errorf("doRequest: error sending request: %w", err)
+	}
+	if resp != nil {
+		agentmessage.Warn(resp.Header)
 	}
 	return resp, nil
 }

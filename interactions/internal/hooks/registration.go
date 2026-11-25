@@ -25,5 +25,8 @@ func initHooks(h *Hooks) {
 	_ = h.registerAfterSuccessHook
 	_ = h.registerAfterErrorHook
 
-	h.registerBeforeRequestHook(&GoogleGenAIAuthHook{})
+	authHook := &GoogleGenAIAuthHook{}
+	h.registerBeforeRequestHook(authHook)
+	h.registerAfterSuccessHook(authHook)
+	h.registerAfterErrorHook(authHook)
 }

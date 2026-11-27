@@ -27,7 +27,8 @@ type StepDelta struct {
 	EventID *string `json:"event_id,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
 	eventType string `const:"step.delta" json:"event_type"`
-	Index     int    `json:"index"`
+	// Required. The 0-based index of the step to which this delta applies.
+	Index int `json:"index"`
 	// Optional metadata accompanying ANY streamed event.
 	Metadata *StepDeltaMetadata `json:"metadata,omitzero"`
 }

@@ -26,7 +26,8 @@ type StepStart struct {
 	EventID *string `json:"event_id,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
 	eventType string `const:"step.start" json:"event_type"`
-	Index     int    `json:"index"`
+	// Required. The 0-based index of the step.
+	Index int `json:"index"`
 	// A step in the interaction.
 	Step Step `json:"step"`
 }

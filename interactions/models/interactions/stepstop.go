@@ -26,7 +26,8 @@ type StepStop struct {
 	EventID *string `json:"event_id,omitzero"`
 	//lint:ignore U1000 accessed via reflection for JSON marshaling
 	eventType string `const:"step.stop" json:"event_type"`
-	Index     int    `json:"index"`
+	// Required. The 0-based index of the step that stopped.
+	Index int `json:"index"`
 	// Statistics on the interaction request's token usage.
 	StepUsage *Usage `json:"step_usage,omitzero"`
 	// Statistics on the interaction request's token usage.
